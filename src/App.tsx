@@ -26,6 +26,7 @@ import Agenda from "./pages/Dentistry/Agenda";
 import Users from "./pages/Dentistry/Users";
 import CreateUser from "./pages/Dentistry/CreateUser";
 
+
 // Rutas públicas que redirigen si ya está autenticado
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -89,6 +90,8 @@ export default function App() {
         {/* Fallback Route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      {/* Ruta de odontograma con contexto */}
+      
     </>
   );
 }

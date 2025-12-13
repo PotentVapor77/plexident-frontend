@@ -135,9 +135,11 @@ export const DiagnosticosGrid: React.FC<DiagnosticosGridProps> = ({
     >
       {/* Encabezado */}
       <div className="flex justify-between items-center mb-3">
-        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-          {collapsed ? `#${toothTranslations[selectedTooth]?.numero || selectedTooth}` : nombreDiente}
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-900">
+  {collapsed
+    ? `#${toothTranslations[selectedTooth]?.numero} · ${groupedDiags.length} diag.`
+    : nombreDiente}
+</h3>
 
 
         <button
@@ -155,51 +157,52 @@ export const DiagnosticosGrid: React.FC<DiagnosticosGridProps> = ({
 
 
       {!collapsed && (
-        <ul className="space-y-3 overflow-y-auto max-h-[45vh] pr-2">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 overflow-y-auto max-h-[45vh] pr-2 custom-scrollbar">
           {groupedDiags.map(({ diag, references, surfaceNames }, i) => (
             <li
-              key={i}
-              className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              key={`${diag.procedimientoId}-${diag.id}`}
+              className="group relative p-3 bg-white border border-gray-200 rounded-xl shadow-theme-xs hover:shadow-theme-sm transition"
             >
-              <div className="flex items-center justify-between mb-2">
+              {/* Encabezado */}
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex flex-col">
+                  <span
+                    className="text-sm font-semibold capitalize leading-tight"
+                    style={{ color: diag.colorHex }}
+                  >
+                    {diag.procedimientoId?.replace(/_/g, " ") || "Sin especificar"}
+                  </span>
+
+                  <span className="text-[11px] text-gray-500 mt-0.5">
+                    {describeSurfaces(surfaceNames)}
+                  </span>
+                </div>
+
                 <span
-                  className="text-sm font-medium capitalize"
-                  style={{ color: diag.colorHex }}
-                >
-                  {diag.procedimientoId?.replace(/_/g, " ") || "Sin especificar"}
-                </span>
-                <span
-                  className="w-3 h-3 rounded-full border border-gray-300"
+                  className="mt-1 w-3 h-3 rounded-full border border-gray-300 shrink-0"
                   style={{ backgroundColor: diag.colorHex || "#999" }}
-                ></span>
+                />
               </div>
 
-
-              <p className="text-xs text-gray-600">
-                <span className="font-medium text-gray-700">Superficies:</span>{" "}
-                {describeSurfaces(surfaceNames)}
-              </p>
-
-
+              {/* Descripción */}
               {diag.descripcion && (
-                <p className="text-xs text-gray-600 mt-2">
-                  "{diag.descripcion}"
+                <p className="text-xs text-gray-600 mt-2 italic line-clamp-3">
+                  “{diag.descripcion}”
                 </p>
               )}
 
-
-              <div className="flex justify-end mt-3">
+              {/* Acciones */}
+              <div className="flex justify-end mt-3 opacity-0 group-hover:opacity-100 transition">
                 <button
-                  // LÓGICA DE ELIMINACIÓN CORREGIDA
-                  onClick={() =>
-                    references.forEach(({ surfaceId, diagId }) =>
-                      removeDiagnostico(selectedTooth!, surfaceId, diagId)
-                    )
-                  }
-                  className="text-xs px-3 py-1 rounded-lg bg-red-100 text-red-600 border border-red-200 hover:bg-red-200 hover:text-red-700 transition-colors font-medium"
-                  title="Eliminar diagnóstico"
+                  onClick={() => {
+  if (!confirm("¿Eliminar este diagnóstico del diente?")) return;
+  references.forEach(({ surfaceId, diagId }) =>
+    removeDiagnostico(selectedTooth!, surfaceId, diagId)
+  );
+}}
+                  className="text-[11px] px-2.5 py-1 rounded-md bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
                 >
-                  ✕ Eliminar
+                  Eliminar
                 </button>
               </div>
             </li>

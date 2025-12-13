@@ -9,6 +9,7 @@ import type { useOdontogramaData } from "../../../hooks/odontogram/useOdontogram
 const COLOR_BASE_DIENTE = new THREE.Color(0xffffff);
 const COLOR_DIENTE_SELECCIONADO = new THREE.Color(0xffaf00);
 const COLOR_DIENTE_AUSENTE = new THREE.Color(0x1f2937);
+const COLOR_DIENTE_HOVER = new THREE.Color(0xccccff);
 
 interface Props {
   selectedTooth: string | null;
@@ -38,6 +39,8 @@ export const OdontogramaModel = ({
   const [pivotMandibular, setPivotMandibular] = useState<THREE.Group | null>(
     null
   );
+  // --- Nuevo estado para el diente en hover ---
+  const [hoveredTooth, setHoveredTooth] = useState<string | null>(null);
 
   // --- Clic en dientes ---
   const handlePointerDown = (e: any) => {
@@ -49,7 +52,24 @@ export const OdontogramaModel = ({
     setSelectedTooth(clickedToothName === selectedTooth ? null : clickedToothName);
   };
 
-  // --- 1. Agrupación y pivote mandibular ---
+  // --- Manejadores de Hover ---
+  const handlePointerOver = (e: any) => {
+    e.stopPropagation();
+    const toothName = e.object.name;
+    if (toothName && e.object.isMesh && !isToothBlocked(toothName)) {
+      setHoveredTooth(toothName);
+    }
+  };
+
+  const handlePointerOut = (e: any) => {
+    e.stopPropagation();
+    // Solo si el que sale es el que estaba en hover, lo reseteamos
+    if (e.object.name === hoveredTooth) {
+      setHoveredTooth(null);
+    }
+  };
+
+  // --- 1. Agrupación y pivote mandibular (Sin cambios) ---
   useEffect(() => {
     if (!scene || maxilarSuperior) return;
 
@@ -129,7 +149,7 @@ export const OdontogramaModel = ({
   }, [scene, maxilarSuperior]);
 
 
-  // --- 2. Animación de apertura mandibular (Persistencia en Modo Libre) ---
+  // --- 2. Animación de apertura mandibular (Persistencia en Modo Libre) (Sin cambios) ---
   useFrame(() => {
     if (!pivotMandibular) return;
 
@@ -160,7 +180,7 @@ export const OdontogramaModel = ({
     );
   });
 
-  // --- 3. Lógica de color ---
+  // --- 3. Lógica de color (Actualizada para incluir hoveredTooth) ---
   useEffect(() => {
     scene.traverse((child: any) => {
       if (child.isMesh) {
@@ -173,12 +193,19 @@ export const OdontogramaModel = ({
         if (isBlocked) {
           finalColor = COLOR_DIENTE_AUSENTE;
         } else if (dominantColorHex) {
+          // Diente con tratamiento dominante
           finalColor = new THREE.Color(dominantColorHex);
         } else if (toothId === selectedTooth && previewColorHex) {
+          // Diente seleccionado con color de previsualización
           finalColor = new THREE.Color(previewColorHex);
         } else if (toothId === selectedTooth) {
+          // Diente seleccionado sin previsualización
           finalColor = COLOR_DIENTE_SELECCIONADO;
+        } else if (toothId === hoveredTooth) {
+          // --- Nuevo: Diente en hover ---
+          finalColor = COLOR_DIENTE_HOVER;
         }
+
 
         child.material = new THREE.MeshStandardMaterial({
           color: finalColor,
@@ -189,6 +216,7 @@ export const OdontogramaModel = ({
     });
   }, [
     selectedTooth,
+    hoveredTooth,
     scene,
     odontogramaData,
     previewColorHex,
@@ -196,5 +224,12 @@ export const OdontogramaModel = ({
     isToothBlocked,
   ]);
 
-  return <primitive object={scene} onPointerDown={handlePointerDown} />;
+  return (
+    <primitive
+      object={scene}
+      onPointerDown={handlePointerDown}
+      onPointerOver={handlePointerOver} 
+      onPointerOut={handlePointerOut}  
+    />
+  );
 };

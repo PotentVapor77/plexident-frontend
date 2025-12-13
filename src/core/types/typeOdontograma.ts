@@ -82,3 +82,8 @@ export type DienteGlobalData = Record<
   string,
   { ausente: boolean; dominanteColor: string | null }
 >;
+export type RootGroupKey =
+  | "molar_superior"
+  | "molar_inferior"
+  | "premolar"
+  | "anterior";

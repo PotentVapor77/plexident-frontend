@@ -4,7 +4,7 @@ import { useCrownInteractions } from "../../../hooks/odontogram/useCrownInteract
 import { useOdontogramaData } from "../../../hooks/odontogram/useOdontogramaData";
 import { useRootInteractions } from "../../../hooks/odontogram/useRootInteractions";
 import { useToothRootType } from "../../../hooks/odontogram/useToothRootType";
-import { ODONTO_COLORS } from "../../../core/types/typeOdontograma";
+import { ODONTO_COLORS, type RootGroupKey } from "../../../core/types/typeOdontograma";
 
 // IMPORTAR SVGs DIRECTAMENTE
 import odontSvg from "../../../assets/images/dental/odonto.svg";
@@ -57,12 +57,31 @@ const getPrincipalArea = (surfaces: string[]): PrincipalArea => {
     return 'general';
 };
 
+const getRootGroupKeyFromType = (type?: string): RootGroupKey | null => {
+    switch (type) {
+        case "raiz_molar_superior":
+            return "molar_superior";
+        case "raiz_molar_inferior":
+            return "molar_inferior";
+        case "raiz_premolar":
+            return "premolar";
+        case "raiz_canino":
+        case "raiz_incisivo":
+            return "anterior";
+        default:
+            return null;
+    }
+};
+
+
 interface SurfaceSelectorProps {
     selectedSurfaces: string[];
     onSurfaceSelect: (surfaces: string[]) => void;
     selectedTooth: string | null;
     isBlocked?: boolean;
     onAreaChange: (area: PrincipalArea) => void;
+
+    onRootGroupChange?: (group: RootGroupKey | null) => void;
 }
 
 export interface SurfaceSelectorRef {
@@ -76,6 +95,7 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
     selectedTooth,
     isBlocked,
     onAreaChange,
+    onRootGroupChange,
 }, ref) => {
 
     const [svgLoaded, setSvgLoaded] = useState(false);
@@ -83,9 +103,19 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
     const [requiredAreaWarning, setRequiredAreaWarning] = useState<string | null>(null);
 
     const rootInfo = useToothRootType(selectedTooth);
-
+    useEffect(() => {
+        if (!selectedTooth) {
+            onRootGroupChange?.(null);
+            return;
+        }
+        const groupKey = getRootGroupKeyFromType(rootInfo.type);
+        onRootGroupChange?.(groupKey);
+    }, [selectedTooth, rootInfo.type, onRootGroupChange]);
     const { getPermanentColorForSurface, tipoDiagnosticoSeleccionado } = useOdontogramaData();
 
+
+
+    // Deshabilitado si no hay diente seleccionado O si está bloqueado por prop
     const isDisabled = !selectedTooth || isBlocked;
 
     const activeDiagnosisColor = ((tipoDiagnosticoSeleccionado as any)?.colorHex) ?? null;
@@ -160,37 +190,53 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         return ROOT_SVG_MAP[pathName]; // Retorna URL importada (no string)
     }, [rootInfo.type]);
 
+    // Estilos para el contenedor (Se mantiene el escalado general y el espaciado reducido)
+    const containerClasses = `
+        relative 
+        flex 
+        flex-col 
+        items-center 
+        justify-center 
+        p-2 
+        space-y-1 
+        transform 
+        scale-[0.9] 
+        transition-opacity 
+        duration-300 
+        ${isDisabled ? 'opacity-50 pointer-events-none' : 'opacity-100'}
+    `;
+
+    // Se eliminó svgBaseClasses para control individual.
+
     return (
         <>
             {requiredAreaWarning && (
-                <div className="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-700 p-2 mb-2 rounded">
+                <div className="bg-warning-50 border-l-4 border-warning-400 text-warning-700 p-3 mb-4 rounded-lg text-theme-sm">
                     {requiredAreaWarning}
                 </div>
             )}
 
-            {/* SVG DE LA RAÍZ */}
-            <div className="flex justify-center p-0">
+            {/* Contenedor ÚNICO para ambos SVGs (Corona y Raíz) */}
+            <div className={containerClasses}>
+
+                {/* SVG DE LA RAÍZ */}
                 <object
                     id="raiz-svg"
                     data={getRootSvgPath()}
                     type="image/svg+xml"
-                    className={`w-48 h-42 transition-opacity duration-300 ${isDisabled ? 'opacity-50 pointer-events-none' : 'opacity-100'
-                        }`}
+                    className="w-42 h-40 block max-w-full"
                     key={`raiz-${rootInfo.type}-${selectedTooth}`}
                     onLoad={() => setRootSvgLoaded(true)}
                     role="img"
                     aria-label="Raíz dental seleccionada"
                 />
-            </div>
 
-            {/* SVG DE LA CORONA (ODONTOGRAMA) */}
-            <div className="flex justify-center p-0">
+                {/* SVG DE LA CORONA */}
                 <object
                     id="odonto-svg"
                     data={odontSvg}
                     type="image/svg+xml"
-                    className={`w-48 h-48 transition-opacity duration-300 ${isDisabled ? 'opacity-50 pointer-events-none' : 'opacity-100'
-                        }`}
+                    className="w-36 h-36 block max-w-full"
                     key={`corona-${selectedTooth}`}
                     onLoad={() => setSvgLoaded(true)}
                     role="img"

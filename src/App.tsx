@@ -25,6 +25,7 @@ import CreatePatient from "./pages/Dentistry/CreatePatient";
 import Agenda from "./pages/Dentistry/Agenda";
 import Users from "./pages/Dentistry/Users";
 import CreateUser from "./pages/Dentistry/CreateUser";
+import OdontogramaPage from "./pages/Odontogram/OdontogramaPage";
 
 
 // Rutas públicas que redirigen si ya está autenticado
@@ -85,13 +86,22 @@ export default function App() {
           {/* Charts */}
           <Route path="/line-chart" element={<LineChart />} />
           <Route path="/bar-chart" element={<BarChart />} />
+
+          {/* Odontograma Route */}
+          <Route path="/odontograma" element={
+          <div className="p-0 m-0">
+            <OdontogramaPage />
+          </div>
+      } />
+
         </Route>
+
+
 
         {/* Fallback Route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {/* Ruta de odontograma con contexto */}
-      
+
     </>
   );
 }

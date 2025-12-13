@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { useOdontogramaData } from "../../hooks/odontogram/useOdontogramaData";
+import type { useOdontogramaData } from "../../../hooks/odontogram/useOdontogramaData";
 
 // --- Colores base ---
 const COLOR_BASE_DIENTE = new THREE.Color(0xffffff);

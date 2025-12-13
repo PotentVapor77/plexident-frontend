@@ -37,6 +37,7 @@ export type OpcionSecundaria = {
 };
 
 export type DiagnosticoItem = {
+  opciones_secundarias?: any;
   id: string;
   nombre: string;
   siglas: string;
@@ -44,6 +45,7 @@ export type DiagnosticoItem = {
   categoria: TipoDiagnostico; // antes tipo_diagnostico
   areas_afectadas: AreaAfectada[]; // antes afecta_area
   atributos_clinicos?: {
+      // includes(arg0: string): unknown; <-- ¡ELIMINADO!
       material_restauracion?: OpcionSecundaria[];
       estado_restauracion?: OpcionSecundaria[];
       erupcion?: OpcionSecundaria[];

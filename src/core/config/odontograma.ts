@@ -1,6 +1,6 @@
 // src/config/odontograma.ts
 
-import type { DiagnosticoCategory, DiagnosticoItem, PrioridadKey } from "../../types/odontograma";
+import type { PrioridadKey, DiagnosticoCategory, DiagnosticoItem } from "../types/typeOdontograma";
 import { ERUPCION, ESTADO_PROCEDIMIENTO, ESTADO_RESTAURACION, MATERIAL_RESTAURACION } from "./atributos_clinicos";
 
 

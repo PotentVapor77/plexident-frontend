@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1080"
+   height="1080"
+   viewBox="0 0 810 810"
+   preserveAspectRatio="xMidYMid meet"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="raiz_dental.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:zoom="0.5283659"
+     inkscape:cx="175.06807"
+     inkscape:cy="494.92217"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="raiz-principal" />
+  <defs
+     id="defs2">
+    <clipPath
+       id="clip1">
+      <path
+         d="M 198 126 L 612 126 L 612 709 L 198 709 Z M 198 126 "
+         id="path1" />
+    </clipPath>
+    <clipPath
+       id="clip2">
+      <path
+         d="M 417.6 135.2 L 610.25 673.65 C 613.14 681.74 611.92 690.73 606.97 697.76 C 602.03 704.78 593.97 708.96 585.38 708.96 L 224.6 708.96 C 216.01 708.96 207.96 704.78 203.01 697.76 C 198.07 690.73 196.84 681.74 199.74 673.65 L 392.36 135.23 C 394.27 129.89 399.33 126.33 404.99 126.33 C 410.66 126.33 415.71 129.89 417.62 135.23 Z"
+         id="path2" />
+    </clipPath>
+  </defs>
+  <g
+     id="raiz-principal"
+     stroke-width="2">
+    <rect
+       x="0"
+       y="0"
+       width="810"
+       height="810"
+       style="fill:none;stroke:none;"
+       id="rect2" />
+    <g
+       clip-path="url(#clip1)"
+       id="g3"
+       transform="matrix(0.94443884,0,0,1.1339554,17.907799,-57.017246)">
+      <g
+         clip-path="url(#clip2)"
+         id="g2">
+        <path
+           id="raiz_dental"
+           style="fill:none;stroke:#000000;stroke-width:8;stroke-linecap:butt;stroke-linejoin:miter"
+           d="m 307.35,47.07 256.83,717.9 c 3.86,10.78 2.24,22.77 -4.36,32.14 -6.6,9.36 -17.34,14.94 -28.8,14.94 H 49.99 c -11.45,0 -22.19,-5.58 -28.79,-14.94 -6.59,-9.37 -8.22,-21.36 -4.36,-32.14 L 273.67,47.07 c 2.54,-7.11 9.29,-11.86 16.84,-11.86 7.56,0 14.3,4.75 16.84,11.86 z"
+           transform="matrix(0.75,0,0,0.75,187.11,99.92)" />
+      </g>
+    </g>
+  </g>
+</svg>

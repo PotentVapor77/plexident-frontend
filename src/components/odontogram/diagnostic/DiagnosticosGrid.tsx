@@ -130,35 +130,57 @@ export const DiagnosticosGrid: React.FC<DiagnosticosGridProps> = ({
 
   return (
     <div
-      className={`absolute bottom-6 right-[330px] z-40 transition-all ${collapsed ? "opacity-60 w-[140px] h-[40px]" : "w-[380px] max-h-[55vh]"
-        } bg-white/90 backdrop-blur-md border border-gray-200 rounded-lg shadow-md p-4`}
+      className={`
+    absolute bottom-6 right-[330px] z-40
+    bg-white/90 backdrop-blur-md
+    border border-gray-200 rounded-xl shadow-theme-md
+    transition-[width,height,opacity,transform] duration-300 ease-out
+    ${
+      collapsed
+        ? "w-[180px] h-[52px] opacity-80 hover:opacity-100"
+        : "w-[420px] max-h-[60vh]"
+    }
+  `}
     >
       {/* Encabezado */}
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="text-sm font-semibold text-gray-900">
-  {collapsed
-    ? `#${toothTranslations[selectedTooth]?.numero} · ${groupedDiags.length} diag.`
-    : nombreDiente}
-</h3>
+      <div
+  className={`flex items-center justify-between gap-2 px-4 py-3 ${
+    collapsed ? "border-0" : "border-b border-gray-200"
+  }`}
+>
+  <h3 className="text-sm font-semibold text-gray-900 truncate">
+    {collapsed
+      ? `#${toothTranslations[selectedTooth]?.numero} · ${groupedDiags.length}`
+      : nombreDiente}
+  </h3>
 
-
-        <button
-          onClick={() => setCollapsed((c) => !c)}
-          className="p-2 rounded-lg bg-gray-100 border border-gray-300 hover:bg-gray-200 transition-colors flex items-center justify-center"
-          title={collapsed ? "Expandir" : "Minimizar"}
-        >
-          {collapsed ? (
-            <span className="text-xs">+</span>
-          ) : (
-            <span className="text-xs">−</span>
-          )}
-        </button>
-      </div>
+  <button
+    onClick={() => setCollapsed(c => !c)}
+    className={`
+      flex items-center justify-center rounded-lg border transition
+      ${
+        collapsed
+          ? "w-7 h-7 bg-brand-50 text-brand-500 border-brand-200 hover:bg-brand-100"
+          : "w-8 h-8 bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+      }
+    `}
+    title={collapsed ? "Expandir" : "Minimizar"}
+  >
+    {collapsed ? "+" : "−"}
+  </button>
+</div>
 
 
       {!collapsed && (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 overflow-y-auto max-h-[45vh] pr-2 custom-scrollbar">
-          {groupedDiags.map(({ diag, references, surfaceNames }, i) => (
+        <ul
+  className="
+    grid gap-3 px-4 pb-4
+    grid-cols-[repeat(auto-fit,minmax(180px,1fr))]
+    overflow-y-auto max-h-[50vh]
+    custom-scrollbar
+  "
+>
+          {groupedDiags.map(({ diag, references, surfaceNames }) => (
             <li
               key={`${diag.procedimientoId}-${diag.id}`}
               className="group relative p-3 bg-white border border-gray-200 rounded-xl shadow-theme-xs hover:shadow-theme-sm transition"

@@ -216,7 +216,7 @@ export const DiagnosticoPanel = ({
         <div className={`h-full bg-white dark:bg-gray-900 shadow-theme-lg border-l border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden ${className}`}>
 
             {/* HEADER */}
-            <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
+            <div className="px-5 py-5 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Panel de Diagnóstico
                 </h2>

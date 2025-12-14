@@ -178,7 +178,7 @@ export const OdontogramaViewer = ({
             />
 
             <DiagnosticoPanel
-                className="w-72 border-l border-black"
+                className="w-75 flex-none border-l border-black"
                 selectedTooth={selectedTooth}
                 selectedSurfaces={currentSurfaces}
                 onSurfaceSelect={handleSurfaceSelect}

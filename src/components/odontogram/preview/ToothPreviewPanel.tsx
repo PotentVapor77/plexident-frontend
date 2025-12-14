@@ -10,8 +10,6 @@ type PanelPreviewDienteProps = {
     datosDiente: DatosDiente | null;
 };
 
-// Se recomienda cargar el GLTF una sola vez a nivel superior si es posible
-// Pero dentro del componente funcional está bien si se gestiona el caché (que useGLTF hace).
 
 const ModeloDiente = ({ dienteSeleccionado }: { dienteSeleccionado: string }) => {
     const { scene } = useGLTF("/models/odontograma_preview.glb") as any;

@@ -16,7 +16,7 @@ export const MATERIAL_COLORS = {
   Oro: { fill: '#f59e0b', name: 'Oro' },
   Cera: { fill: '#a16207', name: 'Cera' },
   Otro: { fill: '#3b82f6', name: 'Otro' },
-};
+}; 
 
 export type OdontoColorKey = keyof typeof ODONTO_COLORS;
 export type MaterialColorKey = keyof typeof MATERIAL_COLORS;

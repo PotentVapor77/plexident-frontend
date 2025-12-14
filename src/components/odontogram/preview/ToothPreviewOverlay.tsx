@@ -2,156 +2,140 @@
 import React from "react";
 
 type ToothPreviewOverlayProps = {
-    svgsCorona?: React.ReactNode[]; // SVGs de la Corona (máx. 3)
-    svgsRaiz?: React.ReactNode[];   // SVGs de la Raíz (máx. 3)
-    tooltipCorona?: string;         // Tooltip para Corona
-    tooltipRaiz?: string;           // Tooltip para Raíz
-    color?: string;                 // Color principal
-    coberturaTotal?: boolean;       // Cobertura completa
-    isToothUpper?: boolean;
+  svgsCorona?: React.ReactNode[]; // SVGs de la Corona (máx. 3)
+  svgsRaiz?: React.ReactNode[];   // SVGs de la Raíz (máx. 3)
+  tooltipCorona?: string;
+  tooltipRaiz?: string;
+  color?: string;
+  coberturaTotal?: boolean;
+  isToothUpper?: boolean;
 };
 
-// --- Tooltip y contenedor de estado ---
+/* ----------------------------------------------------
+ * Tooltip + contenedor
+ * -------------------------------------------------- */
 const ContenedorEstado: React.FC<{
-    children: React.ReactNode;
-    tooltip?: string;
-    coberturaTotal?: boolean;
-}> = ({ children, tooltip, coberturaTotal = false }) => {
-    if (!tooltip && !coberturaTotal) return <>{children}</>;
+  children: React.ReactNode;
+  tooltip?: string;
+  fullHeight?: boolean;
+}> = ({ children, tooltip, fullHeight = false }) => {
+  return (
+    <div
+      className={`relative flex items-center justify-center ${
+        fullHeight ? "h-full" : ""
+      }`}
+    >
+      {children}
 
-    return (
+      {tooltip && (
         <div
-            className={`group relative flex justify-center items-center w-full ${
-                coberturaTotal ? "h-full" : ""
-            }`}
+          className="
+            absolute bottom-full mb-1
+            px-2 py-1
+            text-[10px] font-medium
+            bg-gray-900 text-white
+            rounded-md shadow-lg
+            opacity-0 scale-95
+            transition-all duration-200
+            pointer-events-none
+            group-hover:opacity-100 group-hover:scale-100
+            whitespace-nowrap
+            z-30
+          "
         >
-            {children}
-            {tooltip && (
-                <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full mt-1 p-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-30 shadow-lg">
-                    {tooltip}
-                </span>
-            )}
+          {tooltip}
         </div>
-    );
+      )}
+    </div>
+  );
 };
 
-// --- Componente principal ---
+/* ----------------------------------------------------
+ * Grupo de íconos (Corona / Raíz)
+ * -------------------------------------------------- */
+const IconGroup: React.FC<{
+  svgs?: React.ReactNode[];
+  color: string;
+}> = ({ svgs, color }) => {
+  if (!svgs || svgs.length === 0) return null;
+
+  return (
+    <div
+      className="
+        flex items-center justify-center gap-1
+        px-1.5 py-1
+        rounded-md
+        bg-white/75
+        backdrop-blur-sm
+        shadow-theme-xs
+        pointer-events-auto
+      "
+      style={{ color }}
+    >
+      {svgs.slice(0, 3).map((svg, idx) => (
+        <div key={idx} className="w-4 h-4 flex-shrink-0">
+          {svg}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/* ----------------------------------------------------
+ * Overlay principal
+ * -------------------------------------------------- */
 export const ToothPreviewOverlay: React.FC<ToothPreviewOverlayProps> = ({
-    svgsCorona,
-    svgsRaiz,
-    tooltipCorona,
-    tooltipRaiz,
-    color = "#333",
-    coberturaTotal = false,
-    isToothUpper = false,
-
+  svgsCorona,
+  svgsRaiz,
+  tooltipCorona,
+  tooltipRaiz,
+  color = "#374151", // gray-700
+  coberturaTotal = false,
+  isToothUpper = false,
 }) => {
-    const flexDirectionClass = isToothUpper ? "flex-col" : "flex-col-reverse";
-    if (coberturaTotal) {
-        return (
-            <div
-                // 💡 Aplicar clase condicional
-                className={`absolute inset-0 flex ${flexDirectionClass} justify-between items-center select-none p-3 animate-pulse-slow`}
-                style={{
-                    zIndex: 25,
-                    color,
-                    textAlign: "center",
-                    pointerEvents: "none",
-                }}
-            >
-                {/* --- Raíz --- */}
-                <ContenedorEstado tooltip={tooltipRaiz} coberturaTotal>
-                    <div
-                        className="flex justify-center items-center gap-1 p-1 rounded-md bg-white/70 shadow-sm pointer-events-auto"
-                        style={{
-                            color,
-                            filter: "drop-shadow(0 0 2px rgba(0,0,0,0.2))",
-                        }}
-                    >
-                        {svgsRaiz?.map((svg, idx) => (
-                            <div
-                                key={idx}
-                                className="w-4 h-4 flex-shrink-0"
-                                style={{ color }}
-                            >
-                                {svg}
-                            </div>
-                        ))}
-                    </div>
-                </ContenedorEstado>
+  const direction = isToothUpper ? "flex-col" : "flex-col-reverse";
 
-                {/* --- Indicador central --- */}
-                <div className="my-1 text-[10px] text-gray-700 bg-yellow-100 px-2 py-0.5 rounded-full font-medium shadow-sm">
-                    Afecta todo el diente
-                </div>
+  return (
+    <div
+      className={`
+        absolute inset-0 z-20
+        flex ${direction}
+        justify-between items-center
+        p-2
+        select-none
+        pointer-events-none
+        ${coberturaTotal ? "animate-pulse-soft" : ""}
+      `}
+      style={{ color }}
+    >
+      {/* -------- Raíz -------- */}
+      <div className="group">
+        <ContenedorEstado tooltip={tooltipRaiz} fullHeight={coberturaTotal}>
+          <IconGroup svgs={svgsRaiz} color={color} />
+        </ContenedorEstado>
+      </div>
 
-                {/* --- Corona --- */}
-                <ContenedorEstado tooltip={tooltipCorona} coberturaTotal>
-                    <div
-                        className="flex justify-center items-center gap-1 p-1 rounded-md bg-white/70 shadow-sm pointer-events-auto"
-                        style={{
-                            color,
-                            filter: "drop-shadow(0 0 2px rgba(0,0,0,0.2))",
-                        }}
-                    >
-                        {svgsCorona?.map((svg, idx) => (
-                            <div
-                                key={idx}
-                                className="w-4 h-4 flex-shrink-0"
-                                style={{ color }}
-                            >
-                                {svg}
-                            </div>
-                        ))}
-                    </div>
-                </ContenedorEstado>
-            </div>
-        );
-    }
-
-    return (
+      {/* -------- Indicador central -------- */}
+      {coberturaTotal && (
         <div
-            className={`absolute inset-0 flex ${flexDirectionClass} justify-between items-center select-none p-2`}
-            style={{
-                zIndex: 20,
-                color,
-                textAlign: "center",
-                pointerEvents: "none",
-            }}
+          className="
+            text-[10px] font-semibold
+            px-2 py-0.5
+            rounded-full
+            bg-warning-100 text-warning-800
+            shadow-theme-xs
+          "
         >
-            {/* Raíz*/}
-            <ContenedorEstado tooltip={tooltipRaiz}>
-                <div className="flex justify-center items-center gap-0.5 mb-1 p-1 rounded-md bg-white/70 shadow-sm pointer-events-auto">
-                    {svgsRaiz?.map((svg, idx) => (
-                        <div key={idx} className="w-4 h-4 flex-shrink-0" style={{ color }}>
-                            {svg}
-                        </div>
-                    ))}
-                </div>
-            </ContenedorEstado>
-
-            {/* Corona */}
-            <ContenedorEstado tooltip={tooltipCorona}>
-                <div className="flex justify-center items-center gap-0.5 mt-1 p-1 rounded-md bg-white/70 shadow-sm pointer-events-auto">
-                    {svgsCorona?.map((svg, idx) => (
-                        <div key={idx} className="w-4 h-4 flex-shrink-0" style={{ color }}>
-                            {svg}
-                        </div>
-                    ))}
-                </div>
-            </ContenedorEstado>
+          Afecta todo el diente
         </div>
-    );
-};
+      )}
 
-const style = document.createElement("style");
-style.textContent = `
-@keyframes pulseSlow {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.03); }
-}
-.animate-pulse-slow {
-  animation: pulseSlow 2s ease-in-out infinite;
-}
-`;
-document.head.appendChild(style);
+      {/* -------- Corona -------- */}
+      <div className="group">
+        <ContenedorEstado tooltip={tooltipCorona} fullHeight={coberturaTotal}>
+          <IconGroup svgs={svgsCorona} color={color} />
+        </ContenedorEstado>
+      </div>
+    </div>
+  );
+};

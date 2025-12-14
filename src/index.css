@@ -822,3 +822,9 @@ span.flatpickr-weekday,
 .fake-sidebar.open {
   transform: translateX(0);
 }
+
+
+.animate-pulse-soft {
+  animation: pulse-soft 2.2s ease-in-out infinite;
+}
+

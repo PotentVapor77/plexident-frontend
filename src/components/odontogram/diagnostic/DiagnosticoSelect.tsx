@@ -20,10 +20,8 @@ type DiagnosticoSelectProps = {
 };
 
 export const DiagnosticoSelect = (props: DiagnosticoSelectProps) => {
-    // 1. Usar el hook para obtener toda la lógica y estados
     const diagnosticoLogic = useDiagnosticoSelect(props);
 
-    // 2. Renderizar el componente de UI, pasándole la lógica y las props originales que necesita
     return (
         <DiagnosticoSelectUI
             {...props}

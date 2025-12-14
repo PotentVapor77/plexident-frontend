@@ -63,7 +63,6 @@ export const PanelPreviewDiente = ({ dienteSeleccionado, datosDiente }: PanelPre
     const refControlesOrbit = useRef<any>(null);
 
     useEffect(() => {
-        // Al cambiar de diente, reiniciar la posición de la cámara
         if (refControlesOrbit.current) {
             refControlesOrbit.current.reset();
         }
@@ -73,12 +72,19 @@ export const PanelPreviewDiente = ({ dienteSeleccionado, datosDiente }: PanelPre
 
     const isToothUpper = dienteSeleccionado.includes('upper');
 
-    // Estilo adaptado con Tailwind y soporte para Dark Mode
     return (
         <div
-            className="absolute top-6 right-6 bg-white/90 dark:bg-gray-900/90 shadow-theme-xl rounded-2xl p-3 
-                       border border-gray-200 dark:border-gray-800 backdrop-blur-sm transition-colors duration-200"
-            style={{ width: "180px", height: "220px", pointerEvents: "auto" }}
+             className="
+    absolute top-6 right-6 z-50
+    bg-white/90 dark:bg-gray-900/90
+    backdrop-blur-md
+    border border-gray-200 dark:border-gray-800
+    rounded-2xl shadow-theme-xl
+    transition-all duration-300 ease-out
+    w-[200px] h-[240px]
+    hover:w-[220px] hover:h-[260px]
+  "
+            style={{ width: "150px", height: "190px", pointerEvents: "auto" }}
         >
             {/* Overlay de Estado (se superpone al canvas) */}
             <ToothStatusDisplay 
@@ -92,7 +98,7 @@ export const PanelPreviewDiente = ({ dienteSeleccionado, datosDiente }: PanelPre
                 {/* El background debe ser claro para que el diente blanco resalte */}
                 <Canvas
                     className="canvas"
-                    style={{ background: "#f0f0f0", borderRadius: "0.75rem" }} // gray-100 equivalent
+                    style={{ background: "#f0f0f0", borderRadius: "0.75rem" }}
                     camera={{ position: [0, 0, 5], fov: 5 }}
                 >
                     {/* Luces */}

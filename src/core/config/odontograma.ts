@@ -3,7 +3,7 @@
 import type { PrioridadKey, DiagnosticoCategory, DiagnosticoItem } from "../types/typeOdontograma";
 import { ERUPCION, ESTADO_PROCEDIMIENTO, ESTADO_RESTAURACION, MATERIAL_RESTAURACION } from "./atributos_clinicos";
 
-
+ 
 // --- Tipos auxiliares ---
 export type OpcionAtributoClinico = { key: string; nombre: string };
 export type OpcionSecundaria = OpcionAtributoClinico;

@@ -131,7 +131,7 @@ export const DiagnosticosGrid: React.FC<DiagnosticosGridProps> = ({
   return (
     <div
       className={`
-    absolute bottom-6 right-[330px] z-40
+    absolute bottom-5 right-[330px] z-40
     bg-white/90 backdrop-blur-md
     border border-gray-200 rounded-xl shadow-theme-md
     transition-[width,height,opacity,transform] duration-300 ease-out
@@ -148,7 +148,7 @@ export const DiagnosticosGrid: React.FC<DiagnosticosGridProps> = ({
     collapsed ? "border-0" : "border-b border-gray-200"
   }`}
 >
-  <h3 className="text-sm font-semibold text-gray-900 truncate">
+  <h3 className="text-sm font-semibold text-gray-900 truncate ">
     {collapsed
       ? `#${toothTranslations[selectedTooth]?.numero} · ${groupedDiags.length}`
       : nombreDiente}
@@ -174,7 +174,7 @@ export const DiagnosticosGrid: React.FC<DiagnosticosGridProps> = ({
       {!collapsed && (
         <ul
   className="
-    grid gap-3 px-4 pb-4
+    grid gap-2 px-3 pb-3
     grid-cols-[repeat(auto-fit,minmax(180px,1fr))]
     overflow-y-auto max-h-[50vh]
     custom-scrollbar

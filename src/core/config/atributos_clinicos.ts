@@ -99,4 +99,4 @@ export type OpcionAtributoClinico = {
     { key: 'moderada', nombre: 'Moderada' },
     { key: 'severa', nombre: 'Severa' },
     { key: 'otro', nombre: 'Otro' },
-  ];
+  ]; 

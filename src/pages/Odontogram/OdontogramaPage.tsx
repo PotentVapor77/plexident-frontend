@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { OdontogramaViewer } from "../../components/odontogram/OdontogramaViewer";
+import { OdontogramaViewer } from "../../components/odontogram";
+
 
 const OdontogramaPage = () => {
     const [selectedTooth, setSelectedTooth] = useState<string | null>(null);

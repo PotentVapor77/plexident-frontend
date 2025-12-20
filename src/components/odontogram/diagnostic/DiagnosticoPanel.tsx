@@ -1,14 +1,11 @@
 // src/components/Odontograma/DiagnosticoPanel.tsx
 import { useState, useCallback, useRef, type Dispatch, type SetStateAction } from "react";
-
-import { DIAGNOSTICO_CATEGORIES } from "../../../core/config/odontograma";
+import { DiagnosticoSelect, SurfaceSelector, type PrincipalArea, type RootGroupKey, type SurfaceSelectorRef } from "..";
 import type { useOdontogramaData } from "../../../hooks/odontogram/useOdontogramaData";
-import type { DiagnosticoEntry, OdontoColorKey, AreaAfectada, RootGroupKey } from "../../../core/types/typeOdontograma";
-import type { PrincipalArea } from "../../../hooks/odontogram/useDiagnosticoSelect";
+import type { AreaAfectada, DiagnosticoEntry, OdontoColorKey } from "../../../core/types/typeOdontograma";
+import { DIAGNOSTICO_CATEGORIES } from "../../../core/config/odontograma";
 
 
-import { DiagnosticoSelect } from "./DiagnosticoSelect";
-import { SurfaceSelector, type SurfaceSelectorRef } from "../3d/SuperficieSelector";
 
 const ALL_SURFACE_IDS = [
     'cara_vestibular',

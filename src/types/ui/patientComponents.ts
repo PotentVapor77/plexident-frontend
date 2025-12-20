@@ -7,8 +7,18 @@
  * ============================================================================
  */
 
-import type { IPatient } from '../../types/patient/IPatient';
 import type { PatientFormData } from '../../hooks/patient/usePatientForm';
+
+export interface IPatient {
+  id: string;
+  nombre?: string;
+  apellido?: string;
+  dni?: string;
+  telefono?: string;
+  email?: string;
+  fechaNacimiento?: string; // ISO date string
+  activo?: boolean;
+}
 
 /**
  * Props del formulario modal de paciente

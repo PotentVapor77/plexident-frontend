@@ -1,7 +1,8 @@
 // src/components/odontogram/preview/hooks/useToothColorDecision.tsx
 import React, { useMemo } from "react";
+import type { Diagnostico } from "../..";
 // Asumiendo que 'Diagnostico' se define en este archivo o en el import de abajo
-import type { Diagnostico } from "../ToothStatusDisplay";
+
 
 /* ----------------------------------------------------
  * Mapeo de Colores Semánticos a Clases CSS (Tailwind)

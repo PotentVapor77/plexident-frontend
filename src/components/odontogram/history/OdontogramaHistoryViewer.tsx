@@ -2,14 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OdontogramaModel } from "../3d/OdontogramaModel";
+import { CameraControls, OdontogramaModel, PerspectiveButtons, VIEW_PRESETS, type ViewPresetKey } from "..";
 import { useOdontogramaData } from "../../../hooks/odontogram/useOdontogramaData";
-import {
-  CameraControls,
-  VIEW_PRESETS,
-  type ViewPresetKey,
-  PerspectiveButtons,
-} from "../3d/CameraControls";
 import { DentalBackground } from "../../../hooks/gradients/DentalGradient";
 
 interface OdontogramaHistoryViewerProps {
@@ -73,10 +67,8 @@ export const OdontogramaHistoryViewer = ({
           dpr={[1, 2]}
           shadows
         >
-          {/* DentalBackground DEBE estar dentro del Canvas */}
           <DentalBackground />
 
-          {/* Iluminación - Sistema completo como el original */}
           <ambientLight intensity={0.6} />
           <directionalLight
             position={[5, 10, 5]}

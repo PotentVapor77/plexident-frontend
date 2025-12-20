@@ -4,7 +4,7 @@
  * ============================================================================
  * Tipos centralizados y manejo de errores personalizado
  */
-
+// src/types/api.ts
 import { AxiosError } from 'axios';
 
 // ============================================================================

@@ -1,7 +1,8 @@
-// src/components/odontogram/hooks/useDiagnosticoSelect.ts
+// src/components/odontogram/selection/DiagnosticoSelectUI.tsx
 
+import type { PrincipalArea } from "..";
 import type { OpcionAtributoClinico } from "../../../core/config/atributos_clinicos";
-import type { PrincipalArea, useDiagnosticoSelect } from "../../../hooks/odontogram/useDiagnosticoSelect";
+import type { useDiagnosticoSelect } from "../../../hooks/odontogram/useDiagnosticoSelect";
 
 // Tipos para las props del componente UI
 type DiagnosticoSelectUIProps = ReturnType<typeof useDiagnosticoSelect> & {

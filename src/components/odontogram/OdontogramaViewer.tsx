@@ -8,16 +8,12 @@ import {
     type ViewPresetKey,
     PerspectiveButtons,
 } from "./3d/CameraControls";
-import { type DatosDiente, type Diagnostico } from "./preview/ToothStatusDisplay";
-import { useOdontogramaData } from "../../hooks/odontogram/useOdontogramaData";
-import { useSurfaceSelection } from "../../hooks/odontogram/useSurfaceSelection";
-import { DentalBackground } from "../../hooks/gradients/DentalGradient";
-import { PanelPreviewDiente } from "./preview/ToothPreviewPanel";
-import { toothTranslations } from "../../core/utils/toothTraslations";
-import { DiagnosticoPanel } from "./diagnostic/DiagnosticoPanel";
-import { DiagnosticosGrid } from "./diagnostic/DiagnosticosGrid";
+import { DiagnosticoPanel, DiagnosticosGrid, PanelPreviewDiente, type DatosDiente, type Diagnostico, type OdontogramaData } from ".";
 import React from "react";
-import type { OdontogramaData } from "../../core/types/typeOdontograma";
+import { toothTranslations } from "../../core/utils/toothTraslations";
+import { DentalBackground } from "../../hooks/gradients/DentalGradient";
+import { useSurfaceSelection } from "../../hooks/odontogram/useSurfaceSelection";
+import { useOdontogramaData } from "../../hooks/odontogram/useOdontogramaData";
 
 type OdontogramaViewerProps = {
     // Borrar

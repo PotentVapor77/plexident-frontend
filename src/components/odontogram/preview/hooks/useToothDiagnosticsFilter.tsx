@@ -1,8 +1,8 @@
 // src/components/preview/hooks/useToothDiagnosticsFilter.ts
 
+import type { DatosDiente, Diagnostico } from "../..";
 import { DIAGNOSTICO_CATEGORIES } from "../../../../core/config/odontograma";
 import type { DiagnosticoCategory } from "../../../../core/types/typeOdontograma";
-import type { Diagnostico, DatosDiente } from "../ToothStatusDisplay";
 
 interface FilterResult {
     diagnosticosFiltrados: Diagnostico[];

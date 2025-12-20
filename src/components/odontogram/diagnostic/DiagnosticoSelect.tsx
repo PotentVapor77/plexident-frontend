@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { OdontoColorKey, AreaAfectada } from "../../../core/types/typeOdontograma";
-import { type PrincipalArea, useDiagnosticoSelect } from "../../../hooks/odontogram/useDiagnosticoSelect";
-import { DiagnosticoSelectUI } from "../selection/DiagnosticoSelectUI";
+import { DiagnosticoSelectUI, type PrincipalArea } from "..";
+import { useDiagnosticoSelect } from "../../../hooks/odontogram/useDiagnosticoSelect";
 
 
 

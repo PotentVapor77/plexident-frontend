@@ -1,8 +1,6 @@
 // src/components/preview/ToothStatusDisplay.tsx
 import React, { useMemo } from "react";
-import { ToothPreviewOverlay } from "./ToothPreviewOverlay";
-import { useToothColorDecision } from "./hooks/useToothColorDecision";
-import { useToothDiagnosticsFilter } from "./hooks/useToothDiagnosticsFilter";
+import { ToothPreviewOverlay, useToothColorDecision, useToothDiagnosticsFilter } from "..";
 
 
 // --- Tipos necesarios (Mantenemos la exportación) ---

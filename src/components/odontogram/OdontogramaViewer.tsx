@@ -17,8 +17,13 @@ import { toothTranslations } from "../../core/utils/toothTraslations";
 import { DiagnosticoPanel } from "./diagnostic/DiagnosticoPanel";
 import { DiagnosticosGrid } from "./diagnostic/DiagnosticosGrid";
 import React from "react";
+import type { OdontogramaData } from "../../core/types/typeOdontograma";
 
 type OdontogramaViewerProps = {
+    // Borrar
+    initialData?: OdontogramaData;
+    readOnly?: boolean;
+    //
     onSelectTooth: React.Dispatch<React.SetStateAction<string | null>>;
     freezeResize: boolean;
 };
@@ -90,30 +95,33 @@ export const OdontogramaViewer = ({
     // RESIZE OBSERVER ESTABLE
     // ===============================
     useEffect(() => {
-        if (!canvasContainerRef.current) return;
+  if (!canvasContainerRef.current) return;
+  
+  const container = canvasContainerRef.current;
+  let animationFrame: number | null = null;
 
-        const container = canvasContainerRef.current;
-        let timeout: ReturnType<typeof setTimeout> | null = null;
+  const handleResize = () => {
+    if (freezeResize) return;
+    
+    // Cancelar frame anterior si existe
+    if (animationFrame) cancelAnimationFrame(animationFrame);
+    
+    container.classList.add("is-resizing");
+    
+    // Usar requestAnimationFrame en lugar de setTimeout
+    animationFrame = requestAnimationFrame(() => {
+      container.classList.remove("is-resizing");
+    });
+  };
 
-        const handleResize = () => {
-            if (freezeResize) return;
+  const observer = new ResizeObserver(handleResize);
+  observer.observe(container);
 
-            container.classList.add("is-resizing");
-
-            if (timeout) clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                container.classList.remove("is-resizing");
-            }, 150);
-        };
-
-        const observer = new ResizeObserver(handleResize);
-        observer.observe(container);
-
-        return () => {
-            observer.disconnect();
-            if (timeout) clearTimeout(timeout);
-        };
-    }, [freezeResize]);
+  return () => {
+    observer.disconnect();
+    if (animationFrame) cancelAnimationFrame(animationFrame);
+  };
+}, [freezeResize]);
 
     return (
         <div className="flex w-full h-full bg-gray-100">
@@ -131,6 +139,7 @@ export const OdontogramaViewer = ({
                         camera={{ position: VIEW_PRESETS.FRONT.position, fov: 15 }}
                         dpr={[1, 1.5]}
                         frameloop="demand"
+                        resize={{ debounce: 0 }}
                         gl={{ antialias: true, powerPreference: "high-performance" }}
                     >
                         <DentalBackground />

@@ -3,7 +3,6 @@
 import type { DiagnosticoEntry, OdontogramaData } from "../../types/typeOdontograma";
 import { getProcConfig } from "./procConfig";
 
-
 export const hydrateDiagnosticoEntry = (entry: DiagnosticoEntry): DiagnosticoEntry => {
     if (entry.siglas) return entry;
 
@@ -28,9 +27,15 @@ export const hydrateOdontogramaData = (initialData: OdontogramaData): Odontogram
         hydrated[toothId] = {};
 
         for (const surfaceId in initialData[toothId]) {
-            hydrated[toothId][surfaceId] = initialData[toothId][surfaceId].map(
-                hydrateDiagnosticoEntry
-            );
+            // SOLO CAMBIO: Validar que sea un array antes de hacer map
+            const surfaceData = initialData[toothId][surfaceId];
+
+            if (Array.isArray(surfaceData)) {
+                hydrated[toothId][surfaceId] = surfaceData.map(hydrateDiagnosticoEntry);
+            } else {
+                // Si no es array, inicializar como array vacío
+                hydrated[toothId][surfaceId] = [];
+            }
         }
     }
 

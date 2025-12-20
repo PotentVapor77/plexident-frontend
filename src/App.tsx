@@ -23,6 +23,7 @@ import { useNetworkStatus } from './hooks/useNetworkStatus';
 import UsersPage from "./pages/Segurity/UsersPage";
 import { useAuth } from "./hooks/auth/useAuth";
 import PatientsPage from "./pages/Patients/PatientsPage";
+import OdontogramaHistoryPage from "./pages/Odontogram/OdontogramaHistoryPage";
 
 // ============================================================================
 // RUTAS PÚBLICAS
@@ -70,28 +71,51 @@ function App() {
           }
         />
 
-        {/* RUTAS PROTEGIDAS - Solo accesibles si está autenticado */}
-        <Route element={<ProtectedRoute />}>
-          <Route element={<AppLayout />}>
-            <Route path="/dashboard" element={<Home />} />
-            <Route path="/usuarios" element={<UsersPage />} />
-            <Route path="/pacientes" element={<PatientsPage />} />
-            <Route path="/odontogram" element={<OdontogramaPage />} />
-            <Route path="/profile" element={<UserProfiles />} />
-            <Route path="/charts/bar-chart" element={<BarChart />} />
-            <Route path="/charts/line-chart" element={<LineChart />} />
-            <Route path="/forms/form-elements" element={<FormElements />} />
-            <Route path="/tables/basic-tables" element={<BasicTables />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/ui-elements/alerts" element={<Alerts />} />
-            <Route path="/ui-elements/buttons" element={<Buttons />} />
-            <Route path="/ui-elements/avatars" element={<Avatars />} />
-            <Route path="/ui-elements/badges" element={<Badges />} />
-            <Route path="/ui-elements/images" element={<Images />} />
-            <Route path="/ui-elements/videos" element={<Videos />} />
-            <Route path="/blank" element={<Blank />} />
-            <Route path="/segurity/users" element={<UsersPage />} />
-          </Route>
+        {/* Dashboard Layout - Rutas protegidas */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <AppLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Home />} /> {/* ✅ CORREGIDO: quitar path="/" */}
+          <Route path="/pacientes" element={<Patients />} />
+          <Route path="/registrar-paciente" element={<CreatePatient />} />
+          <Route path="/agenda" element={<Agenda />} />
+          <Route path="/usuarios" element={<Users />} />
+          <Route path="/registrar-usuario" element={<CreateUser />} />
+
+          {/* Others Page */}
+          <Route path="/profile" element={<UserProfiles />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/blank" element={<Blank />} />
+
+          {/* Forms */}
+          <Route path="/form-elements" element={<FormElements />} />
+
+          {/* Tables */}
+          <Route path="/basic-tables" element={<BasicTables />} />
+
+          {/* Ui Elements */}
+          <Route path="/alerts" element={<Alerts />} />
+          <Route path="/avatars" element={<Avatars />} />
+          <Route path="/badge" element={<Badges />} />
+          <Route path="/buttons" element={<Buttons />} />
+          <Route path="/images" element={<Images />} />
+          <Route path="/videos" element={<Videos />} />
+
+          {/* Charts */}
+          <Route path="/line-chart" element={<LineChart />} />
+          <Route path="/bar-chart" element={<BarChart />} />
+
+          {/* Odontograma Route */}
+          <Route path="/odontograma" element={
+          <div className="p-0 m-0">
+            <OdontogramaPage />
+          </div>
+      } />
+
         </Route>
 
         {/* REDIRECCIÓN RAÍZ */}

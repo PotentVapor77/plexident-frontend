@@ -1,16 +1,17 @@
-// components/ProtectedRoute.tsx
-import type { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom'; // ✅ CORREGIDO
-import { useAuth } from '../context/AuthContext';
+/**
+ * ============================================================================
+ * COMPONENT: ProtectedRoute
+ * ============================================================================
+ * Protege rutas que requieren autenticación
+ */
 
-interface ProtectedRouteProps {
-  children: ReactNode;
-}
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../hooks/auth/useAuth';
 
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+export default function ProtectedRoute() {
   const { user, isLoading } = useAuth();
-  const location = useLocation();
 
+  // Mostrar loading mientras verifica autenticación
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -19,10 +20,11 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
+  // Si NO está autenticado, redirigir a login
   if (!user) {
-    // Redirigir al login guardando la ubicación actual
-    return <Navigate to="/signin" state={{ from: location }} replace />;
+    return <Navigate to="/sign-in" replace />;
   }
 
-  return <>{children}</>;
+  // Si está autenticado, renderizar las rutas protegidas
+  return <Outlet />;
 }

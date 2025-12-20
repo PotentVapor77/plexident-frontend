@@ -1,25 +1,30 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import "./index.css";
-import "swiper/swiper-bundle.css";
-import "flatpickr/dist/flatpickr.css";
-import App from "./App.tsx";
-import { AppWrapper } from "./components/common/PageMeta.tsx";
-import { ThemeProvider } from "./context/ThemeContext.tsx";
-import { AuthProvider } from "./context/AuthContext.tsx";
-import { BrowserRouter } from "react-router-dom"; 
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { HelmetProvider } from 'react-helmet-async';
+import { ThemeProvider } from './context/ThemeContext';
+import { queryClient } from './config/queryClient';
+import App from './App';
+import './index.css';
+import { AuthProvider } from './hooks/auth/useAuth';
 
-
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <ThemeProvider>
-          <AppWrapper>
-            <App />
-          </AppWrapper>
-        </ThemeProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </StrictMode>,
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <HelmetProvider>
+          <AuthProvider>
+            <ThemeProvider>  
+              <App />
+            </ThemeProvider>
+          </AuthProvider>
+        </HelmetProvider>
+      </BrowserRouter>
+      {import.meta.env.DEV && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
+    </QueryClientProvider>
+  </React.StrictMode>
 );

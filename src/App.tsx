@@ -1,6 +1,4 @@
-// App.tsx
-import { Routes, Route, Navigate } from "react-router-dom"; // ✅ Ya está correcto
-import { useAuth } from "./context/AuthContext";
+import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SignIn from "./pages/AuthPages/SignIn";
 import NotFound from "./pages/OtherPage/NotFound";
@@ -20,28 +18,51 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-import Patients from "./pages/Dentistry/Patients";
-import CreatePatient from "./pages/Dentistry/CreatePatient";
-import Agenda from "./pages/Dentistry/Agenda";
-import Users from "./pages/Dentistry/Users";
-import CreateUser from "./pages/Dentistry/CreateUser";
 import OdontogramaPage from "./pages/Odontogram/OdontogramaPage";
+import { useNetworkStatus } from './hooks/useNetworkStatus';
+import UsersPage from "./pages/Segurity/UsersPage";
+import { useAuth } from "./hooks/auth/useAuth";
+import PatientsPage from "./pages/Patients/PatientsPage";
 
+// ============================================================================
+// RUTAS PÚBLICAS
+// ============================================================================
 
-// Rutas públicas que redirigen si ya está autenticado
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
-  return user ? <Navigate to="/" replace /> : <>{children}</>;
+  const { user, isLoading } = useAuth();
+  
+  // Mostrar loading mientras verifica autenticación
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Cargando...</div>
+      </div>
+    );
+  }
+  
+  // Si ya está autenticado, redirigir a dashboard
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  // Si NO está autenticado, mostrar la página
+  return <>{children}</>;
 }
 
-export default function App() {
+// ============================================================================
+// APP
+// ============================================================================
+
+function App() {
+  useNetworkStatus();
+
   return (
     <>
       <ScrollToTop />
       <Routes>
-        {/* Auth Layout - Rutas públicas */}
+        {/* RUTA PÚBLICA - Solo accesible si NO está autenticado */}
         <Route
-          path="/signin"
+          path="/sign-in"
           element={
             <PublicRoute>
               <SignIn />
@@ -49,59 +70,38 @@ export default function App() {
           }
         />
 
-        {/* Dashboard Layout - Rutas protegidas */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <AppLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Home />} /> {/* ✅ CORREGIDO: quitar path="/" */}
-          <Route path="/pacientes" element={<Patients />} />
-          <Route path="/registrar-paciente" element={<CreatePatient />} />
-          <Route path="/agenda" element={<Agenda />} />
-          <Route path="/usuarios" element={<Users />} />
-          <Route path="/registrar-usuario" element={<CreateUser />} />
-
-          {/* Others Page */}
-          <Route path="/profile" element={<UserProfiles />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/blank" element={<Blank />} />
-
-          {/* Forms */}
-          <Route path="/form-elements" element={<FormElements />} />
-
-          {/* Tables */}
-          <Route path="/basic-tables" element={<BasicTables />} />
-
-          {/* Ui Elements */}
-          <Route path="/alerts" element={<Alerts />} />
-          <Route path="/avatars" element={<Avatars />} />
-          <Route path="/badge" element={<Badges />} />
-          <Route path="/buttons" element={<Buttons />} />
-          <Route path="/images" element={<Images />} />
-          <Route path="/videos" element={<Videos />} />
-
-          {/* Charts */}
-          <Route path="/line-chart" element={<LineChart />} />
-          <Route path="/bar-chart" element={<BarChart />} />
-
-          {/* Odontograma Route */}
-          <Route path="/odontograma" element={
-          <div className="p-0 m-0">
-            <OdontogramaPage />
-          </div>
-      } />
-
+        {/* RUTAS PROTEGIDAS - Solo accesibles si está autenticado */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<Home />} />
+            <Route path="/usuarios" element={<UsersPage />} />
+            <Route path="/pacientes" element={<PatientsPage />} />
+            <Route path="/odontogram" element={<OdontogramaPage />} />
+            <Route path="/profile" element={<UserProfiles />} />
+            <Route path="/charts/bar-chart" element={<BarChart />} />
+            <Route path="/charts/line-chart" element={<LineChart />} />
+            <Route path="/forms/form-elements" element={<FormElements />} />
+            <Route path="/tables/basic-tables" element={<BasicTables />} />
+            <Route path="/calendar" element={<Calendar />} />
+            <Route path="/ui-elements/alerts" element={<Alerts />} />
+            <Route path="/ui-elements/buttons" element={<Buttons />} />
+            <Route path="/ui-elements/avatars" element={<Avatars />} />
+            <Route path="/ui-elements/badges" element={<Badges />} />
+            <Route path="/ui-elements/images" element={<Images />} />
+            <Route path="/ui-elements/videos" element={<Videos />} />
+            <Route path="/blank" element={<Blank />} />
+            <Route path="/segurity/users" element={<UsersPage />} />
+          </Route>
         </Route>
 
+        {/* REDIRECCIÓN RAÍZ */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-
-        {/* Fallback Route */}
+        {/* 404 NOT FOUND */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-
     </>
   );
 }
+
+export default App;

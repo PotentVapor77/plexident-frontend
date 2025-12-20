@@ -3,8 +3,8 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import PageMeta from "../../components/common/PageMeta";
 import AuthLayout from "./AuthPageLayout";
-import SignInForm from "../../components/auth/SignInForm";
-import { useAuth } from '../../context/AuthContext';
+import SignInForm from "../../components/security/auth/forms/SignInForm";
+import { useAuth } from '../../hooks/auth/useAuth';
 
 export default function SignIn() {
   const { user } = useAuth();

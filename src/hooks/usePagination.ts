@@ -1,3 +1,4 @@
+// hooks/usePagination.ts
 import { useState, useMemo } from "react";
 
 interface PaginationResult<T> {
@@ -11,23 +12,29 @@ interface PaginationResult<T> {
   canGoPrev: boolean;
 }
 
-const usePagination = <T,>(
-  data: T[],
+const usePagination = <T>(
+  data: T[] | undefined | null,  // ✅ Acepta undefined/null
   itemsPerPage: number
 ): PaginationResult<T> => {
   const [currentPage, setCurrentPage] = useState(1);
-  
-  const totalPages = useMemo(() => 
-    Math.ceil(data.length / itemsPerPage), 
-    [data.length, itemsPerPage]
+
+  // ✅ Asegurar que data sea un array válido
+  const safeData = useMemo(() => {
+    return Array.isArray(data) ? data : [];
+  }, [data]);
+
+  const totalPages = useMemo(
+    () => Math.ceil(safeData.length / itemsPerPage) || 1,  // ✅ Mínimo 1 página
+    [safeData.length, itemsPerPage]
   );
 
-  const currentData = useMemo(() => 
-    data.slice(
-      (currentPage - 1) * itemsPerPage,
-      currentPage * itemsPerPage
-    ), 
-    [data, currentPage, itemsPerPage]
+  const currentData = useMemo(
+    () =>
+      safeData.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+      ),
+    [safeData, currentPage, itemsPerPage]
   );
 
   const goToPage = (page: number) => {
@@ -38,13 +45,13 @@ const usePagination = <T,>(
 
   const goToNextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage(prev => prev + 1);
+      setCurrentPage((prev) => prev + 1);
     }
   };
 
   const goToPrevPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(prev => prev - 1);
+      setCurrentPage((prev) => prev - 1);
     }
   };
 
@@ -59,7 +66,7 @@ const usePagination = <T,>(
     goToNextPage,
     goToPrevPage,
     canGoNext,
-    canGoPrev
+    canGoPrev,
   };
 };
 

@@ -11,7 +11,7 @@ import type {
 } from '../../types/odontogram/typeBackendOdontograma';
 import { createApiError } from '../../types/api';
 import api from '../api/axiosInstance';
-import type { OdontogramaData } from '../../core/types/typeOdontograma'; 
+import type { OdontogramaData } from '../../core/types/typeOdontograma';
 
 // ============================================================================
 // CONSTANTES DE ENDPOINTS
@@ -19,15 +19,15 @@ import type { OdontogramaData } from '../../core/types/typeOdontograma';
 
 const ODONTOGRAM_ENDPOINTS = {
   // Catálogo
-  categorias: '/odontogram/categorias/',
-  diagnosticos: '/odontogram/diagnosticos/',
-  atributosClinicos: '/odontogram/atributos-clinicos/',
+  categorias: '/odontogram/catalogo/categorias/con-diagnosticos/',
+  diagnosticos: '/odontogram/catalogo/diagnosticos/',
+  atributosClinicos: '/odontogram/catalogo/atributos-clinicos/',
 
   // Paciente
   odontogramaPaciente: (pacienteId: string) => `/odontogram/pacientes/${pacienteId}/odontograma/`,
   diagnosticosPaciente: (pacienteId: string) => `/odontogram/pacientes/${pacienteId}/diagnosticos/`,
   odontogramaFHIR: (pacienteId: string) => `/odontogram/pacientes/${pacienteId}/odontograma-fhir/`,
-  guardarOdontogramaCompleto: (pacienteId: string) => `/odontogram/pacientes/${pacienteId}/guardar-odontograma/`, // 🆕 NUEVO
+  guardarOdontogramaCompleto: (pacienteId: string) => `/odontogram/pacientes/${pacienteId}/guardar-odontograma/`,
 
   // Diagnósticos aplicados
   diagnosticosAplicados: '/odontogram/diagnosticos-aplicados/',
@@ -47,7 +47,7 @@ const ODONTOGRAM_ENDPOINTS = {
 } as const;
 
 // ============================================================================
-// 🆕 TIPOS PARA GUARDADO COMPLETO
+// TIPOS PARA GUARDADO COMPLETO
 // ============================================================================
 
 export interface GuardarOdontogramaPayload {
@@ -68,7 +68,7 @@ export interface ResultadoGuardado {
 // ============================================================================
 
 /**
- * GET /api/odontogram/categorias/
+ * GET /api/odontogram/categorias/con-diagnosticos/
  * Obtiene todas las categorías de diagnóstico con sus diagnósticos anidados
  */
 export async function obtenerCatalogoDiagnosticos(): Promise<CategoriaDiagnosticoBackend[]> {
@@ -76,7 +76,8 @@ export async function obtenerCatalogoDiagnosticos(): Promise<CategoriaDiagnostic
     const { data } = await api.get(
       ODONTOGRAM_ENDPOINTS.categorias
     );
-    return data;
+    
+    return data.data || [];
   } catch (error) {
     throw createApiError(error);
   }
@@ -91,7 +92,8 @@ export async function obtenerDiagnosticos(): Promise<DiagnosticoBackend[]> {
     const { data } = await api.get(
       ODONTOGRAM_ENDPOINTS.diagnosticos
     );
-    return data;
+    
+    return data.data || [];
   } catch (error) {
     throw createApiError(error);
   }
@@ -109,7 +111,8 @@ export async function obtenerDiagnosticosPorCategoria(
       ODONTOGRAM_ENDPOINTS.diagnosticos,
       { params: { categoria_id: categoriaId } }
     );
-    return data;
+    
+    return data.data || [];
   } catch (error) {
     throw createApiError(error);
   }
@@ -124,7 +127,8 @@ export async function obtenerAtributosClinicos(): Promise<TipoAtributoClinicoBac
     const { data } = await api.get(
       ODONTOGRAM_ENDPOINTS.atributosClinicos
     );
-    return data;
+    
+    return data.data || [];
   } catch (error) {
     throw createApiError(error);
   }
@@ -136,7 +140,7 @@ export async function obtenerAtributosClinicos(): Promise<TipoAtributoClinicoBac
 
 /**
  * GET /api/odontogram/pacientes/{pacienteId}/odontograma/
- * Obtiene el odontograma completo de un paciente con dientes, superficies y diagnósticos
+ * Obtiene el odontograma completo de un paciente
  */
 export async function obtenerOdontogramaPaciente(
   pacienteId: string
@@ -145,7 +149,8 @@ export async function obtenerOdontogramaPaciente(
     const { data } = await api.get(
       ODONTOGRAM_ENDPOINTS.odontogramaPaciente(pacienteId)
     );
-    return data;
+    
+    return data.data;
   } catch (error) {
     throw createApiError(error);
   }
@@ -154,8 +159,6 @@ export async function obtenerOdontogramaPaciente(
 /**
  * GET /api/odontogram/pacientes/{pacienteId}/diagnosticos/
  * Obtiene todos los diagnósticos dentales de un paciente
- * @param pacienteId - UUID del paciente
- * @param estado - Filtro opcional por estado_tratamiento: 'diagnosticado' | 'en_tratamiento' | 'tratado' | 'cancelado'
  */
 export async function obtenerDiagnosticosPaciente(
   pacienteId: string,
@@ -167,7 +170,8 @@ export async function obtenerDiagnosticosPaciente(
       ODONTOGRAM_ENDPOINTS.diagnosticosPaciente(pacienteId),
       { params }
     );
-    return data;
+    
+    return data.data || [];
   } catch (error) {
     throw createApiError(error);
   }
@@ -184,87 +188,40 @@ export async function obtenerOdontogramaFHIR(
     const { data } = await api.get(
       ODONTOGRAM_ENDPOINTS.odontogramaFHIR(pacienteId)
     );
-    return data;
+    
+    return data.data;
   } catch (error) {
     throw createApiError(error);
   }
 }
-
-// ============================================================================
-// 🆕 GUARDAR ODONTOGRAMA COMPLETO
-// ============================================================================
-
-/**
- * POST /api/odontogram/pacientes/{pacienteId}/guardar-odontograma/
- * Guarda el odontograma completo de un paciente en una sola transacción atómica
- * 
- * @param pacienteId - UUID del paciente
- * @param odontogramaData - Datos del odontograma en formato frontend (OdontogramaData)
- * @param odontologoId - ID del odontólogo (opcional, usa el usuario actual por defecto)
- * @returns Resultado del guardado con conteo de éxitos y errores
- * 
- * @example
- * const resultado = await guardarOdontogramaCompleto(
- *   "550e8400-e29b-41d4-a716-446655440000",
- *   {
- *     "11": {
- *       "cara_vestibular": [
- *         {
- *           procedimientoId: "caries_icdas_3",
- *           colorHex: "#ef4444",
- *           descripcion: "Caries profunda",
- *           secondaryOptions: { material: "resina" }
- *         }
- *       ]
- *     }
- *   }
- * );
- * 
- * console.log(`Guardados ${resultado.diagnosticos_guardados} diagnósticos`);
- */
 export async function guardarOdontogramaCompleto(
   pacienteId: string,
   odontogramaData: OdontogramaData,
   odontologoId?: number
 ): Promise<ResultadoGuardado> {
   try {
-    // Importar el mapper dinámicamente para evitar dependencias circulares
     const { mapearOdontogramaFrontendToBackend } = await import('../../mappers/odontogramaMapper');
-    
-    // Transformar datos del frontend al formato del backend
     const backendData = mapearOdontogramaFrontendToBackend(odontogramaData);
-    
-    // Construir payload
+
     const payload: GuardarOdontogramaPayload = {
       paciente_id: pacienteId,
       odontograma_data: backendData,
     };
-    
+
     if (odontologoId) {
       payload.odontologo_id = odontologoId;
     }
-    
-    // Enviar request al backend
-    const { data } = await api.post<ResultadoGuardado>(
+
+    const { data } = await api.post(
       ODONTOGRAM_ENDPOINTS.guardarOdontogramaCompleto(pacienteId),
       payload
     );
-    
-    // Log para debugging (solo en desarrollo)
+
     if (import.meta.env.DEV) {
-    console.log('Odontograma guardado:', {
-        paciente: data.paciente_id,
-        dientes: data.dientes_procesados.length,
-        diagnosticos: data.diagnosticos_guardados,
-        errores: data.errores.length,
-    });
-    
-    if (data.errores.length > 0) {
-        console.warn('Errores al guardar:', data.errores);
+      console.log('Odontograma guardado:', data.data);
     }
-    }
-    
-    return data;
+
+    return data.data;
   } catch (error) {
     throw createApiError(error);
   }
@@ -274,10 +231,6 @@ export async function guardarOdontogramaCompleto(
 // CREAR/MODIFICAR/ELIMINAR DIAGNÓSTICOS INDIVIDUALES
 // ============================================================================
 
-/**
- * POST /api/odontogram/diagnosticos-aplicados/
- * Crea un nuevo diagnóstico dental (individual)
- */
 export async function crearDiagnostico(
   payload: CrearDiagnosticoPayload
 ): Promise<DiagnosticoDentalBackend> {
@@ -286,16 +239,14 @@ export async function crearDiagnostico(
       ODONTOGRAM_ENDPOINTS.diagnosticosAplicados,
       payload
     );
-    return data;
+    
+    // ✅ CORREGIDO
+    return data.data;
   } catch (error) {
     throw createApiError(error);
   }
 }
 
-/**
- * PATCH /api/odontogram/diagnosticos-aplicados/{diagnosticoId}/
- * Actualiza un diagnóstico existente
- */
 export async function actualizarDiagnostico(
   diagnosticoId: string,
   payload: Partial<CrearDiagnosticoPayload>
@@ -305,16 +256,13 @@ export async function actualizarDiagnostico(
       ODONTOGRAM_ENDPOINTS.diagnosticoAplicadoById(diagnosticoId),
       payload
     );
-    return data;
+    
+    return data.data;
   } catch (error) {
     throw createApiError(error);
   }
 }
 
-/**
- * DELETE /api/odontogram/diagnosticos-aplicados/{diagnosticoId}/eliminar/
- * Elimina (soft delete) un diagnóstico
- */
 export async function eliminarDiagnostico(diagnosticoId: string): Promise<void> {
   try {
     await api.delete(ODONTOGRAM_ENDPOINTS.eliminarDiagnostico(diagnosticoId));
@@ -323,10 +271,6 @@ export async function eliminarDiagnostico(diagnosticoId: string): Promise<void> 
   }
 }
 
-/**
- * POST /api/odontogram/diagnosticos-aplicados/{diagnosticoId}/marcar_tratado/
- * Marca un diagnóstico como tratado
- */
 export async function marcarDiagnosticoTratado(
   diagnosticoId: string
 ): Promise<DiagnosticoDentalBackend> {
@@ -334,7 +278,8 @@ export async function marcarDiagnosticoTratado(
     const { data } = await api.post(
       ODONTOGRAM_ENDPOINTS.marcarTratado(diagnosticoId)
     );
-    return data;
+    
+    return data.data;
   } catch (error) {
     throw createApiError(error);
   }
@@ -344,10 +289,6 @@ export async function marcarDiagnosticoTratado(
 // DIENTES
 // ============================================================================
 
-/**
- * GET /api/odontogram/dientes/
- * Obtiene todos los dientes (con filtro opcional por paciente_id)
- */
 export async function obtenerDientes(pacienteId?: string): Promise<DienteBackend[]> {
   try {
     const params = pacienteId ? { paciente_id: pacienteId } : {};
@@ -355,16 +296,13 @@ export async function obtenerDientes(pacienteId?: string): Promise<DienteBackend
       ODONTOGRAM_ENDPOINTS.dientes,
       { params }
     );
-    return data;
+    
+    return data.data || [];
   } catch (error) {
     throw createApiError(error);
   }
 }
 
-/**
- * POST /api/odontogram/dientes/{dienteId}/marcar_ausente/
- * Marca un diente como ausente
- */
 export async function marcarDienteAusente(
   dienteId: string,
   razonAusencia: 'caries' | 'otra_causa' | 'sin_erupcionar' | 'exodoncia_planificada'
@@ -394,10 +332,6 @@ export interface HistorialOdontogramaBackend {
   datos_nuevos: Record<string, any>;
 }
 
-/**
- * GET /api/odontogram/historial/?diente_id={id}
- * Obtiene historial de cambios de un diente
- */
 export async function obtenerHistorialDiente(
   dienteId: string
 ): Promise<HistorialOdontogramaBackend[]> {
@@ -405,16 +339,13 @@ export async function obtenerHistorialDiente(
     const { data } = await api.get(
       ODONTOGRAM_ENDPOINTS.historialPorDiente(dienteId)
     );
-    return data;
+    
+    return data.data || [];
   } catch (error) {
     throw createApiError(error);
   }
 }
 
-/**
- * GET /api/odontogram/historial/?paciente_id={id}
- * Obtiene historial completo de un paciente
- */
 export async function obtenerHistorialPaciente(
   pacienteId: string
 ): Promise<HistorialOdontogramaBackend[]> {
@@ -422,8 +353,30 @@ export async function obtenerHistorialPaciente(
     const { data } = await api.get(
       ODONTOGRAM_ENDPOINTS.historialPorPaciente(pacienteId)
     );
-    return data;
+    
+    return data.data || [];
   } catch (error) {
     throw createApiError(error);
   }
 }
+
+export interface SurfaceDefinition {
+  id_frontend: string;
+  id_backend: string;
+  nombre: string;
+  area: 'corona' | 'raiz' | 'general';
+  codigo_fhir: string | null;
+}
+
+interface SurfaceDefinitionsResponse {
+  definiciones: SurfaceDefinition[];
+  total: number;
+}
+
+export const fetchSurfaceDefinitions = async (): Promise<SurfaceDefinition[]> => {
+  const response = await api.get<SurfaceDefinitionsResponse>(
+    '/api/odontograma/definiciones-superficies/'
+  );
+  return response.data.definiciones;
+};
+

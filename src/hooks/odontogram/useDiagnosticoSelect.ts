@@ -1,19 +1,13 @@
 // stc/src/components/odontogram/hooks/useDiagnosticoSelect.ts
 import { useState, useCallback, useMemo, type Dispatch, type SetStateAction, useEffect } from "react";
-import type { AreaAfectada, DiagnosticoCategory, DiagnosticoItem, OdontoColorKey } from "../../core/types/typeOdontograma";
-import { DIAGNOSTICO_CATEGORIES } from "../../core/config/odontograma";
+import type { AreaAfectada, DiagnosticoCategory, DiagnosticoItem } from "../../core/types/typeOdontograma";
 
 export type PrincipalArea = 'corona' | 'raiz' | 'general' | null;
 
 interface UseDiagnosticoSelectProps {
     currentArea: PrincipalArea;
-    onApply: (
-        diagnosticoId: string,
-        colorKey: OdontoColorKey,
-        atributosClinicosSeleccionados: Record<string, string>,
-        descripcion: string,
-        areasAfectadas: AreaAfectada[]
-    ) => void;
+    categorias: DiagnosticoCategory[];
+    onApply: (...args: any) => void;
     onCancel: () => void;
     onPreviewChange: Dispatch<SetStateAction<string | null>>;
     onPreviewOptionsChange: Dispatch<SetStateAction<Record<string, string>>>;
@@ -21,6 +15,7 @@ interface UseDiagnosticoSelectProps {
 
 export const useDiagnosticoSelect = ({
     currentArea,
+    categorias,
     onApply,
     onCancel,
     onPreviewChange,
@@ -34,24 +29,18 @@ export const useDiagnosticoSelect = ({
 
     // Filtrar categorías y diagnósticos basados en el área actual ('corona', 'raiz', o 'null')
     const filteredCategories = useMemo(() => {
-        return DIAGNOSTICO_CATEGORIES
+        return categorias
             .map(category => {
                 const filteredDiagnoses = category.diagnosticos.filter(diag => {
                     const isGeneralDiagnosis = diag.areas_afectadas.includes('general');
-
-                    if (!currentArea) {
-                        return isGeneralDiagnosis;
-                    }
-
-                    // Permite diagnósticos generales o aquellos que afectan el área actual.
+                    if (!currentArea) return isGeneralDiagnosis;
                     return isGeneralDiagnosis || diag.areas_afectadas.includes(currentArea as AreaAfectada);
                 });
-
                 if (filteredDiagnoses.length === 0) return null;
                 return { ...category, diagnosticos: filteredDiagnoses };
             })
             .filter((cat): cat is DiagnosticoCategory => cat !== null);
-    }, [currentArea]);
+    }, [currentArea, categorias]);
 
     // Diagnósticos disponibles en el segundo select, basado en la categoría seleccionada y los filtros.
     const currentDiagnosesForSelect = useMemo(() => {
@@ -113,8 +102,7 @@ export const useDiagnosticoSelect = ({
     }, [diagnosticoSeleccionado, atributosClinicosSeleccionados, onPreviewChange, onPreviewOptionsChange, currentArea, isFormValid]);
 
     const handleCategoriaSelect = (id: string) => {
-        // Usamos DIAGNOSTICO_CATEGORIES para buscar la categoría original (la completa)
-        const cat = DIAGNOSTICO_CATEGORIES.find(c => c.id === id);
+        const cat = categorias.find(c => c.id === id);
         if (!cat) return;
 
         setCategoriaSeleccionada(cat);

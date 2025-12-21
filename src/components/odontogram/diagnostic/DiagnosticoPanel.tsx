@@ -1,389 +1,824 @@
-// src/components/Odontograma/DiagnosticoPanel.tsx
-import { useState, useCallback, useRef, type Dispatch, type SetStateAction } from "react";
-import { DiagnosticoSelect, SurfaceSelector, type PrincipalArea, type RootGroupKey, type SurfaceSelectorRef } from "..";
+// src/components/odontogram/diagnostic/DiagnosticoPanel.tsx
+import { useState, useCallback, useRef, useMemo, useEffect } from "react";
+import { DiagnosticoSelect } from "./DiagnosticoSelect";
+import { SurfaceSelector, type SurfaceSelectorRef } from "../3d/SuperficieSelector";
 import type { useOdontogramaData } from "../../../hooks/odontogram/useOdontogramaData";
-import type { AreaAfectada, DiagnosticoEntry, OdontoColorKey } from "../../../core/types/typeOdontograma";
-import { DIAGNOSTICO_CATEGORIES } from "../../../core/config/odontograma";
+import type {
+  AreaAfectada,
+  OdontoColorKey,
+  RootGroupKey,
+} from "../../../core/types/typeOdontograma";
+import type { PrincipalArea } from "../../../hooks/odontogram/useDiagnosticoSelect";
+import { useCatalogoDiagnosticos } from "../../../hooks/odontogram/useCatalogoDiagnosticos";
+import { useSurfaceSelection } from "../../../hooks/odontogram/useSurfaceSelection";
+import { useToothRootType } from "../../../hooks/odontogram/useToothRootType";
+import { toothTranslations } from "../../../core/utils/toothTraslations";
 
+type DiagnosticoPanelProps = {
+  selectedTooth: string | null;
+  odontogramaDataHook: ReturnType<typeof useOdontogramaData>;
+  onRootGroupChange?: (group: any) => void;
+};
 
-
-const ALL_SURFACE_IDS = [
-    'cara_vestibular',
-    'cara_distal',
-    'cara_mesial',
-    'cara_lingual',
-    'cara_oclusal',
-    'raiz:raiz-mesial',
-    'raiz:raiz-distal',
-    'raiz:raiz-palatal',
-    'raiz:raiz-vestibular',
-    'raiz:raiz-principal',
+// Definir todas las superficies de corona
+const CROWN_SURFACES = [
+  "cara_oclusal",
+  "cara_vestibular",
+  "cara_distal",
+  "cara_mesial",
+  "cara_lingual",
 ];
-const ROOT_GROUPS: Record<RootGroupKey, {
-    label: string;
-    surfaces: string[];
-}> = {
-    molar_superior: {
-        label: "Raíz (Molar superior)",
-        surfaces: [
-            "raiz:raiz-palatal",
-            "raiz:raiz-mesial",
-            "raiz:raiz-distal",
-        ],
-    },
-    molar_inferior: {
-        label: "Raíz (Molar inferior)",
-        surfaces: [
-            "raiz:raiz-mesial",
-            "raiz:raiz-distal",
-        ],
-    },
-    premolar: {
-        label: "Raíz (Premolar)",
-        surfaces: [
-            "raiz:raiz-palatal",
-            "raiz:raiz-vestibular",
-        ],
-    },
-    anterior: {
-        label: "Raíz (Principal)",
-        surfaces: ["raiz:raiz-principal"],
-    },
-};
 
-type DisplaySurface =
-    | { type: "group"; label: string }
-    | { type: "single"; id: string };
-
-const getSurfaceName = (surfaceId: string): string => {
-    const names: Record<string, string> = {
-        cara_vestibular: "Vestibular",
-        cara_distal: "Distal",
-        cara_mesial: "Mesial",
-        cara_lingual: "Lingual",
-        cara_oclusal: "Oclusal",
-        "raiz:raiz-mesial": "Raíz Mesial",
-        "raiz:raiz-distal": "Raíz Distal",
-        "raiz:raiz-palatal": "Raíz Palatal",
-        "raiz:raiz-vestibular": "Raíz Vestibular",
-        "raiz:raiz-principal": "Raíz Principal",
-    };
-    return names[surfaceId] || surfaceId.replace("raiz:", "").replace(/-/g, " ");
-};
-
-type Props = {
-    className?: string;
-    selectedTooth: string | null;
-    selectedSurfaces: string[];
-    onSurfaceSelect: (surfaces: string[]) => void;
-    onPreviewChange: Dispatch<SetStateAction<string | null>>;
-    onPreviewOptionsChange: Dispatch<SetStateAction<Record<string, string>>>;
-    odontogramaDataHook: ReturnType<typeof useOdontogramaData>;
-    rootGroupKey: RootGroupKey | null;
+// Definir superficies de raíz por tipo de diente
+const ROOT_SURFACES_BY_TYPE: Record<string, string[]> = {
+  raiz_premolar: ["raiz:raiz-palatal", "raiz:raiz-vestibular"],
+  raiz_molar_superior: ["raiz:raiz-palatal", "raiz:raiz-mesial", "raiz:raiz-distal"],
+  raiz_molar_inferior: ["raiz:raiz-distal", "raiz:raiz-mesial"],
+  raiz_canino: ["raiz:raiz-principal"],
+  raiz_incisivo: ["raiz:raiz-principal"],
+  raiz_dental: ["raiz:raiz-principal"], // fallback
 };
 
 export const DiagnosticoPanel = ({
-    className,
-    selectedTooth,
-    selectedSurfaces,
-    onSurfaceSelect,
-    onPreviewChange,
-    onPreviewOptionsChange,
-    odontogramaDataHook,
-    rootGroupKey,
-}: Props) => {
-    const {
-        applyDiagnostico,
-        getDiagnosticosForSurface,
-        removeDiagnostico,
-        isToothBlocked,
-        saveOdontogramaData,
-        isSaving,
-        lastSaveTime,
-    } = odontogramaDataHook;
+  selectedTooth,
+  odontogramaDataHook,
+  onRootGroupChange,
+}: DiagnosticoPanelProps) => {
+  // HOOKS DE DATOS
+  const { categorias, isLoading, error } = useCatalogoDiagnosticos();
+  const {
+    applyDiagnostico,
+    removeDiagnostico,
+    getToothDiagnoses,
+    isToothBlocked,
+    lastSaveTime,
+    getProcConfig,
+    odontogramaData,
+  } = odontogramaDataHook;
 
-    const [currentArea, setCurrentArea] = useState<PrincipalArea>(null);
-    const surfaceSelectorRef = useRef<SurfaceSelectorRef>(null);
+  const { getSurfacesForTooth, setSurfacesForTooth, clearSurfacesForTooth } =
+    useSurfaceSelection();
 
-    const handleAreaChange = useCallback((area: PrincipalArea) => {
-        setCurrentArea(area);
-    }, []);
+  // Hook para obtener el tipo de raíz del diente actual
+  const rootInfo = useToothRootType(selectedTooth);
 
-    const isBlocked = isToothBlocked(selectedTooth);
-    const surfaceIdWithData = selectedTooth && selectedSurfaces.length === 1 ? selectedSurfaces[0] : null;
-    const appliedDiagnosticos: DiagnosticoEntry[] =
-        surfaceIdWithData && selectedTooth ? getDiagnosticosForSurface(selectedTooth, surfaceIdWithData) : [];
+  // ESTADO LOCAL
+  const [showDiagnosticoSelect, setShowDiagnosticoSelect] = useState(false);
+  const [currentArea, setCurrentArea] = useState<PrincipalArea>(null);
+  const surfaceSelectorRef = useRef<SurfaceSelectorRef>(null);
 
-    // FIX: MOVER LA FUNCIÓN getDisplaySurfaces AQUÍ ARRIBA PARA QUE PUEDA SER LLAMADA SIN ERROR
-    const getDisplaySurfaces = (
-        selectedSurfaces: string[],
-        rootGroupKey: RootGroupKey | null
-    ): DisplaySurface[] => {
+  // Obtener superficies seleccionadas para el diente actual
+  const selectedSurfaces = getSurfacesForTooth(selectedTooth);
 
-        if (!rootGroupKey) {
-            return selectedSurfaces.map(s => ({ type: "single", id: s }));
-        }
+  // Verificar si el diente está bloqueado
+  const isBlocked = isToothBlocked(selectedTooth);
 
-        const group = ROOT_GROUPS[rootGroupKey];
-
-        const rootSurfacesSelected = selectedSurfaces.filter(s => s.startsWith("raiz:"));
-        const nonRootSurfaces = selectedSurfaces.filter(s => !s.startsWith("raiz:"));
-
-        const hasAllRoots =
-            group.surfaces.length > 0 &&
-            group.surfaces.every(s => selectedSurfaces.includes(s));
-
-        const result: DisplaySurface[] = [];
-
-        if (hasAllRoots) {
-            result.push({
-                type: "group",
-                label: group.label,
-            });
-        } else {
-            rootSurfacesSelected.forEach(s =>
-                result.push({ type: "single", id: s })
-            );
-        }
-
-        nonRootSurfaces.forEach(s =>
-            result.push({ type: "single", id: s })
-        );
-
-        
-        return result;
+  // Obtener traducción del diente
+  const toothInfo = useMemo(() => {
+    if (!selectedTooth) return null;
+    return toothTranslations[selectedTooth] || {
+      nombre: selectedTooth,
+      numero: 0,
     };
-    
-    // FIX: Declarar la variable displaySurfaces aquí, después de que getDisplaySurfaces esté definida
-    const displaySurfaces = getDisplaySurfaces(selectedSurfaces, rootGroupKey);
+  }, [selectedTooth]);
 
-    const handleDiagnosticoApply = (
-        procedimientoId: string,
-        colorKey: OdontoColorKey,
-        secondaryOptions: Record<string, string>,
-        descripcion: string,
-        afectaArea: AreaAfectada[]
-    ) => {
-        if (!selectedTooth) return;
+  // Función para agrupar superficies de corona Y raíz
+  const groupedSurfaces = useMemo(() => {
+    const crownSurfaces = selectedSurfaces.filter((s) =>
+      CROWN_SURFACES.includes(s)
+    );
+    const rootSurfaces = selectedSurfaces.filter((s) => s.startsWith("raiz:"));
 
-        // Validar que haya selección en las áreas requeridas
-        if (afectaArea.includes('corona') && !selectedSurfaces.some(s => s.startsWith('cara_'))) {
-            surfaceSelectorRef.current?.showRequiredAreaWarning(['corona']);
-            return;
-        }
-        if (afectaArea.includes('raiz') && !selectedSurfaces.some(s => s.startsWith('raiz:'))) {
-            surfaceSelectorRef.current?.showRequiredAreaWarning(['raiz']);
-            return;
-        }
+    const result: Array<{ 
+      type: "group" | "single"; 
+      label: string; 
+      surfaces?: string[];
+      isRoot?: boolean;
+    }> = [];
 
-        let surfacesToApply = selectedSurfaces.length > 0 ? selectedSurfaces : [];
+    // AGRUPACIÓN DE CORONA
+    const hasAllCrown =
+      crownSurfaces.length === CROWN_SURFACES.length &&
+      CROWN_SURFACES.every((cs) => crownSurfaces.includes(cs));
 
-        if (afectaArea.includes('general')) {
-            surfacesToApply = ALL_SURFACE_IDS;
-        }
-
-        const procedimiento = DIAGNOSTICO_CATEGORIES.flatMap(c => c.diagnosticos)
-            .find(p => p.id === procedimientoId);
-        const siglas = procedimiento?.siglas ?? null;
-
-        applyDiagnostico(
-            selectedTooth,
-            surfacesToApply,
-            procedimientoId,
-            colorKey,
-            { ...secondaryOptions, ...(siglas ? { siglas } : {}) },
-            descripcion,
-            afectaArea
-        );
-
-        onSurfaceSelect([]);
-        setCurrentArea(null);
-        surfaceSelectorRef.current?.clearRequiredAreaWarning();
-    };
-
-    const getDiagnosticoLabel = (diag: DiagnosticoEntry) => {
-        let label = diag.procedimientoId.replace(/_/g, " ");
-        Object.entries(diag.secondaryOptions || {}).forEach(([key, value]) => {
-            if (key !== "descripcion") label += ` [${value.replace(/_/g, " ")}]`;
-        });
-        return label;
-    };
-
-    return (
-        <div className={`h-full bg-white dark:bg-gray-900 shadow-theme-lg border-l border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden ${className}`}>
-
-            {/* HEADER */}
-            <div className="px-5 py-5 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Panel de Diagnóstico
-                </h2>
-
-            </div>
-
-            {/* CONTENIDO SCROLLABLE */}
-            <div className="px-6 py-3 flex-1 overflow-y-auto custom-scrollbar">
-                <SurfaceSelector
-                    ref={surfaceSelectorRef}
-                    selectedSurfaces={selectedSurfaces}
-                    onSurfaceSelect={onSurfaceSelect}
-                    selectedTooth={selectedTooth}
-                    isBlocked={isBlocked}
-                    onAreaChange={handleAreaChange}
-                />
-
-                {/* ALERTA DIENTE AUSENTE/BLOQUEADO */}
-                {selectedTooth && isBlocked && (
-                    <div className="bg-error-50 border-l-4 border-error-500 text-error-700 dark:bg-error-900/20 dark:text-error-400 p-4 mt-2 text-theme-sm font-medium rounded-r-lg">
-                        Diente {selectedTooth} marcado como Ausente.
-                    </div>
-                )}
-
-                {/* LISTA DE DIAGNÓSTICOS EXISTENTES */}
-                {surfaceIdWithData && appliedDiagnosticos.length > 0 && (
-                    <div className="mt-3 border-t border-gray-200 dark:border-gray-800 pt-4">
-                        <h3 className="text-theme-sm font-semibold text-gray-900 dark:text-white mb-3">
-                            Diagnósticos en {getSurfaceName(surfaceIdWithData)}
-                        </h3>
-                        <ul className="space-y-2">
-                            {appliedDiagnosticos.map((diag) => (
-                                <li key={diag.id} className="group flex items-start justify-between p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-theme-xs hover:shadow-theme-md transition-all">
-                                    <div className="flex flex-col overflow-hidden flex-1">
-                                        <span className="text-theme-sm font-medium overflow-hidden text-ellipsis" style={{ color: diag.colorHex }}>
-                                            {getDiagnosticoLabel(diag)}
-                                        </span>
-                                        {diag.descripcion && (
-                                            <p className="text-theme-xs text-gray-500 dark:text-gray-400 mt-1 break-words">"{diag.descripcion}"</p>
-                                        )}
-                                    </div>
-                                    <button
-                                        onClick={() => removeDiagnostico(selectedTooth!, surfaceIdWithData, diag.id)}
-                                        className="ml-3 p-1.5 bg-error-50 text-error-600 border border-error-100 rounded-md hover:bg-error-100 hover:text-error-700 dark:bg-error-900/30 dark:text-error-400 dark:border-error-800 dark:hover:bg-error-900/50 transition-colors"
-                                        title="Eliminar diagnóstico"
-                                    >
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M18 6L6 18M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-
-                {/* LISTA DE SUPERFICIES SELECCIONADAS  */}
-                {selectedSurfaces.length > 0 ? (
-                    <div className="mt-3 border-t border-gray-200 dark:border-gray-800 pt-4">
-                        <p className="text-theme-sm font-semibold text-gray-900 dark:text-white mb-3">Superficies</p>
-                        <div className="flex flex-wrap gap-2"> {/* Contenedor de chips */}
-                            <div className="flex flex-wrap gap-2">
-    {displaySurfaces.map((item: DisplaySurface, idx) => {
-    if (item.type === "group") {
-        return (
-            <div
-                key={`group-${idx}`}
-                className="inline-flex items-center px-3 py-1
-                           bg-brand-100 dark:bg-brand-900/30
-                           text-brand-800 dark:text-brand-200
-                           text-theme-sm font-medium
-                           rounded-full"
-            >
-                {item.label}
-            </div>
-        );
+    if (hasAllCrown) {
+      result.push({ 
+        type: "group", 
+        label: "Corona completa", 
+        surfaces: crownSurfaces,
+        isRoot: false 
+      });
+    } else {
+      crownSurfaces.forEach((surface) => {
+        result.push({ type: "single", label: surface, isRoot: false });
+      });
     }
 
+    // AGRUPACIÓN DE RAÍZ según tipo de diente
+    const rootType = rootInfo.type || "raiz_dental";
+    const expectedRootSurfaces = ROOT_SURFACES_BY_TYPE[rootType] || [];
+
+    // Verificar si todas las superficies de raíz esperadas están seleccionadas
+    const hasAllRootSurfaces =
+      expectedRootSurfaces.length > 1 && // Solo agrupar si hay más de 1 superficie
+      expectedRootSurfaces.length === rootSurfaces.length &&
+      expectedRootSurfaces.every((rs) => rootSurfaces.includes(rs));
+
+    if (hasAllRootSurfaces) {
+      result.push({ 
+        type: "group", 
+        label: "Raíz completa", 
+        surfaces: rootSurfaces,
+        isRoot: true 
+      });
+    } else {
+      rootSurfaces.forEach((surface) => {
+        result.push({ type: "single", label: surface, isRoot: true });
+      });
+    }
+
+    return result;
+  }, [selectedSurfaces, rootInfo.type]);
+
+  // Obtener diagnósticos aplicados del diente seleccionado con información de superficie
+  const diagnosticosAplicados = useMemo(() => {
+    if (!selectedTooth || !odontogramaData[selectedTooth]) return [];
+
+    const toothData = odontogramaData[selectedTooth];
+    const diagnosticos: any[] = [];
+
+    // Recorrer todas las superficies del diente
+    Object.entries(toothData).forEach(([superficieId, diagsArray]) => {
+      diagsArray.forEach((diag: any) => {
+        const procConfig = getProcConfig(diag.procedimientoId);
+        diagnosticos.push({
+          ...diag,
+          superficieId,
+          nombre: procConfig?.nombre || diag.procedimientoId,
+          prioridadKey: procConfig?.prioridadKey || "INFORMATIVA",
+        });
+      });
+    });
+
+    return diagnosticos;
+  }, [selectedTooth, odontogramaData, getProcConfig]);
+
+  // Verificar si tiene diagnóstico general bloqueante
+  const hasGeneralDiagnosis = useMemo(() => {
+    return diagnosticosAplicados.some((d) =>
+      d.areas_afectadas?.includes("general")
+    );
+  }, [diagnosticosAplicados]);
+
+  // Limpiar selección al cambiar de diente
+  useEffect(() => {
+    setShowDiagnosticoSelect(false);
+    setCurrentArea(null);
+  }, [selectedTooth]);
+
+  // HANDLERS
+  const handleAddDiagnostico = useCallback(() => {
+    if (!selectedTooth || hasGeneralDiagnosis || isBlocked) return;
+    setShowDiagnosticoSelect(true);
+  }, [selectedTooth, hasGeneralDiagnosis, isBlocked]);
+
+  const handleCancelDiagnostico = useCallback(() => {
+    setShowDiagnosticoSelect(false);
+    if (selectedTooth) {
+      clearSurfacesForTooth(selectedTooth);
+    }
+    surfaceSelectorRef.current?.clearRequiredAreaWarning();
+  }, [selectedTooth, clearSurfacesForTooth]);
+
+  const handleApplyDiagnostico = useCallback(
+    (
+      diagnosticoId: string,
+      colorKey: OdontoColorKey,
+      atributosClinicosSeleccionados: Record<string, string>,
+      descripcion: string,
+      areasAfectadas: AreaAfectada[]
+    ) => {
+      if (!selectedTooth) return;
+
+      const isGeneral = areasAfectadas.includes("general");
+      const surfacesToApply = isGeneral ? ["general"] : selectedSurfaces;
+
+      if (!isGeneral && surfacesToApply.length === 0) {
+        surfaceSelectorRef.current?.showRequiredAreaWarning(
+          areasAfectadas as PrincipalArea[]
+        );
+        return;
+      }
+
+      if (!isGeneral) {
+        const requiresCorona = areasAfectadas.includes("corona");
+        const requiresRaiz = areasAfectadas.includes("raiz");
+        const hasCoronaSurface = selectedSurfaces.some((s) =>
+          s.startsWith("cara_")
+        );
+        const hasRaizSurface = selectedSurfaces.some((s) =>
+          s.startsWith("raiz:")
+        );
+
+        if (requiresCorona && !hasCoronaSurface) {
+          surfaceSelectorRef.current?.showRequiredAreaWarning(["corona"]);
+          return;
+        }
+
+        if (requiresRaiz && !hasRaizSurface) {
+          surfaceSelectorRef.current?.showRequiredAreaWarning(["raiz"]);
+          return;
+        }
+      }
+
+      applyDiagnostico(
+        selectedTooth,
+        surfacesToApply,
+        diagnosticoId,
+        colorKey,
+        atributosClinicosSeleccionados,
+        descripcion,
+        areasAfectadas
+      );
+
+      if (selectedTooth) {
+        clearSurfacesForTooth(selectedTooth);
+      }
+      setShowDiagnosticoSelect(false);
+      surfaceSelectorRef.current?.clearRequiredAreaWarning();
+    },
+    [selectedTooth, selectedSurfaces, applyDiagnostico, clearSurfacesForTooth]
+  );
+
+  const handleRemoveDiagnostico = useCallback(
+    (diagId: string, superficieId: string) => {
+      if (!selectedTooth) return;
+      removeDiagnostico(selectedTooth, superficieId, diagId);
+    },
+    [selectedTooth, removeDiagnostico]
+  );
+
+  const handleSurfaceSelect = useCallback(
+    (surfaces: string[]) => {
+      if (selectedTooth) {
+        setSurfacesForTooth(selectedTooth, surfaces);
+      }
+    },
+    [selectedTooth, setSurfacesForTooth]
+  );
+
+  const handleAreaChange = useCallback((area: PrincipalArea) => {
+    setCurrentArea(area);
+  }, []);
+
+  // ESTADOS DE CARGA Y ERROR
+  if (isLoading) {
     return (
-        <div
-            key={item.id}
-            className="inline-flex items-center gap-1.5 px-3 py-1
-                       bg-brand-50 dark:bg-brand-900/20
-                       border border-brand-100 dark:border-brand-800
-                       rounded-full"
-        >
-            <span className="text-theme-sm font-medium text-brand-700 dark:text-brand-300">
-                {getSurfaceName(item.id)}
-            </span>
-            <button
-                onClick={() =>
-                    onSurfaceSelect(
-                        selectedSurfaces.filter(s => s !== item.id)
-                    )
-                }
+      <div className="w-[420px] h-full flex items-center justify-center bg-white border-l border-gray-200 flex-shrink-0">
+        <div className="text-center space-y-3 px-4">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brand-50">
+            <svg
+              className="w-6 h-6 text-brand-500 animate-spin"
+              fill="none"
+              viewBox="0 0 24 24"
             >
-                ✕
-            </button>
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-900">
+              Cargando catálogo
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Obteniendo datos del servidor...
+            </p>
+          </div>
         </div>
+      </div>
     );
-})}
-</div>
+  }
 
-                        </div>
-                    </div>
-                ) : (
-                    <div className="mt-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-700 text-center">
-                        <p className="text-theme-sm text-gray-500 dark:text-gray-400">
-                            {selectedTooth && !isBlocked
-                                ? "Haz clic en una superficie para comenzar."
-                                : isBlocked
-                                    ? "Este diente está bloqueado para nuevos diagnósticos."
-                                    : "Selecciona un diente en el odontograma."}
-                        </p>
-                    </div>
-                )}
+  if (error) {
+    return (
+      <div className="w-[420px] h-full flex items-center justify-center bg-white border-l border-gray-200 flex-shrink-0">
+        <div className="text-center space-y-4 max-w-sm px-6">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-error-50">
+            <svg
+              className="w-6 h-6 text-error-500"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">
+              Error de conexión
+            </h3>
+            <p className="text-xs text-gray-600">
+              No se pudo conectar con el servidor. Verifica tu conexión e
+              intenta nuevamente.
+            </p>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-500 rounded-lg hover:bg-brand-600 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-                {/* SELECTOR DE DIAGNÓSTICOS */}
-                {!isBlocked && selectedTooth && (
-                    <div className="mt-3">
-                        <DiagnosticoSelect
-                            onApply={handleDiagnosticoApply}
-                            onCancel={() => {
-                                onSurfaceSelect([]);
-                                setCurrentArea(null);
-                                surfaceSelectorRef.current?.clearRequiredAreaWarning();
-                            }}
-                            onPreviewChange={onPreviewChange}
-                            onPreviewOptionsChange={onPreviewOptionsChange}
-                            currentArea={currentArea}
-                        />
-                    </div>
-                )}
+  return (
+    <div className="w-[420px] h-full flex flex-col bg-white border-l border-gray-200 shadow-theme-lg flex-shrink-0">
+      {/* HEADER FIJO */}
+      <div className="flex-shrink-0 px-5 py-3.5 border-b border-gray-200 bg-gradient-to-r from-brand-50 to-white">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-base font-semibold text-gray-900">
+              Panel de Diagnóstico
+            </h2>
+            {selectedTooth && toothInfo ? (
+              <div className="mt-0.5 space-y-0.5">
+                <p className="text-xs font-medium text-gray-700 truncate">
+                  {toothInfo.nombre}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Pieza #{toothInfo.numero}
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-gray-500 mt-0.5">
+                Selecciona un diente
+              </p>
+            )}
+          </div>
+          {selectedTooth &&
+            !hasGeneralDiagnosis &&
+            !showDiagnosticoSelect &&
+            !isBlocked && (
+              <button
+                onClick={handleAddDiagnostico}
+                className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-brand-500 rounded-lg hover:bg-brand-600 transition-all hover:shadow-focus-ring"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Añadir
+              </button>
+            )}
+        </div>
+
+        {/* Indicador de guardado */}
+        {lastSaveTime && (
+          <div className="mt-2 flex items-center gap-1.5 text-xs text-success-600">
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24">
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={3}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            <span className="truncate">
+              Guardado {lastSaveTime.toLocaleTimeString()}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* CONTENIDO PRINCIPAL CON SCROLL */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar min-h-0">
+        {!selectedTooth ? (
+          <EmptyState
+            title="Selecciona un diente"
+            description="Haz clic en un diente del odontograma 3D para gestionar diagnósticos"
+          />
+        ) : hasGeneralDiagnosis || isBlocked ? (
+          <BlockedState />
+        ) : showDiagnosticoSelect ? (
+          <div className="p-4 space-y-4">
+            {/* SELECTOR DE SUPERFICIES */}
+            <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-4 shadow-theme-sm">
+              <div className="flex items-start justify-between mb-3">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xs font-semibold text-gray-900">
+                    Superficies Dentales
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Selecciona áreas afectadas
+                  </p>
+                </div>
+                <SelectedSurfacesBadge count={selectedSurfaces.length} />
+              </div>
+
+              <div className="flex justify-center bg-white rounded-lg border border-gray-200 p-3">
+                <SurfaceSelector
+                  ref={surfaceSelectorRef}
+                  selectedSurfaces={selectedSurfaces}
+                  onSurfaceSelect={handleSurfaceSelect}
+                  selectedTooth={selectedTooth}
+                  isBlocked={isBlocked}
+                  onAreaChange={handleAreaChange}
+                  onRootGroupChange={onRootGroupChange}
+                />
+              </div>
+
+              {/* LISTA DE SUPERFICIES SELECCIONADAS CON AGRUPACIÓN */}
+              {selectedSurfaces.length > 0 && (
+                <div className="mt-3 p-2.5 bg-brand-50 rounded-lg border border-brand-100">
+                  <p className="text-xs font-medium text-brand-700 mb-1.5">
+                    Seleccionadas:
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {groupedSurfaces.map((item, idx) => (
+                      <SurfaceChip
+                        key={`${item.type}-${idx}`}
+                        surface={item.label}
+                        isGroup={item.type === "group"}
+                        isRoot={item.isRoot}
+                        onRemove={() => {
+                          if (item.type === "group" && item.surfaces) {
+                            // Remover todas las superficies del grupo
+                            handleSurfaceSelect(
+                              selectedSurfaces.filter(
+                                (s) => !item.surfaces!.includes(s)
+                              )
+                            );
+                          } else {
+                            // Remover superficie individual
+                            handleSurfaceSelect(
+                              selectedSurfaces.filter((s) => s !== item.label)
+                            );
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* FOOTER / ACCIONES */}
-            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex flex-col gap-3">
-                <button
-                    onClick={() => {
-                        saveOdontogramaData();
-                        onSurfaceSelect([]);
-                        setCurrentArea(null);
-                        surfaceSelectorRef.current?.clearRequiredAreaWarning();
-                    }}
-                    disabled={isSaving}
-                    className={`w-full py-2.5 text-theme-sm font-medium rounded-lg shadow-theme-sm transition-all duration-200 flex items-center justify-center gap-2 ${isSaving
-                        ? "bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed"
-                        : "bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 dark:bg-brand-500 dark:hover:bg-brand-600"
-                        }`}
-                >
-                    {isSaving ? (
-                        <>
-                            <svg className="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Guardando...
-                        </>
-                    ) : "Guardar Sesión Clínica"}
-                </button>
-
-                {lastSaveTime && (
-                    <p className="text-theme-xs text-success-600 dark:text-success-400 text-center font-medium flex items-center justify-center gap-1.5">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Guardado: {lastSaveTime.toLocaleTimeString()}
-                    </p>
-                )}
+            {/* SELECTOR DE DIAGNÓSTICO */}
+            <div className="bg-white border border-gray-200 rounded-lg shadow-theme-sm">
+              <DiagnosticoSelect
+                onApply={handleApplyDiagnostico}
+                onCancel={handleCancelDiagnostico}
+                onPreviewChange={() => {}}
+                onPreviewOptionsChange={() => {}}
+                currentArea={currentArea}
+                categorias={categorias}
+              />
             </div>
+          </div>
+        ) : (
+          <DiagnosticosListView
+            diagnosticos={diagnosticosAplicados}
+            onRemove={handleRemoveDiagnostico}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ==================== COMPONENTES AUXILIARES ====================
+
+const EmptyState = ({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) => (
+  <div className="h-full flex items-center justify-center p-4">
+    <div className="text-center space-y-2.5 max-w-xs">
+      <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gray-100">
+        <svg className="w-7 h-7 text-gray-400" fill="none" viewBox="0 0 24 24">
+          <path
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z"
+          />
+          <circle
+            cx="12"
+            cy="12"
+            r="3"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          />
+        </svg>
+      </div>
+      <div>
+        <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+        <p className="text-xs text-gray-500 mt-1">{description}</p>
+      </div>
+    </div>
+  </div>
+);
+
+const BlockedState = () => (
+  <div className="p-4">
+    <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 space-y-2.5">
+      <div className="flex items-start gap-2.5">
+        <div className="flex-shrink-0 w-9 h-9 rounded-full bg-warning-100 flex items-center justify-center">
+          <svg
+            className="w-4.5 h-4.5 text-warning-600"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
         </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-semibold text-warning-900">
+            Diente bloqueado
+          </h3>
+          <p className="text-xs text-warning-700 mt-1">
+            Este diente tiene un diagnóstico general. No se pueden añadir
+            diagnósticos por superficie.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const SelectedSurfacesBadge = ({ count }: { count: number }) => (
+  <div
+    className={`flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+      count > 0 ? "bg-brand-100 text-brand-700" : "bg-gray-100 text-gray-600"
+    }`}
+  >
+    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24">
+      <path
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
+    </svg>
+    {count}
+  </div>
+);
+
+const SurfaceChip = ({
+  surface,
+  isGroup = false,
+  isRoot = false,
+  onRemove,
+}: {
+  surface: string;
+  isGroup?: boolean;
+  isRoot?: boolean;
+  onRemove: () => void;
+}) => {
+  const displayName = isGroup
+    ? surface
+    : surface
+        .replace("cara_", "")
+        .replace("raiz:", "R:")
+        .replace("_", " ")
+        .replace(/-/g, " ");
+
+  // Estilos diferenciados para corona y raíz
+  const getChipStyles = () => {
+    if (isGroup) {
+      if (isRoot) {
+        // Raíz completa - estilo púrpura
+        return "bg-purple-100 border border-purple-300 text-purple-800";
+      }
+      // Corona completa - estilo brand
+      return "bg-brand-100 border border-brand-300 text-brand-800";
+    }
+    if (isRoot) {
+      // Raíz individual - estilo morado claro
+      return "bg-purple-50 border border-purple-200 text-purple-700";
+    }
+    // Corona individual - estilo brand claro
+    return "bg-white border border-brand-200 text-brand-700";
+  };
+
+  return (
+    <div
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${getChipStyles()}`}
+    >
+      <span className="capitalize truncate max-w-[120px]">{displayName}</span>
+      <button
+        onClick={onRemove}
+        className={`flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${
+          isRoot
+            ? "hover:bg-purple-200"
+            : "hover:bg-brand-200"
+        }`}
+        aria-label="Remover"
+      >
+        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24">
+          <path
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2.5}
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+  );
+};
+
+const DiagnosticosListView = ({
+  diagnosticos,
+  onRemove,
+}: {
+  diagnosticos: any[];
+  onRemove: (id: string, superficieId: string) => void;
+}) => {
+  if (diagnosticos.length === 0) {
+    return (
+      <EmptyState
+        title="Sin diagnósticos"
+        description="Haz clic en 'Añadir' para comenzar."
+      />
     );
+  }
+
+  return (
+    <div className="p-4 space-y-2.5">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-gray-900">Diagnósticos</h3>
+        <span className="text-xs font-medium text-gray-500">
+          {diagnosticos.length}
+        </span>
+      </div>
+
+      {diagnosticos.map((diag) => (
+        <DiagnosticoCard
+          key={`${diag.id}-${diag.superficieId}`}
+          diagnostico={diag}
+          onRemove={onRemove}
+        />
+      ))}
+    </div>
+  );
+};
+
+const DiagnosticoCard = ({
+  diagnostico,
+  onRemove,
+}: {
+  diagnostico: any;
+  onRemove: (id: string, superficieId: string) => void;
+}) => {
+  const priorityColors: Record<string, string> = {
+    ALTA: "bg-error-50 border-error-200 text-error-700",
+    MEDIA: "bg-warning-50 border-warning-200 text-warning-700",
+    BAJA: "bg-success-50 border-success-200 text-success-700",
+    ESTRUCTURAL: "bg-blue-light-50 border-blue-light-200 text-blue-light-700",
+    INFORMATIVA: "bg-gray-50 border-gray-200 text-gray-700",
+  };
+
+  const priorityClass =
+    priorityColors[diagnostico.prioridadKey] || priorityColors.INFORMATIVA;
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-theme-md transition-shadow">
+      <div className="flex items-start gap-2.5">
+        <div className="flex-1 min-w-0 space-y-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span
+              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: diagnostico.colorHex }}
+            />
+            <h4 className="text-sm font-semibold text-gray-900 truncate flex-1 min-w-0">
+              {diagnostico.nombre}
+            </h4>
+            <span
+              className={`flex-shrink-0 inline-flex px-1.5 py-0.5 rounded text-xs font-medium ${priorityClass}`}
+            >
+              {diagnostico.prioridadKey}
+            </span>
+          </div>
+
+          {diagnostico.descripcion && (
+            <p className="text-xs text-gray-600 line-clamp-2">
+              {diagnostico.descripcion}
+            </p>
+          )}
+
+          <div className="flex items-center gap-3 text-xs text-gray-500">
+            <div className="flex items-center gap-1 truncate">
+              <svg
+                className="w-3.5 h-3.5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+              <span className="truncate">
+                {diagnostico.areas_afectadas?.join(", ") || "N/A"}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 truncate">
+              <svg
+                className="w-3.5 h-3.5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <span className="capitalize truncate">
+                {diagnostico.superficieId
+                  ?.replace("cara_", "")
+                  .replace("raiz:", "R:")
+                  .replace(/_/g, " ") || "General"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() =>
+            onRemove(diagnostico.id, diagnostico.superficieId || "general")
+          }
+          className="flex-shrink-0 w-7 h-7 rounded-lg hover:bg-error-50 hover:text-error-600 text-gray-400 flex items-center justify-center transition-colors"
+          title="Eliminar"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+            <path
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
 };

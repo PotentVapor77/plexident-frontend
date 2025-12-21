@@ -1,18 +1,18 @@
 // src/mappers/odontogramaMapper.ts
 
 import type { OdontoColorKey, DiagnosticoCategory, OdontogramaData } from "../components/odontogram";
-import type { PrioridadKey, DiagnosticoItem, DiagnosticoEntry } from "../core/types/typeOdontograma";
-import type { 
-  DiagnosticoBackend, 
-  CategoriaDiagnosticoBackend, 
-  OdontogramaCompletoBackend, 
-  DiagnosticoDentalBackend 
+import type { PrioridadKey, DiagnosticoItem, DiagnosticoEntry, TipoDiagnostico } from "../core/types/typeOdontograma";
+import type {
+  DiagnosticoBackend,
+  CategoriaDiagnosticoBackend,
+  OdontogramaCompletoBackend,
+  DiagnosticoDentalBackend,
+  TipoAtributoClinicoBackend
 } from "../types/odontogram/typeBackendOdontograma";
 
 // ============================================================================
 // MAPEO DE PRIORIDADES
 // ============================================================================
-
 const PRIORIDAD_BACKEND_TO_FRONTEND: Record<number, PrioridadKey> = {
   5: 'ALTA',
   4: 'ESTRUCTURAL',
@@ -21,16 +21,39 @@ const PRIORIDAD_BACKEND_TO_FRONTEND: Record<number, PrioridadKey> = {
   1: 'INFORMATIVA',
 };
 
+const PRIORIDAD_KEY_TO_BACKEND: Record<string, PrioridadKey> = {
+  'ALTA': 'ALTA',
+  'ESTRUCTURAL': 'ESTRUCTURAL',
+  'MEDIA': 'MEDIA',
+  'BAJA': 'BAJA',
+  'INFORMATIVA': 'INFORMATIVA',
+};
+
 // ============================================================================
 // MAPEO DE SÍMBOLOS DE COLOR
 // ============================================================================
-
 const SIMBOLO_BACKEND_TO_FRONTEND: Record<string, OdontoColorKey> = {
   PATOLOGIA: 'PATOLOGIA',
   ANOMALIA: 'ANOMALIA',
   ENDODONCIA: 'ENDODONCIA',
   REALIZADO: 'REALIZADO',
   AUSENCIA: 'AUSENCIA',
+};
+
+// ============================================================================
+// MAPEO DE TIPOS DE DIAGNÓSTICO (CATEGORÍAS)
+// ============================================================================
+const CATEGORIA_BACKEND_TO_FRONTEND: Record<string, TipoDiagnostico> = {
+  'patologia_activa': 'Patología Activa',
+  'Patología Activa': 'Patología Activa',
+  'restauracion': 'Restauración',
+  'Restauración': 'Restauración',
+  'tratamiento_conductos': 'Tratamiento de Conductos',
+  'Tratamiento de Conductos': 'Tratamiento de Conductos',
+  'ausencia': 'Ausencia',
+  'Ausencia': 'Ausencia',
+  'anomalia': 'Anomalía',
+  'Anomalía': 'Anomalía',
 };
 
 // ============================================================================
@@ -87,18 +110,93 @@ export function superficieFrontendToBackend(superficieId: string): string {
  * Frontend: ["corona"] o ["general"]
  */
 function mapearSuperficiesAplicables(superficies: string[]): ('corona' | 'raiz' | 'general')[] {
+  if (!superficies || superficies.length === 0) return ['general'];
   if (superficies.includes('general')) return ['general'];
-  
+
   const tieneCorona = superficies.some(s =>
     ['vestibular', 'lingual', 'oclusal', 'mesial', 'distal'].includes(s)
   );
   const tieneRaiz = superficies.some(s => s.startsWith('raiz_'));
-  
+
   const result: ('corona' | 'raiz' | 'general')[] = [];
   if (tieneCorona) result.push('corona');
   if (tieneRaiz) result.push('raiz');
-  
+
   return result.length > 0 ? result : ['general'];
+}
+
+function mapearAtributosClinicos(
+  atributosTipos?: TipoAtributoClinicoBackend[]
+): Record<string, Array<{ key: string; nombre: string }>> | undefined {
+  if (!atributosTipos || atributosTipos.length === 0) {
+    return undefined;
+  }
+
+  const atributos: Record<string, Array<{ key: string; nombre: string }>> = {};
+
+  atributosTipos.forEach(tipo => {
+    if (tipo.key && tipo.opciones && tipo.opciones.length > 0) {
+      atributos[tipo.key] = tipo.opciones
+        .filter(opt => opt.activo)
+        .map(opt => ({
+          key: opt.key,
+          nombre: opt.nombre,
+        }));
+    }
+  });
+
+  return Object.keys(atributos).length > 0 ? atributos : undefined;
+}
+
+/**
+ * 🆕 MEJORADO: Convierte un diagnóstico del backend al formato del frontend
+ * Ahora maneja correctamente los atributos clínicos
+ */
+export function mapearDiagnosticoBackendToFrontend(
+  diagBackend: DiagnosticoBackend,
+  atributosClinicos?: TipoAtributoClinicoBackend[]
+): DiagnosticoItem {
+  return {
+    id: diagBackend.key,
+    nombre: diagBackend.nombre,
+    siglas: diagBackend.siglas,
+    simboloColor: SIMBOLO_BACKEND_TO_FRONTEND[diagBackend.simbolo_color] || 'PATOLOGIA',
+    categoria: CATEGORIA_BACKEND_TO_FRONTEND[diagBackend.categoria_nombre || ''] || 'Patología Activa',
+    areas_afectadas: mapearSuperficiesAplicables(diagBackend.superficie_aplicables || []),
+    atributos_clinicos: mapearAtributosClinicos(atributosClinicos),
+  };
+}
+
+
+/**
+ * 🆕 REFACTORIZADO: Convierte categorías completas del backend al formato del frontend
+ * Ahora funciona con diagnósticos anidados (como los retorna el backend)
+ */
+export function mapearCategoriasBackendToFrontend(
+  categorias: CategoriaDiagnosticoBackend[],
+  atributosClinicos?: TipoAtributoClinicoBackend[]
+): DiagnosticoCategory[] {
+  return categorias
+    .filter(cat => cat.activo)
+    .map(cat => {
+      // Tipado explícito para evitar 'any' implícito
+      const diagnosticosMapeados: DiagnosticoItem[] = (cat.diagnosticos || [])
+        .filter((diag: DiagnosticoBackend) => diag.activo)
+        .map((diag: DiagnosticoBackend) => 
+          mapearDiagnosticoBackendToFrontend(diag, atributosClinicos)
+        );
+
+      const categoriaId = CATEGORIA_BACKEND_TO_FRONTEND[cat.nombre] || cat.nombre;
+
+      return {
+        id: categoriaId as TipoDiagnostico,
+        nombre: cat.nombre,
+        colorKey: SIMBOLO_BACKEND_TO_FRONTEND[cat.color_key] || 'PATOLOGIA',
+        prioridadKey: PRIORIDAD_KEY_TO_BACKEND[cat.prioridad_key] || 'MEDIA',
+        diagnosticos: diagnosticosMapeados,
+      };
+    })
+    .filter(cat => cat.diagnosticos.length > 0);
 }
 
 /**
@@ -108,7 +206,7 @@ function mapearDiagnosticoInstanceBackendToFrontend(
   diag: DiagnosticoDentalBackend
 ): DiagnosticoEntry {
   const diagCatalogo = diag.diagnostico_catalogo_detalle;
-  
+
   return {
     id: diag.id,
     procedimientoId: diagCatalogo?.key || String(diag.diagnostico_catalogo),
@@ -120,22 +218,22 @@ function mapearDiagnosticoInstanceBackendToFrontend(
       ? mapearSuperficiesAplicables(diagCatalogo.superficie_aplicables)
       : ['general'],
     secondaryOptions: diag.atributos_clinicos || {},
-    descripcion: diag.descripcion,
+    descripcion: diag.descripcion || '',
     superficieId: diag.superficie_detalle?.nombre,
-    prioridadKey: PRIORIDAD_BACKEND_TO_FRONTEND[diag.prioridad_asignada || diagCatalogo?.prioridad || 3],
+    prioridadKey: PRIORIDAD_BACKEND_TO_FRONTEND[diag.prioridad_asignada || diagCatalogo?.prioridad || 3] || 'MEDIA',
   };
 }
 
 /**
  * Convierte la respuesta completa del odontograma del backend al formato OdontogramaData del frontend
- * 
+ *
  * Backend:
  * {
  *   dientes: [
  *     { codigo_fdi: "11", superficies: [{ nombre: "vestibular", diagnosticos: [...] }] }
  *   ]
  * }
- * 
+ *
  * Frontend:
  * {
  *   "11": {
@@ -147,11 +245,11 @@ export function mapearOdontogramaBackendToFrontend(
   odontograma: OdontogramaCompletoBackend
 ): OdontogramaData {
   const data: OdontogramaData = {};
-  
+
   odontograma.dientes.forEach(diente => {
     const toothId = diente.codigo_fdi;
     data[toothId] = {};
-    
+
     diente.superficies.forEach(superficie => {
       const surfaceId = superficieBackendToFrontend(superficie.nombre);
       data[toothId][surfaceId] = superficie.diagnosticos
@@ -159,7 +257,7 @@ export function mapearOdontogramaBackendToFrontend(
         .map(diag => mapearDiagnosticoInstanceBackendToFrontend(diag));
     });
   });
-  
+
   return data;
 }
 
@@ -169,13 +267,13 @@ export function mapearOdontogramaBackendToFrontend(
 
 /**
  * Convierte el OdontogramaData del frontend al formato esperado por el backend
- * 
+ *
  * Frontend (OdontogramaData):
  * {
  *   "11": {
  *     "cara_vestibular": [
- *       { 
- *         id: "uuid", 
+ *       {
+ *         id: "uuid",
  *         procedimientoId: "caries_icdas_3",
  *         colorHex: "#ef4444",
  *         descripcion: "Caries profunda",
@@ -185,12 +283,12 @@ export function mapearOdontogramaBackendToFrontend(
  *     ]
  *   }
  * }
- * 
+ *
  * Backend esperado:
  * {
  *   "11": {
  *     "vestibular": [
- *       { 
+ *       {
  *         procedimientoId: "caries_icdas_3",
  *         colorHex: "#ef4444",
  *         descripcion: "Caries profunda",
@@ -205,16 +303,16 @@ export function mapearOdontogramaFrontendToBackend(
   odontogramaData: OdontogramaData
 ): Record<string, Record<string, any[]>> {
   const backendData: Record<string, Record<string, any[]>> = {};
-  
+
   // Iterar por cada diente
   Object.entries(odontogramaData).forEach(([codigoFdi, superficies]) => {
     backendData[codigoFdi] = {};
-    
+
     // Iterar por cada superficie del diente
     Object.entries(superficies).forEach(([surfaceIdFrontend, diagnosticos]) => {
       // Convertir ID de superficie (cara_vestibular → vestibular)
       const nombreBackend = superficieFrontendToBackend(surfaceIdFrontend);
-      
+
       // Mapear cada diagnóstico al formato del backend
       backendData[codigoFdi][nombreBackend] = diagnosticos.map(diag => ({
         procedimientoId: diag.procedimientoId,
@@ -225,14 +323,14 @@ export function mapearOdontogramaFrontendToBackend(
       }));
     });
   });
-  
+
   return backendData;
 }
 
 /**
  * Filtra solo los diagnósticos nuevos (sin ID del backend o con ID temporal)
  * Útil para guardado incremental
- * 
+ *
  * @param odontogramaData - OdontogramaData completo del frontend
  * @returns OdontogramaData solo con diagnósticos nuevos
  */
@@ -240,56 +338,19 @@ export function extraerDiagnosticosNuevos(
   odontogramaData: OdontogramaData
 ): OdontogramaData {
   const nuevos: OdontogramaData = {};
-  
+
   Object.entries(odontogramaData).forEach(([toothId, superficies]) => {
     Object.entries(superficies).forEach(([surfaceId, diagnosticos]) => {
       const diagnosticosNuevos = diagnosticos.filter(
         diag => !diag.id || diag.id.startsWith('temp-')
       );
-      
+
       if (diagnosticosNuevos.length > 0) {
         if (!nuevos[toothId]) nuevos[toothId] = {};
         nuevos[toothId][surfaceId] = diagnosticosNuevos;
       }
     });
   });
-  
+
   return nuevos;
-}
-
-// ============================================================================
-// MAPEO DE CATÁLOGO (Opcional, solo si lo usas)
-// ============================================================================
-
-/**
- * Convierte un diagnóstico del backend al formato del frontend
- */
-export function mapearDiagnosticoBackendToFrontend(diagBackend: DiagnosticoBackend): DiagnosticoItem {
-  return {
-    id: diagBackend.key,
-    nombre: diagBackend.nombre,
-    siglas: diagBackend.siglas,
-    simboloColor: SIMBOLO_BACKEND_TO_FRONTEND[diagBackend.simbolo_color] || 'PATOLOGIA',
-    categoria: diagBackend.categoria_nombre as any,
-    areas_afectadas: mapearSuperficiesAplicables(diagBackend.superficie_aplicables),
-    atributos_clinicos: {},
-  };
-}
-
-/**
- * Convierte categorías completas del backend al formato del frontend
- */
-export function mapearCategoriasBackendToFrontend(
-  categorias: CategoriaDiagnosticoBackend[],
-  diagnosticos: DiagnosticoBackend[]
-): DiagnosticoCategory[] {
-  return categorias.map(cat => ({
-    id: cat.nombre as any,
-    nombre: cat.nombre,
-    colorKey: SIMBOLO_BACKEND_TO_FRONTEND[cat.color_key] || 'PATOLOGIA',
-    prioridadKey: cat.prioridad_key as PrioridadKey,
-    diagnosticos: diagnosticos
-      .filter(d => d.categoria === cat.id)
-      .map(mapearDiagnosticoBackendToFrontend),
-  }));
 }

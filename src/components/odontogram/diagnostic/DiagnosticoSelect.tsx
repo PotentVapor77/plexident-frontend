@@ -1,5 +1,6 @@
+// src/components/odontogram/diagnostic/DiagnosticoSelect.tsx
 import type { Dispatch, SetStateAction } from "react";
-import type { OdontoColorKey, AreaAfectada } from "../../../core/types/typeOdontograma";
+import type { OdontoColorKey, AreaAfectada, DiagnosticoCategory } from "../../../core/types/typeOdontograma";
 import { DiagnosticoSelectUI, type PrincipalArea } from "..";
 import { useDiagnosticoSelect } from "../../../hooks/odontogram/useDiagnosticoSelect";
 
@@ -17,6 +18,7 @@ type DiagnosticoSelectProps = {
     onPreviewChange: Dispatch<SetStateAction<string | null>>;
     onPreviewOptionsChange: Dispatch<SetStateAction<Record<string, string>>>;
     currentArea: PrincipalArea;
+    categorias: DiagnosticoCategory[];
 };
 
 export const DiagnosticoSelect = (props: DiagnosticoSelectProps) => {

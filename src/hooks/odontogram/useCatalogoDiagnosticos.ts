@@ -2,48 +2,111 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import type { DiagnosticoCategory } from '../../components/odontogram';
-import { obtenerCatalogoDiagnosticos, obtenerAtributosClinicos } from '../../services/odontogram/odontogramaService';
-import type { CategoriaDiagnosticoBackend, DiagnosticoBackend } from '../../types/odontogram/typeBackendOdontograma';
+
+import { obtenerCatalogoDiagnosticos } from '../../services/odontogram/odontogramaService';
+import type {
+  CategoriaDiagnosticoBackend,
+  DiagnosticoBackend,
+  AtributoClinicoBackend
+} from '../../types/odontogram/typeBackendOdontograma';
+import type { DiagnosticoCategory, PrioridadKey } from '../../core/types/typeOdontograma';
 
 // ============================================================================
-// MAPEO SIMPLIFICADO (sin mapper complejo)
+// MAPEO DE PRIORIDADES
 // ============================================================================
 
-function mapearCategoriasDirecto(categorias: CategoriaDiagnosticoBackend[]): DiagnosticoCategory[] {
-  if (!Array.isArray(categorias)) return [];
+const PRIORIDAD_BACKEND_TO_FRONTEND: Record<number, PrioridadKey> = {
+  5: 'ALTA',
+  4: 'ESTRUCTURAL',
+  3: 'MEDIA',
+  2: 'BAJA',
+  1: 'INFORMATIVA',
+};
 
-  return categorias.map(cat => ({
-    id: cat.key as any, // Usar key como ID
-    nombre: cat.nombre,
-    colorKey: cat.color_key as any,
-    prioridadKey: cat.prioridad_key as any,
-    diagnosticos: Array.isArray(cat.diagnosticos)
-      ? cat.diagnosticos.map((diag: DiagnosticoBackend) => ({
-          id: diag.key,
-          nombre: diag.nombre,
-          siglas: diag.siglas,
-          simboloColor: diag.simbolo_color as any,
-          categoria: cat.nombre as any,
-          areas_afectadas: mapearSuperficies(diag.superficie_aplicables || []),
-          atributos_clinicos: {},
-        }))
-      : [],
-  }));
+// ============================================================================
+// MAPEO CON ATRIBUTOS CLÍNICOS
+// ============================================================================
+
+function mapearCategoriasConAtributos(categorias: CategoriaDiagnosticoBackend[]): DiagnosticoCategory[] {
+  if (!Array.isArray(categorias)) {
+    console.warn('❌ categorias no es un array:', categorias);
+    return [];
+  }
+
+  return categorias.map(cat => {
+    
+    return {
+      id: cat.key as any,
+      nombre: cat.nombre,
+      colorKey: cat.color_key as any,
+      prioridadKey: cat.prioridad_key as any,
+      diagnosticos: Array.isArray(cat.diagnosticos)
+        ? cat.diagnosticos.map((diag: DiagnosticoBackend) => {
+            const atributosMapeados = mapearAtributosClinicos(diag.atributos_relacionados || []);
+            
+            return {
+              id: diag.key,
+              nombre: diag.nombre,
+              siglas: diag.siglas,
+              simboloColor: diag.simbolo_color as any,
+              categoria: cat.nombre as any,
+              prioridadKey: PRIORIDAD_BACKEND_TO_FRONTEND[diag.prioridad] || 'MEDIA', 
+              areas_afectadas: mapearSuperficies(diag.superficie_aplicables || []),
+              atributos_clinicos: atributosMapeados,
+            };
+          })
+        : [],
+    };
+  });
 }
 
+/**
+ * Mapea los atributos clínicos del backend a un formato más usable en el frontend
+ */
+function mapearAtributosClinicos(atributos: AtributoClinicoBackend[]): Record<string, any> {
+  if (!Array.isArray(atributos) || atributos.length === 0) {
+    return {};
+  }
+
+
+  const resultado: Record<string, any> = {};
+
+  atributos.forEach(attr => {
+    
+    resultado[attr.key] = {
+      nombre: attr.nombre,
+      descripcion: attr.descripcion,
+      tipo_input: attr.tipo_input,
+      requerido: attr.requerido,
+      opciones: attr.opciones.map(opc => ({
+        key: opc.key,
+        label: opc.nombre,
+        prioridad: opc.prioridad,
+        orden: opc.orden,
+      })),
+    };
+  });
+
+  return resultado;
+}
+
+/**
+ * Mapea las superficies aplicables del backend a áreas afectadas del frontend
+ */
 function mapearSuperficies(superficies: string[]): ('corona' | 'raiz' | 'general')[] {
-  if (superficies.includes('general') || superficies.length === 0) return ['general'];
-  
+  if (superficies.includes('general') || superficies.length === 0) {
+    return ['general'];
+  }
+
   const tieneCorona = superficies.some(s =>
     ['vestibular', 'lingual', 'oclusal', 'mesial', 'distal'].includes(s)
   );
   const tieneRaiz = superficies.some(s => s.startsWith('raiz_'));
-  
+
   const result: ('corona' | 'raiz' | 'general')[] = [];
   if (tieneCorona) result.push('corona');
   if (tieneRaiz) result.push('raiz');
-  
+
   return result.length > 0 ? result : ['general'];
 }
 
@@ -52,25 +115,14 @@ function mapearSuperficies(superficies: string[]): ('corona' | 'raiz' | 'general
 // ============================================================================
 
 export const useCatalogoDiagnosticos = () => {
-  // Query 1: Categorías CON diagnósticos anidados
+  // Query: Categorías CON diagnósticos anidados
   const {
     data: categoriasRaw,
-    isLoading: isLoadingCategorias,
-    error: errorCategorias
+    isLoading,
+    error
   } = useQuery({
     queryKey: ['catalogo-diagnosticos'],
     queryFn: obtenerCatalogoDiagnosticos,
-    staleTime: 1000 * 60 * 60, // Cache por 1 hora
-  });
-
-  // Query 2: Atributos clínicos (opcional, solo si los usas en la UI)
-  const {
-    data: atributosClinicos,
-    isLoading: isLoadingAtributos,
-    error: errorAtributos
-  } = useQuery({
-    queryKey: ['atributos-clinicos'],
-    queryFn: obtenerAtributosClinicos,
     staleTime: 1000 * 60 * 60,
   });
 
@@ -81,8 +133,12 @@ export const useCatalogoDiagnosticos = () => {
       return [];
     }
 
+    console.log(`Mapeando ${categoriasRaw.length} categorías...`);
+
     try {
-      return mapearCategoriasDirecto(categoriasRaw);
+      const resultado = mapearCategoriasConAtributos(categoriasRaw);
+      console.log(`Mapeo completado. ${resultado.length} categorías procesadas.`);
+      return resultado;
     } catch (error) {
       console.error('Error mapeando categorías:', error);
       return [];
@@ -91,8 +147,7 @@ export const useCatalogoDiagnosticos = () => {
 
   return {
     categorias: categoriasMapeadas,
-    atributosClinicos: Array.isArray(atributosClinicos) ? atributosClinicos : [],
-    isLoading: isLoadingCategorias || isLoadingAtributos,
-    error: errorCategorias || errorAtributos,
+    isLoading,
+    error,
   };
 };

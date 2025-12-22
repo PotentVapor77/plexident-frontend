@@ -1,4 +1,14 @@
-// src/types/odontograma.ts
+// src/components/odontogram/typeOdontograma.ts
+
+/**
+ * Tipos específicos de UI del odontograma
+ * Importa y transforma tipos del backend cuando sea necesario
+ */
+
+// ============================================================================
+// CONSTANTES UI (Colores, estilos)
+// ============================================================================
+
 export const ODONTO_COLORS = {
   PATOLOGIA: { color: 'bg-red-500', hover: 'hover:bg-red-600', fill: '#ef4444', priority: 1 },
   ANOMALIA: { color: 'bg-gray-700', hover: 'hover:bg-gray-800', fill: '#1f2937', priority: 2 },
@@ -16,10 +26,14 @@ export const MATERIAL_COLORS = {
   Oro: { fill: '#f59e0b', name: 'Oro' },
   Cera: { fill: '#a16207', name: 'Cera' },
   Otro: { fill: '#3b82f6', name: 'Otro' },
-}; 
+};
 
 export type OdontoColorKey = keyof typeof ODONTO_COLORS;
 export type MaterialColorKey = keyof typeof MATERIAL_COLORS;
+
+// ============================================================================
+// TIPOS DE NEGOCIO (Frontend)
+// ============================================================================
 
 export type PrioridadKey = 'ALTA' | 'MEDIA' | 'BAJA' | 'ESTRUCTURAL' | 'INFORMATIVA';
 export type AreaAfectada = 'corona' | 'raiz' | 'general';
@@ -31,38 +45,72 @@ export type TipoDiagnostico =
   | 'Ausencia'
   | 'Anomalía';
 
-export type OpcionSecundaria = {
+export type RootGroupKey =
+  | 'molar_superior'
+  | 'molar_inferior'
+  | 'premolar'
+  | 'anterior';
+
+// ============================================================================
+// TIPOS DE ATRIBUTOS CLÍNICOS (Transformados para UI)
+// ============================================================================
+
+export type OpcionAtributoClinico = {
   key: string;
-  nombre: string;
+  label: string;
+  prioridad?: number | null;
+  orden: number;
 };
 
+export type AtributoClinicoDefinicion = {
+  nombre: string;
+  descripcion: string;
+  tipo_input: 'select' | 'radio' | 'checkbox' | 'text';
+  requerido: boolean;
+  opciones: OpcionAtributoClinico[];
+};
+
+// ============================================================================
+// TIPOS DE DIAGNÓSTICO (Para UI)
+// ============================================================================
+
+/**
+ * Diagnóstico transformado para uso en UI
+ * Viene del mapeo de DiagnosticoBackend
+ */
 export type DiagnosticoItem = {
-  opciones_secundarias?: any;
   id: string;
   nombre: string;
   siglas: string;
   simboloColor: OdontoColorKey;
-  categoria: TipoDiagnostico; // antes tipo_diagnostico
-  areas_afectadas: AreaAfectada[]; // antes afecta_area
-  atributos_clinicos?: {
-      // includes(arg0: string): unknown; <-- ¡ELIMINADO!
-      material_restauracion?: OpcionSecundaria[];
-      estado_restauracion?: OpcionSecundaria[];
-      erupcion?: OpcionSecundaria[];
-      movilidad?: OpcionSecundaria[];
-      estado_procedimiento?: OpcionSecundaria[];
-      priorityKey?: PrioridadKey;
-  }; // antes opcionesSecundarias
+  categoria: TipoDiagnostico;
+  prioridadKey: PrioridadKey;
+  areas_afectadas: AreaAfectada[];
+  atributos_clinicos: Record<string, AtributoClinicoDefinicion>;
 };
+
+// Alias para compatibilidad
+export type Diagnostico = DiagnosticoItem;
+
+/**
+ * Categoría de diagnósticos para UI
+ */
 export type DiagnosticoCategory = {
   id: TipoDiagnostico;
   nombre: string;
   colorKey: OdontoColorKey;
   prioridadKey: PrioridadKey;
-  diagnosticos: DiagnosticoItem[]; 
+  diagnosticos: DiagnosticoItem[];
 };
 
-// Mantener tipos de entrada y estructuras para UI/backend
+// ============================================================================
+// TIPOS DE ENTRADA (Para guardar diagnósticos)
+// ============================================================================
+
+/**
+ * Entrada de diagnóstico aplicado a un diente
+ * Se envía al backend y se guarda en el estado local
+ */
 export type DiagnosticoEntry = {
   id: string;
   procedimientoId: string;
@@ -71,19 +119,26 @@ export type DiagnosticoEntry = {
   siglas: string;
   nombre: string;
   areas_afectadas: AreaAfectada[];
-  secondaryOptions: Record<string, string>;
+  secondaryOptions: Record<string, any>;
   descripcion: string;
   superficieId?: string;
   prioridadKey: PrioridadKey;
 };
+
+// ============================================================================
+// ESTRUCTURAS DE DATOS (Estado del odontograma)
+// ============================================================================
+
+/**
+ * Estructura completa del odontograma en memoria
+ * Formato: { "11": { "vestibular": [DiagnosticoEntry[]], ... }, ... }
+ */
 export type OdontogramaData = Record<string, Record<string, DiagnosticoEntry[]>>;
 
+/**
+ * Estado global de dientes (ausencia, color dominante)
+ */
 export type DienteGlobalData = Record<
   string,
   { ausente: boolean; dominanteColor: string | null }
 >;
-export type RootGroupKey =
-  | "molar_superior"
-  | "molar_inferior"
-  | "premolar"
-  | "anterior";

@@ -162,7 +162,7 @@ export const OdontogramaViewer = ({
         removeDiagnostico={odontogramaDataHook.removeDiagnostico}
       />
 
-      {/* PANEL DE DIAGNÓSTICO - AQUÍ ESTABA EL ERROR */}
+      {/* PANEL DE DIAGNÓSTICO */}
       <DiagnosticoPanel
         selectedTooth={selectedTooth}
         odontogramaDataHook={odontogramaDataHook}

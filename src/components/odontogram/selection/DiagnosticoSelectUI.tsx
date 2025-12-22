@@ -1,7 +1,7 @@
 // src/components/odontogram/selection/DiagnosticoSelectUI.tsx
 
 import type { PrincipalArea } from "..";
-import type { OpcionAtributoClinico } from "../../../core/config/atributos_clinicos";
+import type { AtributoClinicoDefinicion, OpcionAtributoClinico } from "../../../core/types/typeOdontograma";
 import type { useDiagnosticoSelect } from "../../../hooks/odontogram/useDiagnosticoSelect";
 
 // Tipos para las props del componente UI
@@ -30,7 +30,7 @@ export const DiagnosticoSelectUI = ({
   formValid,
   handleCategoriaSelect,
   handleDiagnosticoChange,
-  handleOptionChange,
+  handleAtributoChange,
   setDescripcion,
   handleApply,
   handleCancel,
@@ -42,7 +42,7 @@ export const DiagnosticoSelectUI = ({
 }: DiagnosticoSelectUIProps) => {
 
   const inputBaseClass = "w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 py-2.5 px-4 text-gray-900 dark:text-white outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition disabled:bg-gray-100 dark:disabled:bg-gray-900 disabled:cursor-not-allowed";
-  const labelBaseClass = "block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 capitalize";
+  const labelBaseClass = "block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300";
 
   return (
     <div className="mt-6 p-5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-theme-sm space-y-6 relative">
@@ -117,25 +117,107 @@ export const DiagnosticoSelectUI = ({
         </section>
       )}
 
-      {/* 3. Atributos Clínicos */}
-      {diagnosticoSeleccionado?.atributos_clinicos && (
+      {/* 3. Atributos Clínicos Dinámicos */}
+      {diagnosticoSeleccionado?.atributos_clinicos && Object.keys(diagnosticoSeleccionado.atributos_clinicos).length > 0 && (
         <section className="animate-in fade-in slide-in-from-top-2 duration-300">
           <SectionHeader step="3" title="Detalles Clínicos" />
           <div className="grid gap-4">
-            {Object.entries(diagnosticoSeleccionado.atributos_clinicos).map(([key, opts]) => (
+            {Object.entries(diagnosticoSeleccionado.atributos_clinicos).map(([key, atributo]: [string, AtributoClinicoDefinicion]) => (
               <div key={key}>
                 <label className={labelBaseClass}>
-                  {key.replace(/_/g, " ")}
+                  {atributo.nombre}
+                  {atributo.requerido && <span className="text-red-500 ml-1">*</span>}
                 </label>
-                <select
-                  value={atributosClinicosSeleccionados[key] || ""}
-                  onChange={e => handleOptionChange(key, e.target.value)}
-                  className={inputBaseClass}
-                >
-                  {(opts as OpcionAtributoClinico[]).map(opt => (
-                    <option key={opt.key} value={opt.key}>{opt.nombre}</option>
-                  ))}
-                </select>
+                
+                {atributo.descripcion && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{atributo.descripcion}</p>
+                )}
+
+                {/* SELECT */}
+                {atributo.tipo_input === 'select' && (
+                  <select
+                    value={atributosClinicosSeleccionados[key] || ""}
+                    onChange={e => handleAtributoChange(key, e.target.value)}
+                    className={inputBaseClass}
+                  >
+                    <option value="">-- Seleccionar --</option>
+                    {atributo.opciones.map((opt: OpcionAtributoClinico) => (
+                      <option key={opt.key} value={opt.key}>
+                        {opt.label}
+                        {opt.prioridad ? ` (Prioridad ${opt.prioridad})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {/* RADIO BUTTONS */}
+                {atributo.tipo_input === 'radio' && (
+                  <div className="space-y-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                    {atributo.opciones.map((opt: OpcionAtributoClinico) => (
+                      <label key={opt.key} className="flex items-center gap-2.5 cursor-pointer group">
+                        <input
+                          type="radio"
+                          name={key}
+                          value={opt.key}
+                          checked={atributosClinicosSeleccionados[key] === opt.key}
+                          onChange={e => handleAtributoChange(key, e.target.value)}
+                          className="w-4 h-4 text-brand-600 focus:ring-brand-500 focus:ring-2"
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">
+                          {opt.label}
+                          {opt.prioridad && (
+                            <span className="ml-1.5 text-xs text-gray-500 dark:text-gray-400">(P{opt.prioridad})</span>
+                          )}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {/* CHECKBOXES */}
+                {atributo.tipo_input === 'checkbox' && (
+                  <div className="space-y-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                    {atributo.opciones.map((opt: OpcionAtributoClinico) => {
+                      const currentValues = Array.isArray(atributosClinicosSeleccionados[key]) 
+                        ? atributosClinicosSeleccionados[key] 
+                        : [];
+                      const isChecked = currentValues.includes(opt.key);
+
+                      return (
+                        <label key={opt.key} className="flex items-center gap-2.5 cursor-pointer group">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={e => {
+                              const updated = e.target.checked
+                                ? [...currentValues, opt.key]
+                                : currentValues.filter((v: string) => v !== opt.key);
+                              handleAtributoChange(key, updated);
+                            }}
+                            className="w-4 h-4 text-brand-600 rounded focus:ring-brand-500 focus:ring-2"
+                          />
+                          <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">
+                            {opt.label}
+                            {opt.prioridad && (
+                              <span className="ml-1.5 text-xs text-gray-500 dark:text-gray-400">(P{opt.prioridad})</span>
+                            )}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* TEXT INPUT */}
+                {atributo.tipo_input === 'text' && (
+                  <input
+                    type="text"
+                    value={atributosClinicosSeleccionados[key] || ''}
+                    onChange={e => handleAtributoChange(key, e.target.value)}
+                    className={inputBaseClass}
+                    placeholder={atributo.descripcion || 'Ingrese un valor...'}
+                  />
+                )}
               </div>
             ))}
           </div>

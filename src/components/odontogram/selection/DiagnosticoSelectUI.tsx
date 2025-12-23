@@ -10,11 +10,9 @@ type DiagnosticoSelectUIProps = ReturnType<typeof useDiagnosticoSelect> & {
 };
 
 // Componente auxiliar para los encabezados de sección con número
-const SectionHeader = ({ step, title }: { step: string; title: string }) => (
+const SectionHeader = ({ title }: { step: string; title: string }) => (
   <div className="flex items-center gap-2 mb-3">
-    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400 text-xs font-bold ring-1 ring-brand-200 dark:ring-brand-800">
-      {step}
-    </span>
+
     <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">
       {title}
     </h3>
@@ -45,8 +43,8 @@ export const DiagnosticoSelectUI = ({
   const labelBaseClass = "block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300";
 
   return (
-    <div className="mt-6 p-5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-theme-sm space-y-6 relative">
-      
+    <div className="mt-6 p-5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-theme-sm space-y-6 relative max-h-[calc(100vh-400px)] overflow-y-auto custom-scrollbar">
+
       {/* 1. Selecciona Categoría */}
       <section>
         <SectionHeader step="1" title="Categoría" />
@@ -109,7 +107,7 @@ export const DiagnosticoSelectUI = ({
           {diagnosticoSeleccionado && diagnosticoSeleccionado.areas_afectadas.includes('general') && (
             <p className="mt-2 text-xs text-brand-600 dark:text-brand-400 flex items-center gap-1.5 font-medium">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               Diagnóstico general: afecta a todo el diente.
             </p>
@@ -128,7 +126,7 @@ export const DiagnosticoSelectUI = ({
                   {atributo.nombre}
                   {atributo.requerido && <span className="text-red-500 ml-1">*</span>}
                 </label>
-                
+
                 {atributo.descripcion && (
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{atributo.descripcion}</p>
                 )}
@@ -178,8 +176,8 @@ export const DiagnosticoSelectUI = ({
                 {atributo.tipo_input === 'checkbox' && (
                   <div className="space-y-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
                     {atributo.opciones.map((opt: OpcionAtributoClinico) => {
-                      const currentValues = Array.isArray(atributosClinicosSeleccionados[key]) 
-                        ? atributosClinicosSeleccionados[key] 
+                      const currentValues = Array.isArray(atributosClinicosSeleccionados[key])
+                        ? atributosClinicosSeleccionados[key]
                         : [];
                       const isChecked = currentValues.includes(opt.key);
 
@@ -227,37 +225,37 @@ export const DiagnosticoSelectUI = ({
       {/* 4. Descripción / Notas */}
       {diagnosticoSeleccionado && (
         <section className="animate-in fade-in slide-in-from-top-2 duration-300 delay-75">
-          <SectionHeader step="4" title="Notas Adicionales" />
+          <SectionHeader step="4." title="Notas Adicionales" />
           <textarea
             rows={3}
             value={descripcion}
-            onChange={e => setDescripcion(e.target.value)}
-            className={`${inputBaseClass} resize-none`}
+            onChange={(e) => setDescripcion(e.target.value)}
+            className={inputBaseClass + ' resize-none'}
             placeholder="Escribe observaciones, ej: ICDAS 3 en zona mesial..."
           />
         </section>
       )}
 
-      {/* Botones de Acción */}
-      {(diagnosticoSeleccionado || categoriaSeleccionada) && (
-        <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-          <button
-            onClick={handleCancel}
-            className="flex-1 py-2.5 px-4 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleApply}
-            disabled={!formValid}
-            className={`flex-[2] py-2.5 px-4 rounded-lg font-medium text-white shadow-theme-sm transition-all ${
-              formValid
-                ? 'bg-brand-600 hover:bg-brand-700 active:bg-brand-800'
-                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed shadow-none'
-            }`}
-          >
-            Aplicar 
-          </button>
+      {diagnosticoSeleccionado && categoriaSeleccionada && (
+        <div className="sticky bottom-0 flex-shrink-0 p-4 pb-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg">
+          <div className="flex gap-3">
+            <button
+              onClick={handleCancel}
+              className="flex-1 py-2.5 px-4 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleApply}
+              disabled={!formValid}
+              className={`flex-2 py-2.5 px-4 rounded-lg font-medium text-white shadow-theme-sm transition-all ${formValid
+                  ? 'bg-brand-600 hover:bg-brand-700 active:bg-brand-800'
+                  : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed shadow-none'
+                }`}
+            >
+              Aplicar
+            </button>
+          </div>
         </div>
       )}
     </div>

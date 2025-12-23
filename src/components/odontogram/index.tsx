@@ -164,3 +164,6 @@ export type {
  * Tipo para áreas principales del diente
  */
 export type { PrincipalArea } from '../../hooks/odontogram/useDiagnosticoSelect';
+export { NoPacienteOverlay } from '../../components/odontogram/patient/NoPacienteOverlay';
+export { PacienteFloatingButton } from '../../components/odontogram/patient/PacienteFloatingButton';
+export { PacienteInfoPanel } from '../../components/odontogram/patient/PacienteInfoPanel';

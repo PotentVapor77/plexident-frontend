@@ -1,42 +1,41 @@
 // src/components/odontogram/diagnostic/DiagnosticoPanel.tsx
-import { useState, useCallback, useRef, useMemo, useEffect } from "react";
-import { DiagnosticoSelect } from "./DiagnosticoSelect";
-import { SurfaceSelector, type SurfaceSelectorRef } from "../3d/SuperficieSelector";
-import type { useOdontogramaData } from "../../../hooks/odontogram/useOdontogramaData";
+import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { DiagnosticoSelect } from './DiagnosticoSelect';
+import { SurfaceSelector, type SurfaceSelectorRef } from '../3d/SuperficieSelector';
+import type { useOdontogramaData } from '../../../hooks/odontogram/useOdontogramaData';
 import type {
   AreaAfectada,
   OdontoColorKey,
-  RootGroupKey,
-} from "../../../core/types/typeOdontograma";
-import type { PrincipalArea } from "../../../hooks/odontogram/useDiagnosticoSelect";
-import { useCatalogoDiagnosticos } from "../../../hooks/odontogram/useCatalogoDiagnosticos";
-import { useSurfaceSelection } from "../../../hooks/odontogram/useSurfaceSelection";
-import { useToothRootType } from "../../../hooks/odontogram/useToothRootType";
-import { toothTranslations } from "../../../core/utils/toothTraslations";
-
-type DiagnosticoPanelProps = {
-  selectedTooth: string | null;
-  odontogramaDataHook: ReturnType<typeof useOdontogramaData>;
-  onRootGroupChange?: (group: any) => void;
-};
+} from '../../../core/types/typeOdontograma';
+import type { PrincipalArea } from '../../../hooks/odontogram/useDiagnosticoSelect';
+import { useCatalogoDiagnosticos } from '../../../hooks/odontogram/useCatalogoDiagnosticos';
+import { useSurfaceSelection } from '../../../hooks/odontogram/useSurfaceSelection';
+import { useToothRootType } from '../../../hooks/odontogram/useToothRootType';
+import { toothTranslations } from '../../../core/utils/toothTraslations';
 
 // Definir todas las superficies de corona
 const CROWN_SURFACES = [
-  "cara_oclusal",
-  "cara_vestibular",
-  "cara_distal",
-  "cara_mesial",
-  "cara_lingual",
+  'cara_oclusal',
+  'cara_vestibular',
+  'cara_distal',
+  'cara_mesial',
+  'cara_lingual',
 ];
 
 // Definir superficies de raíz por tipo de diente
 const ROOT_SURFACES_BY_TYPE: Record<string, string[]> = {
-  raiz_premolar: ["raiz:raiz-palatal", "raiz:raiz-vestibular"],
-  raiz_molar_superior: ["raiz:raiz-palatal", "raiz:raiz-mesial", "raiz:raiz-distal"],
-  raiz_molar_inferior: ["raiz:raiz-distal", "raiz:raiz-mesial"],
-  raiz_canino: ["raiz:raiz-principal"],
-  raiz_incisivo: ["raiz:raiz-principal"],
-  raiz_dental: ["raiz:raiz-principal"], // fallback
+  'raiz_molar_superior': ['raiz:raiz-mesial', 'raiz:raiz-distal', 'raiz:raiz-palatal'],
+  'raiz_molar_inferior': ['raiz:raiz-mesial', 'raiz:raiz-distal'],
+  'raiz_premolar': ['raiz:raiz-vestibular', 'raiz:raiz-palatal'],
+  'raiz_canino': ['raiz:raiz-principal'],
+  'raiz_incisivo': ['raiz:raiz-principal'],
+  'raiz_dental': ['raiz:raiz-principal'], 
+};
+
+type DiagnosticoPanelProps = {
+  selectedTooth: string | null;
+  odontogramaDataHook?: ReturnType<typeof useOdontogramaData>; 
+  onRootGroupChange?: (group: any) => void;
 };
 
 export const DiagnosticoPanel = ({
@@ -44,8 +43,28 @@ export const DiagnosticoPanel = ({
   odontogramaDataHook,
   onRootGroupChange,
 }: DiagnosticoPanelProps) => {
-  // HOOKS DE DATOS
-  const { categorias, isLoading, error } = useCatalogoDiagnosticos();
+  if (!odontogramaDataHook) {
+    return (
+      <div className="w-[420px] h-full flex items-center justify-center bg-white border-l border-gray-200">
+        <div className="text-center space-y-3 px-4">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-50">
+            <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24">
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <p className="text-sm font-medium text-gray-900">Error de inicialización</p>
+          <p className="text-xs text-gray-500">El hook del odontograma no está disponible</p>
+        </div>
+      </div>
+    );
+  }
+
   const {
     applyDiagnostico,
     removeDiagnostico,
@@ -56,84 +75,73 @@ export const DiagnosticoPanel = ({
     odontogramaData,
   } = odontogramaDataHook;
 
-  const { getSurfacesForTooth, setSurfacesForTooth, clearSurfacesForTooth } =
-    useSurfaceSelection();
-
-  // Hook para obtener el tipo de raíz del diente actual
+  // HOOKS DE DATOS
+  const { categorias, isLoading, error } = useCatalogoDiagnosticos();
+  const { getSurfacesForTooth, setSurfacesForTooth, clearSurfacesForTooth } = useSurfaceSelection();
+  
   const rootInfo = useToothRootType(selectedTooth);
 
-  // ESTADO LOCAL
   const [showDiagnosticoSelect, setShowDiagnosticoSelect] = useState(false);
   const [currentArea, setCurrentArea] = useState<PrincipalArea>(null);
   const surfaceSelectorRef = useRef<SurfaceSelectorRef>(null);
 
-  // Obtener superficies seleccionadas para el diente actual
   const selectedSurfaces = getSurfacesForTooth(selectedTooth);
 
-  // Verificar si el diente está bloqueado
   const isBlocked = isToothBlocked(selectedTooth);
 
-  // Obtener traducción del diente
   const toothInfo = useMemo(() => {
     if (!selectedTooth) return null;
-    return toothTranslations[selectedTooth] || {
-      nombre: selectedTooth,
-      numero: 0,
-    };
+    return toothTranslations[selectedTooth] || { nombre: selectedTooth, numero: 0 };
   }, [selectedTooth]);
 
-  // Función para agrupar superficies de corona Y raíz
   const groupedSurfaces = useMemo(() => {
-    const crownSurfaces = selectedSurfaces.filter((s) =>
-      CROWN_SURFACES.includes(s)
-    );
-    const rootSurfaces = selectedSurfaces.filter((s) => s.startsWith("raiz:"));
+    const crownSurfaces = selectedSurfaces.filter((s) => CROWN_SURFACES.includes(s));
+    const rootSurfaces = selectedSurfaces.filter((s) => s.startsWith('raiz:'));
 
-    const result: Array<{ 
-      type: "group" | "single"; 
-      label: string; 
+    const result: Array<{
+      type: 'group' | 'single';
+      label: string;
       surfaces?: string[];
       isRoot?: boolean;
     }> = [];
 
-    // AGRUPACIÓN DE CORONA
+    // --- AGRUPACIÓN DE CORONA ---
     const hasAllCrown =
-      crownSurfaces.length === CROWN_SURFACES.length &&
+      CROWN_SURFACES.length > 0 &&
       CROWN_SURFACES.every((cs) => crownSurfaces.includes(cs));
 
     if (hasAllCrown) {
-      result.push({ 
-        type: "group", 
-        label: "Corona completa", 
+      result.push({
+        type: 'group',
+        label: 'Corona completa',
         surfaces: crownSurfaces,
-        isRoot: false 
+        isRoot: false,
       });
     } else {
       crownSurfaces.forEach((surface) => {
-        result.push({ type: "single", label: surface, isRoot: false });
+        result.push({ type: 'single', label: surface, isRoot: false });
       });
     }
 
-    // AGRUPACIÓN DE RAÍZ según tipo de diente
-    const rootType = rootInfo.type || "raiz_dental";
+    // --- AGRUPACIÓN DE RAÍZ ---
+    const rootType = rootInfo.type || 'raiz-dental';
     const expectedRootSurfaces = ROOT_SURFACES_BY_TYPE[rootType] || [];
 
-    // Verificar si todas las superficies de raíz esperadas están seleccionadas
-    const hasAllRootSurfaces =
-      expectedRootSurfaces.length > 1 && // Solo agrupar si hay más de 1 superficie
-      expectedRootSurfaces.length === rootSurfaces.length &&
-      expectedRootSurfaces.every((rs) => rootSurfaces.includes(rs));
+    const hasAllRootSurfaces = 
+      expectedRootSurfaces.length > 0 && 
+      expectedRootSurfaces.every(expected => rootSurfaces.includes(expected)) &&
+      rootSurfaces.length === expectedRootSurfaces.length;
 
     if (hasAllRootSurfaces) {
-      result.push({ 
-        type: "group", 
-        label: "Raíz completa", 
-        surfaces: rootSurfaces,
-        isRoot: true 
+      result.push({
+        type: 'group',
+        label: 'Raíz completa',
+        surfaces: rootSurfaces, 
+        isRoot: true,
       });
     } else {
       rootSurfaces.forEach((surface) => {
-        result.push({ type: "single", label: surface, isRoot: true });
+        result.push({ type: 'single', label: surface, isRoot: true });
       });
     }
 
@@ -149,13 +157,14 @@ export const DiagnosticoPanel = ({
 
     // Recorrer todas las superficies del diente
     Object.entries(toothData).forEach(([superficieId, diagsArray]) => {
-      diagsArray.forEach((diag: any) => {
+      // ✅ Tipar explícitamente diagsArray
+      (diagsArray as any[]).forEach((diag: any) => {
         const procConfig = getProcConfig(diag.procedimientoId);
         diagnosticos.push({
           ...diag,
           superficieId,
           nombre: procConfig?.nombre || diag.procedimientoId,
-          prioridadKey: procConfig?.prioridadKey || "INFORMATIVA",
+          prioridadKey: procConfig?.prioridadKey || 'INFORMATIVA',
         });
       });
     });
@@ -163,11 +172,9 @@ export const DiagnosticoPanel = ({
     return diagnosticos;
   }, [selectedTooth, odontogramaData, getProcConfig]);
 
-  // Verificar si tiene diagnóstico general bloqueante
+  // Verificar si tiene diagnóstico general (bloqueante)
   const hasGeneralDiagnosis = useMemo(() => {
-    return diagnosticosAplicados.some((d) =>
-      d.areas_afectadas?.includes("general")
-    );
+    return diagnosticosAplicados.some((d) => d.areas_afectadas?.includes('general'));
   }, [diagnosticosAplicados]);
 
   // Limpiar selección al cambiar de diente
@@ -200,33 +207,28 @@ export const DiagnosticoPanel = ({
     ) => {
       if (!selectedTooth) return;
 
-      const isGeneral = areasAfectadas.includes("general");
-      const surfacesToApply = isGeneral ? ["general"] : selectedSurfaces;
+      const isGeneral = areasAfectadas.includes('general');
+      const surfacesToApply = isGeneral ? ['general'] : selectedSurfaces;
 
       if (!isGeneral && surfacesToApply.length === 0) {
-        surfaceSelectorRef.current?.showRequiredAreaWarning(
-          areasAfectadas as PrincipalArea[]
-        );
+        surfaceSelectorRef.current?.showRequiredAreaWarning(areasAfectadas as PrincipalArea[]);
         return;
       }
 
       if (!isGeneral) {
-        const requiresCorona = areasAfectadas.includes("corona");
-        const requiresRaiz = areasAfectadas.includes("raiz");
-        const hasCoronaSurface = selectedSurfaces.some((s) =>
-          s.startsWith("cara_")
-        );
-        const hasRaizSurface = selectedSurfaces.some((s) =>
-          s.startsWith("raiz:")
-        );
+        const requiresCorona = areasAfectadas.includes('corona');
+        const requiresRaiz = areasAfectadas.includes('raiz');
+
+        const hasCoronaSurface = selectedSurfaces.some((s) => s.startsWith('cara'));
+        const hasRaizSurface = selectedSurfaces.some((s) => s.startsWith('raiz:'));
 
         if (requiresCorona && !hasCoronaSurface) {
-          surfaceSelectorRef.current?.showRequiredAreaWarning(["corona"]);
+          surfaceSelectorRef.current?.showRequiredAreaWarning(['corona']);
           return;
         }
 
         if (requiresRaiz && !hasRaizSurface) {
-          surfaceSelectorRef.current?.showRequiredAreaWarning(["raiz"]);
+          surfaceSelectorRef.current?.showRequiredAreaWarning(['raiz']);
           return;
         }
       }
@@ -277,11 +279,7 @@ export const DiagnosticoPanel = ({
       <div className="w-[420px] h-full flex items-center justify-center bg-white border-l border-gray-200 flex-shrink-0">
         <div className="text-center space-y-3 px-4">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brand-50">
-            <svg
-              className="w-6 h-6 text-brand-500 animate-spin"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-6 h-6 text-brand-500 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle
                 className="opacity-25"
                 cx="12"
@@ -298,12 +296,8 @@ export const DiagnosticoPanel = ({
             </svg>
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-900">
-              Cargando catálogo
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              Obteniendo datos del servidor...
-            </p>
+            <p className="text-sm font-medium text-gray-900">Cargando catálogo</p>
+            <p className="text-xs text-gray-500 mt-1">Obteniendo datos del servidor...</p>
           </div>
         </div>
       </div>
@@ -315,27 +309,20 @@ export const DiagnosticoPanel = ({
       <div className="w-[420px] h-full flex items-center justify-center bg-white border-l border-gray-200 flex-shrink-0">
         <div className="text-center space-y-4 max-w-sm px-6">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-error-50">
-            <svg
-              className="w-6 h-6 text-error-500"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-6 h-6 text-error-500" fill="none" viewBox="0 0 24 24">
               <path
                 stroke="currentColor"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
+                strokeWidth="2"
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-1">
-              Error de conexión
-            </h3>
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">Error de conexión</h3>
             <p className="text-xs text-gray-600">
-              No se pudo conectar con el servidor. Verifica tu conexión e
-              intenta nuevamente.
+              No se pudo conectar con el servidor. Verifica tu conexión e intenta nuevamente.
             </p>
           </div>
           <button
@@ -347,7 +334,7 @@ export const DiagnosticoPanel = ({
                 stroke="currentColor"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
+                strokeWidth="2"
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               />
             </svg>
@@ -357,9 +344,8 @@ export const DiagnosticoPanel = ({
       </div>
     );
   }
-
   return (
-    <div className="w-[420px] h-full flex flex-col bg-white border-l border-gray-200 shadow-theme-lg flex-shrink-0">
+    <div className="h-full w-full max-w-full flex flex-col bg-white border-l border-gray-200 shadow-theme-lg">
       {/* HEADER FIJO */}
       <div className="flex-shrink-0 px-5 py-3.5 border-b border-gray-200 bg-gradient-to-r from-brand-50 to-white">
         <div className="flex items-center justify-between gap-3">
@@ -500,8 +486,8 @@ export const DiagnosticoPanel = ({
               <DiagnosticoSelect
                 onApply={handleApplyDiagnostico}
                 onCancel={handleCancelDiagnostico}
-                onPreviewChange={() => {}}
-                onPreviewOptionsChange={() => {}}
+                onPreviewChange={() => { }}
+                onPreviewOptionsChange={() => { }}
                 currentArea={currentArea}
                 categorias={categorias}
               />
@@ -590,9 +576,8 @@ const BlockedState = () => (
 
 const SelectedSurfacesBadge = ({ count }: { count: number }) => (
   <div
-    className={`flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-      count > 0 ? "bg-brand-100 text-brand-700" : "bg-gray-100 text-gray-600"
-    }`}
+    className={`flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${count > 0 ? "bg-brand-100 text-brand-700" : "bg-gray-100 text-gray-600"
+      }`}
   >
     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24">
       <path
@@ -621,10 +606,10 @@ const SurfaceChip = ({
   const displayName = isGroup
     ? surface
     : surface
-        .replace("cara_", "")
-        .replace("raiz:", "R:")
-        .replace("_", " ")
-        .replace(/-/g, " ");
+      .replace("cara_", "")
+      .replace("raiz:", "R:")
+      .replace("_", " ")
+      .replace(/-/g, " ");
 
   // Estilos diferenciados para corona y raíz
   const getChipStyles = () => {
@@ -651,11 +636,10 @@ const SurfaceChip = ({
       <span className="capitalize truncate max-w-[120px]">{displayName}</span>
       <button
         onClick={onRemove}
-        className={`flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${
-          isRoot
+        className={`flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${isRoot
             ? "hover:bg-purple-200"
             : "hover:bg-brand-200"
-        }`}
+          }`}
         aria-label="Remover"
       >
         <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24">

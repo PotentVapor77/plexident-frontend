@@ -1,7 +1,7 @@
 // src/mappers/odontogramaMapper.ts
 
 import type { OdontoColorKey, DiagnosticoCategory, OdontogramaData } from "../components/odontogram";
-import type { PrioridadKey, DiagnosticoItem, DiagnosticoEntry, TipoDiagnostico } from "../core/types/typeOdontograma";
+import type { PrioridadKey, DiagnosticoItem, DiagnosticoEntry, TipoDiagnostico, AtributoClinicoDefinicion } from "../core/types/typeOdontograma";
 import type {
   DiagnosticoBackend,
   CategoriaDiagnosticoBackend,
@@ -21,7 +21,7 @@ const PRIORIDAD_BACKEND_TO_FRONTEND: Record<number, PrioridadKey> = {
   1: 'INFORMATIVA',
 };
 
-const PRIORIDAD_KEY_TO_BACKEND: Record<string, PrioridadKey> = {
+const PRIORIDAD_KEY_TO_BACKEND: Record<PrioridadKey, string> = {
   'ALTA': 'ALTA',
   'ESTRUCTURAL': 'ESTRUCTURAL',
   'MEDIA': 'MEDIA',
@@ -125,32 +125,40 @@ function mapearSuperficiesAplicables(superficies: string[]): ('corona' | 'raiz' 
   return result.length > 0 ? result : ['general'];
 }
 
+/**
+ * ✅ FIXED: Mapea atributos clínicos del backend al formato del frontend
+ */
 function mapearAtributosClinicos(
   atributosTipos?: TipoAtributoClinicoBackend[]
-): Record<string, Array<{ key: string; nombre: string }>> | undefined {
+): Record<string, AtributoClinicoDefinicion> {
   if (!atributosTipos || atributosTipos.length === 0) {
-    return undefined;
+    return {};
   }
 
-  const atributos: Record<string, Array<{ key: string; nombre: string }>> = {};
-
+  const atributos: Record<string, AtributoClinicoDefinicion> = {};
+  
   atributosTipos.forEach(tipo => {
     if (tipo.key && tipo.opciones && tipo.opciones.length > 0) {
-      atributos[tipo.key] = tipo.opciones
-        .filter(opt => opt.activo)
-        .map(opt => ({
+      atributos[tipo.key] = {
+        nombre: tipo.nombre,
+        descripcion: tipo.descripcion,
+        tipo_input: 'select',
+        requerido: false,
+        opciones: tipo.opciones.map(opt => ({
           key: opt.key,
-          nombre: opt.nombre,
-        }));
+          label: opt.nombre,
+          prioridad: opt.prioridad,
+          orden: opt.orden,
+        }))
+      };
     }
   });
 
-  return Object.keys(atributos).length > 0 ? atributos : undefined;
+  return atributos;
 }
 
 /**
  * 🆕 MEJORADO: Convierte un diagnóstico del backend al formato del frontend
- * Ahora maneja correctamente los atributos clínicos
  */
 export function mapearDiagnosticoBackendToFrontend(
   diagBackend: DiagnosticoBackend,
@@ -162,15 +170,14 @@ export function mapearDiagnosticoBackendToFrontend(
     siglas: diagBackend.siglas,
     simboloColor: SIMBOLO_BACKEND_TO_FRONTEND[diagBackend.simbolo_color] || 'PATOLOGIA',
     categoria: CATEGORIA_BACKEND_TO_FRONTEND[diagBackend.categoria_nombre || ''] || 'Patología Activa',
+    prioridadKey: PRIORIDAD_BACKEND_TO_FRONTEND[diagBackend.prioridad] || 'MEDIA',
     areas_afectadas: mapearSuperficiesAplicables(diagBackend.superficie_aplicables || []),
     atributos_clinicos: mapearAtributosClinicos(atributosClinicos),
   };
 }
 
-
 /**
  * 🆕 REFACTORIZADO: Convierte categorías completas del backend al formato del frontend
- * Ahora funciona con diagnósticos anidados (como los retorna el backend)
  */
 export function mapearCategoriasBackendToFrontend(
   categorias: CategoriaDiagnosticoBackend[],
@@ -179,10 +186,9 @@ export function mapearCategoriasBackendToFrontend(
   return categorias
     .filter(cat => cat.activo)
     .map(cat => {
-      // Tipado explícito para evitar 'any' implícito
       const diagnosticosMapeados: DiagnosticoItem[] = (cat.diagnosticos || [])
         .filter((diag: DiagnosticoBackend) => diag.activo)
-        .map((diag: DiagnosticoBackend) => 
+        .map((diag: DiagnosticoBackend) =>
           mapearDiagnosticoBackendToFrontend(diag, atributosClinicos)
         );
 
@@ -192,7 +198,7 @@ export function mapearCategoriasBackendToFrontend(
         id: categoriaId as TipoDiagnostico,
         nombre: cat.nombre,
         colorKey: SIMBOLO_BACKEND_TO_FRONTEND[cat.color_key] || 'PATOLOGIA',
-        prioridadKey: PRIORIDAD_KEY_TO_BACKEND[cat.prioridad_key] || 'MEDIA',
+        prioridadKey: cat.prioridad_key as PrioridadKey,
         diagnosticos: diagnosticosMapeados,
       };
     })
@@ -225,39 +231,61 @@ function mapearDiagnosticoInstanceBackendToFrontend(
 }
 
 /**
- * Convierte la respuesta completa del odontograma del backend al formato OdontogramaData del frontend
- *
- * Backend:
- * {
- *   dientes: [
- *     { codigo_fdi: "11", superficies: [{ nombre: "vestibular", diagnosticos: [...] }] }
- *   ]
- * }
- *
- * Frontend:
- * {
- *   "11": {
- *     "cara_vestibular": [{ id: "uuid", procedimientoId: "caries_icdas_3", ... }]
- *   }
- * }
+ * ✅ FIXED: Convierte la respuesta completa del odontograma
+ * IMPORTANTE: Genera TODOS los 32 dientes, no solo los que tienen diagnósticos
  */
 export function mapearOdontogramaBackendToFrontend(
   odontograma: OdontogramaCompletoBackend
 ): OdontogramaData {
   const data: OdontogramaData = {};
+  
+  // ✅ Todos los códigos FDI para dentición permanente (32 dientes)
+  const TODOS_LOS_DIENTES = [
+    // Cuadrante 1 (Superior derecho): 18-11
+    '18', '17', '16', '15', '14', '13', '12', '11',
+    // Cuadrante 2 (Superior izquierdo): 21-28
+    '21', '22', '23', '24', '25', '26', '27', '28',
+    // Cuadrante 3 (Inferior izquierdo): 38-31
+    '38', '37', '36', '35', '34', '33', '32', '31',
+    // Cuadrante 4 (Inferior derecho): 41-48
+    '41', '42', '43', '44', '45', '46', '47', '48'
+  ];
 
-  odontograma.dientes.forEach(diente => {
+  // ✅ Inicializar TODOS los dientes con objetos vacíos
+  TODOS_LOS_DIENTES.forEach(codigoFdi => {
+    data[codigoFdi] = {};
+  });
+
+  // ✅ VALIDACIÓN: Verificar que dientes existe
+  if (!odontograma || !odontograma.dientes) {
+    console.info('ℹ️ Odontograma nuevo - todos los dientes limpios');
+    return data;
+  }
+
+  const dientes = Array.isArray(odontograma.dientes) ? odontograma.dientes : [];
+
+  // ✅ Llenar solo los dientes que tienen diagnósticos
+  dientes.forEach(diente => {
     const toothId = diente.codigo_fdi;
-    data[toothId] = {};
+    
+    // Si el diente no está en nuestra lista, omitir (dientes temporales)
+    if (!TODOS_LOS_DIENTES.includes(toothId)) {
+      return;
+    }
 
-    diente.superficies.forEach(superficie => {
+    const superficies = diente.superficies || [];
+
+    superficies.forEach(superficie => {
       const surfaceId = superficieBackendToFrontend(superficie.nombre);
-      data[toothId][surfaceId] = superficie.diagnosticos
-        .filter(d => d.activo)
+      const diagnosticos = superficie.diagnosticos || [];
+      
+      data[toothId][surfaceId] = diagnosticos
+        .filter(d => d.activo !== false)
         .map(diag => mapearDiagnosticoInstanceBackendToFrontend(diag));
     });
   });
 
+  console.log(`✅ Mapper: ${TODOS_LOS_DIENTES.length} dientes totales, ${dientes.length} con diagnósticos`);
   return data;
 }
 
@@ -267,37 +295,6 @@ export function mapearOdontogramaBackendToFrontend(
 
 /**
  * Convierte el OdontogramaData del frontend al formato esperado por el backend
- *
- * Frontend (OdontogramaData):
- * {
- *   "11": {
- *     "cara_vestibular": [
- *       {
- *         id: "uuid",
- *         procedimientoId: "caries_icdas_3",
- *         colorHex: "#ef4444",
- *         descripcion: "Caries profunda",
- *         secondaryOptions: { material: "resina" },
- *         areas_afectadas: ["corona"]
- *       }
- *     ]
- *   }
- * }
- *
- * Backend esperado:
- * {
- *   "11": {
- *     "vestibular": [
- *       {
- *         procedimientoId: "caries_icdas_3",
- *         colorHex: "#ef4444",
- *         descripcion: "Caries profunda",
- *         secondaryOptions: { material: "resina" },
- *         afectaArea: ["corona"]
- *       }
- *     ]
- *   }
- * }
  */
 export function mapearOdontogramaFrontendToBackend(
   odontogramaData: OdontogramaData
@@ -330,9 +327,6 @@ export function mapearOdontogramaFrontendToBackend(
 /**
  * Filtra solo los diagnósticos nuevos (sin ID del backend o con ID temporal)
  * Útil para guardado incremental
- *
- * @param odontogramaData - OdontogramaData completo del frontend
- * @returns OdontogramaData solo con diagnósticos nuevos
  */
 export function extraerDiagnosticosNuevos(
   odontogramaData: OdontogramaData

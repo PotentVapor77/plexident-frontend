@@ -1,5 +1,6 @@
 // src/components/odontogram/selection/DiagnosticoSelectUI.tsx
 
+import { useEffect } from "react";
 import type { PrincipalArea } from "..";
 import type { AtributoClinicoDefinicion, OpcionAtributoClinico } from "../../../core/types/typeOdontograma";
 import type { useDiagnosticoSelect } from "../../../hooks/odontogram/useDiagnosticoSelect";
@@ -7,8 +8,8 @@ import type { useDiagnosticoSelect } from "../../../hooks/odontogram/useDiagnost
 // Tipos para las props del componente UI
 type DiagnosticoSelectUIProps = ReturnType<typeof useDiagnosticoSelect> & {
   currentArea: PrincipalArea;
+  onFormValidChange?: (isValid: boolean) => void; 
 };
-
 // Componente auxiliar para los encabezados de sección con número
 const SectionHeader = ({ title }: { step: string; title: string }) => (
   <div className="flex items-center gap-2 mb-3">
@@ -30,20 +31,24 @@ export const DiagnosticoSelectUI = ({
   handleDiagnosticoChange,
   handleAtributoChange,
   setDescripcion,
-  handleApply,
-  handleCancel,
   filteredCategories,
   currentDiagnosesForSelect,
   requiresSpecificAreaMessage,
   // Props adicionales
   currentArea,
+  onFormValidChange,
+
 }: DiagnosticoSelectUIProps) => {
 
   const inputBaseClass = "w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 py-2.5 px-4 text-gray-900 dark:text-white outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition disabled:bg-gray-100 dark:disabled:bg-gray-900 disabled:cursor-not-allowed";
   const labelBaseClass = "block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300";
-
+  useEffect(() => {
+    if (onFormValidChange) {
+      onFormValidChange(formValid);
+    }
+  }, [formValid, onFormValidChange]);
   return (
-    <div className="mt-6 p-5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-theme-sm space-y-6 relative max-h-[calc(100vh-400px)] overflow-y-auto custom-scrollbar">
+    <div className="mt-2 p-4 space-y-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-theme-sm">
 
       {/* 1. Selecciona Categoría */}
       <section>
@@ -234,29 +239,6 @@ export const DiagnosticoSelectUI = ({
             placeholder="Escribe observaciones, ej: ICDAS 3 en zona mesial..."
           />
         </section>
-      )}
-
-      {diagnosticoSeleccionado && categoriaSeleccionada && (
-        <div className="sticky bottom-0 flex-shrink-0 p-4 pb-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg">
-          <div className="flex gap-3">
-            <button
-              onClick={handleCancel}
-              className="flex-1 py-2.5 px-4 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={handleApply}
-              disabled={!formValid}
-              className={`flex-2 py-2.5 px-4 rounded-lg font-medium text-white shadow-theme-sm transition-all ${formValid
-                  ? 'bg-brand-600 hover:bg-brand-700 active:bg-brand-800'
-                  : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed shadow-none'
-                }`}
-            >
-              Aplicar
-            </button>
-          </div>
-        </div>
       )}
     </div>
   );

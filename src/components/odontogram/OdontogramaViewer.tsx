@@ -136,7 +136,7 @@ export const OdontogramaViewer = ({
       style={{
         position: "relative",
         width: "100%",
-        height: "100vh",
+        height: "100%",
         display: "flex",
       }}
     >
@@ -320,14 +320,14 @@ export const OdontogramaViewer = ({
         <div
           style={{
             width: 360,
-    maxWidth: "100%",
-    height: "100%",
-    borderLeft: "1px solid rgb(229,231,235)",
-    overflowX: "hidden",
-    background: "white",
-    boxSizing: "border-box",
-    display: "flex",
-      flexDirection: "column",
+            maxWidth: "100%",
+            height: "100%",
+            borderLeft: "1px solid rgb(229,231,235)",
+            background: "white",
+            boxSizing: "border-box",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
           }}
         >
           <DiagnosticoPanel

@@ -27,12 +27,11 @@ const SURFACE_AREA_MAP: Record<string, 'corona' | 'raiz' | 'general'> = {
     'cara_vestibular': 'corona',
     'cara_lingual': 'corona',
 
-    'raiz:raiz-mesial': 'raiz',
-    'raiz:raiz-distal': 'raiz',
-    'raiz:raiz-palatal': 'raiz',
-    'raiz:raiz-vestibular': 'raiz',
-    'raiz:raiz-principal': 'raiz',
-
+    'raiz:raiz_mesial': 'raiz',
+    'raiz:raiz_distal': 'raiz',
+    'raiz:raiz_palatal': 'raiz',
+    'raiz:raiz_vestibular': 'raiz',
+    'raiz:raiz_principal': 'raiz',
     'general': 'general',
 };
 

@@ -182,6 +182,11 @@ export const useOdontogramaData = (initialData: OdontogramaData = {}) => {
         return JSON.parse(JSON.stringify(data));
     }, [data]);
 
+    const loadFromBackend = useCallback((backendData: OdontogramaData) => {
+        setData(hydrateOdontogramaData(backendData));
+        setDientesBloqueados(({}));
+    }, []);
+
     return {
         // Estado
         odontogramaData: data,
@@ -209,5 +214,8 @@ export const useOdontogramaData = (initialData: OdontogramaData = {}) => {
 
         // Utilidades
         setData,
+
+        // Carga de datos
+        loadFromBackend
     };
 };

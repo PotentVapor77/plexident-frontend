@@ -17,31 +17,31 @@ import { DiagnosticoSelect } from "..";
 
 // Definir todas las superficies de corona
 const CROWN_SURFACES = [
-  "cara-oclusal",
-  "cara-vestibular",
-  "cara-distal",
-  "cara-mesial",
-  "cara-lingual",
+  "cara_oclusal",
+  "cara_vestibular",
+  "cara_distal",
+  "cara_mesial",
+  "cara_lingual",
 ];
 
 // Definir superficies de raíz por tipo de diente
 const ROOT_SURFACES_BY_TYPE: Record<string, string[]> = {
-  "raiz-molar-superior": [
-    "raiz-mesial",
-    "raiz-distal",
-    "raiz-palatal",
+  "raiz_molar_superior": [
+    "raiz:raiz-mesial",
+    "raiz:raiz-distal",
+    "raiz:raiz-palatal",
   ],
-  "raiz-molar-inferior": [
-    "raiz-mesial",
-    "raiz-distal",
+  "raiz_molar_inferior": [
+    "raiz:raiz-mesial",
+    "raiz:raiz-distal",
   ],
-  "raiz-premolar": [
-    "raiz-vestibular",
-    "raiz-palatal",
+  "raiz_premolar": [
+    "raiz:raiz-vestibular",
+    "raiz:raiz-palatal",
   ],
-  "raiz-canino": ["raiz-principal"],
-  "raiz-incisivo": ["raiz-principal"],
-  "raiz-dental": ["raiz-principal"],
+  "raiz_canino": ["raiz:raiz-principal"],
+  "raiz_incisivo": ["raiz:raiz-principal"],
+  "raiz_dental": ["raiz:raiz-principal"],
 };
 
 type DiagnosticoPanelProps = {

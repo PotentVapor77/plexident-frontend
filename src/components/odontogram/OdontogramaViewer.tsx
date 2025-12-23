@@ -131,6 +131,8 @@ export const OdontogramaViewer = ({
     };
   }, [freezeResize]);
 
+  
+
   return (
     <div
       style={{

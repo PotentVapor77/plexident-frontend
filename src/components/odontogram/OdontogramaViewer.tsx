@@ -10,24 +10,26 @@ import {
   PerspectiveButtons,
 } from "./3d/CameraControls";
 import { type DatosDiente, type Diagnostico } from "./preview/ToothStatusDisplay";
-import { useOdontogramaData } from "../../hooks/odontogram/useOdontogramaData";
 import { DentalBackground } from "../../hooks/gradients/DentalGradient";
 import { PanelPreviewDiente } from "./preview/ToothPreviewPanel";
 import { toothTranslations } from "../../core/utils/toothTraslations";
 import { DiagnosticoPanel } from "./diagnostic/DiagnosticoPanel";
 import { DiagnosticosGrid } from "./diagnostic/DiagnosticosGrid";
 import React from "react";
-
 import { usePacienteActivo } from "../../context/PacienteContext";
 import type { IPaciente } from "../../types/patient/IPatient";
 import { NoPacienteOverlay } from "./patient/NoPacienteOverlay";
 import { PacienteFloatingButton } from "./patient/PacienteFloatingButton";
 import { PacienteInfoPanel } from "./patient/PacienteInfoPanel";
+import { useOdontogramaData } from "../../hooks/odontogram/useOdontogramaData";
+import { useCargarOdontogramaCompleto } from "../../hooks/odontogram/useCargarOdontogramaCompleto";
 
 type OdontogramaViewerProps = {
   onSelectTooth: React.Dispatch<React.SetStateAction<string | null>>;
   freezeResize: boolean;
 };
+
+
 
 export const OdontogramaViewer = ({
   onSelectTooth,
@@ -40,15 +42,38 @@ export const OdontogramaViewer = ({
   const odontogramaDataHook = useOdontogramaData();
   const { getPreviewColor, getToothDiagnoses, getProcConfig, odontogramaData, removeDiagnostico } =
     odontogramaDataHook;
-
+  const { loadFromBackend } = odontogramaDataHook;
   const [selectedTooth, setSelectedTooth] = React.useState<string | null>(null);
   const [previewProcId, setPreviewProcId] = React.useState<string | null>(null);
   const [previewOptions, setPreviewOptions] = React.useState<Record<string, any>>({});
 
   const [currentView, setCurrentView] = React.useState<ViewPresetKey>("FRONT");
   const [isJawOpen, setIsJawOpen] = React.useState(false);
-
+  const { cargarOdontograma } = useCargarOdontogramaCompleto();
   const canvasContainerRef = useRef<HTMLDivElement | null>(null);
+
+
+  useEffect(() => {
+  if (!pacienteActivo) {
+    console.log('[VIEWER] No hay pacienteActivo, no cargo odontograma');
+    return;
+  }
+
+  console.log('[VIEWER] useEffect cargar odontograma para paciente', pacienteActivo.id);
+
+  (async () => {
+    const data = await cargarOdontograma(pacienteActivo.id);
+    console.log('[VIEWER] Resultado cargarOdontograma:', data);
+
+    if (data) {
+      console.log('[VIEWER] Llamando loadFromBackend con data');
+      loadFromBackend(data);
+      console.log('[VIEWER] Estado odontogramaData tras loadFromBackend:', odontogramaData);
+    } else {
+      console.warn('[VIEWER] cargarOdontograma devolvió null, no se carga');
+    }
+  })();
+}, [pacienteActivo, cargarOdontograma, loadFromBackend]);
 
   // Handlers
   const handleSelectTooth = (tooth: string | null) => {
@@ -63,7 +88,7 @@ export const OdontogramaViewer = ({
   };
 
   const handleSelectPaciente = (paciente: IPaciente) => {
-    console.log("✅ Paciente seleccionado:", paciente);
+    console.log("Paciente seleccionado:", paciente);
     setPacienteActivo(paciente);
     setSelectedTooth(null);
     onSelectTooth(null);
@@ -131,7 +156,7 @@ export const OdontogramaViewer = ({
     };
   }, [freezeResize]);
 
-  
+
 
   return (
     <div
@@ -341,3 +366,4 @@ export const OdontogramaViewer = ({
     </div>
   );
 };
+

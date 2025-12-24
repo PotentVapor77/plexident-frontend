@@ -157,7 +157,30 @@ export interface OdontogramaCompletoBackend {
     apellidos: string;
     cedula_pasaporte: string;
   };
+
+  // Formato antiguo (si el backend lo sigue enviando)
   dientes: DienteConDiagnosticos[];
+
+  // NUEVO: formato plano /completo/
+  odontograma_data?: {
+    [codigoFdi: string]: {
+      [superficieNombre: string]: {
+        id: string;
+        procedimientoId: string;
+        colorHex: string;
+        secondaryOptions: Record<string, any>;
+        descripcion: string;
+        afectaArea: string[];
+        estado_tratamiento: string;
+        prioridad: number;
+        fecha: string;
+        odontologo: string;
+      }[];
+    };
+  };
+
+  // Si tu backend también manda esto:
+  fecha_obtension?: string;
 }
 
 export interface DienteConDiagnosticos extends DienteBackend {

@@ -125,9 +125,6 @@ function mapearSuperficiesAplicables(superficies: string[]): ('corona' | 'raiz' 
   return result.length > 0 ? result : ['general'];
 }
 
-/**
- * ✅ FIXED: Mapea atributos clínicos del backend al formato del frontend
- */
 function mapearAtributosClinicos(
   atributosTipos?: TipoAtributoClinicoBackend[]
 ): Record<string, AtributoClinicoDefinicion> {
@@ -157,9 +154,6 @@ function mapearAtributosClinicos(
   return atributos;
 }
 
-/**
- * 🆕 MEJORADO: Convierte un diagnóstico del backend al formato del frontend
- */
 export function mapearDiagnosticoBackendToFrontend(
   diagBackend: DiagnosticoBackend,
   atributosClinicos?: TipoAtributoClinicoBackend[]
@@ -176,9 +170,6 @@ export function mapearDiagnosticoBackendToFrontend(
   };
 }
 
-/**
- * 🆕 REFACTORIZADO: Convierte categorías completas del backend al formato del frontend
- */
 export function mapearCategoriasBackendToFrontend(
   categorias: CategoriaDiagnosticoBackend[],
   atributosClinicos?: TipoAtributoClinicoBackend[]
@@ -205,9 +196,7 @@ export function mapearCategoriasBackendToFrontend(
     .filter(cat => cat.diagnosticos.length > 0);
 }
 
-/**
- * Convierte una instancia de diagnóstico dental del backend a DiagnosticoEntry del frontend
- */
+
 function mapearDiagnosticoInstanceBackendToFrontend(
   diag: DiagnosticoDentalBackend
 ): DiagnosticoEntry {
@@ -231,71 +220,95 @@ function mapearDiagnosticoInstanceBackendToFrontend(
 }
 
 /**
- * ✅ FIXED: Convierte la respuesta completa del odontograma
+ * FIXED: Convierte la respuesta completa del odontograma
  * IMPORTANTE: Genera TODOS los 32 dientes, no solo los que tienen diagnósticos
  */
 export function mapearOdontogramaBackendToFrontend(
   odontograma: OdontogramaCompletoBackend
 ): OdontogramaData {
   const data: OdontogramaData = {};
-  
-  // ✅ Todos los códigos FDI para dentición permanente (32 dientes)
+
   const TODOS_LOS_DIENTES = [
-    // Cuadrante 1 (Superior derecho): 18-11
-    '18', '17', '16', '15', '14', '13', '12', '11',
-    // Cuadrante 2 (Superior izquierdo): 21-28
-    '21', '22', '23', '24', '25', '26', '27', '28',
-    // Cuadrante 3 (Inferior izquierdo): 38-31
-    '38', '37', '36', '35', '34', '33', '32', '31',
-    // Cuadrante 4 (Inferior derecho): 41-48
-    '41', '42', '43', '44', '45', '46', '47', '48'
+    '18','17','16','15','14','13','12','11',
+    '21','22','23','24','25','26','27','28',
+    '38','37','36','35','34','33','32','31',
+    '41','42','43','44','45','46','47','48',
   ];
 
-  // ✅ Inicializar TODOS los dientes con objetos vacíos
+  // 1) Inicializar todos los dientes vacíos
   TODOS_LOS_DIENTES.forEach(codigoFdi => {
     data[codigoFdi] = {};
   });
 
-  // ✅ VALIDACIÓN: Verificar que dientes existe
-  if (!odontograma || !odontograma.dientes) {
-    console.info('ℹ️ Odontograma nuevo - todos los dientes limpios');
-    return data;
+  // 2) Si viene el formato “viejo” con dientes, seguir soportándolo
+  const dientes = Array.isArray(odontograma.dientes) ? odontograma.dientes : [];
+  if (dientes.length > 0) {
+    dientes.forEach(diente => {
+      const toothId = diente.codigo_fdi;
+      if (!TODOS_LOS_DIENTES.includes(toothId)) return;
+
+      const superficies = diente.superficies || [];
+      superficies.forEach(superficie => {
+        const surfaceId = superficieBackendToFrontend(superficie.nombre);
+        const diagnosticos = superficie.diagnosticos || [];
+        data[toothId][surfaceId] = diagnosticos
+          .filter(d => d.activo !== false)
+          .map(diag => mapearDiagnosticoInstanceBackendToFrontend(diag));
+      });
+    });
   }
 
-  const dientes = Array.isArray(odontograma.dientes) ? odontograma.dientes : [];
-
-  // ✅ Llenar solo los dientes que tienen diagnósticos
-  dientes.forEach(diente => {
-    const toothId = diente.codigo_fdi;
-    
-    // Si el diente no está en nuestra lista, omitir (dientes temporales)
-    if (!TODOS_LOS_DIENTES.includes(toothId)) {
-      return;
+  // 3) NUEVO: aplicar también odontograma_data plano (formato /completo/)
+  const odData = odontograma.odontograma_data || {};
+  Object.entries(odData).forEach(([codigoFdi, superficies]) => {
+    if (!data[codigoFdi]) {
+      data[codigoFdi] = {};
     }
 
-    const superficies = diente.superficies || [];
+    Object.entries(superficies as Record<string, any[]>).forEach(
+      ([nombreSuperficie, lista]) => {
+        if (!Array.isArray(lista)) return;
 
-    superficies.forEach(superficie => {
-      const surfaceId = superficieBackendToFrontend(superficie.nombre);
-      const diagnosticos = superficie.diagnosticos || [];
-      
-      data[toothId][surfaceId] = diagnosticos
-        .filter(d => d.activo !== false)
-        .map(diag => mapearDiagnosticoInstanceBackendToFrontend(diag));
-    });
+        const surfaceId = superficieBackendToFrontend(nombreSuperficie);
+        if (!data[codigoFdi][surfaceId]) {
+          data[codigoFdi][surfaceId] = [];
+        }
+
+        lista.forEach(diag => {
+          const entry: DiagnosticoEntry = {
+            id: diag.id,
+            procedimientoId: diag.procedimientoId,
+            colorHex: diag.colorHex,
+            secondaryOptions: diag.secondaryOptions || {},
+            descripcion: diag.descripcion || '',
+            areas_afectadas: diag.afectaArea || ['general'],
+            superficieId: surfaceId,
+            siglas: '',              // se puede resolver luego con catálogo
+            nombre: '',              // idem
+            priority: diag.prioridad ?? 3,
+            prioridadKey:
+              PRIORIDAD_BACKEND_TO_FRONTEND[diag.prioridad ?? 3] || 'MEDIA',
+          };
+
+          data[codigoFdi][surfaceId].push(entry);
+        });
+      },
+    );
   });
 
-  console.log(`✅ Mapper: ${TODOS_LOS_DIENTES.length} dientes totales, ${dientes.length} con diagnósticos`);
+  console.log(
+    'Mapper FINAL odontogramaData',
+    data['11'],
+    data['24'],
+  );
+
   return data;
 }
 
 // ============================================================================
-// 🆕 MAPEO FRONTEND → BACKEND (Para POST/Guardado)
+//  MAPEO FRONTEND → BACKEND (Para POST/Guardado)
 // ============================================================================
 
-/**
- * Convierte el OdontogramaData del frontend al formato esperado por el backend
- */
 export function mapearOdontogramaFrontendToBackend(
   odontogramaData: OdontogramaData
 ): Record<string, Record<string, any[]>> {

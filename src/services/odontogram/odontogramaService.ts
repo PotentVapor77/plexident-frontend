@@ -12,6 +12,7 @@ import type {
 import { createApiError } from '../../types/api';
 import api from '../api/axiosInstance';
 import type { OdontogramaData } from '../../core/types/typeOdontograma';
+import { mapearOdontogramaBackendToFrontend } from '../../mappers/odontogramaMapper';
 
 // ============================================================================
 // CONSTANTES DE ENDPOINTS
@@ -22,6 +23,8 @@ const ODONTOGRAM_ENDPOINTS = {
   categorias: '/odontogram/catalogo/categorias/con-diagnosticos/',
   diagnosticos: '/odontogram/catalogo/diagnosticos/',
   atributosClinicos: '/odontogram/catalogo/atributos-clinicos/',
+  odontogramaCompleto: (pacienteId: string) =>
+    `/odontogram/odontogramas/${pacienteId}/completo/`,
 
   // Paciente
   odontogramaPaciente: (pacienteId: string) => `/odontogram/pacientes/${pacienteId}/odontograma/`,
@@ -44,7 +47,38 @@ const ODONTOGRAM_ENDPOINTS = {
   historial: '/odontogram/historial/',
   historialPorDiente: (dienteId: string) => `/odontogram/historial/?diente_id=${dienteId}`,
   historialPorPaciente: (pacienteId: string) => `/odontogram/historial/?paciente_id=${pacienteId}`,
+
+
 } as const;
+
+// ============================================================================
+// ODONTOGRAMA COMPLETO (USO GENERAL)
+// ============================================================================
+export async function obtenerOdontogramaCompletoFrontend(
+  pacienteId: string,
+): Promise<OdontogramaData> {
+  console.log('[SERVICE] Cargando odontograma completo para', pacienteId);
+
+  const { data } = await api.get<{
+    success: boolean;
+    status_code: number;
+    message: string;
+    data: OdontogramaCompletoBackend;
+  }>(ODONTOGRAM_ENDPOINTS.odontogramaCompleto(pacienteId));
+
+  console.log('[SERVICE] Respuesta backend /completo:', data);
+
+  if (!data.success) {
+    console.error('[SERVICE] Backend no success:', data.message);
+    throw new Error(data.message || 'Error al cargar odontograma completo');
+  }
+
+  const frontendData = mapearOdontogramaBackendToFrontend(data.data);
+  console.log('[SERVICE] Datos mapeados a OdontogramaData:', frontendData);
+
+  return frontendData;
+}
+
 
 // ============================================================================
 // TIPOS PARA GUARDADO COMPLETO

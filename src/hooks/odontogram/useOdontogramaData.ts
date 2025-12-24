@@ -13,11 +13,18 @@ import { type OdontogramaData, type DiagnosticoEntry, type OdontoColorKey, type 
 const initialDientesBloqueados: Record<string, boolean> = {};
 
 export const useOdontogramaData = (initialData: OdontogramaData = {}) => {
-    const [data, setData] = useState(() => hydrateOdontogramaData(initialData));
+    const [data, setData] = useState(() => {
+        const hydrated = hydrateOdontogramaData(initialData);
+        return hydrated;
+    });
     const [dientesBloqueados, setDientesBloqueados] = useState<Record<string, boolean>>(initialDientesBloqueados);
     const [isSaving, setIsSaving] = useState(false);
     const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
     const [tipoDiagnosticoSeleccionado] = useState(null);
+
+
+
+
 
     // Cache de diagnósticos por diente
     const toothDiagnosesCache = useMemo(() => {
@@ -41,6 +48,7 @@ export const useOdontogramaData = (initialData: OdontogramaData = {}) => {
 
     const getDiagnosticosForSurface = useCallback(
         (toothId: string | null, surfaceId: string): DiagnosticoEntry[] => {
+            console.log('[HOOK] getDiagnosticosForSurface', { toothId, surfaceId, data });
             if (!toothId || !data[toothId]) return [];
             return data[toothId][surfaceId] || [];
         },
@@ -182,9 +190,10 @@ export const useOdontogramaData = (initialData: OdontogramaData = {}) => {
         return JSON.parse(JSON.stringify(data));
     }, [data]);
 
-    const loadFromBackend = useCallback((backendData: OdontogramaData) => {
-        setData(hydrateOdontogramaData(backendData));
-        setDientesBloqueados(({}));
+    const loadFromBackend = useCallback((newData: OdontogramaData) => {
+        const hydrated = hydrateOdontogramaData(newData);
+        setData(hydrated);
+        setDientesBloqueados({});
     }, []);
 
     return {

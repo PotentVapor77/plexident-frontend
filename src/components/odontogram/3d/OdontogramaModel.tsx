@@ -180,11 +180,12 @@ export const OdontogramaModel = ({
     );
   });
 
-  // --- 3. Lógica de color (Actualizada para incluir hoveredTooth) ---
+  // --- 3. Lógica de color ---
   useEffect(() => {
     scene.traverse((child: any) => {
       if (child.isMesh) {
         const toothId = child.name;
+        console.log('[OdontogramaModel] Actualizando color para diente:', toothId);
         let finalColor = COLOR_BASE_DIENTE;
 
         const dominantColorHex = getDominantColorForTooth(toothId);

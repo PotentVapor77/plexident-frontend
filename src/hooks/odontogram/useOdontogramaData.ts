@@ -48,7 +48,6 @@ export const useOdontogramaData = (initialData: OdontogramaData = {}) => {
 
     const getDiagnosticosForSurface = useCallback(
         (toothId: string | null, surfaceId: string): DiagnosticoEntry[] => {
-            console.log('[HOOK] getDiagnosticosForSurface', { toothId, surfaceId, data });
             if (!toothId || !data[toothId]) return [];
             return data[toothId][surfaceId] || [];
         },

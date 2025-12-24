@@ -4,7 +4,7 @@ import { useCrownInteractions } from "../../../hooks/odontogram/useCrownInteract
 import { useOdontogramaData } from "../../../hooks/odontogram/useOdontogramaData";
 import { useRootInteractions } from "../../../hooks/odontogram/useRootInteractions";
 import { useToothRootType } from "../../../hooks/odontogram/useToothRootType";
-import { ODONTO_COLORS, type RootGroupKey } from "../../../core/types/typeOdontograma";
+import { ODONTO_COLORS, type DiagnosticoEntry, type RootGroupKey } from "../../../core/types/typeOdontograma";
 
 // IMPORTAR SVGs DIRECTAMENTE
 import odontSvg from "../../../assets/images/dental/odonto.svg";
@@ -57,31 +57,17 @@ const getPrincipalArea = (surfaces: string[]): PrincipalArea => {
     return 'general';
 };
 
-const getRootGroupKeyFromType = (type?: string): RootGroupKey | null => {
-    switch (type) {
-        case "raiz_molar_superior":
-            return "molar_superior";
-        case "raiz_molar_inferior":
-            return "molar_inferior";
-        case "raiz_premolar":
-            return "premolar";
-        case "raiz_canino":
-        case "raiz_incisivo":
-            return "anterior";
-        default:
-            return null;
-    }
-};
 
 
 interface SurfaceSelectorProps {
-    selectedSurfaces: string[];
-    onSurfaceSelect: (surfaces: string[]) => void;
-    selectedTooth: string | null;
-    isBlocked?: boolean;
-    onAreaChange: (area: PrincipalArea) => void;
-
-    onRootGroupChange?: (group: RootGroupKey | null) => void;
+  selectedSurfaces: string[];
+  onSurfaceSelect: (surfaces: string[]) => void;
+  selectedTooth: string | null;
+  isBlocked?: boolean;
+  onAreaChange: (area: PrincipalArea) => void;
+  onRootGroupChange?: (group: RootGroupKey | null) => void;
+  getPermanentColorForSurface: (toothId: string | null, surfaceId: string) => string | null;
+  activeDiagnosisColor: string | null;
 }
 
 export interface SurfaceSelectorRef {
@@ -90,12 +76,14 @@ export interface SurfaceSelectorRef {
 }
 
 export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorProps>(({
-    selectedSurfaces,
-    onSurfaceSelect,
-    selectedTooth,
-    isBlocked,
-    onAreaChange,
-    onRootGroupChange,
+  selectedSurfaces,
+  onSurfaceSelect,
+  selectedTooth,
+  isBlocked,
+  onAreaChange,
+  onRootGroupChange,
+  getPermanentColorForSurface,
+  activeDiagnosisColor,
 }, ref) => {
 
     const [svgLoaded, setSvgLoaded] = useState(false);
@@ -113,14 +101,11 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         }
         onRootGroupChange?.(rootInfo.type as RootGroupKey);
     }, [selectedTooth, rootInfo.type, onRootGroupChange]);
-    const { getPermanentColorForSurface, tipoDiagnosticoSeleccionado } = useOdontogramaData();
-
 
 
     // Deshabilitado si no hay diente seleccionado O si estÃƒÂ¡ bloqueado por prop
     const isDisabled = !selectedTooth || isBlocked;
 
-    const activeDiagnosisColor = ((tipoDiagnosticoSeleccionado as any)?.colorHex) ?? null;
     const uiSelectionColor = UI_SELECTION_FALLBACK_COLOR;
     const DEFAULT_COLOR = "#ffffff";
 

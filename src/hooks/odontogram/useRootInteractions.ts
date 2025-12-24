@@ -29,6 +29,8 @@ export const useRootInteractions = ({
   const selectedSurfacesRef = useRef<string[]>(selectedSurfaces);
   const cleanupFnsRef = useRef<(() => void)[]>([]);
 
+  
+
   useEffect(() => {
     selectedSurfacesRef.current = selectedSurfaces;
   }, [selectedSurfaces]);

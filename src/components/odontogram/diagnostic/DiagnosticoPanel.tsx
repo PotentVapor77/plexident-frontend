@@ -68,6 +68,8 @@ export const DiagnosticoPanel = ({
     lastSaveTime,
     getProcConfig,
     odontogramaData,
+    getPermanentColorForSurface,
+    tipoDiagnosticoSeleccionado,
   } = odontogramaDataHook;
 
   // HOOKS DE DATOS
@@ -430,6 +432,9 @@ const [currentRootGroup, setCurrentRootGroup] = useState<string | null>(null);
                     isBlocked={isBlocked}
                     onAreaChange={handleAreaChange}
                     onRootGroupChange={setCurrentRootGroup}
+getPermanentColorForSurface={getPermanentColorForSurface}
+  activeDiagnosisColor={(tipoDiagnosticoSeleccionado as any)?.colorHex ?? null}
+                    
                   />
                 </div>
 

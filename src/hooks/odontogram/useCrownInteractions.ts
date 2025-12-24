@@ -119,14 +119,14 @@ export const useCrownInteractions = ({
         let finalColor = DEFAULT_COLOR;
 
         if (permanentColor) {
-          finalColor = permanentColor; // Restauración permanente
-        } else if (isSelected && previewColorHex) {
-          finalColor = previewColorHex; // Diagnóstico activo
-        } else if (isSelected) {
-          finalColor = UI_SELECTION_COLOR; // Selección fallback
-        } else {
-          finalColor = element.dataset.originalFill || DEFAULT_COLOR;
-        }
+  finalColor = permanentColor;
+} else if (isSelected && previewColorHex) {
+  finalColor = previewColorHex;
+} else if (isSelected) {
+  finalColor = UI_SELECTION_COLOR;
+} else {
+  finalColor = element.dataset.originalFill || DEFAULT_COLOR;
+}
 
         element.style.fill = finalColor;
       });

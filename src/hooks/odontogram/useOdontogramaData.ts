@@ -72,10 +72,25 @@ export const useOdontogramaData = (initialData: OdontogramaData = {}) => {
 
     const getPermanentColor = useCallback(
         (toothId: string | null, surfaceId: string): string | null => {
-            const diagnosticos = getDiagnosticosForSurface(toothId, surfaceId);
-            return getPermanentColorForSurface(diagnosticos);
+            if (!toothId || !data[toothId]) return null;
+
+            const toothData = data[toothId];
+
+            const direct = toothData[surfaceId] || [];
+            const crownAll = toothData['corona_completa'] || [];
+            const rootAll = toothData['raiz_completa'] || [];
+            const general = toothData['general'] || [];
+
+            const all = [
+                ...direct,
+                ...crownAll,
+                ...rootAll,
+                ...general,
+            ] as DiagnosticoEntry[];
+
+            return getPermanentColorForSurface(all);
         },
-        [getDiagnosticosForSurface]
+        [data]
     );
 
     const getDominantColor = useCallback(

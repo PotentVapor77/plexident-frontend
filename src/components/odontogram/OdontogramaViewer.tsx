@@ -1,6 +1,6 @@
 // src/components/odontogram/OdontogramaViewer.tsx
 
-import { useMemo, useRef, useEffect } from "react";
+import { useMemo, useRef, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OdontogramaModel } from "./3d/OdontogramaModel";
 import {
@@ -12,7 +12,7 @@ import {
 import { type DatosDiente, type Diagnostico } from "./preview/ToothStatusDisplay";
 import { DentalBackground } from "../../hooks/gradients/DentalGradient";
 import { PanelPreviewDiente } from "./preview/ToothPreviewPanel";
-import { toothTranslations } from "../../core/utils/toothTraslations";
+import { getToothTranslationByFdi, toothTranslations } from "../../core/utils/toothTraslations";
 import { DiagnosticoPanel } from "./diagnostic/DiagnosticoPanel";
 import { DiagnosticosGrid } from "./diagnostic/DiagnosticosGrid";
 import React from "react";
@@ -47,6 +47,8 @@ export const OdontogramaViewer = ({
   const [previewProcId, setPreviewProcId] = React.useState<string | null>(null);
   const [previewOptions, setPreviewOptions] = React.useState<Record<string, any>>({});
 
+  const [selectedToothFdiId, setSelectedToothFdiId] = React.useState<string | null>(null);
+
   const [currentView, setCurrentView] = React.useState<ViewPresetKey>("FRONT");
   const [isJawOpen, setIsJawOpen] = React.useState(false);
   const { cargarOdontograma } = useCargarOdontogramaCompleto();
@@ -54,26 +56,26 @@ export const OdontogramaViewer = ({
 
 
   useEffect(() => {
-  if (!pacienteActivo) {
-    console.log('[VIEWER] No hay pacienteActivo, no cargo odontograma');
-    return;
-  }
-
-  console.log('[VIEWER] useEffect cargar odontograma para paciente', pacienteActivo.id);
-
-  (async () => {
-    const data = await cargarOdontograma(pacienteActivo.id);
-    console.log('[VIEWER] Resultado cargarOdontograma:', data);
-
-    if (data) {
-      console.log('[VIEWER] Llamando loadFromBackend con data');
-      loadFromBackend(data);
-      console.log('[VIEWER] Estado odontogramaData tras loadFromBackend:', odontogramaData);
-    } else {
-      console.warn('[VIEWER] cargarOdontograma devolvió null, no se carga');
+    if (!pacienteActivo) {
+      console.log('[VIEWER] No hay pacienteActivo, no cargo odontograma');
+      return;
     }
-  })();
-}, [pacienteActivo, cargarOdontograma, loadFromBackend]);
+
+    console.log('[VIEWER] useEffect cargar odontograma para paciente', pacienteActivo.id);
+
+    (async () => {
+      const data = await cargarOdontograma(pacienteActivo.id);
+      console.log('[VIEWER] Resultado cargarOdontograma:', data);
+
+      if (data) {
+        console.log('[VIEWER] Llamando loadFromBackend con data');
+        loadFromBackend(data);
+        console.log('[VIEWER] Estado odontogramaData tras loadFromBackend:', odontogramaData);
+      } else {
+        console.warn('[VIEWER] cargarOdontograma devolvió null, no se carga');
+      }
+    })();
+  }, [pacienteActivo, cargarOdontograma, loadFromBackend]);
 
   // Handlers
   const handleSelectTooth = (tooth: string | null) => {
@@ -81,14 +83,17 @@ export const OdontogramaViewer = ({
       console.warn("No se puede seleccionar diente sin paciente activo");
       return;
     }
+    console.log("[VIEWER] handleSelectTooth llamado con:", tooth);
+
     setSelectedTooth(tooth);
+
     onSelectTooth(tooth);
     setPreviewProcId(null);
     setPreviewOptions({});
   };
 
   const handleSelectPaciente = (paciente: IPaciente) => {
-    console.log("Paciente seleccionado:", paciente);
+    //console.log("Paciente seleccionado:", paciente);
     setPacienteActivo(paciente);
     setSelectedTooth(null);
     onSelectTooth(null);
@@ -96,7 +101,7 @@ export const OdontogramaViewer = ({
   };
 
   const handleRemovePaciente = () => {
-    console.log("❌ Paciente removido");
+    console.log("Paciente removido");
     setPacienteActivo(null);
     setSelectedTooth(null);
     onSelectTooth(null);
@@ -120,7 +125,11 @@ export const OdontogramaViewer = ({
         };
       })
       .filter(Boolean) as Diagnostico[];
-
+    console.log("[VIEWER] selectedTooth (FDI):", selectedTooth);
+    console.log(
+      "[VIEWER] getToothDiagnoses(selectedTooth):",
+      selectedTooth ? getToothDiagnoses(selectedTooth) : null
+    );
     return diagnosticos.length ? { diagnósticos: diagnosticos } : null;
   }, [selectedTooth, getToothDiagnoses, getProcConfig]);
 
@@ -275,67 +284,49 @@ export const OdontogramaViewer = ({
 
           {/* INFO DIENTE SELECCIONADO (bottom-center) */}
           {pacienteActivo && selectedTooth && (
-            <div
-              style={{
-                position: "absolute",
-                bottom: 80,
-                left: "50%",
-                transform: "translateX(-50%)",
-                zIndex: 15,
-              }}
-            >
+            <div className="absolute bottom-4 left-1/2 z-99 -translate-x-1/2 pointer-events-none">
               <div
-                style={{
-                  background: "rgba(255, 255, 255, 0.95)",
-                  backdropFilter: "blur(10px)",
-                  padding: "12px 24px",
-                  borderRadius: 9999,
-                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                  border: "1px solid rgb(191, 219, 254)",
-                }}
+                className="
+        flex items-center gap-3
+        rounded-full
+        border border-brand-200
+        bg-white/70
+        px-5 py-3
+        shadow-theme-lg
+        backdrop-blur-md
+        animate-pulse-soft
+        dark:border-brand-500/30
+        dark:bg-gray-900/70
+      "
               >
-                <p
-                  style={{
-                    fontSize: "0.875rem",
-                    fontWeight: 500,
-                    color: "rgb(55, 65, 81)",
-                    margin: 0,
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Diente seleccionado{" "}
-                  <span
-                    style={{
-                      fontWeight: 700,
-                      color: "rgb(37, 99, 235)",
-                    }}
-                  >
-                    {toothTranslations[selectedTooth]?.nombre || selectedTooth} (
-                    #{toothTranslations[selectedTooth]?.numero || "?"})
-                  </span>
+                {/* Indicador visual */}
+                <span
+                  className="
+          h-2.5 w-2.5 rounded-full
+          bg-brand-500
+          shadow-[0_0_0_4px_rgba(70,95,255,0.15)]
+        "
+                />
+
+                {/* Texto */}
+                <p className="text-theme-sm font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                  <span className="text-gray-500 dark:text-gray-400">
+                    Diente seleccionado:
+                  </span>{" "}
+                  {(() => {
+                    const { nombre, numero } = getToothTranslationByFdi(selectedTooth);
+                    return (
+                      <span className="font-semibold text-brand-600 dark:text-brand-400">
+                        {nombre} <span className="text-gray-400">#{numero}</span>
+                      </span>
+                    );
+                  })()}
                 </p>
               </div>
             </div>
           )}
 
-          {/* GRID DE DIAGNÓSTICOS (bottom-left) */}
-          {pacienteActivo && (
-            <div
-              style={{
-                position: "absolute",
-                bottom: 16,
-                left: 16,
-                right: 16,
-                zIndex: 10,
-              }}
-            >
-              <DiagnosticosGrid
-                selectedTooth={selectedTooth}
-                odontogramaData={odontogramaData}
-                removeDiagnostico={removeDiagnostico}
-              />
-            </div>
-          )}
+          
         </div>
 
         {/* BOTÓN FLOTANTE: Selector de paciente */}

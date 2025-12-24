@@ -15,6 +15,7 @@ import raizMolarInferior from "../../../assets/images/roots/raiz_molar_inferior.
 import raizMolarSuperior from "../../../assets/images/roots/raiz_molar_superior.svg";
 import raizPremolar from "../../../assets/images/roots/raiz_premolar.svg";
 import type { PrincipalArea } from "../../../hooks/odontogram/useDiagnosticoSelect";
+import { fdiToMeshName } from "../../../core/utils/toothTraslations";
 
 const UI_SELECTION_FALLBACK_COLOR = ODONTO_COLORS.SELECCIONADO_UI.fill;
 
@@ -88,27 +89,32 @@ export interface SurfaceSelectorRef {
     clearRequiredAreaWarning: () => void;
 }
 
-export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorProps>(({
-    selectedSurfaces,
-    onSurfaceSelect,
-    selectedTooth,
-    isBlocked,
-    onAreaChange,
-    onRootGroupChange,
-}, ref) => {
+export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorProps>((
+    {
+        selectedSurfaces,
+        onSurfaceSelect,
+        selectedTooth,
+        isBlocked,
+        onAreaChange,
+        onRootGroupChange,
+    },
+    ref
+) => {
 
     const [svgLoaded, setSvgLoaded] = useState(false);
     const [rootSvgLoaded, setRootSvgLoaded] = useState(false);
     const [requiredAreaWarning, setRequiredAreaWarning] = useState<string | null>(null);
 
-    const rootInfo = useToothRootType(selectedTooth);
+    const meshName = selectedTooth ? fdiToMeshName(selectedTooth) : null;
+    const rootInfo = useToothRootType(meshName);
+
     useEffect(() => {
         if (!selectedTooth) {
             onRootGroupChange?.(null);
             return;
         }
         const groupKey = getRootGroupKeyFromType(rootInfo.type);
-        onRootGroupChange?.(groupKey);
+        onRootGroupChange?.(rootInfo.type as RootGroupKey);
     }, [selectedTooth, rootInfo.type, onRootGroupChange]);
     const { getPermanentColorForSurface, tipoDiagnosticoSeleccionado } = useOdontogramaData();
 

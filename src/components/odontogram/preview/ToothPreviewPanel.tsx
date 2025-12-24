@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { useSpring, a } from "@react-spring/three";
 import { ToothStatusDisplay, type DatosDiente } from "./ToothStatusDisplay";
+import { fdiToMeshName } from "../../../core/utils/toothTraslations";
 type PanelPreviewDienteProps = {
     dienteSeleccionado: string | null;
     datosDiente: DatosDiente | null;
@@ -14,8 +15,9 @@ type PanelPreviewDienteProps = {
 const ModeloDiente = ({ dienteSeleccionado }: { dienteSeleccionado: string }) => {
     const { scene } = useGLTF("/models/odontograma_preview.glb") as any;
     // La búsqueda del objeto dentro de la escena
-    const target = scene.getObjectByName(dienteSeleccionado) as THREE.Object3D; 
-    
+    const meshName = fdiToMeshName(dienteSeleccionado);
+    const target = meshName ? scene.getObjectByName(meshName) as THREE.Object3D : null;
+
     const groupRef = useRef<THREE.Group>(null);
     const [posicion, setPosicion] = useState<[number, number, number]>([0, 0, 0]);
 
@@ -31,30 +33,29 @@ const ModeloDiente = ({ dienteSeleccionado }: { dienteSeleccionado: string }) =>
             const center = new THREE.Vector3();
             box.getCenter(center);
             const nuevaPos: [number, number, number] = [-center.x, -center.y, -center.z];
-
             setPosicion(nuevaPos);
-
             groupRef.current.clear();
             groupRef.current.add(clonedTarget);
 
-            // Aplicar material base con color, metalness y roughness
+            // Aplicar material base
             clonedTarget.traverse((child) => {
                 if ((child as THREE.Mesh).isMesh) {
                     const mesh = child as THREE.Mesh;
                     mesh.material = (mesh.material as THREE.Material).clone();
                     if ("color" in mesh.material) {
-                        (mesh.material as THREE.MeshStandardMaterial).color.set("#E8E8E8"); // Color blanco grisáceo
+                        (mesh.material as THREE.MeshStandardMaterial).color.set("#E8E8E8");
+                        (mesh.material as THREE.MeshStandardMaterial).metalness = 0.2;
+                        (mesh.material as THREE.MeshStandardMaterial).roughness = 0.4;
                     }
-                    (mesh.material as THREE.MeshStandardMaterial).metalness = 0.2;
-                    (mesh.material as THREE.MeshStandardMaterial).roughness = 0.4;
-                    (mesh.material as THREE.MeshStandardMaterial).transparent = true;
-                    (mesh.material as THREE.MeshStandardMaterial).opacity = 1;
                 }
             });
         }
-    }, [dienteSeleccionado, target]);
+    }, [dienteSeleccionado, target, meshName]);
 
-    if (!target) return null;
+    if (!target || !meshName) {
+    console.warn("[Preview] No se encontró mesh para FDI:", dienteSeleccionado);
+    return null;
+  }
 
     return <a.group ref={groupRef} position={springs.position} />;
 };
@@ -74,7 +75,7 @@ export const PanelPreviewDiente = ({ dienteSeleccionado, datosDiente }: PanelPre
 
     return (
         <div
-             className="
+            className="
     absolute top-6 right-6 z-50
     bg-white/90 dark:bg-gray-900/90
     backdrop-blur-md
@@ -87,10 +88,10 @@ export const PanelPreviewDiente = ({ dienteSeleccionado, datosDiente }: PanelPre
             style={{ width: "150px", height: "190px", pointerEvents: "auto" }}
         >
             {/* Overlay de Estado (se superpone al canvas) */}
-            <ToothStatusDisplay 
-                datosDiente={datosDiente ?? { diagnósticos: [] }} 
-                nombreDiente={dienteSeleccionado} 
-                isToothUpper={isToothUpper} 
+            <ToothStatusDisplay
+                datosDiente={datosDiente ?? { diagnósticos: [] }}
+                nombreDiente={dienteSeleccionado}
+                isToothUpper={isToothUpper}
             />
 
             {/* Escena 3D */}
@@ -105,7 +106,7 @@ export const PanelPreviewDiente = ({ dienteSeleccionado, datosDiente }: PanelPre
                     <ambientLight intensity={1.5} />
                     <directionalLight position={[5, 5, 5]} intensity={1.5} />
                     <directionalLight position={[-5, -5, -5]} intensity={0.8} color="#f0f0f0" />
-                    
+
                     {/* Controles */}
                     <OrbitControls
                         ref={refControlesOrbit}
@@ -114,7 +115,7 @@ export const PanelPreviewDiente = ({ dienteSeleccionado, datosDiente }: PanelPre
                         minDistance={2}
                         maxDistance={12}
                     />
-                    
+
                     {/* Modelo */}
                     <ModeloDiente dienteSeleccionado={dienteSeleccionado} />
                 </Canvas>

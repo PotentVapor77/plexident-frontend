@@ -4,6 +4,7 @@ import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { useOdontogramaData } from "../../../hooks/odontogram/useOdontogramaData";
+import { meshNameToFdi } from "../../../core/utils/meshToFdiMapper";
 
 // --- Colores base ---
 const COLOR_BASE_DIENTE = new THREE.Color(0xffffff);
@@ -44,22 +45,29 @@ export const OdontogramaModel = ({
 
   // --- Clic en dientes ---
   const handlePointerDown = (e: any) => {
-    e.stopPropagation();
-    const clickedToothName = e.object.name;
-    if (!clickedToothName || !e.object.isMesh) return;
-    //if (isToothBlocked(clickedToothName)) return;
+  e.stopPropagation();
+  const meshName = e.object.name;
+  if (!meshName || !e.object.isMesh) return;
 
-    setSelectedTooth(clickedToothName === selectedTooth ? null : clickedToothName);
-  };
+  const fdiId = meshNameToFdi(meshName);
+  //console.log("[MODEL] Click mesh:", meshName, "→ FDI:", fdiId);
+
+  if (!fdiId) return;
+
+  setSelectedTooth(fdiId === selectedTooth ? null : fdiId);
+};
 
   // --- Manejadores de Hover ---
   const handlePointerOver = (e: any) => {
-    e.stopPropagation();
-    const toothName = e.object.name;
-    if (toothName && e.object.isMesh && !isToothBlocked(toothName)) {
-      setHoveredTooth(toothName);
-    }
-  };
+  e.stopPropagation();
+  const meshName = e.object.name;
+  if (!meshName || !e.object.isMesh) return;
+
+  const toothId = meshNameToFdi(meshName);
+  if (toothId && !isToothBlocked(toothId)) {
+    setHoveredTooth(toothId);
+  }
+};
 
   const handlePointerOut = (e: any) => {
     e.stopPropagation();
@@ -182,55 +190,63 @@ export const OdontogramaModel = ({
 
   // --- 3. Lógica de color ---
   useEffect(() => {
-    scene.traverse((child: any) => {
-      if (child.isMesh) {
-        const toothId = child.name;
-        console.log('[OdontogramaModel] Actualizando color para diente:', toothId);
-        let finalColor = COLOR_BASE_DIENTE;
+  scene.traverse((child: any) => {
+    if (!child.isMesh) return;
 
-        const dominantColorHex = getDominantColorForTooth(toothId);
-        const isBlocked = isToothBlocked(toothId);
+    const meshName = child.name;
+    const toothId = meshNameToFdi(meshName);
 
-        if (isBlocked) {
-          finalColor = COLOR_DIENTE_AUSENTE;
-        } else if (dominantColorHex) {
-          // Diente con tratamiento dominante
-          finalColor = new THREE.Color(dominantColorHex);
-        } else if (toothId === selectedTooth && previewColorHex) {
-          // Diente seleccionado con color de previsualización
-          finalColor = new THREE.Color(previewColorHex);
-        } else if (toothId === selectedTooth) {
-          // Diente seleccionado sin previsualización
-          finalColor = COLOR_DIENTE_SELECCIONADO;
-        } else if (toothId === hoveredTooth) {
-          // --- Nuevo: Diente en hover ---
-          finalColor = COLOR_DIENTE_HOVER;
-        }
+    // Log para depurar mapeo y color
+    
 
+    let finalColor = COLOR_BASE_DIENTE;
 
-        child.material = new THREE.MeshStandardMaterial({
-          color: finalColor,
-          roughness: 0.3,
-          metalness: 0.1,
-        });
-      }
+    if (!toothId) {
+      child.material = new THREE.MeshStandardMaterial({
+        color: finalColor,
+        roughness: 0.3,
+        metalness: 0.1,
+      });
+      return;
+    }
+
+    const dominantColorHex = getDominantColorForTooth(toothId);
+    const isBlocked = isToothBlocked(toothId);
+
+    if (isBlocked) {
+      finalColor = COLOR_DIENTE_AUSENTE;
+    } else if (dominantColorHex) {
+      finalColor = new THREE.Color(dominantColorHex);
+    } else if (toothId === selectedTooth && previewColorHex) {
+      finalColor = new THREE.Color(previewColorHex);
+    } else if (toothId === selectedTooth) {
+      finalColor = COLOR_DIENTE_SELECCIONADO;
+    } else if (toothId === hoveredTooth) {
+      finalColor = COLOR_DIENTE_HOVER;
+    }
+
+    child.material = new THREE.MeshStandardMaterial({
+      color: finalColor,
+      roughness: 0.3,
+      metalness: 0.1,
     });
-  }, [
-    selectedTooth,
-    hoveredTooth,
-    scene,
-    odontogramaData,
-    previewColorHex,
-    getDominantColorForTooth,
-    isToothBlocked,
-  ]);
+  });
+}, [
+  selectedTooth,
+  hoveredTooth,
+  scene,
+  odontogramaData,
+  previewColorHex,
+  getDominantColorForTooth,
+  isToothBlocked,
+]);
 
   return (
-    <primitive
-      object={scene}
-      onPointerDown={handlePointerDown}
-      onPointerOver={handlePointerOver} 
-      onPointerOut={handlePointerOut}  
-    />
-  );
+  <primitive
+    object={scene}
+    onPointerDown={handlePointerDown}
+    onPointerOver={handlePointerOver}
+    onPointerOut={handlePointerOut}
+  />
+);
 };

@@ -70,19 +70,17 @@ export const useDiagnosticoSelect = ({
                         return true;
                     }
 
-                    const isGeneralDiagnosis = diag.areas_afectadas.includes('general');
+                    const isGeneralDiagnosis = diag.areasafectadas.includes('general');
 
                     // PRIORIDAD 2: Si no hay área seleccionada, mostrar solo generales
                     if (!currentArea) {
                         const shouldShow = isGeneralDiagnosis;
-                        console.log(`  📋 [Sin área] ${diag.nombre} - ${shouldShow ? 'VISIBLE' : 'OCULTO'} (areas: ${diag.areas_afectadas.join(', ')})`);
                         return shouldShow;
                     }
 
                     // PRIORIDAD 3: Si hay área seleccionada, filtrar por esa área o generales
-                    const matchesArea = diag.areas_afectadas.includes(currentArea as AreaAfectada);
+                    const matchesArea = diag.areasafectadas.includes(currentArea as AreaAfectada);
                     const shouldShow = isGeneralDiagnosis || matchesArea;
-                    console.log(`  [Con área: ${currentArea}] ${diag.nombre} - ${shouldShow ? 'VISIBLE' : 'OCULTO'} (areas: ${diag.areas_afectadas.join(', ')})`);
                     return shouldShow;
                 });
 
@@ -126,7 +124,7 @@ export const useDiagnosticoSelect = ({
         if (!diagnosticoSeleccionado) return false;
 
         // 1Validar que si el diagnóstico NO es general, se haya seleccionado un área
-        const requiresSpecificArea = !diagnosticoSeleccionado.areas_afectadas.includes('general');
+        const requiresSpecificArea = !diagnosticoSeleccionado.areasafectadas.includes('general');
         if (requiresSpecificArea && !currentArea) {
             console.log('[Validación] Requiere área específica pero currentArea es null');
             return false;
@@ -170,11 +168,17 @@ export const useDiagnosticoSelect = ({
     useEffect(() => {
         onPreviewChange(diagnosticoSeleccionado?.id || null);
 
-        const isGeneralDiagnosis = diagnosticoSeleccionado?.areas_afectadas.includes('general');
+        const isGeneralDiagnosis = diagnosticoSeleccionado?.areasafectadas.includes('general');
+
+        let areasToApply: AreaAfectada[] = [];
+
         if (isGeneralDiagnosis) {
-            onPreviewOptionsChange({ ...atributosClinicosSeleccionados, afectaTodo: 'true' });
+            areasToApply = ['general'];
+        } else if (currentArea) {
+            areasToApply = [currentArea as AreaAfectada]; 
         } else {
-            onPreviewOptionsChange(atributosClinicosSeleccionados);
+            console.log('[Apply] No se puede aplicar - Sin área y diagnóstico no es general');
+            return;
         }
 
         setFormValid(isFormValid());
@@ -231,20 +235,17 @@ export const useDiagnosticoSelect = ({
                 if ((attr.tipo_input === 'select' || attr.tipo_input === 'radio') && !attr.requerido) {
                     if (attr.opciones.length > 0) {
                         defaults[key] = attr.opciones[0].key;
-                        console.log(`    🎯 [Default] ${key} = ${attr.opciones[0].key}`);
                     }
                 }
 
                 // Para checkbox: array vacío
                 if (attr.tipo_input === 'checkbox') {
                     defaults[key] = [];
-                    console.log(`    🎯 [Default] ${key} = []`);
                 }
 
                 // Para text: string vacío
                 if (attr.tipo_input === 'text') {
                     defaults[key] = '';
-                    console.log(`    [Default] ${key} = ""`);
                 }
             });
 
@@ -255,7 +256,6 @@ export const useDiagnosticoSelect = ({
     };
 
     const handleAtributoChange = (key: string, value: string | string[]) => {
-        console.log(`🔧 [Atributo] ${key} = ${Array.isArray(value) ? `[${value.join(', ')}]` : value}`);
         setAtributosClinicosSeleccionados(prev => ({ ...prev, [key]: value }));
     };
 
@@ -265,7 +265,7 @@ export const useDiagnosticoSelect = ({
             return;
         }
 
-        const isGeneralDiagnosis = diagnosticoSeleccionado.areas_afectadas.includes('general');
+        const isGeneralDiagnosis = diagnosticoSeleccionado.areasafectadas.includes('general');
         let areasToApply: AreaAfectada[];
 
         if (isGeneralDiagnosis) {
@@ -306,7 +306,7 @@ export const useDiagnosticoSelect = ({
     // ============================================================================
 
     const requiresSpecificAreaMessage = diagnosticoSeleccionado &&
-        !diagnosticoSeleccionado.areas_afectadas.includes('general') &&
+        !diagnosticoSeleccionado.areasafectadas.includes('general') &&
         !currentArea;
 
     // ============================================================================

@@ -96,6 +96,11 @@ export function superficieFrontendToBackend(superficieId: string): string {
     'raiz:raiz-palatal': 'raiz_palatal',
     'raiz:raiz-vestibular': 'raiz_vestibular',
     'raiz:raiz-principal': 'raiz_principal',
+    // AGREGAR ESTOS:
+    'general': 'general',
+    'diente_completo': 'general',
+    'corona_completa': 'corona_completa',
+    'raiz_completa': 'raiz_completa',
   };
   return map[superficieId] || superficieId;
 }
@@ -105,9 +110,7 @@ export function superficieFrontendToBackend(superficieId: string): string {
 // ============================================================================
 
 /**
- * Mapea superficie_aplicables del backend a areas_afectadas del frontend
- * Backend: ["vestibular", "oclusal"] o ["general"]
- * Frontend: ["corona"] o ["general"]
+ * Mapea superficie_aplicables del backend a areasafectadas del frontend
  */
 function mapearSuperficiesAplicables(superficies: string[]): ('corona' | 'raiz' | 'general')[] {
   if (!superficies || superficies.length === 0) return ['general'];
@@ -165,7 +168,7 @@ export function mapearDiagnosticoBackendToFrontend(
     simboloColor: SIMBOLO_BACKEND_TO_FRONTEND[diagBackend.simbolo_color] || 'PATOLOGIA',
     categoria: CATEGORIA_BACKEND_TO_FRONTEND[diagBackend.categoria_nombre || ''] || 'Patología Activa',
     prioridadKey: PRIORIDAD_BACKEND_TO_FRONTEND[diagBackend.prioridad] || 'MEDIA',
-    areas_afectadas: mapearSuperficiesAplicables(diagBackend.superficie_aplicables || []),
+    areasafectadas: mapearSuperficiesAplicables(diagBackend.superficie_aplicables || []),
     atributos_clinicos: mapearAtributosClinicos(atributosClinicos),
   };
 }
@@ -209,7 +212,7 @@ function mapearDiagnosticoInstanceBackendToFrontend(
     priority: diag.prioridad_asignada || diagCatalogo?.prioridad || 3,
     siglas: diagCatalogo?.siglas || '?',
     nombre: diagCatalogo?.nombre || 'Desconocido',
-    areas_afectadas: diagCatalogo?.superficie_aplicables
+    areasafectadas: diagCatalogo?.superficie_aplicables
       ? mapearSuperficiesAplicables(diagCatalogo.superficie_aplicables)
       : ['general'],
     secondaryOptions: diag.atributos_clinicos || {},
@@ -281,7 +284,7 @@ export function mapearOdontogramaBackendToFrontend(
             colorHex: diag.colorHex,
             secondaryOptions: diag.secondaryOptions || {},
             descripcion: diag.descripcion || '',
-            areas_afectadas: diag.afectaArea || ['general'],
+            areasafectadas: diag.afectaArea || ['general'],
             superficieId: surfaceId,
             siglas: '',              // se puede resolver luego con catálogo
             nombre: '',              // idem
@@ -325,11 +328,12 @@ export function mapearOdontogramaFrontendToBackend(
 
       // Mapear cada diagnóstico al formato del backend
       backendData[codigoFdi][nombreBackend] = diagnosticos.map(diag => ({
+        id: diag.id,
         procedimientoId: diag.procedimientoId,
         colorHex: diag.colorHex,
         secondaryOptions: diag.secondaryOptions || {},
         descripcion: diag.descripcion || '',
-        afectaArea: diag.areas_afectadas || [],
+        afectaArea: diag.areasafectadas || [],
       }));
     });
   });
@@ -344,20 +348,23 @@ export function mapearOdontogramaFrontendToBackend(
 export function extraerDiagnosticosNuevos(
   odontogramaData: OdontogramaData
 ): OdontogramaData {
-  const nuevos: OdontogramaData = {};
+  const nuevos: OdontogramaData = {}
 
   Object.entries(odontogramaData).forEach(([toothId, superficies]) => {
     Object.entries(superficies).forEach(([surfaceId, diagnosticos]) => {
       const diagnosticosNuevos = diagnosticos.filter(
-        diag => !diag.id || diag.id.startsWith('temp-')
-      );
+  diag =>
+    !diag.id ||   
+    diag.id.startsWith('temp-') ||       
+    diag.id.length === 0                 
+)
 
       if (diagnosticosNuevos.length > 0) {
-        if (!nuevos[toothId]) nuevos[toothId] = {};
-        nuevos[toothId][surfaceId] = diagnosticosNuevos;
+        if (!nuevos[toothId]) nuevos[toothId] = {}
+        nuevos[toothId][surfaceId] = diagnosticosNuevos
       }
-    });
-  });
+    })
+  })
 
-  return nuevos;
+  return nuevos
 }

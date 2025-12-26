@@ -8,7 +8,7 @@ import type { useDiagnosticoSelect } from "../../../hooks/odontogram/useDiagnost
 // Tipos para las props del componente UI
 type DiagnosticoSelectUIProps = ReturnType<typeof useDiagnosticoSelect> & {
   currentArea: PrincipalArea;
-  onFormValidChange?: (isValid: boolean) => void; 
+  onFormValidChange?: (isValid: boolean) => void;
 };
 // Componente auxiliar para los encabezados de sección con número
 const SectionHeader = ({ title }: { step: string; title: string }) => (
@@ -31,6 +31,10 @@ export const DiagnosticoSelectUI = ({
   handleDiagnosticoChange,
   handleAtributoChange,
   setDescripcion,
+  // Acciones
+  handleApply,
+  handleCancel,
+  // Datos para renderizar
   filteredCategories,
   currentDiagnosesForSelect,
   requiresSpecificAreaMessage,
@@ -109,7 +113,7 @@ export const DiagnosticoSelectUI = ({
             </div>
           )}
 
-          {diagnosticoSeleccionado && diagnosticoSeleccionado.areas_afectadas.includes('general') && (
+          {diagnosticoSeleccionado && diagnosticoSeleccionado.areasafectadas.includes('general') && (
             <p className="mt-2 text-xs text-brand-600 dark:text-brand-400 flex items-center gap-1.5 font-medium">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -240,6 +244,30 @@ export const DiagnosticoSelectUI = ({
           />
         </section>
       )}
+
+      <div className="mt-4 flex gap-3 justify-end">
+        <button
+          type="button"
+          onClick={handleCancel}
+          className="flex-1 py-2.5 px-4 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-white transition-colors"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          onClick={handleApply}
+          disabled={!formValid}
+          className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-white shadow-theme-sm transition-all ${formValid
+            ? "bg-brand-600 hover:bg-brand-700 active:bg-brand-800"
+            : "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
+            }`}
+        >
+          Aplicar
+        </button>
+      </div>
     </div>
+
+
   );
 };

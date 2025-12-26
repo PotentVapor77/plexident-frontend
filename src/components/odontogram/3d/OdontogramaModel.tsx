@@ -79,6 +79,9 @@ export const OdontogramaModel = ({
 
   // --- 1. Agrupación y pivote mandibular (Sin cambios) ---
   useEffect(() => {
+
+
+
     if (!scene || maxilarSuperior) return;
 
     const superiorGroup = new THREE.Group();
@@ -109,6 +112,7 @@ export const OdontogramaModel = ({
           scene.add(child);
         }
       }
+      console.log("[Model] Re-panting teeth due to data change");
     });
 
     // 2. Manejo de error y cálculo del Bounding Box
@@ -190,6 +194,7 @@ export const OdontogramaModel = ({
 
   // --- 3. Lógica de color ---
   useEffect(() => {
+    
   scene.traverse((child: any) => {
     if (!child.isMesh) return;
 
@@ -211,7 +216,10 @@ export const OdontogramaModel = ({
     }
 
     const dominantColorHex = getDominantColorForTooth(toothId);
+    //console.log('[Model] Tooth', toothId, { dominantColorHex, dataSnapshot: odontogramaData });
     const isBlocked = isToothBlocked(toothId);
+
+    
 
     if (isBlocked) {
       finalColor = COLOR_DIENTE_AUSENTE;
@@ -235,7 +243,7 @@ export const OdontogramaModel = ({
   selectedTooth,
   hoveredTooth,
   scene,
-  odontogramaData,
+  odontogramaDataHook.odontogramaData,
   previewColorHex,
   getDominantColorForTooth,
   isToothBlocked,

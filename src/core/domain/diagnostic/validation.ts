@@ -1,25 +1,41 @@
+// validation.ts
 import type { AreaAfectada } from '../../types/typeOdontograma';
 
 export const validateDiagnosticoParams = (
-    toothId: string,
-    surfaceIds: string[],
-    procedimientoId: string,
-    afectaArea: AreaAfectada[]
+  toothId: string,
+  surfaceIds: string[],
+  procedimientoId: string,
+  afectaArea: AreaAfectada[]
 ): boolean => {
-    if (!toothId || !surfaceIds || surfaceIds.length === 0) {
-        console.warn('Parámetros inválidos: toothId o surfaceIds vacíos');
-        return false;
-    }
+  if (!toothId || !procedimientoId) {
+    console.warn('Parámetros inválidos: toothId vacío');
+    return false;
+  }
 
-    if (!procedimientoId) {
-        console.warn('Parámetros inválidos: procedimientoId vacío');
-        return false;
-    }
+  const isGeneral = afectaArea.includes('general');
 
-    if (!afectaArea || afectaArea.length === 0) {
-        console.warn('Parámetros inválidos: afectaArea vacío');
-        return false;
-    }
+  // Solo obligamos surfaceIds cuando NO es diagnóstico general
+  if (!isGeneral && (!surfaceIds || surfaceIds.length === 0)) {
+    console.warn('Parámetros inválidos: surfaceIds vacío para diagnóstico por superficie');
+    return false;
+  }
 
-    return true;
+  if (!procedimientoId) {
+    console.warn('Parámetros inválidos: procedimientoId vacío');
+    return false;
+  }
+
+  if (!afectaArea || afectaArea.length === 0) {
+    console.warn('Parámetros inválidos: afectaArea vacío');
+    return false;
+  }
+
+  console.warn('[Hook] validateDiagnosticoParams = false', {
+    toothId,
+    surfaceIds,
+    procedimientoId,
+    afectaArea,
+  });
+
+  return true;
 };

@@ -10,7 +10,7 @@ export type Diagnostico = {
   siglas: string;
   nombre: string;
   prioridadKey: "ALTA" | "MEDIA" | "BAJA" | "INFORMATIVA" | "ESTRUCTURAL";
-  areas_afectadas: ("corona" | "raiz" | "general")[];
+  areasafectadas: ("corona" | "raiz" | "general")[];
   categoria?: string;
 };
 

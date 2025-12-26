@@ -12,7 +12,7 @@ import type {
 import { createApiError } from '../../types/api';
 import api from '../api/axiosInstance';
 import type { OdontogramaData } from '../../core/types/typeOdontograma';
-import { mapearOdontogramaBackendToFrontend } from '../../mappers/odontogramaMapper';
+import { mapearOdontogramaBackendToFrontend, mapearOdontogramaFrontendToBackend } from '../../mappers/odontogramaMapper';
 
 // ============================================================================
 // CONSTANTES DE ENDPOINTS
@@ -231,34 +231,30 @@ export async function obtenerOdontogramaFHIR(
 export async function guardarOdontogramaCompleto(
   pacienteId: string,
   odontogramaData: OdontogramaData,
-  odontologoId?: number
+  odontologoId?: number,
 ): Promise<ResultadoGuardado> {
-  try {
-    const { mapearOdontogramaFrontendToBackend } = await import('../../mappers/odontogramaMapper');
-    const backendData = mapearOdontogramaFrontendToBackend(odontogramaData);
+  // 1) Mapear el OdontogramaData completo al formato que espera el backend
+  const odontogramaBackend = mapearOdontogramaFrontendToBackend(odontogramaData);
 
-    const payload: GuardarOdontogramaPayload = {
-      paciente_id: pacienteId,
-      odontograma_data: backendData,
-    };
+  const payload: GuardarOdontogramaPayload = {
+    paciente_id: pacienteId,
+    odontologo_id: odontologoId,
+    odontograma_data: odontogramaBackend,
+  };
 
-    if (odontologoId) {
-      payload.odontologo_id = odontologoId;
-    }
+  // 2) Hacer POST al endpoint de batch
+  const { data } = await api.post<{
+    success: boolean;
+    status_code: number;
+    message: string;
+    data: ResultadoGuardado;
+  }>(ODONTOGRAM_ENDPOINTS.guardarOdontogramaCompleto(pacienteId), payload);
 
-    const { data } = await api.post(
-      ODONTOGRAM_ENDPOINTS.guardarOdontogramaCompleto(pacienteId),
-      payload
-    );
-
-    if (import.meta.env.DEV) {
-      console.log('Odontograma guardado:', data.data);
-    }
-
-    return data.data;
-  } catch (error) {
-    throw createApiError(error);
+  if (!data.success) {
+    throw new Error(data.message || 'Error al guardar odontograma completo');
   }
+
+  return data.data;
 }
 
 // ============================================================================
@@ -274,7 +270,6 @@ export async function crearDiagnostico(
       payload
     );
     
-    // ✅ CORREGIDO
     return data.data;
   } catch (error) {
     throw createApiError(error);

@@ -1,10 +1,9 @@
 // src/components/odontograma/SuperficieSelector.tsx
 import { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from "react";
 import { useCrownInteractions } from "../../../hooks/odontogram/useCrownInteractions";
-import { useOdontogramaData } from "../../../hooks/odontogram/useOdontogramaData";
 import { useRootInteractions } from "../../../hooks/odontogram/useRootInteractions";
 import { useToothRootType } from "../../../hooks/odontogram/useToothRootType";
-import { ODONTO_COLORS, type DiagnosticoEntry, type RootGroupKey } from "../../../core/types/typeOdontograma";
+import { ODONTO_COLORS, type RootGroupKey } from "../../../core/types/typeOdontograma";
 
 // IMPORTAR SVGs DIRECTAMENTE
 import odontSvg from "../../../assets/images/dental/odonto.svg";
@@ -103,7 +102,7 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
     }, [selectedTooth, rootInfo.type, onRootGroupChange]);
 
 
-    // Deshabilitado si no hay diente seleccionado O si estÃƒÂ¡ bloqueado por prop
+    // Deshabilitado si no hay diente seleccionado O si está bloqueado por prop
     const isDisabled = !selectedTooth || isBlocked;
 
     const uiSelectionColor = UI_SELECTION_FALLBACK_COLOR;
@@ -113,11 +112,11 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         showRequiredAreaWarning: (areas: PrincipalArea[]) => {
             if (!areas || areas.length === 0) return;
             if (areas.includes('corona') && !selectedSurfaces.some(s => SURFACE_AREA_MAP[s] === 'corona')) {
-                setRequiredAreaWarning("Ã¢Å¡ Ã¯Â¸Â Este diagnÃƒÂ³stico requiere seleccionar al menos una superficie de CORONA");
+                setRequiredAreaWarning("Este diagnóstico requiere seleccionar al menos una superficie de CORONA");
                 return;
             }
             if (areas.includes('raiz') && !selectedSurfaces.some(s => SURFACE_AREA_MAP[s] === 'raiz')) {
-                setRequiredAreaWarning("Ã¢Å¡ Ã¯Â¸Â Este diagnÃƒÂ³stico requiere seleccionar al menos una superficie de RAÃƒÂZ");
+                setRequiredAreaWarning("Este diagnostico requiere seleccionar al menos una superficie de raiz.");
                 return;
             }
         },
@@ -136,7 +135,7 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         onSurfaceSelect(surfaces);
         const area = getPrincipalArea(surfaces);
         onAreaChange(area);
-        setRequiredAreaWarning(null); // limpia advertencia si seleccionÃƒÂ³ superficie
+        setRequiredAreaWarning(null); 
     }, [onSurfaceSelect, onAreaChange]);
 
     // Hooks de interacciÃƒÂ³n
@@ -163,7 +162,6 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         DEFAULT_COLOR,
     });
 
-    // FUNCIÃƒâ€œN MEJORADA: Retorna la ruta SVG del ROOT_SVG_MAP
     const getRootSvgPath = useCallback(() => {
         const knownRootTypes = [
             'raiz_molar_superior',
@@ -174,7 +172,7 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         ];
         const type = rootInfo.type || '';
         const pathName = knownRootTypes.includes(type) ? type : 'raiz_dental';
-        return ROOT_SVG_MAP[pathName]; // Retorna URL importada (no string)
+        return ROOT_SVG_MAP[pathName]; 
     }, [rootInfo.type]);
 
     // Estilos para el contenedor (Se mantiene el escalado general y el espaciado reducido)
@@ -215,7 +213,7 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
                     key={`raiz-${rootInfo.type}-${selectedTooth}`}
                     onLoad={() => setRootSvgLoaded(true)}
                     role="img"
-                    aria-label="RaÃƒÂ­z dental seleccionada"
+                    aria-label="Raiz dental seleccionada"
                 />
 
                 {/* SVG DE LA CORONA */}

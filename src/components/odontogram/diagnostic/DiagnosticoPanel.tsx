@@ -5,30 +5,39 @@ import {
 } from "../3d/SuperficieSelector";
 import type {
   AreaAfectada,
+  DiagnosticoEntry,
   OdontoColorKey,
 } from "../../../core/types/typeOdontograma";
 import type { PrincipalArea } from "../../../hooks/odontogram/useDiagnosticoSelect";
 import { useCatalogoDiagnosticos } from "../../../hooks/odontogram/useCatalogoDiagnosticos";
 import { useSurfaceSelection } from "../../../hooks/odontogram/useSurfaceSelection";
-import { useToothRootType } from "../../../hooks/odontogram/useToothRootType";
-import { getToothTranslationByFdi, toothTranslations } from "../../../core/utils/toothTraslations";
+
+import { getToothTranslationByFdi } from "../../../core/utils/toothTraslations";
 import type { useOdontogramaData } from "../../../hooks/odontogram/useOdontogramaData";
 import { DiagnosticoSelect } from "..";
 import { groupDentalSurfaces } from "../../../core/utils/groupDentalSurfaces";
+import type { IPaciente } from "../../patients";
+import { useGuardarOdontogramaCompleto } from "../../../hooks/odontogram/useGuardarOdontogramaCompleto";
+import { getProcConfigFromCategories } from "../../../core/domain/diagnostic/procConfig";
+import { eliminarDiagnostico } from "../../../services/odontogram/odontogramaService";
+import { isToothBlockedByAbsence } from "../../../core/domain/diagnostic/blockingRules";
+import { useToast } from "../../../hooks/useToast";
+import { ToastContainer } from "../../ui/toast/ToastContainer";
 
 
 
 type DiagnosticoPanelProps = {
   selectedTooth: string | null;
   odontogramaDataHook?: ReturnType<typeof useOdontogramaData>;
+  pacienteActivoId?: IPaciente;
   onRootGroupChange?: (group: any) => void;
 };
 
 export const DiagnosticoPanel = ({
   selectedTooth,
   odontogramaDataHook,
-  onRootGroupChange,
 }: DiagnosticoPanelProps) => {
+  const { toast, toasts, removeToast } = useToast();
   if (!odontogramaDataHook) {
     return (
       <div className="w-[420px] h-full flex items-center justify-center bg-white border-l border-gray-200">
@@ -61,16 +70,27 @@ export const DiagnosticoPanel = ({
     );
   }
 
+  
+
+
   const {
     applyDiagnostico,
     removeDiagnostico,
-    isToothBlocked,
     lastSaveTime,
-    getProcConfig,
     odontogramaData,
     getPermanentColorForSurface,
     tipoDiagnosticoSeleccionado,
-  } = odontogramaDataHook;
+  } = odontogramaDataHook
+
+
+
+  const {
+    guardarCompleto,
+    isSavingComplete,
+    lastCompleteSave,
+    hasPacienteActivo,
+  } = useGuardarOdontogramaCompleto()
+
 
   // HOOKS DE DATOS
   const { categorias, isLoading, error } = useCatalogoDiagnosticos();
@@ -78,8 +98,8 @@ export const DiagnosticoPanel = ({
     getSurfacesForTooth,
     setSurfacesForTooth,
     clearSurfacesForTooth,
+
   } = useSurfaceSelection();
-  const rootInfo = useToothRootType(selectedTooth);
 
   const [showDiagnosticoSelect, setShowDiagnosticoSelect] = useState(false);
   const [currentArea, setCurrentArea] = useState<PrincipalArea | null>(null);
@@ -87,7 +107,16 @@ export const DiagnosticoPanel = ({
   const surfaceSelectorRef = useRef<SurfaceSelectorRef | null>(null);
 
   const selectedSurfaces = getSurfacesForTooth(selectedTooth);
-  const isBlocked = isToothBlocked(selectedTooth);
+  const isBlocked = selectedTooth ? odontogramaDataHook?.isToothBlocked(selectedTooth) : false;
+
+  const toothDiagnoses = useMemo(() => {
+    if (!selectedTooth || !odontogramaDataHook) return [];
+
+    // Ahora TS sabe que selectedTooth es string aquí
+    const data = odontogramaDataHook.getToothDiagnoses(selectedTooth);
+    return Object.values(data).flat();
+  }, [selectedTooth, odontogramaDataHook]);
+
 
   const toothInfo = useMemo(() => {
     if (!selectedTooth) return null;
@@ -97,24 +126,26 @@ export const DiagnosticoPanel = ({
       numero: data?.numero || 0,
     };
   }, [selectedTooth]);
-const [currentRootGroup, setCurrentRootGroup] = useState<string | null>(null);
+  const [currentRootGroup, setCurrentRootGroup] = useState<string | null>(null);
   // AGRUPACIÓN DE SUPERFICIES
   const groupedSurfaces = useMemo(() => {
-  console.log("[DiagnosticoPanel] currentRootGroup:", currentRootGroup);
-  return groupDentalSurfaces(selectedSurfaces, currentRootGroup);
-}, [selectedSurfaces, currentRootGroup]);
+    return groupDentalSurfaces(selectedSurfaces, currentRootGroup);
+  }, [selectedSurfaces, currentRootGroup]);
 
   // Obtener diagnósticos aplicados del diente seleccionado
   const diagnosticosAplicados = useMemo(() => {
     if (!selectedTooth || !odontogramaData[selectedTooth]) return [];
 
     const toothData = odontogramaData[selectedTooth];
+    const hasAbsence = toothData && isToothBlockedByAbsence(
+      Object.values(toothData).flat() as DiagnosticoEntry[]
+    );
     const diagnosticos: any[] = [];
 
     Object.entries(toothData).forEach(
       ([superficieId, diagsArray]: [string, any]) => {
         (diagsArray as any[]).forEach((diag) => {
-          const procConfig = getProcConfig(diag.procedimientoId);
+          const procConfig = getProcConfigFromCategories(diag.procedimientoId, categorias);
           diagnosticos.push({
             ...diag,
             superficieId,
@@ -126,9 +157,8 @@ const [currentRootGroup, setCurrentRootGroup] = useState<string | null>(null);
     );
 
     return diagnosticos;
-  }, [selectedTooth, odontogramaData, getProcConfig]);
+  }, [selectedTooth, odontogramaData, categorias]);
 
-  // Verificar si tiene diagnóstico general bloqueante
   const hasGeneralDiagnosis = useMemo(
     () =>
       diagnosticosAplicados.some((d) =>
@@ -143,11 +173,35 @@ const [currentRootGroup, setCurrentRootGroup] = useState<string | null>(null);
     setCurrentArea(null);
   }, [selectedTooth]);
 
-  // HANDLERS
+
+  // Bloqueo de diagnóstico por ausencia
+  const allDiagnosticosTooth = Object.values(toothDiagnoses || {}).flat() as DiagnosticoEntry[];
+  const isBlockedByAbsence = isToothBlockedByAbsence(allDiagnosticosTooth);
+
+
+  // 
+
+  const handleGuardarCompleto = useCallback(async () => {
+    if (!odontogramaDataHook || !hasPacienteActivo) return;
+
+    try {
+      const rawData = odontogramaDataHook.exportData();
+      console.log('[GuardarCompleto] rawData', rawData);
+
+      // NUEVO: enviar todo el estado al backend
+      await guardarCompleto(rawData);
+      console.log('Odontograma completo guardado (backend deduplica)');
+    } catch (error) {
+      console.error('Error al guardar odontograma completo', error);
+    }
+  }, [odontogramaDataHook, guardarCompleto, hasPacienteActivo]);
+
+
+
   const handleAddDiagnostico = useCallback(() => {
-    if (!selectedTooth || hasGeneralDiagnosis || isBlocked) return;
+    if (!selectedTooth ) return;
     setShowDiagnosticoSelect(true);
-  }, [selectedTooth, hasGeneralDiagnosis, isBlocked]);
+  }, [selectedTooth]);
 
   const handleCancelDiagnostico = useCallback(() => {
     setShowDiagnosticoSelect(false);
@@ -161,66 +215,89 @@ const [currentRootGroup, setCurrentRootGroup] = useState<string | null>(null);
     (
       diagnosticoId: string,
       colorKey: OdontoColorKey,
-      atributosClinicosSeleccionados: Record<string, string>,
+      atributosClinicosSeleccionados: Record<string, any>,
       descripcion: string,
-      areasAfectadas: AreaAfectada[],
+      areasAfectadas: AreaAfectada[]
     ) => {
-      if (!selectedTooth) return;
+      console.log('[Panel] handleApplyDiagnostico', {
+        selectedTooth,
+        selectedSurfaces,
+        diagnosticoId,
+        colorKey,
+        atributosClinicosSeleccionados,
+        descripcion,
+        areasAfectadas,
+      });
 
-      const isGeneral = areasAfectadas.includes("general");
-      const surfacesToApply = isGeneral ? ["general"] : selectedSurfaces;
+      if (!selectedTooth || !odontogramaDataHook) return;
+    const toothData = odontogramaData[selectedTooth];
+    const hasAbsence = toothData && isToothBlockedByAbsence(
+      Object.values(toothData).flat() as DiagnosticoEntry[]
+    );
+      const isGeneral = areasAfectadas.includes('general');
+      let surfacesToApply: string[] = [];
 
-      if (!isGeneral && surfacesToApply.length === 0) {
-        surfaceSelectorRef.current?.showRequiredAreaWarning(
-          areasAfectadas as PrincipalArea[],
-        );
-        return;
-      }
+      if (isGeneral) {
+        surfacesToApply = ['general'];
+      } else {
+        if (selectedSurfaces.length === 0) {
+          console.warn('[Panel] Sin superficies seleccionadas');
+          surfaceSelectorRef.current?.showRequiredAreaWarning(
+            areasAfectadas as PrincipalArea[]
+          );
+          return;
+        }
 
-      if (!isGeneral) {
-        const requiresCorona = areasAfectadas.includes("corona");
-        const requiresRaiz = areasAfectadas.includes("raiz");
+        const requiresCorona = areasAfectadas.includes('corona');
+        const requiresRaiz = areasAfectadas.includes('raiz');
 
-        const hasCoronaSurface = selectedSurfaces.some((s) =>
-          s.startsWith("cara"),
-        );
-        const hasRaizSurface = selectedSurfaces.some((s) =>
-          s.startsWith("raiz"),
-        );
+        const hasCoronaSurface = selectedSurfaces.some(s => s.startsWith('cara_'));
+        const hasRaizSurface = selectedSurfaces.some(s => s.startsWith('raiz:'));
 
         if (requiresCorona && !hasCoronaSurface) {
-          surfaceSelectorRef.current?.showRequiredAreaWarning(["corona"]);
+          surfaceSelectorRef.current?.showRequiredAreaWarning(['corona']);
           return;
         }
 
         if (requiresRaiz && !hasRaizSurface) {
-          surfaceSelectorRef.current?.showRequiredAreaWarning(["raiz"]);
+          surfaceSelectorRef.current?.showRequiredAreaWarning(['raiz']);
           return;
         }
-      }
 
-      applyDiagnostico(
+        surfacesToApply = [...selectedSurfaces];
+      }
+      console.log('[Panel] Llamando applyDiagnostico con', {
+        toothId: selectedTooth,
+        surfacesToApply,
+      });
+      odontogramaDataHook.applyDiagnostico(
         selectedTooth,
         surfacesToApply,
         diagnosticoId,
         colorKey,
         atributosClinicosSeleccionados,
         descripcion,
-        areasAfectadas,
+        areasAfectadas
       );
 
-      if (selectedTooth) {
-        clearSurfacesForTooth(selectedTooth);
+      if (hasAbsence) {
+        toast.info(
+          'Diagnóstico de ausencia eliminado',
+          `Pieza ${toothInfo?.numero}: El estado de ausente fue removido automáticamente`
+        );
+      } else {
+        toast.success(
+          'Diagnóstico agregado',
+          `Pieza ${toothInfo?.numero} actualizada correctamente`
+        );
       }
-      setShowDiagnosticoSelect(false);
+
+
+      clearSurfacesForTooth(selectedTooth);
       surfaceSelectorRef.current?.clearRequiredAreaWarning();
+      setShowDiagnosticoSelect(false);
     },
-    [
-      selectedTooth,
-      selectedSurfaces,
-      applyDiagnostico,
-      clearSurfacesForTooth,
-    ],
+    [selectedTooth, selectedSurfaces, applyDiagnostico, clearSurfacesForTooth, odontogramaData, odontogramaDataHook, toast, toothInfo]
   );
 
   const handleRemoveDiagnostico = useCallback(
@@ -352,10 +429,9 @@ const [currentRootGroup, setCurrentRootGroup] = useState<string | null>(null);
             )}
           </div>
 
+          {/* Boton para cerrar el panel */}
           {selectedTooth &&
-            !hasGeneralDiagnosis &&
-            !showDiagnosticoSelect &&
-            !isBlocked && (
+            !showDiagnosticoSelect &&(
               <button
                 onClick={handleAddDiagnostico}
                 className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-brand-500 rounded-lg hover:bg-brand-600 transition-all hover:shadow-focus-ring"
@@ -381,15 +457,7 @@ const [currentRootGroup, setCurrentRootGroup] = useState<string | null>(null);
         {/* Indicador de guardado */}
         {lastSaveTime && (
           <div className="mt-2 flex items-center gap-1.5 text-xs text-success-600">
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24">
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={3}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
+            {/* icono check */}
             <span className="truncate">
               Guardado {lastSaveTime.toLocaleTimeString()}
             </span>
@@ -398,15 +466,13 @@ const [currentRootGroup, setCurrentRootGroup] = useState<string | null>(null);
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-        {/* Área de contenido (ocupa todo el espacio menos el alto del footer sticky) */}
+
         <div className="flex-1 min-h-0 overflow-y-auto ">
           {!selectedTooth ? (
             <EmptyState
               title="Selecciona un diente"
               description="Haz clic en un diente del odontograma 3D para gestionar diagnósticos."
             />
-          ) : hasGeneralDiagnosis || isBlocked ? (
-            <BlockedState />
           ) : showDiagnosticoSelect ? (
             <div className="p-4 space-y-4 pb-4">
               {/* SELECTOR DE SUPERFICIES */}
@@ -432,9 +498,9 @@ const [currentRootGroup, setCurrentRootGroup] = useState<string | null>(null);
                     isBlocked={isBlocked}
                     onAreaChange={handleAreaChange}
                     onRootGroupChange={setCurrentRootGroup}
-getPermanentColorForSurface={getPermanentColorForSurface}
-  activeDiagnosisColor={(tipoDiagnosticoSeleccionado as any)?.colorHex ?? null}
-                    
+                    getPermanentColorForSurface={getPermanentColorForSurface}
+                    activeDiagnosisColor={(tipoDiagnosticoSeleccionado as any)?.colorHex ?? null}
+
                   />
                 </div>
 
@@ -489,6 +555,7 @@ getPermanentColorForSurface={getPermanentColorForSurface}
             <DiagnosticosListView
               diagnosticos={diagnosticosAplicados}
               onRemove={handleRemoveDiagnostico}
+              toast={toast}
             />
           )}
         </div>
@@ -497,27 +564,37 @@ getPermanentColorForSurface={getPermanentColorForSurface}
         {selectedTooth && (
           <div className="sticky bottom-0 z-10 border-t border-gray-200 bg-gray-50 p-4 shadow-lg">
             <div className="flex gap-3">
+              {/* Botón principal: Añadir / Cancelar diagnóstico */}
               <button
                 onClick={showDiagnosticoSelect ? handleCancelDiagnostico : handleAddDiagnostico}
-                disabled={hasGeneralDiagnosis || isBlocked}
-                className={`flex-1 py-2.5 px-4 rounded-lg border font-medium transition-colors ${hasGeneralDiagnosis || isBlocked
-                    ? "border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed"
-                    : "border-gray-300 text-gray-700 hover:bg-white"
-                  }`}
+                disabled={isBlockedByAbsence}
+                className={
+                  `flex-1 py-2.5 px-4 rounded-lg border font-medium transition-colors ` 
+                }
               >
-                {showDiagnosticoSelect ? "Cancelar" : "Añadir diagnóstico"}
+                {showDiagnosticoSelect ? 'Cancelar' : 'Añadir diagnóstico'}
               </button>
-
+              {/* Botón secundario: Guardar odontograma completo */}
               <button
-                disabled={!showDiagnosticoSelect || !isFormValid}
-                className={`flex-2 py-2.5 px-4 rounded-lg font-medium text-white shadow-theme-sm transition-all ${showDiagnosticoSelect && isFormValid
-                    ? "bg-brand-600 hover:bg-brand-700 active:bg-brand-800"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
-                  }`}
+                onClick={handleGuardarCompleto}
+                disabled={!hasPacienteActivo || isSavingComplete}
+                className={
+                  `flex-1 py-2.5 px-4 rounded-lg text-sm font-medium text-white shadow-theme-sm transition-all ` +
+                  (!hasPacienteActivo || isSavingComplete
+                    ? 'bg-gray-300 cursor-not-allowed shadow-none text-gray-600'
+                    : 'bg-brand-600 hover:bg-brand-700 active:bg-brand-800')
+                }
               >
-                Aplicar
+                {isSavingComplete ? 'Guardando…' : 'Guardar odontograma'}
               </button>
             </div>
+
+            {/* Indicador de último guardado completo */}
+            {lastCompleteSave && (
+              <p className="mt-2 text-xs text-gray-500">
+                Último guardado completo: {lastCompleteSave.toLocaleTimeString()}
+              </p>
+            )}
           </div>
         )}
       </div>
@@ -562,44 +639,11 @@ const EmptyState = ({
   </div>
 );
 
-const BlockedState = () => (
-  <div className="p-4">
-    <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 space-y-2.5">
-      <div className="flex items-start gap-2.5">
-        <div className="flex-shrink-0 w-9 h-9 rounded-full bg-warning-100 flex items-center justify-center">
-          <svg
-            className="w-4.5 h-4.5 text-warning-600"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-            />
-          </svg>
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-warning-900">
-            Diente bloqueado
-          </h3>
-          <p className="text-xs text-warning-700 mt-1">
-            Este diente tiene un diagnóstico general. No se pueden añadir
-            diagnósticos por superficie.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
 const SelectedSurfacesBadge = ({ count }: { count: number }) => (
   <div
     className={`flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${count > 0
-        ? "bg-brand-100 text-brand-700"
-        : "bg-gray-100 text-gray-600"
+      ? "bg-brand-100 text-brand-700"
+      : "bg-gray-100 text-gray-600"
       }`}
   >
     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24">
@@ -682,9 +726,12 @@ const SurfaceChip = ({
 const DiagnosticosListView = ({
   diagnosticos,
   onRemove,
+  toast,
+
 }: {
   diagnosticos: any[];
   onRemove: (id: string, superficieId: string) => void;
+  toast: ReturnType<typeof useToast>['toast'];
 }) => {
   if (diagnosticos.length === 0) {
     return (
@@ -708,6 +755,7 @@ const DiagnosticosListView = ({
           key={`${diag.id}-${diag.superficieId}`}
           diagnostico={diag}
           onRemove={onRemove}
+          toast={toast}
         />
       ))}
     </div>
@@ -717,9 +765,11 @@ const DiagnosticosListView = ({
 const DiagnosticoCard = ({
   diagnostico,
   onRemove,
+  toast,
 }: {
   diagnostico: any;
   onRemove: (id: string, superficieId: string) => void;
+  toast: ReturnType<typeof useToast>['toast'];
 }) => {
   const priorityColors: Record<string, string> = {
     ALTA: "bg-error-50 border-error-200 text-error-700",
@@ -804,9 +854,31 @@ const DiagnosticoCard = ({
         </div>
 
         <button
-          onClick={() =>
-            onRemove(diagnostico.id, diagnostico.superficieId || "general")
-          }
+          onClick={async () => {
+            const superficie = diagnostico.superficieId || 'general';
+            const ok = window.confirm(
+              `¿Deseas eliminar el diagnóstico en superficie ${superficie}?`
+            );
+            if (!ok) return;
+
+            try {
+              await eliminarDiagnostico(diagnostico.id);
+              onRemove(diagnostico.id, superficie);
+              
+              // ✅ Mostrar toast de éxito
+              toast.success(
+                'Diagnóstico eliminado',
+                `Superficie ${superficie} actualizada`
+              );
+            } catch (e) {
+              console.error('Error eliminando diagnóstico', e);
+              // ✅ Mostrar toast de error
+              toast.error(
+                'Error al eliminar',
+                'No se pudo eliminar el diagnóstico. Intenta nuevamente.'
+              );
+            }
+          }}
           className="flex-shrink-0 w-7 h-7 rounded-lg hover:bg-error-50 hover:text-error-600 text-gray-400 flex items-center justify-center transition-colors"
           title="Eliminar"
         >
@@ -821,6 +893,7 @@ const DiagnosticoCard = ({
           </svg>
         </button>
       </div>
+
     </div>
   );
 };

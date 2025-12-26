@@ -1,6 +1,6 @@
 // src/components/odontogram/OdontogramaViewer.tsx
 
-import { useMemo, useRef, useEffect, useState } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OdontogramaModel } from "./3d/OdontogramaModel";
 import {
@@ -12,9 +12,8 @@ import {
 import { type DatosDiente, type Diagnostico } from "./preview/ToothStatusDisplay";
 import { DentalBackground } from "../../hooks/gradients/DentalGradient";
 import { PanelPreviewDiente } from "./preview/ToothPreviewPanel";
-import { getToothTranslationByFdi, toothTranslations } from "../../core/utils/toothTraslations";
+import { getToothTranslationByFdi } from "../../core/utils/toothTraslations";
 import { DiagnosticoPanel } from "./diagnostic/DiagnosticoPanel";
-import { DiagnosticosGrid } from "./diagnostic/DiagnosticosGrid";
 import React from "react";
 import { usePacienteActivo } from "../../context/PacienteContext";
 import type { IPaciente } from "../../types/patient/IPatient";
@@ -23,6 +22,9 @@ import { PacienteFloatingButton } from "./patient/PacienteFloatingButton";
 import { PacienteInfoPanel } from "./patient/PacienteInfoPanel";
 import { useOdontogramaData } from "../../hooks/odontogram/useOdontogramaData";
 import { useCargarOdontogramaCompleto } from "../../hooks/odontogram/useCargarOdontogramaCompleto";
+import type { DiagnosticoEntry } from "../../core/types/typeOdontograma";
+import { useCatalogoDiagnosticos } from "../../hooks/odontogram/useCatalogoDiagnosticos";
+import { getProcConfigFromCategories } from "../../core/domain/diagnostic/procConfig";
 
 type OdontogramaViewerProps = {
   onSelectTooth: React.Dispatch<React.SetStateAction<string | null>>;
@@ -40,14 +42,15 @@ export const OdontogramaViewer = ({
   const [isPacientePanelCollapsed, setIsPacientePanelCollapsed] = React.useState(true);
   // Hooks odontograma
   const odontogramaDataHook = useOdontogramaData();
-  const { getPreviewColor, getToothDiagnoses, getProcConfig, odontogramaData, removeDiagnostico } =
+  const { getPreviewColor, getToothDiagnoses, odontogramaData } =
     odontogramaDataHook;
   const { loadFromBackend } = odontogramaDataHook;
+  const { categorias } = useCatalogoDiagnosticos();
   const [selectedTooth, setSelectedTooth] = React.useState<string | null>(null);
   const [previewProcId, setPreviewProcId] = React.useState<string | null>(null);
   const [previewOptions, setPreviewOptions] = React.useState<Record<string, any>>({});
 
-  const [selectedToothFdiId, setSelectedToothFdiId] = React.useState<string | null>(null);
+  //const [selectedToothFdiId, setSelectedToothFdiId] = React.useState<string | null>(null);
 
   const [currentView, setCurrentView] = React.useState<ViewPresetKey>("FRONT");
   const [isJawOpen, setIsJawOpen] = React.useState(false);
@@ -109,29 +112,28 @@ export const OdontogramaViewer = ({
 
   // Computed values
   const currentToothData: DatosDiente | null = useMemo(() => {
-    if (!selectedTooth) return null;
-    const diagnosticoEntries = getToothDiagnoses(selectedTooth);
-    if (!diagnosticoEntries?.length) return null;
+    if (!selectedTooth || !categorias) return null;
 
-    const diagnosticos: Diagnostico[] = diagnosticoEntries
+    const toothData = getToothDiagnoses(selectedTooth);
+    const allEntries = Object.values(toothData).flat() as DiagnosticoEntry[];
+    if (!allEntries.length) return null;
+
+    const diagnosticos: Diagnostico[] = allEntries
       .map((entry) => {
-        const procConfig = getProcConfig(entry.procedimientoId);
+        const procConfig = getProcConfigFromCategories(entry.procedimientoId, categorias);
         if (!procConfig) return null;
+
         return {
           id: entry.id,
           nombre: procConfig.nombre,
           prioridadKey: procConfig.prioridadKey,
-          areas_afectadas: entry.areas_afectadas,
+          areasafectadas: entry.areasafectadas,
         };
       })
-      .filter(Boolean) as Diagnostico[];
-    console.log("[VIEWER] selectedTooth (FDI):", selectedTooth);
-    console.log(
-      "[VIEWER] getToothDiagnoses(selectedTooth):",
-      selectedTooth ? getToothDiagnoses(selectedTooth) : null
-    );
+      .filter((d): d is Diagnostico => d !== null);
+
     return diagnosticos.length ? { diagnósticos: diagnosticos } : null;
-  }, [selectedTooth, getToothDiagnoses, getProcConfig]);
+  }, [selectedTooth, getToothDiagnoses, categorias]);
 
   const previewColorHex = useMemo(() => {
     if (!selectedTooth || !previewProcId) return null;
@@ -326,7 +328,7 @@ export const OdontogramaViewer = ({
             </div>
           )}
 
-          
+
         </div>
 
         {/* BOTÓN FLOTANTE: Selector de paciente */}
@@ -351,6 +353,7 @@ export const OdontogramaViewer = ({
           <DiagnosticoPanel
             selectedTooth={selectedTooth}
             odontogramaDataHook={odontogramaDataHook}
+            pacienteActivoId={pacienteActivo}
           />
         </div>
       )}

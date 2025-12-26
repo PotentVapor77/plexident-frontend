@@ -85,7 +85,7 @@ export type DiagnosticoItem = {
   simboloColor: OdontoColorKey;
   categoria: TipoDiagnostico;
   prioridadKey: PrioridadKey;
-  areas_afectadas: AreaAfectada[];
+  areasafectadas: AreaAfectada[];
   atributos_clinicos: Record<string, AtributoClinicoDefinicion>;
 };
 
@@ -118,7 +118,7 @@ export type DiagnosticoEntry = {
   priority: number;
   siglas: string;
   nombre: string;
-  areas_afectadas: AreaAfectada[];
+  areasafectadas: AreaAfectada[];
   secondaryOptions: Record<string, any>;
   descripcion: string;
   superficieId?: string;

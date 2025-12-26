@@ -51,7 +51,7 @@ function mapearCategoriasConAtributos(categorias: CategoriaDiagnosticoBackend[])
               simboloColor: diag.simbolo_color as any,
               categoria: cat.nombre as any,
               prioridadKey: PRIORIDAD_BACKEND_TO_FRONTEND[diag.prioridad] || 'MEDIA', 
-              areas_afectadas: mapearSuperficies(diag.superficie_aplicables || []),
+              areasafectadas: mapearSuperficies(diag.superficie_aplicables || []),
               atributos_clinicos: atributosMapeados,
             };
           })

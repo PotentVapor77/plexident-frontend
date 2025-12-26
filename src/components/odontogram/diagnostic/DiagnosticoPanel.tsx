@@ -22,7 +22,8 @@ import { getProcConfigFromCategories } from "../../../core/domain/diagnostic/pro
 import { eliminarDiagnostico } from "../../../services/odontogram/odontogramaService";
 import { isToothBlockedByAbsence } from "../../../core/domain/diagnostic/blockingRules";
 import { useToast } from "../../../hooks/useToast";
-import { ToastContainer } from "../../ui/toast/ToastContainer";
+
+import { formatGroupedSurfaces, groupDiagnostics, type GroupedDiagnostic } from "../../../core/utils/groupDiagnostics";
 
 
 
@@ -134,30 +135,27 @@ export const DiagnosticoPanel = ({
 
   // Obtener diagnósticos aplicados del diente seleccionado
   const diagnosticosAplicados = useMemo(() => {
-    if (!selectedTooth || !odontogramaData[selectedTooth]) return [];
+  if (!selectedTooth || !odontogramaData[selectedTooth]) return [];
 
-    const toothData = odontogramaData[selectedTooth];
-    const hasAbsence = toothData && isToothBlockedByAbsence(
-      Object.values(toothData).flat() as DiagnosticoEntry[]
-    );
-    const diagnosticos: any[] = [];
+  const toothData = odontogramaData[selectedTooth];
+  const diagnosticos: any[] = [];
 
-    Object.entries(toothData).forEach(
-      ([superficieId, diagsArray]: [string, any]) => {
-        (diagsArray as any[]).forEach((diag) => {
-          const procConfig = getProcConfigFromCategories(diag.procedimientoId, categorias);
-          diagnosticos.push({
-            ...diag,
-            superficieId,
-            nombre: procConfig?.nombre || diag.procedimientoId,
-            prioridadKey: procConfig?.prioridadKey || "INFORMATIVA",
-          });
+  Object.entries(toothData).forEach(
+    ([superficieId, diagsArray]: [string, any]) => {
+      (diagsArray as any[]).forEach((diag) => {
+        const procConfig = getProcConfigFromCategories(diag.procedimientoId, categorias);
+        diagnosticos.push({
+          ...diag,
+          superficieId,
+          nombre: procConfig?.nombre || diag.procedimientoId,
+          prioridadKey: procConfig?.prioridadKey || "INFORMATIVA",
         });
-      },
-    );
+      });
+    },
+  );
 
-    return diagnosticos;
-  }, [selectedTooth, odontogramaData, categorias]);
+  return groupDiagnostics(diagnosticos);
+}, [selectedTooth, odontogramaData, categorias]);
 
   const hasGeneralDiagnosis = useMemo(
     () =>
@@ -727,9 +725,8 @@ const DiagnosticosListView = ({
   diagnosticos,
   onRemove,
   toast,
-
 }: {
-  diagnosticos: any[];
+  diagnosticos: GroupedDiagnostic[]; 
   onRemove: (id: string, superficieId: string) => void;
   toast: ReturnType<typeof useToast>['toast'];
 }) => {
@@ -752,7 +749,7 @@ const DiagnosticosListView = ({
       </div>
       {diagnosticos.map((diag) => (
         <DiagnosticoCard
-          key={`${diag.id}-${diag.superficieId}`}
+          key={diag.groupId}
           diagnostico={diag}
           onRemove={onRemove}
           toast={toast}
@@ -767,7 +764,7 @@ const DiagnosticoCard = ({
   onRemove,
   toast,
 }: {
-  diagnostico: any;
+  diagnostico: GroupedDiagnostic; 
   onRemove: (id: string, superficieId: string) => void;
   toast: ReturnType<typeof useToast>['toast'];
 }) => {
@@ -781,6 +778,37 @@ const DiagnosticoCard = ({
 
   const priorityClass =
     priorityColors[diagnostico.prioridadKey] || priorityColors["INFORMATIVA"];
+const superficiesDisplay = formatGroupedSurfaces(diagnostico);
+
+const getSurfaceBadgeStyle = () => {
+    if (diagnostico.isGeneral) {
+      return "bg-brand-100 border-brand-200 text-brand-700";
+    }
+    if (diagnostico.isCoronaCompleta && diagnostico.isRaizCompleta) {
+      return "bg-purple-100 border-purple-200 text-purple-700";
+    }
+    if (diagnostico.isCoronaCompleta) {
+      return "bg-brand-100 border-brand-200 text-brand-700";
+    }
+    if (diagnostico.isRaizCompleta) {
+      return "bg-purple-100 border-purple-200 text-purple-700";
+    }
+    
+    // Mixto o individual
+    const hasCorona = diagnostico.superficies.some(s => s.startsWith('cara_'));
+    const hasRaiz = diagnostico.superficies.some(s => s.startsWith('raiz:'));
+
+
+
+ if (hasCorona && hasRaiz) {
+      return "bg-gradient-to-r from-brand-50 to-purple-50 border-brand-200 text-gray-700";
+    }
+    if (hasRaiz) {
+      return "bg-purple-50 border-purple-200 text-purple-700";
+    }
+    return "bg-brand-50 border-brand-200 text-brand-700";
+  };
+
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-theme-md transition-shadow">
@@ -798,12 +826,15 @@ const DiagnosticoCard = ({
               {diagnostico.prioridadKey}
             </span>
           </div>
+          
           {diagnostico.descripcion && (
             <p className="text-xs text-gray-600 line-clamp-2">
               {diagnostico.descripcion}
             </p>
           )}
+          
           <div className="flex items-center gap-3 text-xs text-gray-500">
+            {/* Áreas afectadas */}
             <div className="flex items-center gap-1 truncate">
               <svg
                 className="w-3.5 h-3.5 flex-shrink-0"
@@ -822,57 +853,64 @@ const DiagnosticoCard = ({
                 {diagnostico.areasafectadas?.join(", ") || "N/A"}
               </span>
             </div>
-            <div className="flex items-center gap-1 truncate">
-              <svg
-                className="w-3.5 h-3.5 flex-shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-              <span className="capitalize truncate">
-                {diagnostico.superficieId
-                  ?.replace("cara-", "")
-                  .replace("raiz-", "R ")
-                  .replace("-g", "") || "General"}
-              </span>
-            </div>
+          </div>
+
+          {/* ✅ Superficies con estilo diferenciado */}
+          <div className="flex items-start gap-1.5 mt-2">
+            <svg
+              className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            <span 
+              className={`inline-flex px-2 py-0.5 rounded border text-xs font-medium ${getSurfaceBadgeStyle()}`}
+            >
+              {superficiesDisplay}
+              {diagnostico.superficies.length > 1 && (
+                <span className="ml-1 text-xs opacity-70">
+                  ({diagnostico.superficies.length})
+                </span>
+              )}
+            </span>
           </div>
         </div>
 
+        {/* ✅ Botón de eliminar - elimina TODOS los diagnósticos del grupo */}
         <button
           onClick={async () => {
-            const superficie = diagnostico.superficieId || 'general';
             const ok = window.confirm(
-              `¿Deseas eliminar el diagnóstico en superficie ${superficie}?`
+              `¿Deseas eliminar este diagnóstico de ${diagnostico.superficies.length === 1 ? 'la superficie' : 'todas las superficies'}?\n\n${superficiesDisplay}`
             );
             if (!ok) return;
 
             try {
-              await eliminarDiagnostico(diagnostico.id);
-              onRemove(diagnostico.id, superficie);
+              // Eliminar todos los diagnósticos del grupo
+              for (const { id, superficieId } of diagnostico.diagnosticoIds) {
+                await eliminarDiagnostico(id);
+                onRemove(id, superficieId);
+              }
               
-              // ✅ Mostrar toast de éxito
               toast.success(
                 'Diagnóstico eliminado',
-                `Superficie ${superficie} actualizada`
+                `Eliminado de ${diagnostico.superficies.length} superficie(s)`
               );
             } catch (e) {
               console.error('Error eliminando diagnóstico', e);
-              // ✅ Mostrar toast de error
               toast.error(
                 'Error al eliminar',
                 'No se pudo eliminar el diagnóstico. Intenta nuevamente.'
@@ -893,7 +931,6 @@ const DiagnosticoCard = ({
           </svg>
         </button>
       </div>
-
     </div>
   );
 };

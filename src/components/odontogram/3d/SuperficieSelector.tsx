@@ -1,9 +1,9 @@
-// src/components/odontograma/SuperficieSelector.tsx
+// src/components/odontograma/3d/SuperficieSelector.tsx
 import { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from "react";
 import { useCrownInteractions } from "../../../hooks/odontogram/useCrownInteractions";
 import { useRootInteractions } from "../../../hooks/odontogram/useRootInteractions";
 import { useToothRootType } from "../../../hooks/odontogram/useToothRootType";
-import { ODONTO_COLORS, type RootGroupKey } from "../../../core/types/typeOdontograma";
+import { ODONTO_COLORS, type RootGroupKey } from "../../../core/types/odontograma.types";
 
 // IMPORTAR SVGs DIRECTAMENTE
 import odontSvg from "../../../assets/images/dental/odonto.svg";
@@ -59,14 +59,14 @@ const getPrincipalArea = (surfaces: string[]): PrincipalArea => {
 
 
 interface SurfaceSelectorProps {
-  selectedSurfaces: string[];
-  onSurfaceSelect: (surfaces: string[]) => void;
-  selectedTooth: string | null;
-  isBlocked?: boolean;
-  onAreaChange: (area: PrincipalArea) => void;
-  onRootGroupChange?: (group: RootGroupKey | null) => void;
-  getPermanentColorForSurface: (toothId: string | null, surfaceId: string) => string | null;
-  activeDiagnosisColor: string | null;
+    selectedSurfaces: string[];
+    onSurfaceSelect: (surfaces: string[]) => void;
+    selectedTooth: string | null;
+    isBlocked?: boolean;
+    onAreaChange: (area: PrincipalArea) => void;
+    onRootGroupChange?: (group: RootGroupKey | null) => void;
+    getPermanentColorForSurface: (toothId: string | null, surfaceId: string) => string | null;
+    activeDiagnosisColor: string | null;
 }
 
 export interface SurfaceSelectorRef {
@@ -75,14 +75,14 @@ export interface SurfaceSelectorRef {
 }
 
 export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorProps>(({
-  selectedSurfaces,
-  onSurfaceSelect,
-  selectedTooth,
-  isBlocked,
-  onAreaChange,
-  onRootGroupChange,
-  getPermanentColorForSurface,
-  activeDiagnosisColor,
+    selectedSurfaces,
+    onSurfaceSelect,
+    selectedTooth,
+    isBlocked,
+    onAreaChange,
+    onRootGroupChange,
+    getPermanentColorForSurface,
+    activeDiagnosisColor,
 }, ref) => {
 
     const [svgLoaded, setSvgLoaded] = useState(false);
@@ -135,7 +135,7 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         onSurfaceSelect(surfaces);
         const area = getPrincipalArea(surfaces);
         onAreaChange(area);
-        setRequiredAreaWarning(null); 
+        setRequiredAreaWarning(null);
     }, [onSurfaceSelect, onAreaChange]);
 
     // Hooks de interacciÃƒÂ³n
@@ -172,7 +172,7 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         ];
         const type = rootInfo.type || '';
         const pathName = knownRootTypes.includes(type) ? type : 'raiz_dental';
-        return ROOT_SVG_MAP[pathName]; 
+        return ROOT_SVG_MAP[pathName];
     }, [rootInfo.type]);
 
     // Estilos para el contenedor (Se mantiene el escalado general y el espaciado reducido)

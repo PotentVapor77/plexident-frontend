@@ -4,7 +4,7 @@ import type {
     DiagnosticoItem,
     PrioridadKey,
     DiagnosticoCategory,
-} from "../../types/typeOdontograma";
+} from "../../types/odontograma.types";
 
 export type ProcConfigWithPriority = DiagnosticoItem & {
   prioridadKey: PrioridadKey;

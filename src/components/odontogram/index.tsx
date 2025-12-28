@@ -90,7 +90,6 @@ export { DiagnosticoSelectUI } from './selection/DiagnosticoSelectUI';
  * Grid de visualización de diagnósticos por diente
  * con agrupación inteligente
  */
-export { DiagnosticosGrid } from './diagnostic/DiagnosticosGrid';
 
 
 // ============================================
@@ -154,11 +153,11 @@ export type {
     AreaAfectada,
     RootGroupKey,
     DiagnosticoCategory
-} from '../../core/types/typeOdontograma';
+} from '../../core/types/odontograma.types';
 
 export type {
     OdontogramaSnapshot
-} from '../../core/types/typeOdontogramaHistory';
+} from '../../core/types/odontogramaHistory.types';
 
 /**
  * Tipo para áreas principales del diente

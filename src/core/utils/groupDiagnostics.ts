@@ -1,5 +1,7 @@
 // src/core/utils/groupDiagnostics.ts
 
+import { ROOT_SURFACES_BY_TYPE } from "./groupDentalSurfaces";
+
 export interface GroupedDiagnostic {
     // Identificador único del grupo
     groupId: string;
@@ -24,7 +26,8 @@ export interface GroupedDiagnostic {
  * Agrupa diagnósticos idénticos aplicados en múltiples superficies
  */
 export function groupDiagnostics(
-    diagnosticos: Array<any>
+    diagnosticos: Array<any>,
+    rootType?: string | null
 ): GroupedDiagnostic[] {
     // Mapa para agrupar diagnósticos por características idénticas
     const groupMap = new Map<string, GroupedDiagnostic>();
@@ -86,8 +89,36 @@ export function groupDiagnostics(
 
         // Detectar raíz completa (depende del tipo de diente)
         // Por simplicidad, consideramos raíz completa si tiene 2+ raíces
-        const isRaizCompleta = raizSurfaces.length >= 2;
+        const expectedRootSurfaces =
+            ROOT_SURFACES_BY_TYPE[rootType || 'raiz_dental'] || [];
 
+        const normalize = (s: string) => s.replace(/-/g, '_');
+        const includesNormalized = (arr: string[], value: string) =>
+            arr.map(normalize).includes(normalize(value));
+        console.log('[groupDiagnostics] DEBUG raíz', {
+            rootType,
+            groupId: group.groupId,
+            superficies: group.superficies,
+            raizSurfaces,
+            expectedRootSurfaces,
+            normalizedExpected: expectedRootSurfaces.map(normalize),
+            normalizedRaiz: raizSurfaces.map(normalize),
+        });
+
+        const isRaizCompleta =
+            expectedRootSurfaces.length > 0 &&
+            raizSurfaces.length > 0 &&
+            expectedRootSurfaces.every(rs =>
+                includesNormalized(raizSurfaces, rs)
+            );
+        console.log('[groupDiagnostics] resultado', {
+            groupId: group.groupId,
+            isCoronaCompleta,
+            isRaizCompleta,
+        });
+
+
+        console.log('[groupDiagnostics] isRaizCompleta:', isRaizCompleta);
         return {
             ...group,
             isCoronaCompleta,

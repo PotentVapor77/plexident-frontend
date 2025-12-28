@@ -28,21 +28,21 @@ export const CROWN_SURFACES = [
 
 export const ROOT_SURFACES_BY_TYPE: Record<string, string[]> = {
     raiz_molar_superior: [
-        "raiz:raiz_mesial",
-        "raiz:raiz_distal",
-        "raiz:raiz_palatal",
+        "raiz:raiz-mesial",
+        "raiz:raiz-distal",
+        "raiz:raiz-palatal",
     ],
     raiz_molar_inferior: [
-        "raiz:raiz_mesial",
-        "raiz:raiz_distal",
+        "raiz:raiz-mesial",
+        "raiz:raiz-distal",
     ],
     raiz_premolar: [
-        "raiz:raiz_vestibular",
-        "raiz:raiz_palatal",
+        "raiz:raiz-vestibular",
+        "raiz:raiz-palatal",
     ],
-    raiz_canino: ["raiz:raiz_principal"],
-    raiz_incisivo: ["raiz:raiz_principal"],
-    raiz_dental: ["raiz:raiz_principal"],
+    raiz_canino: ["raiz:raiz-principal"],
+    raiz_incisivo: ["raiz:raiz-principal"],
+    raiz_dental: ["raiz:raiz-principal"],
 };
 
 // -----------------------------
@@ -107,8 +107,7 @@ export function groupDentalSurfaces(
   expectedRootSurfaces.length > 0 &&
   rootSurfaces.length > 0 &&
   expectedRootSurfaces.every(rs =>
-    includesNormalized(rootSurfaces, rs) ||
-    rootSurfaces.includes("raiz:raiz_principal")
+    includesNormalized(rootSurfaces, rs) 
   );
 
     if (hasAllRoot) {

@@ -22,7 +22,7 @@ import { PacienteFloatingButton } from "./patient/PacienteFloatingButton";
 import { PacienteInfoPanel } from "./patient/PacienteInfoPanel";
 import { useOdontogramaData } from "../../hooks/odontogram/useOdontogramaData";
 import { useCargarOdontogramaCompleto } from "../../hooks/odontogram/useCargarOdontogramaCompleto";
-import type { DiagnosticoEntry } from "../../core/types/typeOdontograma";
+import type { DiagnosticoEntry } from "../../core/types/odontograma.types";
 import { useCatalogoDiagnosticos } from "../../hooks/odontogram/useCatalogoDiagnosticos";
 import { getProcConfigFromCategories } from "../../core/domain/diagnostic/procConfig";
 
@@ -353,7 +353,6 @@ export const OdontogramaViewer = ({
           <DiagnosticoPanel
             selectedTooth={selectedTooth}
             odontogramaDataHook={odontogramaDataHook}
-            pacienteActivoId={pacienteActivo}
           />
         </div>
       )}

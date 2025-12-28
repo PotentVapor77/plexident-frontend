@@ -9,7 +9,7 @@ import type {
   DiagnosticoBackend,
   AtributoClinicoBackend
 } from '../../types/odontogram/typeBackendOdontograma';
-import type { DiagnosticoCategory, PrioridadKey } from '../../core/types/typeOdontograma';
+import type { DiagnosticoCategory, PrioridadKey } from '../../core/types/odontograma.types';
 
 // ============================================================================
 // MAPEO DE PRIORIDADES
@@ -133,14 +133,14 @@ export const useCatalogoDiagnosticos = () => {
       return [];
     }
 
-    console.log(`Mapeando ${categoriasRaw.length} categorías...`);
+    // console.log(`Mapeando ${categoriasRaw.length} categorías...`);
 
     try {
       const resultado = mapearCategoriasConAtributos(categoriasRaw);
-      console.log(`Mapeo completado. ${resultado.length} categorías procesadas.`);
+      // console.log(`Mapeo completado. ${resultado.length} categorías procesadas.`);
       return resultado;
     } catch (error) {
-      console.error('Error mapeando categorías:', error);
+      // console.error('Error mapeando categorías:', error);
       return [];
     }
   }, [categoriasRaw]);

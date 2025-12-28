@@ -1,4 +1,4 @@
-import type { AreaAfectada, DiagnosticoEntry, OdontogramaData } from "../../types/typeOdontograma";
+import type { AreaAfectada, DiagnosticoEntry, OdontogramaData } from "../../types/odontograma.types";
 import { isToothBlockedByAbsence } from "./blockingRules";
 import { hydrateDiagnosticoEntry } from "./dataHydration";
 

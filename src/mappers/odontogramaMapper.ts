@@ -1,7 +1,7 @@
 // src/mappers/odontogramaMapper.ts
 
 import type { OdontoColorKey, DiagnosticoCategory, OdontogramaData } from "../components/odontogram";
-import type { PrioridadKey, DiagnosticoItem, DiagnosticoEntry, TipoDiagnostico, AtributoClinicoDefinicion } from "../core/types/typeOdontograma";
+import type { PrioridadKey, DiagnosticoItem, DiagnosticoEntry, TipoDiagnostico, AtributoClinicoDefinicion } from "../core/types/odontograma.types";
 import type {
   DiagnosticoBackend,
   CategoriaDiagnosticoBackend,
@@ -21,13 +21,13 @@ const PRIORIDAD_BACKEND_TO_FRONTEND: Record<number, PrioridadKey> = {
   1: 'INFORMATIVA',
 };
 
-const PRIORIDAD_KEY_TO_BACKEND: Record<PrioridadKey, string> = {
-  'ALTA': 'ALTA',
-  'ESTRUCTURAL': 'ESTRUCTURAL',
-  'MEDIA': 'MEDIA',
-  'BAJA': 'BAJA',
-  'INFORMATIVA': 'INFORMATIVA',
-};
+//const PRIORIDAD_KEY_TO_BACKEND: Record<PrioridadKey, string> = {
+ // 'ALTA': 'ALTA',
+ // 'ESTRUCTURAL': 'ESTRUCTURAL',
+ // 'MEDIA': 'MEDIA',
+ // 'BAJA': 'BAJA',
+ // 'INFORMATIVA': 'INFORMATIVA',
+//};
 
 // ============================================================================
 // MAPEO DE SÍMBOLOS DE COLOR
@@ -136,7 +136,7 @@ function mapearAtributosClinicos(
   }
 
   const atributos: Record<string, AtributoClinicoDefinicion> = {};
-  
+
   atributosTipos.forEach(tipo => {
     if (tipo.key && tipo.opciones && tipo.opciones.length > 0) {
       atributos[tipo.key] = {
@@ -204,12 +204,13 @@ function mapearDiagnosticoInstanceBackendToFrontend(
   diag: DiagnosticoDentalBackend
 ): DiagnosticoEntry {
   const diagCatalogo = diag.diagnostico_catalogo_detalle;
+  const prioridadBackend = diag.prioridad_asignada || diagCatalogo?.prioridad || 3;
 
   return {
     id: diag.id,
     procedimientoId: diagCatalogo?.key || String(diag.diagnostico_catalogo),
     colorHex: diag.tipo_registro === 'azul' ? '#0ea5e9' : '#ef4444',
-    priority: diag.prioridad_asignada || diagCatalogo?.prioridad || 3,
+    priority: prioridadBackend,
     siglas: diagCatalogo?.siglas || '?',
     nombre: diagCatalogo?.nombre || 'Desconocido',
     areasafectadas: diagCatalogo?.superficie_aplicables
@@ -218,7 +219,7 @@ function mapearDiagnosticoInstanceBackendToFrontend(
     secondaryOptions: diag.atributos_clinicos || {},
     descripcion: diag.descripcion || '',
     superficieId: diag.superficie_detalle?.nombre,
-    prioridadKey: PRIORIDAD_BACKEND_TO_FRONTEND[diag.prioridad_asignada || diagCatalogo?.prioridad || 3] || 'MEDIA',
+    prioridadKey: PRIORIDAD_BACKEND_TO_FRONTEND[prioridadBackend] || 'MEDIA',
   };
 }
 
@@ -232,10 +233,10 @@ export function mapearOdontogramaBackendToFrontend(
   const data: OdontogramaData = {};
 
   const TODOS_LOS_DIENTES = [
-    '18','17','16','15','14','13','12','11',
-    '21','22','23','24','25','26','27','28',
-    '38','37','36','35','34','33','32','31',
-    '41','42','43','44','45','46','47','48',
+    '18', '17', '16', '15', '14', '13', '12', '11',
+    '21', '22', '23', '24', '25', '26', '27', '28',
+    '38', '37', '36', '35', '34', '33', '32', '31',
+    '41', '42', '43', '44', '45', '46', '47', '48',
   ];
 
   // 1) Inicializar todos los dientes vacíos
@@ -261,51 +262,47 @@ export function mapearOdontogramaBackendToFrontend(
     });
   }
 
-  // 3) NUEVO: aplicar también odontograma_data plano (formato /completo/)
+  // 3) Naplicar también odontograma_data plano (formato /completo/)
   const odData = odontograma.odontograma_data || {};
-  Object.entries(odData).forEach(([codigoFdi, superficies]) => {
-    if (!data[codigoFdi]) {
-      data[codigoFdi] = {};
+
+Object.entries(odData).forEach(([codigoFdi, superficies]) => {
+  if (!data[codigoFdi]) {
+    data[codigoFdi] = {};
+  }
+
+  Object.entries(superficies as Record<string, any[]>).forEach(
+    ([nombreSuperficie, lista]) => {
+      if (!Array.isArray(lista)) return;
+
+      const surfaceId = superficieBackendToFrontend(nombreSuperficie);
+      if (!data[codigoFdi][surfaceId]) {
+        data[codigoFdi][surfaceId] = [];
+      }
+
+      lista.forEach((diag: any) => {
+        const entry: DiagnosticoEntry = {
+          id: diag.id,
+          procedimientoId: diag.procedimientoId,
+          colorHex: diag.colorHex || 
+                   (diag.tipo_registro === 'azul' ? '#0ea5e9' : '#ef4444'),
+          secondaryOptions: diag.secondaryOptions || {},
+          descripcion: diag.descripcion || '',
+          areasafectadas: diag.afectaArea || ['general'],
+          superficieId: surfaceId,
+          siglas: diag.siglas || '?',
+          nombre: diag.nombre || 'Desconocido',
+          priority: diag.prioridad ?? 3,
+          prioridadKey: PRIORIDAD_BACKEND_TO_FRONTEND[diag.prioridad ?? 3] || 'MEDIA',
+        };
+
+        data[codigoFdi][surfaceId].push(entry);
+      });
     }
-
-    Object.entries(superficies as Record<string, any[]>).forEach(
-      ([nombreSuperficie, lista]) => {
-        if (!Array.isArray(lista)) return;
-
-        const surfaceId = superficieBackendToFrontend(nombreSuperficie);
-        if (!data[codigoFdi][surfaceId]) {
-          data[codigoFdi][surfaceId] = [];
-        }
-
-        lista.forEach(diag => {
-          const entry: DiagnosticoEntry = {
-            id: diag.id,
-            procedimientoId: diag.procedimientoId,
-            colorHex: diag.colorHex,
-            secondaryOptions: diag.secondaryOptions || {},
-            descripcion: diag.descripcion || '',
-            areasafectadas: diag.afectaArea || ['general'],
-            superficieId: surfaceId,
-            siglas: '',              // se puede resolver luego con catálogo
-            nombre: '',              // idem
-            priority: diag.prioridad ?? 3,
-            prioridadKey:
-              PRIORIDAD_BACKEND_TO_FRONTEND[diag.prioridad ?? 3] || 'MEDIA',
-          };
-
-          data[codigoFdi][surfaceId].push(entry);
-        });
-      },
-    );
-  });
-
-  console.log(
-    'Mapper FINAL odontogramaData',
-    data['11'],
-    data['24'],
   );
+});
 
-  return data;
+
+return data;
 }
 
 // ============================================================================
@@ -353,11 +350,11 @@ export function extraerDiagnosticosNuevos(
   Object.entries(odontogramaData).forEach(([toothId, superficies]) => {
     Object.entries(superficies).forEach(([surfaceId, diagnosticos]) => {
       const diagnosticosNuevos = diagnosticos.filter(
-  diag =>
-    !diag.id ||   
-    diag.id.startsWith('temp-') ||       
-    diag.id.length === 0                 
-)
+        diag =>
+          !diag.id ||
+          diag.id.startsWith('temp-') ||
+          diag.id.length === 0
+      )
 
       if (diagnosticosNuevos.length > 0) {
         if (!nuevos[toothId]) nuevos[toothId] = {}

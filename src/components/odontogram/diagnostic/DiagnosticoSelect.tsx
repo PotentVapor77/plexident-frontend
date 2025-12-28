@@ -5,7 +5,7 @@ import type {
   OdontoColorKey,
   AreaAfectada,
   DiagnosticoCategory,
-} from "../../../core/types/typeOdontograma";
+} from "../../../core/types/odontograma.types";
 
 import { DiagnosticoSelectUI, type PrincipalArea } from "..";
 import { useDiagnosticoSelect } from "../../../hooks/odontogram/useDiagnosticoSelect";

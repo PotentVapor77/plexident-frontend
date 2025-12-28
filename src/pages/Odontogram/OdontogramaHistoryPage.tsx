@@ -1,7 +1,7 @@
 // src/pages/odontogram/OdontogramaHistoryPage.tsx
 import { OdontogramaTimeline } from "../../components/odontogram/history/OdontogramaTimeline";
 import { OdontogramaHistoryViewer } from "../../components/odontogram/history/OdontogramaHistoryViewer";
-import type { OdontogramaSnapshot } from "../../core/types/typeOdontogramaHistory";
+import type { OdontogramaSnapshot } from "../../core/types/odontogramaHistory.types";
 import { useState, useEffect } from "react";
 
 const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
@@ -424,8 +424,8 @@ const OdontogramaHistoryPage = () => {
           <button
             onClick={toggleComparisonMode}
             className={`w-full px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 ${comparisonMode
-                ? "bg-gradient-to-r from-error-500 to-error-600 hover:from-error-600 hover:to-error-700 text-white shadow-lg shadow-error-500/30"
-                : "bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white shadow-lg shadow-brand-500/30"
+              ? "bg-gradient-to-r from-error-500 to-error-600 hover:from-error-600 hover:to-error-700 text-white shadow-lg shadow-error-500/30"
+              : "bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white shadow-lg shadow-brand-500/30"
               }`}
           >
             {comparisonMode ? (

@@ -1,7 +1,7 @@
 // src/hooks/odontogram/useGuardarOdontogramaCompleto.ts
 import { useState, useCallback } from 'react'
 import { usePacienteActivo } from '../../context/PacienteContext'
-import type { OdontogramaData } from '../../core/types/typeOdontograma'
+import type { OdontogramaData } from '../../core/types/odontograma.types'
 import { guardarOdontogramaCompleto, obtenerOdontogramaCompletoFrontend } from '../../services/odontogram/odontogramaService'
 import { useOdontogramaData } from './useOdontogramaData'
 

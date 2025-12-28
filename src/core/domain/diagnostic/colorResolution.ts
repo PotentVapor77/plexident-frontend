@@ -2,7 +2,7 @@ import {
     type OdontoColorKey, 
     ODONTO_COLORS, 
     type DiagnosticoEntry 
-} from "../../types/typeOdontograma";
+} from "../../types/odontograma.types";
 
 /**
  * Obtiene el color hexadecimal basado en la clave de color y opciones secundarias
@@ -18,7 +18,6 @@ export const getColorFromEntry = (colorKey: string, secondaryOptions: any): stri
     if (!config) return '#808080';
 
     // 4. Verificación de variaciones (usando casting temporal para evitar el error de TS 
-    // si aún no has actualizado la interfaz en typeOdontograma.ts)
     const configWithVariations = config as any;
     if (secondaryOptions?.material === 'AMALGAMA' && configWithVariations.variations?.AMALGAMA) {
         return configWithVariations.variations.AMALGAMA;
@@ -30,18 +29,18 @@ export const getColorFromEntry = (colorKey: string, secondaryOptions: any): stri
 
 /**
  * Obtiene el color permanente para una superficie específica
- * Selecciona el diagnóstico con mayor prioridad (menor número)
+ * Selecciona el diagnóstico con mayor prioridad (mas alto número)
  */
 export const getPermanentColorForSurface = (
     diagnosticos: DiagnosticoEntry[]
 ): string | null => {
     if (diagnosticos.length === 0) return null;
 
-    let highestPriority = Infinity;
+    let highestPriority = -Infinity;
     let permanentColor: string | null = null;
 
     for (const entry of diagnosticos) {
-        if (entry.priority < highestPriority) {
+        if (entry.priority > highestPriority) {
             highestPriority = entry.priority;
             permanentColor = entry.colorHex;
         }
@@ -59,11 +58,11 @@ export const getDominantColorForTooth = (
 ): string | null => {
     if (diagnoses.length === 0) return null;
 
-    let highestPriority = Infinity;
+    let highestPriority = -Infinity;
     let dominantColor: string | null = null;
 
     for (const entry of diagnoses) {
-        if (entry.priority < highestPriority) {
+        if (entry.priority > highestPriority) {
             highestPriority = entry.priority;
             dominantColor = entry.colorHex;
         }
@@ -78,9 +77,9 @@ export const getDominantColorForTooth = (
 export const getPriorityFromKey = (colorKey: string): number => {
     if (colorKey.startsWith('#')) {
         // Prioridad por defecto para colores directos
-        return 5; 
+        return 3; 
     }
     
     const config = ODONTO_COLORS[colorKey as OdontoColorKey];
-    return config ? config.priority : 5;
+    return config ? config.priority : 3;
 };

@@ -1,6 +1,6 @@
 // src/core/domain/diagnostic/dataHydration.ts
 
-import type { DiagnosticoEntry, OdontogramaData } from "../../types/typeOdontograma";
+import type { DiagnosticoEntry, OdontogramaData } from "../../types/odontograma.types";
 
 
 export const hydrateDiagnosticoEntry = (entry: DiagnosticoEntry): DiagnosticoEntry => {

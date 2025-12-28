@@ -35,11 +35,11 @@ const MAX_ICONS = 3;
  * Utilidades puras
  * -------------------------------------------------- */
 const ORDEN_PRIORIDAD: Record<Diagnostico["prioridadKey"], number> = {
-    ALTA: 1,
-    ESTRUCTURAL: 2,
+    ALTA: 5,
+    ESTRUCTURAL: 4,
     MEDIA: 3,
-    BAJA: 4,
-    INFORMATIVA: 5,
+    BAJA: 2,
+    INFORMATIVA: 1,
 };
 
 /** Ordena los diagnósticos de mayor a menor prioridad (1 es la más alta). */

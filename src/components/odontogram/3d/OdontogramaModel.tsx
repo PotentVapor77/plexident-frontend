@@ -30,7 +30,7 @@ export const OdontogramaModel = ({
   //currentView,
 }: Props) => {
   const { scene } = useGLTF("/models/odontograma.glb") as any;
-  const { odontogramaData, getDominantColorForTooth, isToothBlocked } =
+  const { getDominantColorForTooth, isToothBlocked } =
     odontogramaDataHook;
 
   // Estados para referencias

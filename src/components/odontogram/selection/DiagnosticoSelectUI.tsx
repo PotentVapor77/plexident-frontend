@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import type { PrincipalArea } from "..";
-import type { AtributoClinicoDefinicion, OpcionAtributoClinico } from "../../../core/types/typeOdontograma";
+import type { AtributoClinicoDefinicion, OpcionAtributoClinico } from "../../../core/types/odontograma.types";
 import type { useDiagnosticoSelect } from "../../../hooks/odontogram/useDiagnosticoSelect";
 
 // Tipos para las props del componente UI

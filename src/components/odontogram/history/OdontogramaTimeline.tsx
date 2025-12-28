@@ -1,5 +1,5 @@
 // src/components/odontogram/history/OdontogramaTimeline.tsx
-import type { OdontogramaSnapshot } from "../../../core/types/typeOdontogramaHistory";
+import type { OdontogramaSnapshot } from "../../../core/types/odontogramaHistory.types";
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -9,10 +9,10 @@ interface TimelineProps {
   selectedSnapshotId: string | null;
 }
 
-export const OdontogramaTimeline = ({ 
-  snapshots, 
-  onSelectSnapshot, 
-  selectedSnapshotId 
+export const OdontogramaTimeline = ({
+  snapshots,
+  onSelectSnapshot,
+  selectedSnapshotId
 }: TimelineProps) => {
   const sortedSnapshots = [...snapshots].sort(
     (a, b) => b.fecha.getTime() - a.fecha.getTime()
@@ -23,24 +23,22 @@ export const OdontogramaTimeline = ({
       {sortedSnapshots.map((snapshot, index) => {
         const isSelected = snapshot.id === selectedSnapshotId;
         const isLast = index === sortedSnapshots.length - 1;
-        
+
         return (
           <div
             key={snapshot.id}
             onClick={() => onSelectSnapshot(snapshot.id)}
-            className={`relative group cursor-pointer transition-all duration-200 ${
-              isSelected 
-                ? 'transform scale-[1.02]' 
+            className={`relative group cursor-pointer transition-all duration-200 ${isSelected
+                ? 'transform scale-[1.02]'
                 : 'hover:transform hover:scale-[1.01]'
-            }`}
+              }`}
           >
             {/* Card principal */}
             <div
-              className={`relative rounded-xl p-4 border-2 transition-all duration-200 ${
-                isSelected
+              className={`relative rounded-xl p-4 border-2 transition-all duration-200 ${isSelected
                   ? 'bg-brand-50 dark:bg-brand-900/20 border-brand-500 shadow-lg'
                   : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-brand-300 dark:hover:border-brand-700 hover:shadow-md'
-              }`}
+                }`}
             >
               {/* Indicador de selección */}
               {isSelected && (
@@ -53,11 +51,10 @@ export const OdontogramaTimeline = ({
                   <div className="flex items-center gap-2 mb-1">
                     {/* Icono de calendario */}
                     <svg
-                      className={`w-4 h-4 flex-shrink-0 ${
-                        isSelected 
-                          ? 'text-brand-600 dark:text-brand-400' 
+                      className={`w-4 h-4 flex-shrink-0 ${isSelected
+                          ? 'text-brand-600 dark:text-brand-400'
                           : 'text-gray-400 dark:text-gray-500'
-                      }`}
+                        }`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -70,21 +67,19 @@ export const OdontogramaTimeline = ({
                       />
                     </svg>
                     <span
-                      className={`text-sm font-semibold ${
-                        isSelected
+                      className={`text-sm font-semibold ${isSelected
                           ? 'text-brand-700 dark:text-brand-300'
                           : 'text-gray-700 dark:text-gray-300'
-                      }`}
+                        }`}
                     >
                       {format(snapshot.fecha, "d 'de' MMMM", { locale: es })}
                     </span>
                   </div>
                   <p
-                    className={`text-xs font-medium ml-6 ${
-                      isSelected
+                    className={`text-xs font-medium ml-6 ${isSelected
                         ? 'text-brand-600 dark:text-brand-400'
                         : 'text-gray-500 dark:text-gray-400'
-                    }`}
+                      }`}
                   >
                     {format(snapshot.fecha, 'HH:mm')}
                   </p>
@@ -103,11 +98,10 @@ export const OdontogramaTimeline = ({
 
               {/* Descripción */}
               <p
-                className={`text-sm mb-3 line-clamp-2 ${
-                  isSelected
+                className={`text-sm mb-3 line-clamp-2 ${isSelected
                     ? 'text-gray-800 dark:text-gray-200 font-medium'
                     : 'text-gray-600 dark:text-gray-400'
-                }`}
+                  }`}
               >
                 {snapshot.descripcion}
               </p>
@@ -116,11 +110,10 @@ export const OdontogramaTimeline = ({
               <div className="flex items-center gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                 {/* Avatar con iniciales */}
                 <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${
-                    isSelected
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${isSelected
                       ? 'bg-brand-200 dark:bg-brand-800 text-brand-700 dark:text-brand-300'
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                  }`}
+                    }`}
                 >
                   {snapshot.profesionalNombre
                     .split(' ')
@@ -131,11 +124,10 @@ export const OdontogramaTimeline = ({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p
-                    className={`text-xs font-medium truncate ${
-                      isSelected
+                    className={`text-xs font-medium truncate ${isSelected
                         ? 'text-gray-800 dark:text-gray-200'
                         : 'text-gray-600 dark:text-gray-400'
-                    }`}
+                      }`}
                   >
                     {snapshot.profesionalNombre}
                   </p>
@@ -146,11 +138,10 @@ export const OdontogramaTimeline = ({
 
                 {/* Icono de flecha */}
                 <svg
-                  className={`w-4 h-4 flex-shrink-0 transition-transform ${
-                    isSelected
+                  className={`w-4 h-4 flex-shrink-0 transition-transform ${isSelected
                       ? 'text-brand-500 transform rotate-0'
                       : 'text-gray-400 -rotate-90 group-hover:rotate-0'
-                  }`}
+                    }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

@@ -1,7 +1,7 @@
 // src/hooks/odontogram/useDiagnosticoSelect.ts
 
 import { useState, useCallback, useMemo, type Dispatch, type SetStateAction, useEffect } from "react";
-import type { AreaAfectada, AtributoClinicoDefinicion, DiagnosticoCategory, DiagnosticoItem } from "../../core/types/typeOdontograma";
+import type { AreaAfectada, AtributoClinicoDefinicion, DiagnosticoCategory, DiagnosticoItem } from "../../core/types/odontograma.types";
 
 export type PrincipalArea = 'corona' | 'raiz' | 'general' | null;
 
@@ -175,7 +175,7 @@ export const useDiagnosticoSelect = ({
         if (isGeneralDiagnosis) {
             areasToApply = ['general'];
         } else if (currentArea) {
-            areasToApply = [currentArea as AreaAfectada]; 
+            areasToApply = [currentArea as AreaAfectada];
         } else {
             console.log('[Apply] No se puede aplicar - Sin área y diagnóstico no es general');
             return;
@@ -259,8 +259,15 @@ export const useDiagnosticoSelect = ({
         setAtributosClinicosSeleccionados(prev => ({ ...prev, [key]: value }));
     };
 
-    const handleApply = () => {
-        if (!diagnosticoSeleccionado || !formValid) {
+
+    // Si hay un error usa      formValid
+    const handleApply = useCallback(() => {
+        if (!diagnosticoSeleccionado) {
+            console.log('[Apply] No se puede aplicar - No hay diagnóstico seleccionado');
+            return;
+        }
+
+        if (!isFormValid()) {
             console.log('[Apply] No se puede aplicar - Formulario inválido');
             return;
         }
@@ -292,8 +299,17 @@ export const useDiagnosticoSelect = ({
             descripcion,
             areasToApply
         );
+
         resetState();
-    };
+    }, [
+        diagnosticoSeleccionado,     
+        currentArea,                  
+        atributosClinicosSeleccionados, 
+        descripcion,                 
+        isFormValid,                 
+        onApply,                   
+        resetState,                 
+    ]);
 
     const handleCancel = () => {
         console.log('[Cancel] Usuario canceló');

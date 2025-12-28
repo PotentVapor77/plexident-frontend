@@ -1,6 +1,6 @@
 // src/components/hooks/useCargarOdontogramaCompleto.ts
 import { useCallback, useState } from 'react';
-import type { OdontogramaData } from '../../core/types/typeOdontograma';
+import type { OdontogramaData } from '../../core/types/odontograma.types';
 import { obtenerOdontogramaCompletoFrontend } from '../../services/odontogram/odontogramaService';
 
 export function useCargarOdontogramaCompleto() {

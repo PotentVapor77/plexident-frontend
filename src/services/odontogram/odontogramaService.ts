@@ -11,7 +11,7 @@ import type {
 } from '../../types/odontogram/typeBackendOdontograma';
 import { createApiError } from '../../types/api';
 import api from '../api/axiosInstance';
-import type { OdontogramaData } from '../../core/types/typeOdontograma';
+import type { OdontogramaData } from '../../core/types/odontograma.types';
 import { mapearOdontogramaBackendToFrontend, mapearOdontogramaFrontendToBackend } from '../../mappers/odontogramaMapper';
 
 // ============================================================================

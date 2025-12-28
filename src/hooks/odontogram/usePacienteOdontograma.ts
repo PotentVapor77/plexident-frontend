@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { usePacienteActivo } from '../../context/PacienteContext';
 
 import { mapearOdontogramaBackendToFrontend } from '../../mappers/odontogramaMapper';
-import type { OdontogramaData } from '../../core/types/typeOdontograma';
+import type { OdontogramaData } from '../../core/types/odontograma.types';
 import { obtenerOdontogramaPaciente } from '../../services/odontogram/odontogramaService';
 
 export const usePacienteOdontograma = () => {

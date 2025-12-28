@@ -1,6 +1,6 @@
 // src/core/domain/diagnostic/blockingRules.ts
 
-import { type DiagnosticoEntry } from "../../types/typeOdontograma";
+import { type DiagnosticoEntry } from "../../types/odontograma.types";
 
 /**
  * Lista de procedimientos que indican ausencia del diente

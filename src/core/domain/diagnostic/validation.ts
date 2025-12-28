@@ -1,5 +1,5 @@
 // validation.ts
-import type { AreaAfectada } from '../../types/typeOdontograma';
+import type { AreaAfectada } from '../../types/odontograma.types';
 
 export const validateDiagnosticoParams = (
   toothId: string,

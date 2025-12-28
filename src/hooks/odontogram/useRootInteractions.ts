@@ -1,5 +1,6 @@
 // src/components/odontograma/hooks/useRootInteractions.ts
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import type { GroupedSurface } from "../../core/utils/groupDentalSurfaces";
 
 const HOVER_COLOR_ROOT = "#facc15";
 
@@ -8,6 +9,7 @@ interface UseRootInteractionsProps {
   selectedTooth: string | null;
   rootInfo: { type: string; roots: string[] };
   selectedSurfaces: string[];
+  groupedSurfaces?: GroupedSurface[];
   onSurfaceSelect: (surfaces: string[]) => void;
   previewColorHex: string | null;
   getPermanentColorForSurface: (toothId: string | null, surfaceId: string) => string | null;
@@ -20,20 +22,32 @@ export const useRootInteractions = ({
   selectedTooth,
   rootInfo,
   selectedSurfaces,
+  groupedSurfaces,
   onSurfaceSelect,
   previewColorHex,
   getPermanentColorForSurface,
   UI_SELECTION_COLOR,
   DEFAULT_COLOR
 }: UseRootInteractionsProps) => {
-  const selectedSurfacesRef = useRef<string[]>(selectedSurfaces);
-  const cleanupFnsRef = useRef<(() => void)[]>([]);
 
-  
+  const selectedSurfacesRef = useRef(selectedSurfaces);
+  const cleanupFnsRef = useRef<(() => void)[]>([]);
 
   useEffect(() => {
     selectedSurfacesRef.current = selectedSurfaces;
   }, [selectedSurfaces]);
+
+  // ============================================================================
+  // Detección de "Raíz completa"
+  // ============================================================================
+  const hasCompleteRoot = useMemo(() => {
+    return groupedSurfaces?.some(
+      (gs): gs is Extract<GroupedSurface, { type: 'group'; isRoot: true }> =>
+        gs.type === 'group' && gs.isRoot && gs.label === 'Raíz completa'
+    ) || false;
+  }, [groupedSurfaces]);
+
+  console.log('[useRootInteractions] hasCompleteRoot:', hasCompleteRoot, 'selectedSurfaces:', selectedSurfaces);
 
   // ------------------ Interacciones ------------------
   useEffect(() => {
@@ -54,13 +68,16 @@ export const useRootInteractions = ({
       rootInfo.roots.forEach(rootId => {
         const surfaceId = `raiz:${rootId}`;
         const groupElement = rootDoc.getElementById(rootId);
+
         if (!groupElement) return;
 
         const elements = groupElement.querySelectorAll("path, rect, circle, polygon");
+
         elements.forEach(el => {
           const element = el as HTMLElement;
+
           element.style.pointerEvents = "all";
-          element.style.cursor = "pointer";
+          element.style.cursor = hasCompleteRoot ? "pointer" : "pointer";
           element.style.transition = "fill 0.3s ease";
 
           if (!element.dataset.originalFill) {
@@ -84,11 +101,13 @@ export const useRootInteractions = ({
 
           const handleClick = () => {
             let newSelection: string[];
+
             if (selectedSurfacesRef.current.includes(surfaceId)) {
               newSelection = selectedSurfacesRef.current.filter(s => s !== surfaceId);
             } else {
               newSelection = [...selectedSurfacesRef.current, surfaceId];
             }
+
             onSurfaceSelect(newSelection);
           };
 
@@ -111,7 +130,7 @@ export const useRootInteractions = ({
       cleanupFnsRef.current.forEach(fn => fn());
       cleanupFnsRef.current = [];
     };
-  }, [rootSvgLoaded, selectedTooth, rootInfo.roots.join(), onSurfaceSelect, getPermanentColorForSurface, DEFAULT_COLOR]);
+  }, [rootSvgLoaded, selectedTooth, rootInfo.roots.join(','), onSurfaceSelect, getPermanentColorForSurface, DEFAULT_COLOR, hasCompleteRoot]);
 
   // ------------------ Sincronización SVG ------------------
   useEffect(() => {
@@ -125,6 +144,7 @@ export const useRootInteractions = ({
     rootInfo.roots.forEach(rootId => {
       const surfaceId = `raiz:${rootId}`;
       const groupElement = rootDoc.getElementById(rootId);
+
       if (!groupElement) return;
 
       const elements = groupElement.querySelectorAll("path, rect, circle, polygon");
@@ -133,6 +153,7 @@ export const useRootInteractions = ({
 
       elements.forEach(el => {
         const element = el as HTMLElement;
+
         let finalColor = DEFAULT_COLOR;
 
         if (permanentColor) {
@@ -148,5 +169,7 @@ export const useRootInteractions = ({
         element.style.fill = finalColor;
       });
     });
-  }, [selectedSurfaces, rootSvgLoaded, selectedTooth, rootInfo.roots.join(), previewColorHex, getPermanentColorForSurface, UI_SELECTION_COLOR, DEFAULT_COLOR]);
+
+  }, [selectedSurfaces, rootSvgLoaded, selectedTooth, rootInfo.roots.join(','), previewColorHex, getPermanentColorForSurface, UI_SELECTION_COLOR, DEFAULT_COLOR]);
+
 };

@@ -7,6 +7,31 @@ import { getToothTranslationByFdi } from '../../../core/utils/toothTraslations';
 import { isToothBlockedByAbsence } from '../../../core/domain/diagnostic/blockingRules';
 import { groupDiagnostics } from '../../../core/utils/groupDiagnostics';
 
+// ============================================================================
+// UTILIDADES: Mapeo FDI → rootType
+// ============================================================================
+
+/**
+ * Determina el tipo de raíz basado en el número FDI del diente
+ */
+export const getRootTypeByFDI = (fdi: string): string => {
+  const num = parseInt(fdi);
+  if (!num) return 'raiz_dental';
+  
+  // Molares superiores (16-17, 26-27) → 3 raíces
+  if ([16,17,26,27].includes(num)) return 'raiz_molar_superior';
+  // Molares inferiores (36-37, 46-47) → 2 raíces
+  if ([36,37,46,47].includes(num)) return 'raiz_molar_inferior';
+  // Premolares (14-15, 24-25, 34-35, 44-45) → 2 raíces
+  if ([14,15,24,25,34,35,44,45].includes(num)) return 'raiz_premolar';
+  // Caninos (13,23,33,43) → 1 raíz
+  if ([13,23,33,43].includes(num)) return 'raiz_canino';
+  // Incisivos (11-12,21-22,31-32,41-42) → 1 raíz
+  if ([11,12,21,22,31,32,41,42].includes(num)) return 'raiz_incisivo';
+  
+  // Dientes de leche u otros → raíz genérica
+  return 'raiz_dental';
+};
 
 // ============================================================================
 // INTERFACES
@@ -43,6 +68,28 @@ export const useToothSelection = ({
       fdi: String(translation.numero),
     };
   }, [selectedTooth]);
+
+  // ============================================================================
+  // ROOT TYPE DINÁMICO (FIX para recarga)
+  // ============================================================================
+  
+  /**
+   * Prioridad: currentRootGroup (UI) > rootType del diente (automático) > fallback
+   */
+  const effectiveRootType = useMemo((): string | null => {
+    // 1. Si hay selección manual en UI, usarla
+    if (currentRootGroup) {
+      return currentRootGroup;
+    }
+    
+    // 2. Si hay diente seleccionado, usar tipo automático
+    if (selectedTooth) {
+      return getRootTypeByFDI(selectedTooth);
+    }
+    
+    // 3. Fallback
+    return null;
+  }, [selectedTooth, currentRootGroup]);
 
   // ============================================================================
   // ESTADO DE BLOQUEO
@@ -89,9 +136,11 @@ export const useToothSelection = ({
     if (allDiagnoses.length === 0) {
       return [];
     }
-    console.log('[useToothSelection] Calling groupDiagnostics with rootType:', currentRootGroup);
-    // 3. Agrupar diagnósticos idénticos por superficie
-    const grouped = groupDiagnostics(allDiagnoses, currentRootGroup);
+    
+    console.log('[useToothSelection] Calling groupDiagnostics with rootType:', effectiveRootType);
+    
+    // 3. Agrupar diagnósticos idénticos por superficie (USANDO rootType correcto)
+    const grouped = groupDiagnostics(allDiagnoses, effectiveRootType);
 
     // 4. Ordenar por prioridad (ALTA -> INFORMATIVA)
     const priorityOrder: Record<string, number> = {
@@ -107,7 +156,7 @@ export const useToothSelection = ({
       const priorityB = priorityOrder[b.prioridadKey] || 999;
       return priorityA - priorityB;
     });
-  }, [selectedTooth, odontogramaData, currentRootGroup]);
+  }, [selectedTooth, odontogramaData, effectiveRootType]); // ← effectiveRootType en dependencias
 
   // ============================================================================
   // RETURN

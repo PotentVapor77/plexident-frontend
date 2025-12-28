@@ -70,9 +70,9 @@ export function groupDentalSurfaces(
         s.startsWith("cara_"),
     );
 
-    const rootSurfaces = selectedSurfaces.filter((s) =>
-        s.startsWith("raiz:"),
-    );
+    const rootSurfaces = selectedSurfaces.filter(s => 
+  s.startsWith('raiz:') || s.startsWith('raiz-') || s.startsWith('raiz_')
+);
 
     // -------- CORONA --------
     const hasAllCrown =

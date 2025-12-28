@@ -1,5 +1,5 @@
 // src/components/odontograma/3d/SuperficieSelector.tsx
-import { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from "react";
+import { useState, useEffect, useCallback, useImperativeHandle, forwardRef, useMemo } from "react";
 import { useCrownInteractions } from "../../../hooks/odontogram/useCrownInteractions";
 import { useRootInteractions } from "../../../hooks/odontogram/useRootInteractions";
 import { useToothRootType } from "../../../hooks/odontogram/useToothRootType";
@@ -15,27 +15,28 @@ import raizMolarSuperior from "../../../assets/images/roots/raiz_molar_superior.
 import raizPremolar from "../../../assets/images/roots/raiz_premolar.svg";
 import type { PrincipalArea } from "../../../hooks/odontogram/useDiagnosticoSelect";
 import { fdiToMeshName } from "../../../core/utils/toothTraslations";
+import { getRootTypeByFDI } from "../../../hooks/odontogram/diagnosticoHooks/useToothSelection";
+import { groupDentalSurfaces, type GroupedSurface } from "../../../core/utils/groupDentalSurfaces";
 
 const UI_SELECTION_FALLBACK_COLOR = ODONTO_COLORS.SELECCIONADO_UI.fill;
 
-// Mapeo exhaustivo de IDs tÃƒÂ©cnicos a ÃƒÂ¡reas principales.
 const SURFACE_AREA_MAP: Record<string, 'corona' | 'raiz' | 'general'> = {
-    // Superficies de la Corona (IDs tÃƒÂ©cnicos)
+    // Superficies de la Corona (IDs técnicos)
     'cara_oclusal': 'corona',
     'cara_distal': 'corona',
     'cara_mesial': 'corona',
     'cara_vestibular': 'corona',
     'cara_lingual': 'corona',
 
-    'raiz:raiz_mesial': 'raiz',
-    'raiz:raiz_distal': 'raiz',
-    'raiz:raiz_palatal': 'raiz',
-    'raiz:raiz_vestibular': 'raiz',
-    'raiz:raiz_principal': 'raiz',
+    'raiz_mesial': 'raiz',
+    'raiz_distal': 'raiz',
+    'raiz_palatal': 'raiz',
+    'raiz_vestibular': 'raiz',
+    'raiz_principal': 'raiz',
     'general': 'general',
 };
 
-// MAPEO DE TIPOS DE RAÃƒÂZ A SVGs IMPORTADOS
+// MAPEO DE TIPOS DE RAÍZ A SVGs IMPORTADOS
 const ROOT_SVG_MAP: Record<string, string> = {
     'raiz_molar_superior': raizMolarSuperior,
     'raiz_molar_inferior': raizMolarInferior,
@@ -45,7 +46,7 @@ const ROOT_SVG_MAP: Record<string, string> = {
     'raiz_dental': raizDental,
 };
 
-// FunciÃƒÂ³n CLAVE: Clasifica el ID tÃƒÂ©cnico a un ÃƒÂ¡rea principal ('corona' o 'raiz').
+// Función CLAVE: Clasifica el ID técnico a un área principal ('corona' o 'raiz').
 const getPrincipalArea = (surfaces: string[]): PrincipalArea => {
     if (surfaces.length === 0) return null;
     const firstSurface = surfaces[0];
@@ -55,8 +56,6 @@ const getPrincipalArea = (surfaces: string[]): PrincipalArea => {
     if (firstSurface.startsWith('cara_')) return 'corona';
     return 'general';
 };
-
-
 
 interface SurfaceSelectorProps {
     selectedSurfaces: string[];
@@ -92,7 +91,48 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
     const meshName = selectedTooth ? fdiToMeshName(selectedTooth) : null;
     const rootInfo = useToothRootType(meshName);
 
-    //const rootInfo = useToothRootType(selectedTooth);
+    // ============================================================================
+    // AGRUPACIÓN DE SUPERFICIES (Igual que en DiagnosticosList)
+    // ============================================================================
+    const groupedSurfaces = useMemo((): GroupedSurface[] => {
+        if (!selectedTooth || selectedSurfaces.length === 0) return [];
+
+        // OBTENER rootType del diente (misma lógica que useToothSelection)
+        const rootType = getRootTypeByFDI(selectedTooth);
+
+        console.log('[SuperficieSelector] Grouping surfaces:', {
+            selectedSurfaces,
+            rootType,
+            grouped: groupDentalSurfaces(selectedSurfaces, rootType)
+        });
+
+        return groupDentalSurfaces(selectedSurfaces, rootType);
+    }, [selectedSurfaces, selectedTooth]);
+
+    // ============================================================================
+    // ÁREA PRINCIPAL desde superficies agrupadas 
+    // ============================================================================
+    const principalAreaFromGrouped = useMemo((): PrincipalArea => {
+        if (groupedSurfaces.length === 0) return null;
+        
+        // Si hay grupo "Raíz completa" → 'raiz'
+        const hasRootGroup = groupedSurfaces.some((gs) => 
+    gs.type === 'group' && gs.isRoot && gs.label === 'Raíz completa'
+);
+        
+        if (hasRootGroup) return 'raiz';
+        
+        // Si hay grupo "Corona completa" → 'corona'
+        const hasCrownGroup = groupedSurfaces.some(
+            (gs): gs is Extract<GroupedSurface, { type: 'group'; isRoot: false }>=> gs.type === 'group' && !gs.isRoot && gs.label === 'Corona completa'
+        );
+        
+        if (hasCrownGroup) return 'corona';
+        
+        // Fallback al área de la primera superficie
+        return getPrincipalArea(selectedSurfaces);
+    }, [groupedSurfaces, selectedSurfaces]);
+
     useEffect(() => {
         if (!selectedTooth) {
             onRootGroupChange?.(null);
@@ -100,7 +140,6 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         }
         onRootGroupChange?.(rootInfo.type as RootGroupKey);
     }, [selectedTooth, rootInfo.type, onRootGroupChange]);
-
 
     // Deshabilitado si no hay diente seleccionado O si está bloqueado por prop
     const isDisabled = !selectedTooth || isBlocked;
@@ -128,17 +167,17 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         setSvgLoaded(false);
         setRootSvgLoaded(false);
         setRequiredAreaWarning(null);
-        //onAreaChange(null);
     }, [selectedTooth]);
 
     const handleSurfaceSelect = useCallback((surfaces: string[]) => {
         onSurfaceSelect(surfaces);
-        const area = getPrincipalArea(surfaces);
+        // ➕ Usar área desde superficies agrupadas (más precisa)
+        const area = principalAreaFromGrouped;
         onAreaChange(area);
         setRequiredAreaWarning(null);
-    }, [onSurfaceSelect, onAreaChange]);
+    }, [onSurfaceSelect, onAreaChange, principalAreaFromGrouped]); // ➕ principalAreaFromGrouped
 
-    // Hooks de interacciÃƒÂ³n
+    // Hooks de interacción
     useCrownInteractions({
         svgLoaded,
         selectedSurfaces,
@@ -150,11 +189,13 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         DEFAULT_COLOR,
     });
 
+    // ➕ PASAR groupedSurfaces a useRootInteractions
     useRootInteractions({
         rootSvgLoaded,
         selectedTooth,
         rootInfo,
         selectedSurfaces,
+        groupedSurfaces,  // ➕ NUEVO
         onSurfaceSelect: handleSurfaceSelect,
         getPermanentColorForSurface,
         previewColorHex: activeDiagnosisColor,
@@ -177,21 +218,19 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
 
     // Estilos para el contenedor (Se mantiene el escalado general y el espaciado reducido)
     const containerClasses = `
-Ã‚  Ã‚  Ã‚  Ã‚  relative 
-Ã‚  Ã‚  Ã‚  Ã‚  flex 
-Ã‚  Ã‚  Ã‚  Ã‚  flex-col 
-Ã‚  Ã‚  Ã‚  Ã‚  items-center 
-Ã‚  Ã‚  Ã‚  Ã‚  justify-center 
-Ã‚  Ã‚  Ã‚  Ã‚  p-2 
-Ã‚  Ã‚  Ã‚  Ã‚  space-y-1 
-Ã‚  Ã‚  Ã‚  Ã‚  transform 
-Ã‚  Ã‚  Ã‚  Ã‚  scale-[0.9] 
-Ã‚  Ã‚  Ã‚  Ã‚  transition-opacity 
-Ã‚  Ã‚  Ã‚  Ã‚  duration-300 
-Ã‚  Ã‚  Ã‚  Ã‚  ${isDisabled ? 'opacity-50 pointer-events-none' : 'opacity-100'}
-Ã‚  Ã‚  `;
-
-    // Se eliminÃƒÂ³ svgBaseClasses para control individual.
+        relative 
+        flex 
+        flex-col 
+        items-center 
+        justify-center 
+        p-2 
+        space-y-1 
+        transform 
+        scale-[0.9] 
+        transition-opacity 
+        duration-300 
+        ${isDisabled ? 'opacity-50 pointer-events-none' : 'opacity-100'}
+    `;
 
     return (
         <>
@@ -201,10 +240,9 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
                 </div>
             )}
 
-            {/* Contenedor ÃƒÅ¡NICO para ambos SVGs (Corona y RaÃƒÂ­z) */}
+            {/* Contenedor ÚNICO para ambos SVGs (Corona y Raíz) */}
             <div className={containerClasses}>
-
-                {/* SVG DE LA RAÃƒÂZ */}
+                {/* SVG DE LA RAÍZ */}
                 <object
                     id="raiz-svg"
                     data={getRootSvgPath()}

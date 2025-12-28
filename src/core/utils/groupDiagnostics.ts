@@ -29,21 +29,18 @@ export function groupDiagnostics(
     diagnosticos: Array<any>,
     rootType?: string | null
 ): GroupedDiagnostic[] {
-    // Mapa para agrupar diagnósticos por características idénticas
     const groupMap = new Map<string, GroupedDiagnostic>();
 
     diagnosticos.forEach((diag) => {
-        // Crear clave única basada en las propiedades del diagnóstico (sin superficie)
         const groupKey = [
             diag.procedimientoId,
             diag.colorHex,
-            diag.descripcion || '',
-            JSON.stringify(diag.areasafectadas || []),
-            JSON.stringify(diag.atributosclinicos || {}),
+            diag.descripcion,
+            JSON.stringify(diag.areasafectadas),
+            JSON.stringify(diag.atributosclinicos),
         ].join('|');
 
         if (groupMap.has(groupKey)) {
-            // Agregar superficie a grupo existente
             const existing = groupMap.get(groupKey)!;
             existing.superficies.push(diag.superficieId);
             existing.diagnosticoIds.push({
@@ -51,17 +48,21 @@ export function groupDiagnostics(
                 superficieId: diag.superficieId,
             });
         } else {
-            // Crear nuevo grupo
             groupMap.set(groupKey, {
                 groupId: groupKey,
                 procedimientoId: diag.procedimientoId,
                 nombre: diag.nombre,
-                descripcion: diag.descripcion || '',
+                descripcion: diag.descripcion,
                 colorHex: diag.colorHex,
                 prioridadKey: diag.prioridadKey,
-                areasafectadas: diag.areasafectadas || [],
+                areasafectadas: diag.areasafectadas,
                 superficies: [diag.superficieId],
-                diagnosticoIds: [{ id: diag.id, superficieId: diag.superficieId }],
+                diagnosticoIds: [
+                    {
+                        id: diag.id,
+                        superficieId: diag.superficieId,
+                    },
+                ],
                 isCoronaCompleta: false,
                 isRaizCompleta: false,
                 isGeneral: diag.superficieId === 'general',
@@ -69,14 +70,14 @@ export function groupDiagnostics(
         }
     });
 
-    // Procesar grupos para detectar corona/raíz completa
+    // Normalización consistente
+    const normalize = (s: string) => s.replace(/^raiz[:_-]/, '').toLowerCase();
+
     const result = Array.from(groupMap.values()).map((group) => {
-        // Detectar si es general
         if (group.superficies.includes('general')) {
             return { ...group, isGeneral: true };
         }
 
-        // Separar superficies de corona y raíz
         const coronaSurfaces = group.superficies.filter((s) =>
             s.startsWith('cara_')
         );
@@ -87,38 +88,36 @@ export function groupDiagnostics(
         // Detectar corona completa (5 caras)
         const isCoronaCompleta = coronaSurfaces.length === 5;
 
-        // Detectar raíz completa (depende del tipo de diente)
-        // Por simplicidad, consideramos raíz completa si tiene 2+ raíces
+        // Detectar raíz completa
         const expectedRootSurfaces =
             ROOT_SURFACES_BY_TYPE[rootType || 'raiz_dental'] || [];
 
-        const normalize = (s: string) => s.replace(/-/g, '_');
-        const includesNormalized = (arr: string[], value: string) =>
-            arr.map(normalize).includes(normalize(value));
+        // Normalizar AMBOS arrays UNA SOLA VEZ
+        const normalizedExpected = expectedRootSurfaces.map(normalize);
+        const normalizedRaiz = raizSurfaces.map(normalize);
+
         console.log('[groupDiagnostics] DEBUG raíz', {
             rootType,
             groupId: group.groupId,
             superficies: group.superficies,
             raizSurfaces,
             expectedRootSurfaces,
-            normalizedExpected: expectedRootSurfaces.map(normalize),
-            normalizedRaiz: raizSurfaces.map(normalize),
+            normalizedExpected,
+            normalizedRaiz,
         });
 
-        const isRaizCompleta =
-            expectedRootSurfaces.length > 0 &&
-            raizSurfaces.length > 0 &&
-            expectedRootSurfaces.every(rs =>
-                includesNormalized(raizSurfaces, rs)
+        // Verificar si TODOS los esperados están en los actuales
+        const isRaizCompleta = expectedRootSurfaces.length > 0 &&
+            normalizedExpected.every((expectedNorm) =>
+                normalizedRaiz.includes(expectedNorm)
             );
+
         console.log('[groupDiagnostics] resultado', {
             groupId: group.groupId,
             isCoronaCompleta,
             isRaizCompleta,
         });
 
-
-        console.log('[groupDiagnostics] isRaizCompleta:', isRaizCompleta);
         return {
             ...group,
             isCoronaCompleta,

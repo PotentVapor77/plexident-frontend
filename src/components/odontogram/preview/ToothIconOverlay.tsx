@@ -1,13 +1,13 @@
-// src/components/preview/ToothPreviewOverlay.tsx
-import React from 'react';
-import { DiagnosticIconComponent } from '../../odontogram/preview/DiagnosticIcon';
+// src/components/odontogram/preview/ToothIconOverlay.tsx
+import React from "react";
+import { DiagnosticIconComponent } from "./DiagnosticIcon";
 
-interface ToothPreviewOverlayProps {
+interface ToothIconOverlayProps {
   mainIconKey: string | null;
   iconCount: number;
   tooltip: string;
-  color: string;
-  isToothUpper?: boolean;
+  colorGlobal: string;  // ✅ Renombrado para matching
+  // ❌ ELIMINADOS props no usados: diagnosticoIdEnPreview, isToothUpper
 }
 
 const ContenedorEstado: React.FC<{
@@ -24,19 +24,18 @@ const ContenedorEstado: React.FC<{
   </div>
 );
 
-export const ToothPreviewOverlay: React.FC<ToothPreviewOverlayProps> = ({
+export const ToothIconOverlay: React.FC<ToothIconOverlayProps> = ({
   mainIconKey,
   iconCount,
   tooltip,
-  color = '#374151',
-  isToothUpper = false
+  colorGlobal
 }) => {
   if (!mainIconKey) return null;
 
   return (
     <div 
       className="absolute inset-0 z-20 flex items-center justify-center p-2 select-none pointer-events-none"
-      style={{ color }}
+      style={{ color: colorGlobal }}
     >
       <ContenedorEstado tooltip={tooltip}>
         <div className="relative">
@@ -44,7 +43,11 @@ export const ToothPreviewOverlay: React.FC<ToothPreviewOverlayProps> = ({
             diagnosticKey={mainIconKey} 
             size={36}
           />
-          
+          {iconCount > 1 && (
+            <div className="absolute -top-1 -right-1 bg-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold text-gray-700 border-2 border-white shadow-lg">
+              {iconCount}
+            </div>
+          )}
         </div>
       </ContenedorEstado>
     </div>

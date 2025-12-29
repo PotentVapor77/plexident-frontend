@@ -12,6 +12,7 @@ export interface GroupedDiagnostic {
     colorHex: string;
     prioridadKey: string;
     areasafectadas: string[];
+    secondaryOptions?: Record<string, any>;
     // Lista de superficies donde está aplicado
     superficies: string[];
     // IDs individuales para eliminación
@@ -20,6 +21,7 @@ export interface GroupedDiagnostic {
     isCoronaCompleta: boolean;
     isRaizCompleta: boolean;
     isGeneral: boolean;
+    atributosclinicos?: Record<string, any>;
 }
 
 /**
@@ -38,6 +40,7 @@ export function groupDiagnostics(
             diag.descripcion,
             JSON.stringify(diag.areasafectadas),
             JSON.stringify(diag.atributosclinicos),
+            JSON.stringify(diag.secondaryOptions || {}),
         ].join('|');
 
         if (groupMap.has(groupKey)) {
@@ -56,6 +59,8 @@ export function groupDiagnostics(
                 colorHex: diag.colorHex,
                 prioridadKey: diag.prioridadKey,
                 areasafectadas: diag.areasafectadas,
+                atributosclinicos: diag.atributosclinicos, 
+                secondaryOptions: diag.secondaryOptions || {},
                 superficies: [diag.superficieId],
                 diagnosticoIds: [
                     {

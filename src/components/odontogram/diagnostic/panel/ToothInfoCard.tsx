@@ -72,58 +72,44 @@ export const ToothInfoCard: React.FC<ToothInfoCardProps> = ({
   // ============================================================================
 
   if (isBlocked) {
-    return (
-      <div className="bg-gradient-to-br from-error-50 to-white border border-error-200 rounded-lg p-4 shadow-theme-sm">
-        <div className="flex items-start gap-3">
-          {/* Icono de advertencia */}
-          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-error-100 flex items-center justify-center">
-            <svg
-              className="w-5 h-5 text-error-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
+  return (
+    /* Agregamos max-w-full y overflow-hidden para asegurar que nada salga del contenedor padre */
+    <div className="bg-gradient-to-br from-error-50 to-white border border-error-200 rounded-xl p-4 shadow-theme-sm max-w-full overflow-hidden font-outfit">
+      <div className="flex items-start gap-3 sm:gap-4">
+        
+        {/* Columna Icono: flex-shrink-0 evita que el círculo se aplaste */}
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-error-100 flex items-center justify-center">
+          <svg className="w-6 h-6 text-error-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+
+        {/* Columna Contenido: min-w-0 es el TRUCO para que el truncado de texto funcione en flexbox */}
+        <div className="flex-1 min-w-0">
+          
+          {/* Fila de Título y Pieza */}
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <h3 className="text-sm font-bold text-error-900 truncate max-w-[150px] sm:max-w-none" title={toothInfo.nombre}>
+              {toothInfo.nombre}
+            </h3>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-error-600 text-white whitespace-nowrap">
+              PIEZA #{toothInfo.numero}
+            </span>
           </div>
 
-          {/* Contenido */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-sm font-semibold text-error-800">
-                {toothInfo.nombre}
-              </h3>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-error-100 text-error-700">
-                Pieza #{toothInfo.numero}
-              </span>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <svg
-                className="w-4 h-4 text-error-500 flex-shrink-0 mt-0.5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <p className="text-xs text-error-700 leading-relaxed">
-                Este diente está marcado como <strong>ausente o perdido</strong>. No se pueden aplicar diagnósticos adicionales.
-              </p>
-            </div>
+          {/* Fila de Mensaje: Usamos leading-relaxed para que las letras no se peguen arriba/abajo */}
+          <div className="flex items-start gap-2">
+            <p className="text-theme-xs text-error-700 leading-relaxed break-words">
+              Este diente está marcado como <strong className="text-error-800 underline decoration-error-200">ausente</strong>. 
+              No se pueden aplicar diagnósticos adicionales.
+            </p>
           </div>
+          
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   // ============================================================================
   // ESTADO: Diente normal (con información completa)

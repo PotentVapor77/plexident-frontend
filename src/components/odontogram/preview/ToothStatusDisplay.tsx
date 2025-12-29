@@ -1,11 +1,14 @@
-// src/components/preview/ToothStatusDisplay.tsx
-import React, { useMemo } from "react";
-import { ToothPreviewOverlay, useToothColorDecision, useToothDiagnosticsFilter } from "..";
+// src/components/odontogram/preview/ToothStatusDisplay.tsx
+import React from "react";
 
+import { useToothIconDecision } from "./hooks/useToothIconDecision";
+import { ToothPreviewOverlay } from "./ToothPreviewOverlay";
+import { useToothDiagnosticsFilter } from "./hooks/useToothDiagnosticsFilter";
 
-// --- Tipos necesarios (Mantenemos la exportación) ---
+// --- Tipos ---
 export type Diagnostico = {
   id: string;
+  key: string;
   procedimientoId?: string;
   siglas: string;
   nombre: string;
@@ -18,25 +21,19 @@ export type DatosDiente = {
   diagnósticos: Diagnostico[];
 };
 
-/* ----------------------------------------------------
- * Props
- * -------------------------------------------------- */
 interface ToothStatusDisplayProps {
   datosDiente: DatosDiente;
-  nombreDiente: string; // solo contexto / debug
+  nombreDiente: string;
   superficieSeleccionada?: "corona" | "raiz";
   diagnosticoIdEnPreview?: string;
   isToothUpper: boolean;
 }
 
-/* ----------------------------------------------------
- * Componente
- * -------------------------------------------------- */
 export const ToothStatusDisplay: React.FC<ToothStatusDisplayProps> = ({
   datosDiente,
   superficieSeleccionada,
   diagnosticoIdEnPreview,
-  isToothUpper,
+  isToothUpper
 }) => {
   /* ---------- Guard clause ---------- */
   if (!datosDiente || datosDiente.diagnósticos.length === 0) {
@@ -55,70 +52,22 @@ export const ToothStatusDisplay: React.FC<ToothStatusDisplayProps> = ({
     return null;
   }
 
-  /* ---------- PASO 2: Decisión visual ---------- */
-  const decision = useToothColorDecision(
-    diagnosticosFiltrados,
-    esFiltroPorSuperficie
-  );
-
+  /* ---------- PASO 2: Icono Lucide dominante ---------- */
   const {
-    svgsCorona,
-    svgsRaiz,
-    tooltipCorona,
-    tooltipRaiz,
-    colorGlobal,
-    coberturaTotal,
-    coberturaTotalSvg,
-    coberturaTotalTooltip,
-  } = decision;
+    mainIconKey,
+    iconCount,
+    tooltip,
+    colorGlobal
+  } = useToothIconDecision(diagnosticosFiltrados, esFiltroPorSuperficie);
 
-  /* ---------- PASO 3: Normalización de datos ---------- */
-  const overlayProps = useMemo(() => {
-    // Caso: cobertura total del diente
-    if (coberturaTotal && coberturaTotalSvg && coberturaTotalTooltip) {
-      return {
-        svgsCorona: [coberturaTotalSvg],
-        svgsRaiz: [coberturaTotalSvg],
-        tooltipCorona: coberturaTotalTooltip,
-        tooltipRaiz: coberturaTotalTooltip,
-        color: colorGlobal,
-        coberturaTotal: true,
-      };
-    }
+  if (!mainIconKey) return null;
 
-    // Caso: sin íconos visibles
-    if (svgsCorona.length === 0 && svgsRaiz.length === 0) {
-      return null;
-    }
-
-    // Caso normal
-    return {
-      svgsCorona,
-      svgsRaiz,
-      tooltipCorona,
-      tooltipRaiz,
-      color: colorGlobal,
-      coberturaTotal: false,
-    };
-  }, [
-    coberturaTotal,
-    coberturaTotalSvg,
-    coberturaTotalTooltip,
-    svgsCorona,
-    svgsRaiz,
-    tooltipCorona,
-    tooltipRaiz,
-    colorGlobal,
-  ]);
-
-  if (!overlayProps) {
-    return null;
-  }
-
-  /* ---------- PASO 4: Render ---------- */
   return (
     <ToothPreviewOverlay
-      {...overlayProps}
+      mainIconKey={mainIconKey}
+      iconCount={iconCount}
+      tooltip={tooltip}
+      color={colorGlobal}
       isToothUpper={isToothUpper}
     />
   );

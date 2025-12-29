@@ -163,6 +163,7 @@ export function mapearDiagnosticoBackendToFrontend(
 ): DiagnosticoItem {
   return {
     id: diagBackend.key,
+
     nombre: diagBackend.nombre,
     siglas: diagBackend.siglas,
     simboloColor: SIMBOLO_BACKEND_TO_FRONTEND[diagBackend.simbolo_color] || 'PATOLOGIA',
@@ -208,6 +209,7 @@ function mapearDiagnosticoInstanceBackendToFrontend(
 
   return {
     id: diag.id,
+    key: diagCatalogo?.key || String(diag.diagnostico_catalogo),
     procedimientoId: diagCatalogo?.key || String(diag.diagnostico_catalogo),
     colorHex: diag.tipo_registro === 'azul' ? '#0ea5e9' : '#ef4444',
     priority: prioridadBackend,
@@ -282,6 +284,7 @@ Object.entries(odData).forEach(([codigoFdi, superficies]) => {
       lista.forEach((diag: any) => {
         const entry: DiagnosticoEntry = {
           id: diag.id,
+          key: diag.key || diag.procedimientoId,
           procedimientoId: diag.procedimientoId,
           colorHex: diag.colorHex || 
                    (diag.tipo_registro === 'azul' ? '#0ea5e9' : '#ef4444'),

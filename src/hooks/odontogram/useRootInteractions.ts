@@ -92,12 +92,17 @@ export const useRootInteractions = ({
           };
 
           const handleMouseLeave = () => {
-            const permanentColor = getPermanentColorForSurface(selectedTooth, surfaceId);
-            const isSelected = selectedSurfacesRef.current.includes(surfaceId);
-            if (!isSelected && !permanentColor) {
-              element.style.fill = element.dataset.originalFill || DEFAULT_COLOR;
-            }
-          };
+  const permanentColor = getPermanentColorForSurface(selectedTooth, surfaceId);
+  const isSelected = selectedSurfacesRef.current.includes(surfaceId);
+
+  if (isSelected) {
+    element.style.fill = UI_SELECTION_COLOR;
+  } else if (permanentColor) {
+    element.style.fill = permanentColor;
+  } else {
+    element.style.fill = element.dataset.originalFill || DEFAULT_COLOR;
+  }
+};
 
           const handleClick = () => {
             let newSelection: string[];
@@ -144,7 +149,6 @@ export const useRootInteractions = ({
     rootInfo.roots.forEach(rootId => {
       const surfaceId = `raiz:${rootId}`;
       const groupElement = rootDoc.getElementById(rootId);
-
       if (!groupElement) return;
 
       const elements = groupElement.querySelectorAll("path, rect, circle, polygon");
@@ -153,23 +157,21 @@ export const useRootInteractions = ({
 
       elements.forEach(el => {
         const element = el as HTMLElement;
-
         let finalColor = element.dataset.originalFill || DEFAULT_COLOR;
 
-if (isSelected) {
-  finalColor = UI_SELECTION_COLOR;
-} 
-else if (previewColorHex && !permanentColor) {
-  finalColor = previewColorHex;
-}
-else if (permanentColor) {
-  finalColor = permanentColor;
-}
+        if (isSelected) {
+          finalColor = UI_SELECTION_COLOR;
+        }
+        else if (previewColorHex && isSelected && !permanentColor) {
+          finalColor = previewColorHex;
+        }
+        else if (permanentColor) {
+          finalColor = permanentColor;
+        }
 
         element.style.fill = finalColor;
       });
     });
-
-  }, [selectedSurfaces, rootSvgLoaded, selectedTooth, rootInfo.roots.join(','), previewColorHex, getPermanentColorForSurface, UI_SELECTION_COLOR, DEFAULT_COLOR]);
+  }, [selectedSurfaces, rootSvgLoaded, selectedTooth, previewColorHex, getPermanentColorForSurface, UI_SELECTION_COLOR, DEFAULT_COLOR]);
 
 };

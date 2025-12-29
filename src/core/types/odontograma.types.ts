@@ -113,6 +113,7 @@ export type DiagnosticoCategory = {
  */
 export type DiagnosticoEntry = {
   id: string;
+  key: string;
   procedimientoId: string;
   colorHex: string;
   priority: number;

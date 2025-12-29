@@ -112,28 +112,32 @@ export const OdontogramaViewer = ({
 
   // Computed values
   const currentToothData: DatosDiente | null = useMemo(() => {
-    if (!selectedTooth || !categorias) return null;
+  if (!selectedTooth || !categorias) return null;
 
-    const toothData = getToothDiagnoses(selectedTooth);
-    const allEntries = Object.values(toothData).flat() as DiagnosticoEntry[];
-    if (!allEntries.length) return null;
+  const toothData = getToothDiagnoses(selectedTooth);
+  const allEntries = Object.values(toothData).flat() as DiagnosticoEntry[];
+  if (!allEntries.length) return null;
 
-    const diagnosticos: Diagnostico[] = allEntries
-      .map((entry) => {
-        const procConfig = getProcConfigFromCategories(entry.procedimientoId, categorias);
-        if (!procConfig) return null;
+  const diagnosticos: Diagnostico[] = allEntries
+    .map((entry) => {
+      const procConfig = getProcConfigFromCategories(entry.procedimientoId, categorias);
+      if (!procConfig) return null;
 
-        return {
-          id: entry.id,
-          nombre: procConfig.nombre,
-          prioridadKey: procConfig.prioridadKey,
-          areasafectadas: entry.areasafectadas,
-        };
-      })
-      .filter((d): d is Diagnostico => d !== null);
+      return {
+        id: entry.id,
+        key: entry.key || entry.procedimientoId,           // ✅ AGREGADO
+        procedimientoId: entry.procedimientoId,            // ✅ AGREGADO
+        siglas: entry.siglas || procConfig.siglas || '?',  // ✅ AGREGADO
+        nombre: entry.nombre || procConfig.nombre,
+        prioridadKey: entry.prioridadKey || procConfig.prioridadKey,
+        areasafectadas: entry.areasafectadas,
+        categoria: procConfig.categoria,                   // ✅ AGREGADO (opcional)
+      } as Diagnostico;
+    })
+    .filter((d): d is Diagnostico => d !== null);
 
-    return diagnosticos.length ? { diagnósticos: diagnosticos } : null;
-  }, [selectedTooth, getToothDiagnoses, categorias]);
+  return diagnosticos.length ? { diagnósticos: diagnosticos } : null;
+}, [selectedTooth, getToothDiagnoses, categorias]);
 
   const previewColorHex = useMemo(() => {
     if (!selectedTooth || !previewProcId) return null;
@@ -241,9 +245,9 @@ export const OdontogramaViewer = ({
             >
               <DentalBackground />
 
-              <ambientLight intensity={1.5} />
-              <directionalLight position={[5, 10, 5]} intensity={1.8} />
-              <directionalLight position={[-5, -5, -5]} intensity={0.5} />
+              <ambientLight intensity={0.9} />{/* Antes: 1.5 → Ahora: 0.6 */}
+              <directionalLight position={[5, 10, 5]} intensity={1.5} />{/* Antes: 1.8 → Ahora: 0.8 */}
+              <directionalLight position={[-5, -5, -5]} intensity={0.2} />{/* Antes: 0.5 → Ahora: 0.3 */}
 
               <CameraControls
                 currentView={currentView}

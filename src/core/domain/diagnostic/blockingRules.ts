@@ -8,7 +8,7 @@ import { type DiagnosticoEntry } from "../../types/odontograma.types";
  */
 const BLOCKING_DIAGNOSIS_KEYS = [
   'ausente',
-  'perdida_caries',
+  'extraccion_otra_causa',
   'perdida_otra_causa',
   'extraccion_indicada',
   // Puedes agregar más en el futuro

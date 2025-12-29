@@ -1,6 +1,6 @@
 // src/hooks/odontogram/diagnosticoHooks/useDiagnosticoPanelManager.ts
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { IPaciente } from '../../../types/patient/IPatient';
 import type {
   DiagnosticoPanelState,
@@ -66,7 +66,7 @@ export const useDiagnosticoPanelManager = ({
 
   // Estado de carga de datos
   const [isLoadingData,] = useState(false);
-  const [dataError, ] = useState<string | null>(null);
+  const [dataError,] = useState<string | null>(null);
 
   // ============================================================================
   // HOOK: useToothSelection
@@ -75,8 +75,10 @@ export const useDiagnosticoPanelManager = ({
   const { toothInfo, isBlocked, diagnosticos } = useToothSelection({
     selectedTooth,
     odontogramaData,
-    currentRootGroup, 
+    currentRootGroup,
   });
+
+
 
   // ============================================================================
   // SISTEMA DE NOTIFICACIONES
@@ -116,6 +118,12 @@ export const useDiagnosticoPanelManager = ({
     setSelectedSurfaces(surfaces);
   }, []);
 
+  const handleRemoveIndividualSurface = useCallback((surfaceId: string) => {
+    const newSurfaces = selectedSurfaces.filter(s => s !== surfaceId);
+    setSelectedSurfaces(newSurfaces);
+  }, [selectedSurfaces]);
+
+
   const handleAreaChange = useCallback((area: PrincipalArea) => {
     setCurrentArea(area);
   }, []);
@@ -128,7 +136,26 @@ export const useDiagnosticoPanelManager = ({
     },
     [onRootGroupChange]
   );
-
+useEffect(() => {
+  console.log('[Manager] Auto-detecting area from surfaces:', selectedSurfaces);
+  
+  if (selectedSurfaces.length > 0) {
+    const hasCorona = selectedSurfaces.some(s => s.startsWith('cara'));
+    const hasRaiz = selectedSurfaces.some(s => s.startsWith('raiz'));
+    
+    console.log('[Manager] Area detection:', { hasCorona, hasRaiz });
+    
+    if (hasCorona && !hasRaiz) {
+      setCurrentArea('corona');
+    } else if (hasRaiz && !hasCorona) {
+      setCurrentArea('raiz');
+    } else if (hasCorona && hasRaiz) {
+      setCurrentArea('general');
+    }
+  } else {
+    setCurrentArea(null);
+  }
+}, [selectedSurfaces]);
   // ============================================================================
   // HANDLERS: Gestión de Diagnóstico
   // ============================================================================
@@ -389,10 +416,10 @@ export const useDiagnosticoPanelManager = ({
 
     try {
       diagnosticos.forEach(diag => {
-  diag.diagnosticoIds.forEach(({ id, superficieId }) => {
-    removeDiagnostico(selectedTooth, superficieId, id); 
-  });
-});
+        diag.diagnosticoIds.forEach(({ id, superficieId }) => {
+          removeDiagnostico(selectedTooth, superficieId, id);
+        });
+      });
 
       addNotification({
         type: 'success',
@@ -459,6 +486,7 @@ export const useDiagnosticoPanelManager = ({
     handleRemoveDiagnostico,
     handleSurfaceSelect,
     handleAreaChange,
+    handleRemoveIndividualSurface,
     handleRootGroupChange,
     handleGuardarCompleto,
     handleClearAll,

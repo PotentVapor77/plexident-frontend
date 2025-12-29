@@ -1,6 +1,6 @@
 // src/components/odontogram/diagnostic/DiagnosticoPanel.tsx
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 
 import { usePacienteActivo } from '../../../context/PacienteContext';
 import { useDiagnosticoPanelManager } from '../../../hooks/odontogram/diagnosticoHooks/useDiagnosticoPanelManager';
@@ -16,7 +16,7 @@ import { ToothInfoCard } from './panel/ToothInfoCard';
 import { DiagnosticoSelectUI } from '../selection/DiagnosticoSelectUI';
 // Utils
 import { groupDentalSurfaces } from '../../../core/utils/groupDentalSurfaces';
-
+import { SurfaceLabels } from './panel/SurfaceLabels';
 // ============================================================================
 // INTERFACES
 // ============================================================================
@@ -82,6 +82,11 @@ export const DiagnosticoPanel: React.FC<DiagnosticoPanelProps> = ({
     onRootGroupChange,
   });
 
+  const handleRemoveIndividualSurface = useCallback((surfaceId: string) => {
+    const newSurfaces = state.selectedSurfaces.filter(s => s !== surfaceId);
+    handleSurfaceSelect(newSurfaces);
+  }, [state.selectedSurfaces, handleSurfaceSelect]);
+
   // Hook del catálogo de diagnósticos
   const {
     categorias,
@@ -91,6 +96,9 @@ export const DiagnosticoPanel: React.FC<DiagnosticoPanelProps> = ({
 
   // Hook del tipo de raíz del diente
   const rootInfo = useToothRootType(selectedTooth);
+  const grouped = useMemo(() =>
+    groupDentalSurfaces(state.selectedSurfaces, rootInfo.type)
+    , [state.selectedSurfaces, rootInfo.type]);
 
   // Hook del selector de diagnósticos
   const diagSelect = useDiagnosticoSelect({
@@ -98,8 +106,8 @@ export const DiagnosticoPanel: React.FC<DiagnosticoPanelProps> = ({
     categorias,
     onApply: handleApplyDiagnostico,
     onCancel: handleCancelDiagnostico,
-    onPreviewChange: odontogramaDataHook.setPreviewedDiagnostico || (() => {}),
-    onPreviewOptionsChange: odontogramaDataHook.setAtributosClinicosTemporales || (() => {}),
+    onPreviewChange: odontogramaDataHook.setPreviewedDiagnostico || (() => { }),
+    onPreviewOptionsChange: odontogramaDataHook.setAtributosClinicosTemporales || (() => { }),
   });
 
   // ============================================================================
@@ -114,71 +122,7 @@ export const DiagnosticoPanel: React.FC<DiagnosticoPanelProps> = ({
   // ETIQUETAS DE SUPERFICIES SELECCIONADAS
   // ============================================================================
 
-  const surfaceLabels = useMemo(() => {
-    if (!state.selectedSurfaces || state.selectedSurfaces.length === 0) {
-      return null;
-    }
 
-    const grouped = groupDentalSurfaces(
-      state.selectedSurfaces,
-      rootInfo.type
-    );
-
-    if (grouped.length === 0) return null;
-
-    return grouped.map((item, index) => {
-      if (item.type === 'group') {
-        // Etiqueta agrupada (Corona Completa o Toda la Raíz)
-        return (
-          <span
-            key={`group-${index}`}
-            className={`
-              inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
-              ${item.isRoot 
-                ? 'bg-purple-100 border border-purple-200 text-purple-700' 
-                : 'bg-brand-100 border border-brand-200 text-brand-700'
-              }
-            `}
-          >
-            {item.isRoot ? (
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            ) : (
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-              </svg>
-            )}
-            {item.label}
-          </span>
-        );
-      } else {
-        // Etiqueta individual
-        const surfaceLabel = item.label
-          .replace('cara_', '')
-          .replace('raiz:', '')
-          .replace(/_/g, ' ')
-          .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-
-        return (
-          <span
-            key={`single-${item.surface}`}
-            className={`
-              inline-flex items-center px-2 py-0.5 rounded text-xs
-              ${item.isRoot 
-                ? 'bg-purple-50 border border-purple-200 text-purple-700' 
-                : 'bg-brand-50 border border-brand-200 text-brand-700'
-              }
-            `}
-          >
-            {surfaceLabel}
-          </span>
-        );
-      }
-    });
-  }, [state.selectedSurfaces, rootInfo.type]);
 
   // ============================================================================
   // ESTADO DE CARGA DEL CATÁLOGO
@@ -259,21 +203,17 @@ export const DiagnosticoPanel: React.FC<DiagnosticoPanelProps> = ({
                 onRootGroupChange={handleRootGroupChange}
                 getPermanentColorForSurface={odontogramaDataHook.getPermanentColorForSurface}
                 activeDiagnosisColor={diagSelect.diagnosticoSeleccionado?.simboloColor ?? null}
+
               />
 
               {/* Etiquetas inteligentes de superficies */}
-              {surfaceLabels && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {surfaceLabels}
-                </div>
-              )}
-
-              {/* Contador simple como fallback */}
-              {!surfaceLabels && state.selectedSurfaces.length > 0 && (
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Seleccionadas: {state.selectedSurfaces.length}
-                </p>
-              )}
+              <SurfaceLabels
+                selectedSurfaces={state.selectedSurfaces}
+                groupedSurfaces={grouped}  
+                onRemoveSurface={handleRemoveIndividualSurface}
+                selectedTooth={state.selectedTooth}
+              //principalArea={state.currentArea}
+              />
             </div>
 
             {/* Selector de diagnóstico */}

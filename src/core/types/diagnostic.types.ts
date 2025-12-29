@@ -112,6 +112,7 @@ export interface UseDiagnosticoPanelManagerReturn {
   addNotification: (options: NotificationOptions) => void;
   notifications: Notification[];
   removeNotification: (id: string) => void;
+  handleRemoveIndividualSurface: (surfaceId: string) => void;
 }
 
 /**

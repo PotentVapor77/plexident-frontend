@@ -8,10 +8,10 @@ interface UseCrownInteractionsProps {
   selectedSurfaces: string[];
   onSurfaceSelect: (surfaces: string[]) => void;
   selectedTooth: string | null;
-  previewColorHex: string | null; 
+  previewColorHex: string | null;
   getPermanentColorForSurface: (toothId: string | null, surfaceId: string) => string | null;
-  UI_SELECTION_COLOR: string; 
-  DEFAULT_COLOR: string; 
+  UI_SELECTION_COLOR: string;
+  DEFAULT_COLOR: string;
 }
 
 export const useCrownInteractions = ({
@@ -116,16 +116,16 @@ export const useCrownInteractions = ({
 
       elements.forEach(el => {
         const element = el as HTMLElement;
-        let finalColor = DEFAULT_COLOR;
+        let finalColor = element.dataset.originalFill || DEFAULT_COLOR;
 
-        if (permanentColor) {
-  finalColor = permanentColor;
-} else if (isSelected && previewColorHex) {
-  finalColor = previewColorHex;
-} else if (isSelected) {
+if (isSelected) {
   finalColor = UI_SELECTION_COLOR;
-} else {
-  finalColor = element.dataset.originalFill || DEFAULT_COLOR;
+} 
+else if (previewColorHex && !permanentColor) {
+  finalColor = previewColorHex;
+}
+else if (permanentColor) {
+  finalColor = permanentColor;
 }
 
         element.style.fill = finalColor;

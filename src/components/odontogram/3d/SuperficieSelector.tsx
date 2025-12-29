@@ -171,7 +171,6 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
 
     const handleSurfaceSelect = useCallback((surfaces: string[]) => {
         onSurfaceSelect(surfaces);
-        // ➕ Usar área desde superficies agrupadas (más precisa)
         const area = principalAreaFromGrouped;
         onAreaChange(area);
         setRequiredAreaWarning(null);

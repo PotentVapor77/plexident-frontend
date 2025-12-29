@@ -15,7 +15,7 @@ export const ODONTO_COLORS = {
   ENDODONCIA: { color: 'bg-yellow-600', hover: 'hover:bg-yellow-700', fill: '#ca8a04', priority: 3 },
   REALIZADO: { color: 'bg-sky-500', hover: 'hover:bg-sky-600', fill: '#0ea5e9', priority: 2 },
   AUSENCIA: { color: 'bg-black', hover: 'hover:bg-gray-900', fill: '#000000', priority: 1 },
-  SELECCIONADO_UI: { color: 'bg-blue-500', hover: 'hover:bg-blue-600', fill: '#6366f1', priority: 6 },
+  SELECCIONADO_UI: { color: 'bg-blue-500', hover: 'hover:bg-blue-600', fill: '#6366f1', priority: 0 },
 };
 
 export const MATERIAL_COLORS = {

@@ -111,29 +111,34 @@ export function usePermissionsByUser(options?: UsePermissionsByUserOptions) {
     },
   });
 
-  // ---- Construir mapa de permisos desde la respuesta ----
   const permissionsMap: PermissionsMap = useMemo(() => {
     const map: PermissionsMap = {};
 
-    if (selectedUser && permissionsResponse?.data?.data?.data) {
-      const raw = permissionsResponse.data.data.data;
+    if (selectedUser && permissionsResponse?.data?.data) {
+      const raw = permissionsResponse.data.data;
 
       if (Array.isArray(raw)) {
         raw.forEach((p: IPermission) => {
-          const metodosValidos = (p.metodos_permitidos || []).filter(
-            (m): m is Metodo => METODOS.includes(m as Metodo)
-          ) as Metodo[];
-          map[p.modelo] = metodosValidos;
+          if (p.modelo && p.metodos_permitidos) {
+            const metodosValidos = (p.metodos_permitidos || []).filter(
+              (m): m is Metodo => {
+                const metodoUpper = String(m).toUpperCase();
+                return METODOS.includes(metodoUpper as Metodo);
+              }
+            ).map(m => String(m).toUpperCase() as Metodo);
+
+            map[p.modelo] = metodosValidos;
+          }
         });
       }
+    } 
+    // Asegurar que todos los modelos existan en el mapa
+    MODELOS.forEach(m => {
+      if (!map[m.value]) {
+        map[m.value] = [];
+      }
+    });
 
-      // Asegurar que todos los modelos existan en el mapa
-      MODELOS.forEach(m => {
-        if (!map[m.value]) {
-          map[m.value] = [];
-        }
-      });
-    }
 
     return map;
   }, [permissionsResponse, selectedUser]);
@@ -165,7 +170,7 @@ export function usePermissionsByUser(options?: UsePermissionsByUserOptions) {
   }, [selectedUser, deleteMutation]);
 
   // ---- Función para guardar cambios de permisos ----
-  const savePermissions = useCallback((updatedMap: PermissionsMap) => {
+  const savePermissions = useCallback(async (updatedMap: PermissionsMap) => {
     if (!selectedUser) throw new Error('No user selected');
     
     const payload: IPermission[] = MODELOS.map((m) => ({
@@ -175,7 +180,14 @@ export function usePermissionsByUser(options?: UsePermissionsByUserOptions) {
     }));
     
     console.log('Guardando permisos:', payload);
-    mutation.mutate({ userId: selectedUser.id, permisos: payload });
+    
+    try {
+      await mutation.mutateAsync({ userId: selectedUser.id, permisos: payload });
+      return true;
+    } catch (error) {
+      console.error('Error al guardar permisos:', error);
+      throw error;
+    }
   }, [selectedUser, mutation]);
 
   return {

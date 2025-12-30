@@ -1,6 +1,8 @@
 import { Modal } from "../../../../components/ui/modal";
 import Badge, { type BadgeColor } from "../../../../components/ui/badge/Badge";
 import type { IUser } from "../../../../types/user/IUser";
+import { getUserById } from "../../../../services/user/userService";
+import { useState, useEffect } from "react";
 
 interface UserViewModalProps {
   isOpen: boolean;
@@ -10,6 +12,30 @@ interface UserViewModalProps {
 }
 
 export function UserViewModal({ isOpen, onClose, user, onEdit }: UserViewModalProps) {
+
+  const [creadorInfo, setCreadorInfo] = useState<IUser | null>(null);
+  const [editorInfo, setEditorInfo] = useState<IUser | null>(null);
+
+  useEffect(() => {
+    const fetchUserInfo = async (id: string, setter: (u: IUser | null) => void) => {
+      try {
+        const data = await getUserById(id);
+        setter(data);
+      } catch {
+        setter(null);
+      }
+    };
+
+    if (user?.creado_por) {
+      fetchUserInfo(user.creado_por, setCreadorInfo);
+    }
+
+    if (user?.actualizado_por) {
+      fetchUserInfo(user.actualizado_por, setEditorInfo);
+    }
+  }, [user?.creado_por, user?.actualizado_por]);
+
+
   if (!user) return null;
 
   const getFullName = (): string => {
@@ -49,6 +75,8 @@ export function UserViewModal({ isOpen, onClose, user, onEdit }: UserViewModalPr
 
   const initials = `${user.nombres?.[0] ?? ""}${user.apellidos?.[0] ?? ""}`.toUpperCase();
 
+ 
+
   return (
     <Modal
       isOpen={isOpen}
@@ -74,8 +102,8 @@ export function UserViewModal({ isOpen, onClose, user, onEdit }: UserViewModalPr
             </div>
           </div>
           <div className="flex gap-2">
-            <Badge size="sm" color={getStatusColor(user.activo)}>
-              {getStatusText(user.activo)}
+            <Badge size="sm" color={getStatusColor(user.is_active)}>
+              {getStatusText(user.is_active)}
             </Badge>
             <Badge size="sm" color={getRoleBadgeColor(user.rol)}>
               {user.rol}
@@ -109,7 +137,7 @@ export function UserViewModal({ isOpen, onClose, user, onEdit }: UserViewModalPr
                 {getFullName()}
               </p>
               <p className="text-theme-xs text-gray-500 dark:text-gray-400 mt-1">
-                @{user.username} · ID: {user.id}
+                {user.username} · ID: {user.id}
               </p>
             </div>
           </div>
@@ -177,7 +205,7 @@ export function UserViewModal({ isOpen, onClose, user, onEdit }: UserViewModalPr
               <div>
                 <dt className="text-gray-500 dark:text-gray-400">Nombre de usuario</dt>
                 <dd className="text-gray-900 dark:text-gray-100 font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded inline-block">
-                  @{user.username}
+                  {user.username}
                 </dd>
               </div>
               <div>
@@ -203,27 +231,33 @@ export function UserViewModal({ isOpen, onClose, user, onEdit }: UserViewModalPr
               <div className="flex justify-between items-center">
                 <dt className="text-gray-500 dark:text-gray-400">Estado de acceso</dt>
                 <dd>
-                  <Badge color={getStatusColor(user.activo)}>
-                    {getStatusText(user.activo)}
+                  <Badge color={getStatusColor(user.is_active)}>
+                    {getStatusText(user.is_active)}
                   </Badge>
                 </dd>
               </div>
               {user.creado_por && (
-                <div>
-                  <dt className="text-gray-500 dark:text-gray-400">Creado por usuario ID</dt>
-                  <dd className="text-gray-900 dark:text-gray-100">
-                    #{user.creado_por}
-                  </dd>
-                </div>
-              )}
-              {user.actualizado_por && (
-                <div>
-                  <dt className="text-gray-500 dark:text-gray-400">Última modificación por</dt>
-                  <dd className="text-gray-900 dark:text-gray-100">
-                    Usuario ID #{user.actualizado_por}
-                  </dd>
-                </div>
-              )}
+                    <div>
+                      <dt className="text-gray-500 dark:text-gray-400">Creado por</dt>
+                      <dd className="text-gray-900 dark:text-gray-100">
+                        {creadorInfo
+                          ? `${creadorInfo.username} - ${creadorInfo.nombres} ${creadorInfo.apellidos} (${creadorInfo.rol})`
+                          : `Usuario ID #${user.creado_por}`}
+                      </dd>
+                    </div>
+                  )}
+
+                  {user.actualizado_por && (
+                    <div>
+                      <dt className="text-gray-500 dark:text-gray-400">Última modificación por</dt>
+                      <dd className="text-gray-900 dark:text-gray-100">
+                        {editorInfo
+                          ? `${editorInfo.username} - ${editorInfo.nombres} ${editorInfo.apellidos} (${editorInfo.rol})`
+                          : `Usuario ID #${user.actualizado_por}`}
+                      </dd>
+                    </div>
+                  )}
+
             </dl>
           </section>
 

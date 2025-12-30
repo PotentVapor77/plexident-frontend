@@ -1,3 +1,4 @@
+// src/App.tsx
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SignIn from "./pages/AuthPages/SignIn";
@@ -19,10 +20,16 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import OdontogramaPage from "./pages/Odontogram/OdontogramaPage";
-import { useNetworkStatus } from './hooks/useNetworkStatus';
+import { useNetworkStatus } from "./hooks/useNetworkStatus";
 import UsersPage from "./pages/Segurity/UsersPage";
 import { useAuth } from "./hooks/auth/useAuth";
 import PatientsPage from "./pages/Patients/PatientsPage";
+import ForgotPasswordForm from "./pages/AuthPages/ForgotPasswordForm";
+import ResetPassword from "./pages/AuthPages/ResetPassword";
+
+import { NotificationProvider } from "./context/notifications/NotificationContext";
+import { NotificationContainer } from "./context/notifications/NotificationContainer";
+import PersonalBackgroundPage from "./pages/PersonalBackground/personalBackgroundPage";
 import OdontogramaHistoryPage from "./pages/Odontogram/OdontogramaHistoryPage";
 
 // ============================================================================
@@ -31,8 +38,7 @@ import OdontogramaHistoryPage from "./pages/Odontogram/OdontogramaHistoryPage";
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
-  
-  // Mostrar loading mientras verifica autenticación
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -40,13 +46,11 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-  
-  // Si ya está autenticado, redirigir a dashboard
+
   if (user) {
     return <Navigate to="/dashboard" replace />;
   }
-  
-  // Si NO está autenticado, mostrar la página
+
   return <>{children}</>;
 }
 
@@ -58,10 +62,11 @@ function App() {
   useNetworkStatus();
 
   return (
-    <>
+    <NotificationProvider>
       <ScrollToTop />
+
       <Routes>
-        {/* RUTA PÚBLICA - Solo accesible si NO está autenticado */}
+        {/* PÚBLICAS */}
         <Route
           path="/sign-in"
           element={
@@ -71,11 +76,38 @@ function App() {
           }
         />
 
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <ForgotPasswordForm />
+            </PublicRoute>
+          }
+        />
+
+        <Route
+          path="/reset-password/:uid/:token"
+          element={
+            <PublicRoute>
+              <ResetPassword />
+            </PublicRoute>
+          }
+        />
+
+        {/* PROTEGIDAS */}
         {/* RUTAS PROTEGIDAS - Solo accesibles si está autenticado */}
+
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Home />} />
             <Route path="/usuarios" element={<UsersPage />} />
+
+            <Route path="/usuarios/:id/editar" element={<UsersPage />} />
+            <Route path="/pacientes" element={<PatientsPage />} />
+            <Route path="/pacientes/:id/editar" element={<PatientsPage />} />
+            <Route path="/pacientes/antecedentes-personales" element={<PersonalBackgroundPage />} />
+            <Route path="/odontogram" element={<OdontogramaPage />} />
+
             <Route path="/pacientes" element={<PatientsPage />} />
             <Route path="/odontograma" element={<OdontogramaPage />} />
             <Route path="/odontograma-timeline" element={<OdontogramaHistoryPage />} />
@@ -92,17 +124,21 @@ function App() {
             <Route path="/ui-elements/images" element={<Images />} />
             <Route path="/ui-elements/videos" element={<Videos />} />
             <Route path="/blank" element={<Blank />} />
+
+
             <Route path="/segurity/users" element={<UsersPage />} />
           </Route>
         </Route>
 
-        {/* REDIRECCIÓN RAÍZ */}
+        {/* RAÍZ */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        {/* 404 NOT FOUND */}
+        {/* 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </>
+
+      <NotificationContainer />
+    </NotificationProvider>
   );
 }
 

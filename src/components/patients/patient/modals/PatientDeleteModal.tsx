@@ -1,0 +1,109 @@
+// src/components/patients/modals/PatientDeleteModal.tsx - CÓDIGO COMPLETO CORREGIDO
+
+import { useState } from "react";
+import type { IPaciente } from "../../../../types/patient/IPatient";
+import { Modal } from "../../../ui/modal";
+import { useNotification } from "../../../../context/notifications/NotificationContext";
+
+interface PatientDeleteModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  patient: IPaciente | null;
+  onDeleted?: () => void;
+  notify: ReturnType<typeof useNotification>["notify"];
+}
+
+export function PatientDeleteModal({
+  isOpen,
+  onClose,
+  patient,
+  onDeleted,
+  notify,
+}: PatientDeleteModalProps) {
+  const [loading, setLoading] = useState(false);
+
+  const getFullName = (): string => {
+    if (!patient) return "";
+    return `${patient.apellidos}, ${patient.nombres}`;
+  };
+
+  if (!isOpen || !patient) return null;
+
+const handleConfirm = async () => {
+  try {
+    setLoading(true);
+    
+    // ✅ onDeleted YA ejecuta removePaciente que invalida
+    onDeleted?.();
+    
+    notify({
+      type: "success",
+      title: "Paciente eliminado",
+      message: "Se eliminó el paciente correctamente.",
+    });
+    
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} className="max-w-md p-6">
+      <div className="flex flex-col">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-shrink-0">
+            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center dark:bg-red-900/20">
+              <svg
+                className="w-5 h-5 text-red-600 dark:text-red-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <h5 className="font-semibold text-gray-800 text-theme-lg dark:text-white/90">
+              Confirmar Eliminación
+            </h5>
+          </div>
+        </div>
+
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          ¿Está seguro de que desea eliminar al paciente{" "}
+          <span className="font-semibold text-gray-800 dark:text-white/90">
+            {getFullName()}
+          </span>
+          {patient.cedula_pasaporte && ` (CI: ${patient.cedula_pasaporte})`}? Esta acción no se puede
+          deshacer.
+        </p>
+
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            type="button"
+            disabled={loading}
+            className="px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleConfirm}
+            type="button"
+            disabled={loading}
+            className="px-6 py-3 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 disabled:opacity-50"
+          >
+            {loading ? "Eliminando..." : "Eliminar Paciente"}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}

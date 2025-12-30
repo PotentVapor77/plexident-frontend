@@ -19,6 +19,7 @@ export const getPacientes = async (params?: {
   page?: number;
   page_size?: number;
   search?: string;
+  activo?: boolean; 
 }): Promise<IPacienteListResponse> => {
   try {
     logger.info('Obteniendo lista de pacientes', params);

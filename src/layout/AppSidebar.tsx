@@ -78,8 +78,8 @@ const navItems: NavItem[] = [
     icon: <UserCircleIcon />,
     name: "Pacientes",
     subItems: [
-      { name: "Todos los Pacientes", path: "/pacientes", pro: false },
-      { name: "Registrar Paciente", path: "/registrar-paciente", pro: false },
+      { name: "Pacientes", path: "/pacientes", pro: false },
+      { name: "Antecedentes Personales", path: "/pacientes/antecedentes-personales", pro: false },
     ],
   },
   {
@@ -127,7 +127,6 @@ const othersItems: NavItem[] = [
     name: "Usuarios",
     subItems: [
       { name: "Gestión de Usuarios", path: "/usuarios", pro: false },
-      { name: "Registrar Usuario", path: "/registrar-usuario", pro: false },
     ],
   },
   {
@@ -143,8 +142,8 @@ const othersItems: NavItem[] = [
     icon: <PlugInIcon />,
     name: "Configuración",
     subItems: [
-      { name: "Configuración General", path: "/configuracion", pro: false },
-      { name: "Backup", path: "/backup", pro: false },
+      { name: "Permisos Usuario", path: "/permisos-usuario", pro: false },
+     
     ],
   },
 ];

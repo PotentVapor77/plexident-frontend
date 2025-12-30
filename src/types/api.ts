@@ -44,7 +44,7 @@ export interface LoginResponse {
     username: string;
     correo: string;
     rol: 'admin' | 'odontologo' | 'asistente';
-    activo: boolean;
+    is_active: boolean;
   };
 }
 

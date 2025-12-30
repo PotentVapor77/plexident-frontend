@@ -15,6 +15,7 @@ export { default as UserFormFields } from './forms/UserFormFields';
 export { UserDeleteModal } from './modals/UserDeleteModal';
 export { UserViewModal } from './modals/UserViewModal';
 export { default as SuccessModal } from './modals/SuccessModal';
+export { UserPermissionsModal } from './modals/UserPermissionsModal'; // NUEVO
 
 // Tabla
 export { UserTable } from './table/UserTable';

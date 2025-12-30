@@ -1,17 +1,7 @@
-/**
- * ============================================================================
- * TYPES: Usuario
- * ============================================================================
- */
-
-/**
- * Tipos de rol del sistema
- */
+// Tipos de rol
 export type Rol = "Administrador" | "Odontologo" | "Asistente";
 
-/**
- * Modelo de Usuario del sistema
- */
+// Modelo principal
 export interface IUser {
   id: string;
   username: string;
@@ -19,45 +9,38 @@ export interface IUser {
   apellidos: string;
   correo: string;
   telefono: string;
-  rol: Rol; 
-  activo: boolean;
+  rol: Rol;
+  is_active: boolean;
   fecha_creacion: string;
   fecha_modificacion?: string;
   creado_por?: string;
   actualizado_por?: string;
 }
 
-/**
- * Datos para crear un usuario
- */
-export interface IUserCreate {
+// Datos para crear un usuario (lo que espera createUser)
+export interface ICreateUserData {
   nombres: string;
   apellidos: string;
-  username?: string; // Opcional, se genera automáticamente
+  username?: string;
   telefono: string;
   correo: string;
-  rol: Rol; 
+  rol: Rol;
   password: string;
-  activo?: boolean;
+  is_active?: boolean;
 }
 
-/**
- * Datos para actualizar un usuario
- */
-export interface IUserUpdate {
-  nombres?: string;
-  apellidos?: string;
-  telefono?: string;
-  correo?: string;
-  rol?: Rol; // ✅ sin tilde
-  password?: string;
-  activo?: boolean;
+export interface IUpdateUserData {
+  nombres: string;      
+  apellidos: string;    
+  telefono: string;     
+  correo: string;       
+  rol: Rol;            
+  is_active: boolean;     
+  password?: string;   
 }
 
-// ============================================================================
-// RESPUESTAS DE LA API
-// ============================================================================
 
+// Paginación y respuestas
 export interface IUserPagination {
   count: number;
   next: string | null;
@@ -88,24 +71,20 @@ export interface IUserSingleResponse {
   data: IUser;
 }
 
+// Error tipado (aquí quitamos el Record sin tipo)
 export interface IUserError {
   success: false;
   error_type: string;
   message: string;
-  errors?: Record<string, string[]>;
+  errors?: Record<string, string[] | string>;
 }
 
-// ============================================================================
-// VALIDACIÓN
-// ============================================================================
-
+// Validación
 export const validateUser = (data: unknown): IUser => {
   const user = data as IUser;
-
   if (!user.id || !user.username) {
     throw new Error("Datos de usuario inválidos");
   }
-
   return user;
 };
 
@@ -115,3 +94,4 @@ export interface UseUsersParams {
   search?: string;
   [key: string]: unknown;
 }
+

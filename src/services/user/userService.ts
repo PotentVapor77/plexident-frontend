@@ -8,9 +8,9 @@ import { ENDPOINTS } from '../../config/api';
 import { createApiError } from '../../types/api';
 import type {
   IUser,
-  IUserCreate,
-  IUserUpdate,
-  IUserListResponse
+  ICreateUserData,
+  IUpdateUserData,
+  IUserListResponse,
 } from '../../types/user/IUser';
 import { logger } from '../../utils/logger';
 
@@ -23,6 +23,7 @@ export const getUsers = async (params?: {
   page?: number;
   page_size?: number;
   search?: string;
+  is_active?: boolean; 
 }): Promise<IUserListResponse> => {
   try {
     logger.info('Obteniendo lista de usuarios', params);
@@ -31,16 +32,17 @@ export const getUsers = async (params?: {
     });
 
     logger.info('✅ Usuarios obtenidos exitosamente', {
-      count: data.count || 0, // ✅ CAMBIO: Acceder a count del DRF
+      count: data.count || 0, // CAMBIO: Acceder a count del DRF
     });
 
-    // ✅ CAMBIO: Devolver data directamente (DRF pagination format)
+    //  CAMBIO: Devolver data directamente (DRF pagination format)
     return data;
   } catch (error) {
     logger.error('Error al obtener usuarios', error);
     throw createApiError(error);
   }
 };
+
 
 /**
  * ============================================================================
@@ -71,7 +73,7 @@ export const getUserById = async (id: string): Promise<IUser> => {
  * CREAR USUARIO
  * ============================================================================
  */
-export const createUser = async (userData: IUserCreate): Promise<IUser> => {
+export const createUser = async (userData: ICreateUserData): Promise<IUser> => {
   try {
     logger.info('Creando nuevo usuario', { username: userData.username });
     const { data } = await api.post<{ success: boolean; data: IUser }>(
@@ -98,7 +100,7 @@ export const createUser = async (userData: IUserCreate): Promise<IUser> => {
  */
 export const updateUser = async (
   id: string,
-  userData: IUserUpdate
+  userData: IUpdateUserData
 ): Promise<IUser> => {
   try {
     logger.info('Actualizando usuario', { id });
@@ -151,7 +153,7 @@ export const toggleUserStatus = async (id: string): Promise<IUser> => {
       throw new Error('Error al cambiar estado');
     }
 
-    logger.info('✅ Estado de usuario actualizado', { id, activo: data.data.activo });
+    logger.info('✅ Estado de usuario actualizado', { id, activo: data.data.is_active});
     return data.data;
   } catch (error) {
     logger.error('Error al cambiar estado de usuario', error);

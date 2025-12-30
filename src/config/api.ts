@@ -7,7 +7,7 @@
 // Base URL desde variables de entorno
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
-// ✅ YA NO NECESITAMOS STORAGE_KEYS PARA TOKENS
+//  YA NO NECESITAMOS STORAGE_KEYS PARA TOKENS
 export const STORAGE_KEYS = {
   theme: 'plexident_theme',
   sidebar: 'plexident_sidebar_collapsed',
@@ -21,18 +21,41 @@ export const ENDPOINTS = {
     refresh: '/auth/refresh/',
     me: '/auth/me/',
     register: '/auth/register/',
+    passwordReset: '/auth/password-reset/',
+    passwordResetConfirm: '/auth/password-reset-confirm/',
   },
   users: {
-    base: '/users/',
-    byId: (id: string) => `/users/${id}/`,
-    toggleStatus: (id: string) => `/users/${id}/toggle-status/`,
+    base: '/users/usuarios/',
+    byId: (id: string) => `/users/usuarios/${id}/`,
+
   },
   patients: {
-    base: '/patients/',
-    byId: (id: string) => `/patients/${id}/`,
-    toggleStatus: (id: string) => `/patients/${id}/toggle-status/`,
-    search: '/patients/search/',
+    base: '/patients/pacientes/',
+    byId: (id: string) => `/patients/pacientes/${id}/`,
   },
+
+  
+
+   // ============================================================================
+  // ANTECEDENTES PERSONALES (Relacionado OneToOne con Patient)
+  // ============================================================================
+  personalBackgrounds: {
+    base: '/patients/antecedentes-personales/',
+    byId: (id: string) => `/patients/antecedentes-personales/${id}/`,
+    byPaciente: (pacienteId: string) => `/patients/antecedentes-personales/?paciente=${pacienteId}`,
+  },
+
+
+  
+   // ============================================================================
+  // ANTECEDENTES Fammiliares (Relacionado OneToOne con Patient)
+  // ============================================================================
+  familyBackgrounds: {
+    base: '/patients/antecedentes-familiares/',
+    byId: (id: string) => `/patients/antecedentes-familiares/${id}/`,
+    byPaciente: (pacienteId: string) => `/patients/antecedentes-familiares/?paciente=${pacienteId}`,
+  },
+  
 } as const;
 
 // Configuración de paginación

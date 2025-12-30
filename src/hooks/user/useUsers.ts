@@ -1,65 +1,83 @@
+// src/hooks/user/useUsers.ts
 /**
  * ============================================================================
  * HOOK: useUsers
  * ============================================================================
  */
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryClient,
+} from "@tanstack/react-query";
 import {
   getUsers,
   getUserById,
   createUser,
   updateUser,
   deleteUser,
-  reactivateUser,
-} from '../../services/user/userService';
+} from "../../services/user/userService";
 import type {
   IUser,
-  IUserCreate,
-  IUserUpdate,
+  ICreateUserData,
+  IUpdateUserData,
   IUserListResponse,
   IUserPagination,
-} from '../../types/user/IUser';
-import { logger } from '../../utils/logger';
+} from "../../types/user/IUser";
+import { logger } from "../../utils/logger";
 
 // ============================================================================
 // QUERY KEYS
 // ============================================================================
-
-export const USER_QUERY_KEYS = {
-  all: ['users'] as const,
-  lists: () => [...USER_QUERY_KEYS.all, 'list'] as const,
-  list: (params?: UseUsersParams) => 
-    [...USER_QUERY_KEYS.lists(), params] as const,
-  details: () => [...USER_QUERY_KEYS.all, 'detail'] as const,
-  detail: (id: string) => [...USER_QUERY_KEYS.details(), id] as const,
-};
-
-// ============================================================================
-// TIPOS INTERNOS
-// ============================================================================
-
 export interface UseUsersParams {
   page?: number;
   page_size?: number;
   search?: string;
+  is_active?: boolean;
   [key: string]: unknown;
 }
 
-interface UseUsersReturn {
+export const USER_QUERY_KEYS = {
+  all: ["users"] as const,
+  lists: () => [...USER_QUERY_KEYS.all, "list"] as const,
+  list: (params?: UseUsersParams) =>
+    [
+      ...USER_QUERY_KEYS.lists(),
+      params?.page ?? 1,
+      params?.page_size ?? 20,
+      params?.search ?? "",
+    ] as const,
+  details: () => [...USER_QUERY_KEYS.all, "detail"] as const,
+  detail: (id: string) => [...USER_QUERY_KEYS.details(), id] as const,
+};
+
+// Helper: invalidar todas las listas de usuarios (cualquier page/search)
+const invalidateUserLists = (queryClient: QueryClient) => {
+  queryClient.invalidateQueries({
+    predicate: (query) => {
+      const key = query.queryKey;
+      return key[0] === "users" && key[1] === "list";
+    },
+  });
+};
+
+// ============================================================================
+// TIPOS DE RETORNO
+// ============================================================================
+export interface UseUsersReturn {
   users: IUser[];
   pagination: IUserPagination | undefined;
   isLoading: boolean;
   isError: boolean;
   error: string | null;
   refetch: () => void;
-  removeUser: (id: string) => Promise<void>;
+  removeUser: (id: string) => Promise<unknown>;
   isDeleting: boolean;
 }
 
 // ============================================================================
-// LISTAR USUARIOS
+// LISTAR USUARIOS (ACTIVOS)
 // ============================================================================
-
 export const useUsers = (params?: UseUsersParams): UseUsersReturn => {
   const queryClient = useQueryClient();
 
@@ -67,26 +85,27 @@ export const useUsers = (params?: UseUsersParams): UseUsersReturn => {
     queryKey: USER_QUERY_KEYS.list(params),
     queryFn: () => getUsers(params),
     staleTime: 5 * 60 * 1000,
+    // equivalente a keepPreviousData en v5
+    placeholderData: (prev) => prev,
   });
 
-  const deleteMutation = useMutation<void, Error, string>({
+  const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteUser(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.lists() });
-      logger.info('✅ Usuario eliminado, actualizando lista');
+      invalidateUserLists(queryClient);
+      logger.info("✅ Usuario eliminado, actualizando lista");
     },
     onError: (error) => {
-      logger.error('❌ Error al eliminar usuario', error);
+      logger.error("❌ Error al eliminar usuario", error);
     },
   });
 
-  // ✅ EXTRACCIÓN CORRECTA: data.data.results (no data.data)
+  // ⚠️ IUserListResponse: la paginación está en .data
   const responseData = query.data?.data;
   const users = responseData?.results ?? [];
   const count = responseData?.count ?? 0;
   const pageSize = params?.page_size ?? 20;
 
-  // ✅ Construir metadata de paginación
   const pagination: IUserPagination | undefined = responseData
     ? {
         count,
@@ -105,7 +124,7 @@ export const useUsers = (params?: UseUsersParams): UseUsersReturn => {
     pagination,
     isLoading: query.isLoading,
     isError: query.isError,
-    error: query.error?.message ?? null,
+    error: (query.error as Error | undefined)?.message ?? null,
     refetch: query.refetch,
     removeUser: deleteMutation.mutateAsync,
     isDeleting: deleteMutation.isPending,
@@ -115,9 +134,8 @@ export const useUsers = (params?: UseUsersParams): UseUsersReturn => {
 // ============================================================================
 // OBTENER USUARIO POR ID
 // ============================================================================
-
 export const useUser = (id: string) => {
-  return useQuery<IUser>({
+  return useQuery({
     queryKey: USER_QUERY_KEYS.detail(id),
     queryFn: () => getUserById(id),
     enabled: !!id,
@@ -127,18 +145,17 @@ export const useUser = (id: string) => {
 // ============================================================================
 // CREAR USUARIO
 // ============================================================================
-
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<IUser, Error, IUserCreate>({
-    mutationFn: (userData: IUserCreate) => createUser(userData),
+  return useMutation({
+    mutationFn: (userData: ICreateUserData) => createUser(userData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.lists() });
-      logger.info('✅ Usuario creado, actualizando lista');
+      invalidateUserLists(queryClient);
+      logger.info("✅ Usuario creado, actualizando lista");
     },
     onError: (error) => {
-      logger.error('❌ Error al crear usuario', error);
+      logger.error("❌ Error al crear usuario", error);
     },
   });
 };
@@ -146,22 +163,21 @@ export const useCreateUser = () => {
 // ============================================================================
 // ACTUALIZAR USUARIO
 // ============================================================================
-
 export const useUpdateUser = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<IUser, Error, { id: string; data: IUserUpdate }>({
-    mutationFn: ({ id, data }: { id: string; data: IUserUpdate }) =>
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: IUpdateUserData }) =>
       updateUser(id, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.lists() });
-      queryClient.invalidateQueries({ 
-        queryKey: USER_QUERY_KEYS.detail(variables.id) 
+      invalidateUserLists(queryClient);
+      queryClient.invalidateQueries({
+        queryKey: USER_QUERY_KEYS.detail(variables.id),
       });
-      logger.info('✅ Usuario actualizado', { id: variables.id });
+      logger.info("✅ Usuario actualizado", { id: variables.id });
     },
     onError: (error) => {
-      logger.error('❌ Error al actualizar usuario', error);
+      logger.error("❌ Error al actualizar usuario", error);
     },
   });
 };
@@ -169,36 +185,17 @@ export const useUpdateUser = () => {
 // ============================================================================
 // ELIMINAR USUARIO
 // ============================================================================
-
 export const useDeleteUser = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, string>({
+  return useMutation({
     mutationFn: (id: string) => deleteUser(id),
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.lists() });
-      logger.info('✅ Usuario eliminado', { id });
+      invalidateUserLists(queryClient);
+      logger.info("✅ Usuario eliminado", { id });
     },
     onError: (error) => {
-      logger.error('❌ Error al eliminar usuario', error);
+      logger.error("❌ Error al eliminar usuario", error);
     },
   });
 };
-
-
-
-export const useReactivateUser = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation<IUser, Error, string>({
-    mutationFn: (id: string) => reactivateUser(id),
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.lists() });
-      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.detail(id) });
-      logger.info('✅ Usuario reactivado', { id });
-    },
-    onError: (error) => {
-      logger.error('❌ Error al reactivar usuario', error);
-    },
-  });
-}

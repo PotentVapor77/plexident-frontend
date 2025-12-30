@@ -1,9 +1,10 @@
 // src/pages/Patients/PatientsPage.tsx
-import React from 'react';
-import { PacienteMain } from '../../components/patients/PatientMain'; // ruta real a tu archivo
+import PatientMain from '../../components/patients/patient/PatientMain';
 
-const PatientsPage: React.FC = () => {
-  return <PacienteMain />;
-};
-
-export default PatientsPage;
+export default function PatientsPage() {
+  return (
+    <div className="container mx-auto px-4 py-6">
+      <PatientMain />
+    </div>
+  );
+}

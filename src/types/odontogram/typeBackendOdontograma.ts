@@ -190,3 +190,22 @@ export interface DienteConDiagnosticos extends DienteBackend {
 export interface SuperficieConDiagnosticos extends SuperficieDentalBackend {
   diagnosticos: DiagnosticoDentalBackend[];
 }
+// ============================================================================
+// HISTORIAL DE ODONTOGRAMA (Lectura)
+// ============================================================================
+
+export interface HistorialOdontogramaBackend {
+  id: string;
+  diente: string; 
+  tipo_cambio: string; 
+  tipo_cambio_display: string;
+  descripcion: string;
+
+  odontologo: string; 
+  odontologo_nombre: string | null; 
+
+  fecha: string; 
+
+  datos_anteriores: Record<string, any>; 
+  datos_nuevos: Record<string, any>;    
+}

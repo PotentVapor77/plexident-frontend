@@ -11,10 +11,17 @@ export interface ToothIconDecision {
 }
 
 const ordenarDiagnosticos = (diags: Diagnostico[]) =>
-    [...diags].sort((a, b) => {
-        const PRIORIDADES = { ALTA: 5, ESTRUCTURAL: 4, MEDIA: 3, BAJA: 2, INFORMATIVA: 1 };
-        return PRIORIDADES[a.prioridadKey] - PRIORIDADES[b.prioridadKey];
-    });
+  [...diags].sort((a, b) => {
+    const PRIORIDADES: Record<string, number> = { 
+      ALTA: 5, 
+      ESTRUCTURAL: 4, 
+      MEDIA: 3, 
+      BAJA: 2, 
+      INFORMATIVA: 1 
+    };
+    // De mayor a menor prioridad
+    return PRIORIDADES[b.prioridadKey] - PRIORIDADES[a.prioridadKey];
+  });
 
 const deduplicarDiagnosticos = (diags: Diagnostico[]) => {
     const map = new Map<string, Diagnostico>();

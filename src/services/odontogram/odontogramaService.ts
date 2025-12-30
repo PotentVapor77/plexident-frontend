@@ -8,6 +8,7 @@ import type {
   DiagnosticoDentalBackend,
   CrearDiagnosticoPayload,
   DienteBackend,
+  HistorialOdontogramaBackend,
 } from '../../types/odontogram/typeBackendOdontograma';
 import { createApiError } from '../../types/api';
 import api from '../api/axiosInstance';
@@ -349,45 +350,40 @@ export async function marcarDienteAusente(
 // HISTORIAL
 // ============================================================================
 
-export interface HistorialOdontogramaBackend {
-  id: string;
-  diente: string;
-  tipo_cambio: string;
-  descripcion: string;
-  odontologo: string;
-  odontologo_nombre?: string;
-  fecha: string;
-  datos_anteriores: Record<string, any>;
-  datos_nuevos: Record<string, any>;
-}
-
-export async function obtenerHistorialDiente(
-  dienteId: string
-): Promise<HistorialOdontogramaBackend[]> {
-  try {
-    const { data } = await api.get(
-      ODONTOGRAM_ENDPOINTS.historialPorDiente(dienteId)
-    );
-    
-    return data.data || [];
-  } catch (error) {
-    throw createApiError(error);
-  }
-}
 
 export async function obtenerHistorialPaciente(
   pacienteId: string
 ): Promise<HistorialOdontogramaBackend[]> {
   try {
-    const { data } = await api.get(
-      ODONTOGRAM_ENDPOINTS.historialPorPaciente(pacienteId)
-    );
-    
+    const { data } = await api.get<{
+      success: boolean;
+      status_code: number;
+      message: string;
+      data: HistorialOdontogramaBackend[];
+    }>(ODONTOGRAM_ENDPOINTS.historialPorPaciente(pacienteId));
+
     return data.data || [];
   } catch (error) {
     throw createApiError(error);
   }
 }
+export async function obtenerHistorialDiente(
+  dienteId: string
+): Promise<HistorialOdontogramaBackend[]> {
+  try {
+    const { data } = await api.get<{
+      success: boolean;
+      status_code: number;
+      message: string;
+      data: HistorialOdontogramaBackend[];
+    }>(ODONTOGRAM_ENDPOINTS.historialPorDiente(dienteId));
+
+    return data.data || [];
+  } catch (error) {
+    throw createApiError(error);
+  }
+}
+
 
 export interface SurfaceDefinition {
   id_frontend: string;
@@ -408,4 +404,6 @@ export const fetchSurfaceDefinitions = async (): Promise<SurfaceDefinition[]> =>
   );
   return response.data.definiciones;
 };
+
+
 

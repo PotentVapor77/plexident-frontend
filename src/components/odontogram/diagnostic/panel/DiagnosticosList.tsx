@@ -27,7 +27,7 @@ export const DiagnosticosList: React.FC<DiagnosticosListProps> = ({
   // ============================================================================
   // ESTADO VACÍO
   // ============================================================================
-
+const prioridadOrden = ['ALTA', 'ESTRUCTURAL', 'MEDIA', 'BAJA', 'INFORMATIVA'];
   if (diagnosticos.length === 0) {
     return (
       <div className="h-full flex items-center justify-center p-6">
@@ -79,15 +79,21 @@ export const DiagnosticosList: React.FC<DiagnosticosListProps> = ({
 
       {/* Cards de diagnósticos */}
       <div className="space-y-2.5">
-        {diagnosticos.map((diagnostico) => (
-          <DiagnosticoCard
-            key={diagnostico.groupId}
-            diagnostico={diagnostico}
-            onRemove={onRemove}
-            addNotification={addNotification}
-          />
-        ))}
-      </div>
+  {[...diagnosticos]
+    .sort(
+      (a, b) =>
+        prioridadOrden.indexOf(a.prioridadKey) -
+        prioridadOrden.indexOf(b.prioridadKey)
+    )
+    .map((diagnostico) => (
+      <DiagnosticoCard
+        key={diagnostico.groupId}
+        diagnostico={diagnostico}
+        onRemove={onRemove}
+        addNotification={addNotification}
+      />
+    ))}
+</div>
     </div>
   );
 };

@@ -44,9 +44,9 @@ const ORDEN_PRIORIDAD: Record<Diagnostico["prioridadKey"], number> = {
 
 /** Ordena los diagnósticos de mayor a menor prioridad (1 es la más alta). */
 const ordenarDiagnosticos = (diags: Diagnostico[]) =>
-    [...diags].sort(
-        (a, b) => ORDEN_PRIORIDAD[a.prioridadKey] - ORDEN_PRIORIDAD[b.prioridadKey]
-    );
+  [...diags].sort(
+    (a, b) => ORDEN_PRIORIDAD[b.prioridadKey] - ORDEN_PRIORIDAD[a.prioridadKey]
+  );
 
 /* ----------------------------------------------------
  * Componentes SVG (mejorado con clases de Tailwind)

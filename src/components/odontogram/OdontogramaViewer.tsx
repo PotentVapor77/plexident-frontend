@@ -125,13 +125,13 @@ export const OdontogramaViewer = ({
 
       return {
         id: entry.id,
-        key: entry.key || entry.procedimientoId,           // ✅ AGREGADO
-        procedimientoId: entry.procedimientoId,            // ✅ AGREGADO
-        siglas: entry.siglas || procConfig.siglas || '?',  // ✅ AGREGADO
+        key: entry.key || entry.procedimientoId,           
+        procedimientoId: entry.procedimientoId,            
+        siglas: entry.siglas || procConfig.siglas || '?',  
         nombre: entry.nombre || procConfig.nombre,
         prioridadKey: entry.prioridadKey || procConfig.prioridadKey,
         areasafectadas: entry.areasafectadas,
-        categoria: procConfig.categoria,                   // ✅ AGREGADO (opcional)
+        categoria: procConfig.categoria,                  
       } as Diagnostico;
     })
     .filter((d): d is Diagnostico => d !== null);

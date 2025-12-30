@@ -1,8 +1,7 @@
 // src/components/odontogram/history/OdontogramaHistoryViewer.tsx
-
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { CameraControls, OdontogramaModel, PerspectiveButtons, VIEW_PRESETS, type ViewPresetKey } from "..";
+import { CameraControls, OdontogramaModel, PerspectiveButtons, type ViewPresetKey } from "..";
 import { useOdontogramaData } from "../../../hooks/odontogram/useOdontogramaData";
 import { DentalBackground } from "../../../hooks/gradients/DentalGradient";
 
@@ -13,103 +12,136 @@ interface OdontogramaHistoryViewerProps {
 export const OdontogramaHistoryViewer = ({
   odontogramaData,
 }: OdontogramaHistoryViewerProps) => {
-  const [selectedTooth, setSelectedTooth] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<ViewPresetKey>("FRONT");
   const [isJawOpen, setIsJawOpen] = useState(false);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
 
-  // Hook de datos del odontograma
+  // Inicializamos el hook con los datos recibidos
   const odontogramaDataHook = useOdontogramaData(odontogramaData);
 
-  // Resize observer para prevenir re-renders
+  // EFECTO CRUCIAL: Sincronizar el hook cuando la prop 'odontogramaData' cambie (al navegar por el historial)
   useEffect(() => {
-    if (!canvasContainerRef.current) return;
+    if (odontogramaData && odontogramaDataHook.loadFromBackend) {
+      odontogramaDataHook.loadFromBackend(odontogramaData);
+    }
+  }, [odontogramaData]);
 
-    const container = canvasContainerRef.current;
-    let animationFrame: number | null = null;
+  // Manejo de redimensionamiento (Resizing optimization)
+  useEffect(() => {
+  if (!canvasContainerRef.current) return;
 
-    const handleResize = () => {
-      if (animationFrame) cancelAnimationFrame(animationFrame);
-      container.classList.add("is-resizing");
-      animationFrame = requestAnimationFrame(() => {
+  const container = canvasContainerRef.current;
+  let animationFrame: number | null = null;
+
+  const handleResize = () => {
+    if (animationFrame) cancelAnimationFrame(animationFrame);
+
+    container.classList.add("is-resizing");
+
+    // Darle al menos un frame extra para que el ojo note el cambio
+    animationFrame = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         container.classList.remove("is-resizing");
       });
-    };
+    });
+  };
 
-    const observer = new ResizeObserver(handleResize);
-    observer.observe(container);
+  const observer = new ResizeObserver(handleResize);
+  observer.observe(container);
 
-    return () => {
-      observer.disconnect();
-      if (animationFrame) cancelAnimationFrame(animationFrame);
-    };
-  }, []);
+  return () => {
+    observer.disconnect();
+    if (animationFrame) cancelAnimationFrame(animationFrame);
+  };
+}, []);
+
+  const CAMERA_DISTANCE = 0.5;
 
   return (
-    // ✅ w-full h-full para ocupar el contenedor padre (ya sea flex-1 o h-[400px])
-    <div className="relative w-full h-full bg-gradient-to-br from-blue-50 to-indigo-50">
-      {/* Contenedor del Canvas */}
-      <div
-        ref={canvasContainerRef}
-        className="absolute inset-0"
-        style={{ touchAction: "none" }}
-      >
+  <div className="relative w-full h-full flex flex-col min-h-[600px] bg-muted/5 rounded-xl overflow-hidden border shadow-inner">
+    {/* Contenedor ABSOLUTO como en el viewer */}
+    <div
+      ref={canvasContainerRef}
+      style={{
+        position: "absolute",
+        inset: 0,
+        overflow: "hidden",
+        zIndex: 0,
+      }}
+      className="canvas-container flex w-full h-full bg-gray-100"
+    >
+      {/* Wrapper interno igual al viewer */}
+      <div className="relative flex-grow h-full overflow-hidden">
         <Canvas
           camera={{
-            position: VIEW_PRESETS["FRONT"].position,
-            fov: 50,
+            fov: 15,
+            position: [0, 1.6, CAMERA_DISTANCE],
+            near: 0.1,
+            far: 1000,
           }}
+          dpr={[1, 1.5]}
+          frameloop="demand"
+          resize={{ debounce: 0 }}
           gl={{
             antialias: true,
-            alpha: true,
-            preserveDrawingBuffer: true,
+            powerPreference: "high-performance",
           }}
-          dpr={[1, 2]}
           shadows
         >
+          {/* Escena y luces */}
           <DentalBackground />
-
-          <ambientLight intensity={0.6} />
+          <ambientLight intensity={0.8} />
+          <pointLight position={[10, 10, 10]} intensity={1} />
           <directionalLight
-            position={[5, 10, 5]}
-            intensity={0.8}
+            position={[5, 5, 5]}
+            intensity={0.5}
             castShadow
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
           />
-          <pointLight position={[-5, 5, -5]} intensity={0.4} />
 
-          {/* Controles de Cámara */}
+          {/* Controles de cámara y modelo */}
           <CameraControls
             currentView={currentView}
             setJawOpenState={setIsJawOpen}
           />
 
-          {/* Modelo del Odontograma */}
           <OdontogramaModel
-            selectedTooth={selectedTooth}
-            setSelectedTooth={setSelectedTooth}
-            previewColorHex={null}
-            odontogramaDataHook={odontogramaDataHook}
+            selectedTooth={null}
+            setSelectedTooth={() => {}}
             isJawOpen={isJawOpen}
+            odontogramaDataHook={odontogramaDataHook}
+            previewColorHex={null}
           />
         </Canvas>
-      </div>
 
-      {/* Badge de Solo Lectura - Top Left */}
-      <div className="absolute top-4 left-4 z-10">
-        <div className="bg-gray-800/90 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-semibold backdrop-blur-sm">
-          SOLO LECTURA
+        {/* UI Overlays (top) */}
+        <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10 pointer-events-none">
+          <div className="pointer-events-auto bg-blue-600/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-xs font-bold shadow-xl flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
+            HISTORIAL: SOLO LECTURA
+          </div>
+
+          <div className="pointer-events-auto">
+            <PerspectiveButtons
+              currentView={currentView}
+              setCurrentView={setCurrentView}
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Botones de Perspectiva - Top Right */}
-      <div className="absolute top-4 right-4 z-10">
-        <PerspectiveButtons
-          currentView={currentView}
-          setCurrentView={setCurrentView}
-        />
+        {/* Overlay de Sincronización */}
+        {odontogramaDataHook.isSaving && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/40 backdrop-blur-[2px] z-50">
+            <div className="flex flex-col items-center gap-2 bg-background p-4 rounded-xl shadow-2xl border">
+              <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs font-medium text-muted-foreground">
+                Actualizando vista...
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
-  );
+  </div>
+);
+
 };

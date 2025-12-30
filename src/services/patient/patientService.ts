@@ -115,3 +115,30 @@ export const togglePacienteStatus = async (id: string): Promise<IPaciente> => {
     throw createApiError(error);
   }
 };
+
+// yo lo cree: Navarrete
+
+export const getPacientesActivos = async (params?: {
+  page?: number;
+  page_size?: number;
+  search?: string;
+}): Promise<IPaciente[]> => {
+  try {
+    logger.info('Obteniendo lista de pacientes activos', params);
+
+    const { data } = await api.get<IPacienteListResponse>(ENDPOINTS.patients.base, {
+      params: {
+        ...params,
+        activo: true,
+      },
+    });
+
+    const list = data.data; 
+    logger.info('✅ Pacientes activos obtenidos', { count: list.count });
+
+    return list.results;
+  } catch (error) {
+    logger.error('Error al obtener pacientes activos', error);
+    throw createApiError(error);
+  }
+};

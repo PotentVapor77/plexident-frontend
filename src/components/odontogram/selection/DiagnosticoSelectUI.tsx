@@ -1,19 +1,19 @@
-// src/components/odontogram/hooks/useDiagnosticoSelect.ts
+// src/components/odontogram/selection/DiagnosticoSelectUI.tsx
 
-import type { OpcionAtributoClinico } from "../../../core/config/atributos_clinicos";
-import type { PrincipalArea, useDiagnosticoSelect } from "../../../hooks/odontogram/useDiagnosticoSelect";
+import { useEffect } from "react";
+import type { PrincipalArea } from "..";
+import type { AtributoClinicoDefinicion, OpcionAtributoClinico } from "../../../core/types/odontograma.types";
+import type { useDiagnosticoSelect } from "../../../hooks/odontogram/useDiagnosticoSelect";
 
 // Tipos para las props del componente UI
 type DiagnosticoSelectUIProps = ReturnType<typeof useDiagnosticoSelect> & {
   currentArea: PrincipalArea;
+  onFormValidChange?: (isValid: boolean) => void;
 };
-
 // Componente auxiliar para los encabezados de sección con número
-const SectionHeader = ({ step, title }: { step: string; title: string }) => (
+const SectionHeader = ({ title }: { step: string; title: string }) => (
   <div className="flex items-center gap-2 mb-3">
-    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400 text-xs font-bold ring-1 ring-brand-200 dark:ring-brand-800">
-      {step}
-    </span>
+
     <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">
       {title}
     </h3>
@@ -29,23 +29,31 @@ export const DiagnosticoSelectUI = ({
   formValid,
   handleCategoriaSelect,
   handleDiagnosticoChange,
-  handleOptionChange,
+  handleAtributoChange,
   setDescripcion,
+  // Acciones
   handleApply,
   handleCancel,
+  // Datos para renderizar
   filteredCategories,
   currentDiagnosesForSelect,
   requiresSpecificAreaMessage,
   // Props adicionales
   currentArea,
+  onFormValidChange,
+
 }: DiagnosticoSelectUIProps) => {
 
   const inputBaseClass = "w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 py-2.5 px-4 text-gray-900 dark:text-white outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition disabled:bg-gray-100 dark:disabled:bg-gray-900 disabled:cursor-not-allowed";
-  const labelBaseClass = "block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 capitalize";
-
+  const labelBaseClass = "block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300";
+  useEffect(() => {
+    if (onFormValidChange) {
+      onFormValidChange(formValid);
+    }
+  }, [formValid, onFormValidChange]);
   return (
-    <div className="mt-6 p-5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-theme-sm space-y-6 relative">
-      
+    <div className="mt-2 p-4 space-y-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-theme-sm">
+
       {/* 1. Selecciona Categoría */}
       <section>
         <SectionHeader step="1" title="Categoría" />
@@ -105,10 +113,10 @@ export const DiagnosticoSelectUI = ({
             </div>
           )}
 
-          {diagnosticoSeleccionado && diagnosticoSeleccionado.areas_afectadas.includes('general') && (
+          {diagnosticoSeleccionado && diagnosticoSeleccionado.areasafectadas.includes('general') && (
             <p className="mt-2 text-xs text-brand-600 dark:text-brand-400 flex items-center gap-1.5 font-medium">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               Diagnóstico general: afecta a todo el diente.
             </p>
@@ -116,25 +124,107 @@ export const DiagnosticoSelectUI = ({
         </section>
       )}
 
-      {/* 3. Atributos Clínicos */}
-      {diagnosticoSeleccionado?.atributos_clinicos && (
+      {/* 3. Atributos Clínicos Dinámicos */}
+      {diagnosticoSeleccionado?.atributos_clinicos && Object.keys(diagnosticoSeleccionado.atributos_clinicos).length > 0 && (
         <section className="animate-in fade-in slide-in-from-top-2 duration-300">
           <SectionHeader step="3" title="Detalles Clínicos" />
           <div className="grid gap-4">
-            {Object.entries(diagnosticoSeleccionado.atributos_clinicos).map(([key, opts]) => (
+            {Object.entries(diagnosticoSeleccionado.atributos_clinicos).map(([key, atributo]: [string, AtributoClinicoDefinicion]) => (
               <div key={key}>
                 <label className={labelBaseClass}>
-                  {key.replace(/_/g, " ")}
+                  {atributo.nombre}
+                  {atributo.requerido && <span className="text-red-500 ml-1">*</span>}
                 </label>
-                <select
-                  value={atributosClinicosSeleccionados[key] || ""}
-                  onChange={e => handleOptionChange(key, e.target.value)}
-                  className={inputBaseClass}
-                >
-                  {(opts as OpcionAtributoClinico[]).map(opt => (
-                    <option key={opt.key} value={opt.key}>{opt.nombre}</option>
-                  ))}
-                </select>
+
+                {atributo.descripcion && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{atributo.descripcion}</p>
+                )}
+
+                {/* SELECT */}
+                {atributo.tipo_input === 'select' && (
+                  <select
+                    value={atributosClinicosSeleccionados[key] || ""}
+                    onChange={e => handleAtributoChange(key, e.target.value)}
+                    className={inputBaseClass}
+                  >
+                    <option value="">-- Seleccionar --</option>
+                    {atributo.opciones.map((opt: OpcionAtributoClinico) => (
+                      <option key={opt.key} value={opt.key}>
+                        {opt.label}
+                        {opt.prioridad ? ` (Prioridad ${opt.prioridad})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {/* RADIO BUTTONS */}
+                {atributo.tipo_input === 'radio' && (
+                  <div className="space-y-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                    {atributo.opciones.map((opt: OpcionAtributoClinico) => (
+                      <label key={opt.key} className="flex items-center gap-2.5 cursor-pointer group">
+                        <input
+                          type="radio"
+                          name={key}
+                          value={opt.key}
+                          checked={atributosClinicosSeleccionados[key] === opt.key}
+                          onChange={e => handleAtributoChange(key, e.target.value)}
+                          className="w-4 h-4 text-brand-600 focus:ring-brand-500 focus:ring-2"
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">
+                          {opt.label}
+                          {opt.prioridad && (
+                            <span className="ml-1.5 text-xs text-gray-500 dark:text-gray-400">(P{opt.prioridad})</span>
+                          )}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {/* CHECKBOXES */}
+                {atributo.tipo_input === 'checkbox' && (
+                  <div className="space-y-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                    {atributo.opciones.map((opt: OpcionAtributoClinico) => {
+                      const currentValues = Array.isArray(atributosClinicosSeleccionados[key])
+                        ? atributosClinicosSeleccionados[key]
+                        : [];
+                      const isChecked = currentValues.includes(opt.key);
+
+                      return (
+                        <label key={opt.key} className="flex items-center gap-2.5 cursor-pointer group">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={e => {
+                              const updated = e.target.checked
+                                ? [...currentValues, opt.key]
+                                : currentValues.filter((v: string) => v !== opt.key);
+                              handleAtributoChange(key, updated);
+                            }}
+                            className="w-4 h-4 text-brand-600 rounded focus:ring-brand-500 focus:ring-2"
+                          />
+                          <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">
+                            {opt.label}
+                            {opt.prioridad && (
+                              <span className="ml-1.5 text-xs text-gray-500 dark:text-gray-400">(P{opt.prioridad})</span>
+                            )}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* TEXT INPUT */}
+                {atributo.tipo_input === 'text' && (
+                  <input
+                    type="text"
+                    value={atributosClinicosSeleccionados[key] || ''}
+                    onChange={e => handleAtributoChange(key, e.target.value)}
+                    className={inputBaseClass}
+                    placeholder={atributo.descripcion || 'Ingrese un valor...'}
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -144,39 +234,40 @@ export const DiagnosticoSelectUI = ({
       {/* 4. Descripción / Notas */}
       {diagnosticoSeleccionado && (
         <section className="animate-in fade-in slide-in-from-top-2 duration-300 delay-75">
-          <SectionHeader step="4" title="Notas Adicionales" />
+          <SectionHeader step="4." title="Notas Adicionales" />
           <textarea
             rows={3}
             value={descripcion}
-            onChange={e => setDescripcion(e.target.value)}
-            className={`${inputBaseClass} resize-none`}
+            onChange={(e) => setDescripcion(e.target.value)}
+            className={inputBaseClass + ' resize-none'}
             placeholder="Escribe observaciones, ej: ICDAS 3 en zona mesial..."
           />
         </section>
       )}
 
-      {/* Botones de Acción */}
-      {(diagnosticoSeleccionado || categoriaSeleccionada) && (
-        <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-          <button
-            onClick={handleCancel}
-            className="flex-1 py-2.5 px-4 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleApply}
-            disabled={!formValid}
-            className={`flex-[2] py-2.5 px-4 rounded-lg font-medium text-white shadow-theme-sm transition-all ${
-              formValid
-                ? 'bg-brand-600 hover:bg-brand-700 active:bg-brand-800'
-                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed shadow-none'
+      <div className="mt-4 flex gap-3 justify-end">
+        <button
+          type="button"
+          onClick={handleCancel}
+          className="flex-1 py-2.5 px-4 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-white transition-colors"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          onClick={handleApply}
+          disabled={!formValid}
+          className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-white shadow-theme-sm transition-all ${formValid
+            ? "bg-brand-600 hover:bg-brand-700 active:bg-brand-800"
+            : "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
             }`}
-          >
-            Aplicar 
-          </button>
-        </div>
-      )}
+        >
+          Aplicar
+        </button>
+      </div>
     </div>
+
+
   );
 };

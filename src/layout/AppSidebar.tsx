@@ -91,8 +91,8 @@ const navItems: NavItem[] = [
     icon: <BoxCubeIcon />,
     name: "Odontograma",
     subItems: [
-      { name: "Historial", path: "/odontograma-timeline", pro: false },
       { name: "Nuevo Odontograma", path: "/odontograma", pro: false },
+      { name: "Historial", path: "/odontograma-timeline", pro: false },
     ],
   },
   {

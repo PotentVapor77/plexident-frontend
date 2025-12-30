@@ -30,6 +30,7 @@ import ResetPassword from "./pages/AuthPages/ResetPassword";
 import { NotificationProvider } from "./context/notifications/NotificationContext";
 import { NotificationContainer } from "./context/notifications/NotificationContainer";
 import PersonalBackgroundPage from "./pages/PersonalBackground/personalBackgroundPage";
+import OdontogramaHistoryPage from "./pages/Odontogram/OdontogramaHistoryPage";
 
 // ============================================================================
 // RUTAS PÚBLICAS
@@ -94,15 +95,22 @@ function App() {
         />
 
         {/* PROTEGIDAS */}
+        {/* RUTAS PROTEGIDAS - Solo accesibles si está autenticado */}
+
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Home />} />
             <Route path="/usuarios" element={<UsersPage />} />
+
             <Route path="/usuarios/:id/editar" element={<UsersPage />} />
             <Route path="/pacientes" element={<PatientsPage />} />
             <Route path="/pacientes/:id/editar" element={<PatientsPage />} />
             <Route path="/pacientes/antecedentes-personales" element={<PersonalBackgroundPage />} />
             <Route path="/odontogram" element={<OdontogramaPage />} />
+
+            <Route path="/pacientes" element={<PatientsPage />} />
+            <Route path="/odontograma" element={<OdontogramaPage />} />
+            <Route path="/odontograma-timeline" element={<OdontogramaHistoryPage />} />
             <Route path="/profile" element={<UserProfiles />} />
             <Route path="/charts/bar-chart" element={<BarChart />} />
             <Route path="/charts/line-chart" element={<LineChart />} />
@@ -116,6 +124,9 @@ function App() {
             <Route path="/ui-elements/images" element={<Images />} />
             <Route path="/ui-elements/videos" element={<Videos />} />
             <Route path="/blank" element={<Blank />} />
+
+
+            <Route path="/segurity/users" element={<UsersPage />} />
           </Route>
         </Route>
 

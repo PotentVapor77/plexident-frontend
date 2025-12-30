@@ -1,7 +1,7 @@
 // src/pages/odontogram/OdontogramaHistoryPage.tsx
 import { OdontogramaTimeline } from "../../components/odontogram/history/OdontogramaTimeline";
 import { OdontogramaHistoryViewer } from "../../components/odontogram/history/OdontogramaHistoryViewer";
-import type { OdontogramaSnapshot } from "../../core/types/typeOdontogramaHistory";
+import type { OdontogramaSnapshot } from "../../core/types/odontogramaHistory.types";
 import { useState, useEffect } from "react";
 
 const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
@@ -22,7 +22,7 @@ const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
             priority: 1,
             siglas: "C",
             nombre: "Caries Oclusal",
-            areas_afectadas: ["corona"],
+            areasafectadas: ["corona"],
             secondaryOptions: {},
             descripcion: "Caries detectada en superficie oclusal",
             superficieId: "oclusal",
@@ -40,7 +40,7 @@ const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
             priority: 4,
             siglas: "OA",
             nombre: "Obturación Amalgama",
-            areas_afectadas: ["corona"],
+            areasafectadas: ["corona"],
             secondaryOptions: {
               material_restauracion: "Amalgama",
             },
@@ -60,7 +60,7 @@ const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
             priority: 1,
             siglas: "CP",
             nombre: "Caries Proximal",
-            areas_afectadas: ["corona"],
+            areasafectadas: ["corona"],
             secondaryOptions: {},
             descripcion: "Caries en superficie mesial",
             superficieId: "mesial",
@@ -87,7 +87,7 @@ const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
             priority: 4,
             siglas: "OR",
             nombre: "Obturación Resina",
-            areas_afectadas: ["corona"],
+            areasafectadas: ["corona"],
             secondaryOptions: {
               material_restauracion: "Resina",
               estado_restauracion: "Nuevo",
@@ -108,7 +108,7 @@ const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
             priority: 4,
             siglas: "OA",
             nombre: "Obturación Amalgama",
-            areas_afectadas: ["corona"],
+            areasafectadas: ["corona"],
             secondaryOptions: {
               material_restauracion: "Amalgama",
             },
@@ -128,7 +128,7 @@ const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
             priority: 4,
             siglas: "OR",
             nombre: "Obturación Resina",
-            areas_afectadas: ["corona"],
+            areasafectadas: ["corona"],
             secondaryOptions: {
               material_restauracion: "Resina",
               estado_restauracion: "Nuevo",
@@ -157,7 +157,7 @@ const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
             priority: 4,
             siglas: "OR",
             nombre: "Obturación Resina",
-            areas_afectadas: ["corona"],
+            areasafectadas: ["corona"],
             secondaryOptions: {
               material_restauracion: "Resina",
               estado_restauracion: "Bueno",
@@ -177,7 +177,7 @@ const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
             priority: 4,
             siglas: "OA",
             nombre: "Obturación Amalgama",
-            areas_afectadas: ["corona"],
+            areasafectadas: ["corona"],
             secondaryOptions: {
               material_restauracion: "Amalgama",
             },
@@ -197,7 +197,7 @@ const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
             priority: 5,
             siglas: "AUS",
             nombre: "Ausente",
-            areas_afectadas: ["general"],
+            areasafectadas: ["general"],
             secondaryOptions: {},
             descripcion: "Diente ausente - extracción previa",
             superficieId: "tooth",
@@ -214,7 +214,7 @@ const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
             priority: 4,
             siglas: "OR",
             nombre: "Obturación Resina",
-            areas_afectadas: ["corona"],
+            areasafectadas: ["corona"],
             secondaryOptions: {
               material_restauracion: "Resina",
               estado_restauracion: "Bueno",
@@ -244,7 +244,7 @@ const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
             priority: 3,
             siglas: "END",
             nombre: "Endodoncia",
-            areas_afectadas: ["raiz"],
+            areasafectadas: ["raiz"],
             secondaryOptions: {
               estado_procedimiento: "Completado",
             },
@@ -261,7 +261,7 @@ const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
             priority: 4,
             siglas: "CP",
             nombre: "Corona Porcelana",
-            areas_afectadas: ["corona"],
+            areasafectadas: ["corona"],
             secondaryOptions: {
               material_restauracion: "Porcelana",
             },
@@ -280,7 +280,7 @@ const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
             priority: 4,
             siglas: "OA",
             nombre: "Obturación Amalgama",
-            areas_afectadas: ["corona"],
+            areasafectadas: ["corona"],
             secondaryOptions: {
               material_restauracion: "Amalgama",
             },
@@ -299,7 +299,7 @@ const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
             priority: 5,
             siglas: "AUS",
             nombre: "Ausente",
-            areas_afectadas: ["general"],
+            areasafectadas: ["general"],
             secondaryOptions: {},
             descripcion: "Diente ausente",
             superficieId: "tooth",
@@ -316,7 +316,7 @@ const MOCK_SNAPSHOTS: OdontogramaSnapshot[] = [
             priority: 4,
             siglas: "OR",
             nombre: "Obturación Resina",
-            areas_afectadas: ["corona"],
+            areasafectadas: ["corona"],
             secondaryOptions: {
               material_restauracion: "Resina",
               estado_restauracion: "Bueno",
@@ -423,11 +423,10 @@ const OdontogramaHistoryPage = () => {
 
           <button
             onClick={toggleComparisonMode}
-            className={`w-full px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
-              comparisonMode
-                ? "bg-gradient-to-r from-error-500 to-error-600 hover:from-error-600 hover:to-error-700 text-white shadow-lg shadow-error-500/30"
-                : "bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white shadow-lg shadow-brand-500/30"
-            }`}
+            className={`w-full px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 ${comparisonMode
+              ? "bg-gradient-to-r from-error-500 to-error-600 hover:from-error-600 hover:to-error-700 text-white shadow-lg shadow-error-500/30"
+              : "bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white shadow-lg shadow-brand-500/30"
+              }`}
           >
             {comparisonMode ? (
               <>

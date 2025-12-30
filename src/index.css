@@ -836,8 +836,12 @@ span.flatpickr-weekday,
 
 .canvas-container.is-resizing {
   pointer-events: none; /* Evita interacciones durante resize */
+  transition: none !important;
 }
-
+.canvas-container.is-resizing canvas {
+  pointer-events: none; /* Opcional: mejora el rendimiento bloqueando eventos */
+  transition: none !important;
+}
 canvas {
   transition: opacity 0.15s ease-in-out;
 }
@@ -1075,4 +1079,64 @@ canvas {
 
 .animate-slide-down {
   animation: slideDown 0.3s ease-out;
+}
+
+
+
+
+
+
+
+
+
+
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.animate-slide-out-right {
+  animation: slide-out-right 0.3s ease-out;
+}
+
+
+/* Animación para notificaciones */
+@keyframes slideInRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+.is-resizing canvas {
+  transition: none !important;
 }

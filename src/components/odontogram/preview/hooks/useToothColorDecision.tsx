@@ -1,7 +1,8 @@
 // src/components/odontogram/preview/hooks/useToothColorDecision.tsx
 import React, { useMemo } from "react";
+import type { Diagnostico } from "../..";
 // Asumiendo que 'Diagnostico' se define en este archivo o en el import de abajo
-import type { Diagnostico } from "../ToothStatusDisplay";
+
 
 /* ----------------------------------------------------
  * Mapeo de Colores Semánticos a Clases CSS (Tailwind)
@@ -34,11 +35,11 @@ const MAX_ICONS = 3;
  * Utilidades puras
  * -------------------------------------------------- */
 const ORDEN_PRIORIDAD: Record<Diagnostico["prioridadKey"], number> = {
-    ALTA: 1,
-    ESTRUCTURAL: 2,
+    ALTA: 5,
+    ESTRUCTURAL: 4,
     MEDIA: 3,
-    BAJA: 4,
-    INFORMATIVA: 5,
+    BAJA: 2,
+    INFORMATIVA: 1,
 };
 
 /** Ordena los diagnósticos de mayor a menor prioridad (1 es la más alta). */
@@ -121,7 +122,7 @@ export const useToothColorDecision = (
                 tooltipCorona: "",
                 tooltipRaiz: "",
                 // Usando Gray-400 para un estado neutro/saludable sutil.
-                colorGlobal: "#98A2B3", 
+                colorGlobal: "#98A2B3",
                 coberturaTotal: false,
             };
         }
@@ -136,7 +137,7 @@ export const useToothColorDecision = (
 
         /* ---------- 2. Determinar Cobertura total (diente completo) ---------- */
         const activarCobertura =
-            masPrioritario.areas_afectadas.includes("general") &&
+            masPrioritario.areasafectadas.includes("general") &&
             !esFiltroPorSuperficie;
 
         if (activarCobertura) {
@@ -145,7 +146,7 @@ export const useToothColorDecision = (
                 svgsRaiz: [],
                 tooltipCorona: masPrioritario.nombre,
                 tooltipRaiz: masPrioritario.nombre,
-                colorGlobal: colorPrincipalHex, 
+                colorGlobal: colorPrincipalHex,
                 coberturaTotal: true,
                 coberturaTotalSvg: <SvgCoberturaTotal colorClass={colorPrincipalClass} />,
                 coberturaTotalTooltip: masPrioritario.nombre,
@@ -155,14 +156,14 @@ export const useToothColorDecision = (
         /* ---------- 3. Separación por área (Corona vs. Raíz) ---------- */
         const diagsCorona = diagsOrdenados.filter(
             d =>
-                d.areas_afectadas.includes("corona") ||
-                d.areas_afectadas.includes("general")
+                d.areasafectadas.includes("corona") ||
+                d.areasafectadas.includes("general")
         );
 
         const diagsRaiz = diagsOrdenados.filter(
             d =>
-                d.areas_afectadas.includes("raiz") ||
-                d.areas_afectadas.includes("general")
+                d.areasafectadas.includes("raiz") ||
+                d.areasafectadas.includes("general")
         );
 
         /* ---------- 4. Generación de SVGs (máx. 3 por área) ---------- */
@@ -186,19 +187,19 @@ export const useToothColorDecision = (
 
         /* ---------- 5. Tooltips (Nombres de todos los diagnósticos) ---------- */
         const tooltipCorona = Array.from(
-    new Set(diagsCorona.map(d => d.nombre))
-).join(", ");
+            new Set(diagsCorona.map(d => d.nombre))
+        ).join(", ");
 
-const tooltipRaiz = Array.from(
-    new Set(diagsRaiz.map(d => d.nombre))
-).join(", ");
+        const tooltipRaiz = Array.from(
+            new Set(diagsRaiz.map(d => d.nombre))
+        ).join(", ");
 
         return {
             svgsCorona,
             svgsRaiz,
             tooltipCorona,
             tooltipRaiz,
-            colorGlobal: colorPrincipalHex, 
+            colorGlobal: colorPrincipalHex,
             coberturaTotal: false,
         };
     }, [diagsFiltrados, esFiltroPorSuperficie]);

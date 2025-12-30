@@ -1,4 +1,5 @@
-import type { AreaAfectada, DiagnosticoEntry, OdontogramaData } from "../../types/typeOdontograma";
+import type { AreaAfectada, DiagnosticoEntry, OdontogramaData } from "../../types/odontograma.types";
+import { isToothBlockedByAbsence } from "./blockingRules";
 import { hydrateDiagnosticoEntry } from "./dataHydration";
 
 
@@ -14,6 +15,7 @@ export const generateUniqueId = (): string => {
  * Crea la entrada base de diagnóstico con toda la información necesaria
  */
 export const createBaseDiagnosticoEntry = (
+    // Id con prefijo temporal
     procConfig: any, // ProcConfigWithPriority
     finalColorHex: string,
     priority: number,
@@ -28,7 +30,7 @@ export const createBaseDiagnosticoEntry = (
         siglas: procConfig.siglas,
         colorHex: finalColorHex,
         priority: priority,
-        areas_afectadas: afectaArea,
+        areasafectadas: afectaArea,
         secondaryOptions,
         descripcion,
         superficieId: undefined,
@@ -41,51 +43,53 @@ export const createBaseDiagnosticoEntry = (
  * Maneja lógica de bloqueos y superficies
  */
 export const updateDataWithDiagnostico = (
-    prevData: OdontogramaData,
-    toothId: string,
-    surfaceIds: string[],
-    baseEntry: DiagnosticoEntry,
-    affectsEntireTooth: boolean
+  prevData: OdontogramaData,
+  toothId: string,
+  surfaceIds: string[],
+  baseEntry: DiagnosticoEntry,
+  affectsEntireTooth: boolean
 ): OdontogramaData => {
-    const newData = { ...prevData };
+  console.log('[updateData] IN', {
+    toothId,
+    surfaceIds,
+    affectsEntireTooth,
+    prevToothData: prevData[toothId],
+  });
 
-    // Inicializar diente si no existe
-    if (!newData[toothId]) {
-        newData[toothId] = {};
-    }
+  const newData = { ...prevData };
+  if (!newData[toothId]) {
+    newData[toothId] = {};
+  }
 
-    // Si afecta todo el diente, limpiar todas las superficies existentes
-    if (affectsEntireTooth) {
-        newData[toothId] = {};
-    }
-
-    // Determinar superficies objetivo
-    const targetSurfaces = affectsEntireTooth ? ["diente_completo"] : surfaceIds;
-
-    // Aplicar diagnóstico a cada superficie objetivo
-    targetSurfaces.forEach(surfaceId => {
-        // Si ya existe diagnóstico de diente completo, no hacer nada
-        if (newData[toothId]["diente_completo"] && surfaceId !== "diente_completo") {
-            return;
-        }
-
-        // Si vamos a aplicar diente_completo, limpiar otras superficies
-        if (surfaceId === "diente_completo" && Object.keys(newData[toothId]).length > 0) {
-            newData[toothId] = {};
-        }
-
-        const newEntry = {
-            ...baseEntry,
-            superficieId: surfaceId
-        };
-
-        newData[toothId] = {
-            ...newData[toothId],
-            [surfaceId]: [...(newData[toothId][surfaceId] || []), newEntry]
-        };
+  const isBlockingDiagnosis = isToothBlockedByAbsence([baseEntry]);
+  if (isBlockingDiagnosis) {
+    console.log('[updateData] Limpiando diente por diagnóstico bloqueador', {
+      toothId,
+      procedimientoId: baseEntry.procedimientoId
     });
+    newData[toothId] = {};
+  }
 
-    return newData;
+  const targetSurfaces = affectsEntireTooth ? ['general'] : surfaceIds;
+
+  targetSurfaces.forEach(surfaceId => {
+    const newEntry: DiagnosticoEntry = {
+      ...baseEntry,
+      superficieId: surfaceId,
+    };
+
+    newData[toothId] = {
+      ...newData[toothId],
+      [surfaceId]: [...(newData[toothId][surfaceId] || []), newEntry],
+    };
+  });
+
+  console.log('[updateData] OUT', {
+    toothId,
+    newToothData: newData[toothId],
+  });
+
+  return newData;
 };
 
 /**

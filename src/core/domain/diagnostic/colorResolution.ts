@@ -1,41 +1,46 @@
-import { type OdontoColorKey, ODONTO_COLORS, type MaterialColorKey, MATERIAL_COLORS, type DiagnosticoEntry } from "../../types/typeOdontograma";
-
+import { 
+    type OdontoColorKey, 
+    ODONTO_COLORS, 
+    type DiagnosticoEntry 
+} from "../../types/odontograma.types";
 
 /**
  * Obtiene el color hexadecimal basado en la clave de color y opciones secundarias
  */
-export const getColorFromEntry = (
-    colorKey: OdontoColorKey,
-    secondaryOptions: Record<string, any>
-): string => {
-    const baseColorData = ODONTO_COLORS[colorKey];
+export const getColorFromEntry = (colorKey: string, secondaryOptions: any): string => {
+    // 1. Si ya es un Hexadecimal (comienza con #), lo devolvemos directamente
+    if (colorKey.startsWith('#')) return colorKey;
 
-    if (colorKey === 'REALIZADO' && secondaryOptions.material_restauracion) {
-        const materialKeyLower = secondaryOptions.material_restauracion;
-        const materialKey = (materialKeyLower.charAt(0).toUpperCase() + materialKeyLower.slice(1)) as MaterialColorKey;
+    // 2. Buscamos la configuración en el diccionario
+    const config = ODONTO_COLORS[colorKey as OdontoColorKey];
+    
+    // 3. Si no existe la clave, devolvemos un gris neutro
+    if (!config) return '#808080';
 
-        if (MATERIAL_COLORS[materialKey]) {
-            return MATERIAL_COLORS[materialKey].fill;
-        }
+    // 4. Verificación de variaciones (usando casting temporal para evitar el error de TS 
+    const configWithVariations = config as any;
+    if (secondaryOptions?.material === 'AMALGAMA' && configWithVariations.variations?.AMALGAMA) {
+        return configWithVariations.variations.AMALGAMA;
     }
 
-    return baseColorData.fill;
+    // 5. IMPORTANTE: Usamos .fill que es la propiedad que existe en tu objeto según el error
+    return config.fill;
 };
 
 /**
  * Obtiene el color permanente para una superficie específica
- * Selecciona el diagnóstico con mayor prioridad (menor número)
+ * Selecciona el diagnóstico con mayor prioridad (mas alto número)
  */
 export const getPermanentColorForSurface = (
     diagnosticos: DiagnosticoEntry[]
 ): string | null => {
     if (diagnosticos.length === 0) return null;
 
-    let highestPriority = Infinity;
+    let highestPriority = -Infinity;
     let permanentColor: string | null = null;
 
     for (const entry of diagnosticos) {
-        if (entry.priority < highestPriority) {
+        if (entry.priority > highestPriority) {
             highestPriority = entry.priority;
             permanentColor = entry.colorHex;
         }
@@ -53,15 +58,28 @@ export const getDominantColorForTooth = (
 ): string | null => {
     if (diagnoses.length === 0) return null;
 
-    let highestPriority = Infinity;
+    let highestPriority = -Infinity;
     let dominantColor: string | null = null;
 
     for (const entry of diagnoses) {
-        if (entry.priority < highestPriority) {
+        if (entry.priority > highestPriority) {
             highestPriority = entry.priority;
             dominantColor = entry.colorHex;
         }
     }
 
     return dominantColor;
+};
+
+/**
+ * Obtiene la prioridad de forma segura manejando claves o colores hex directos
+ */
+export const getPriorityFromKey = (colorKey: string): number => {
+    if (colorKey.startsWith('#')) {
+        // Prioridad por defecto para colores directos
+        return 3; 
+    }
+    
+    const config = ODONTO_COLORS[colorKey as OdontoColorKey];
+    return config ? config.priority : 3;
 };

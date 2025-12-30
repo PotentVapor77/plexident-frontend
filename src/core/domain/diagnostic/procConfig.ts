@@ -1,51 +1,46 @@
 // src/core/domain/diagnostic/procConfig.ts
 
-import { DIAGNOSTICO_CATEGORIES } from "../../config/odontograma";
-import type { DiagnosticoItem, PrioridadKey } from "../../types/typeOdontograma";
-
+import type {
+    DiagnosticoItem,
+    PrioridadKey,
+    DiagnosticoCategory,
+} from "../../types/odontograma.types";
 
 export type ProcConfigWithPriority = DiagnosticoItem & {
-    prioridadKey: PrioridadKey;
+  prioridadKey: PrioridadKey;
 };
 
-// Cache persistente para evitar búsquedas repetidas
 const procConfigCache: Map<string, ProcConfigWithPriority | undefined> = new Map();
 
 /**
- * Obtiene la configuración de un procedimiento por ID
- * Incluye caché para optimizar búsquedas repetidas
+ * Obtiene la configuración de un procedimiento por ID usando categorías dinámicas
  */
-export const getProcConfig = (procedimientoId: string): ProcConfigWithPriority | undefined => {
-    // Verificar caché primero
-    if (procConfigCache.has(procedimientoId)) {
-        return procConfigCache.get(procedimientoId);
+export const getProcConfigFromCategories = (
+  procedimientoId: string,
+  categorias: DiagnosticoCategory[]
+): ProcConfigWithPriority | undefined => {
+  if (procConfigCache.has(procedimientoId)) {
+    return procConfigCache.get(procedimientoId);
+  }
+
+  for (const category of categorias) {
+    const proc = category.diagnosticos.find(p => p.id === procedimientoId);
+    if (proc) {
+      const configWithPriority: ProcConfigWithPriority = {
+        ...proc,
+        prioridadKey: category.prioridadKey,
+      } as ProcConfigWithPriority;
+
+      procConfigCache.set(procedimientoId, configWithPriority);
+      return configWithPriority;
     }
+  }
 
-    // Buscar en categorías
-    for (const category of DIAGNOSTICO_CATEGORIES) {
-        const proc = category.diagnosticos.find(p => p.id === procedimientoId);
-
-        if (proc) {
-            const configWithPriority: ProcConfigWithPriority = {
-                ...proc,
-                prioridadKey: category.prioridadKey
-            } as ProcConfigWithPriority;
-
-            // Guardar en caché
-            procConfigCache.set(procedimientoId, configWithPriority);
-            return configWithPriority;
-        }
-    }
-
-    // Configuración no encontrada, guardar en caché como undefined
-    console.warn(`Configuración no encontrada para procedimiento: ${procedimientoId}`);
-    procConfigCache.set(procedimientoId, undefined);
-    return undefined;
+  console.warn(`Configuración no encontrada para procedimiento: ${procedimientoId}`);
+  procConfigCache.set(procedimientoId, undefined);
+  return undefined;
 };
 
-/**
- * Limpia el caché de configuración (útil para testing)
- */
 export const clearProcConfigCache = (): void => {
-    procConfigCache.clear();
+  procConfigCache.clear();
 };

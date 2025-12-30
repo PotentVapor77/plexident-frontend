@@ -1,10 +1,9 @@
-// src/components/odontograma/SuperficieSelector.tsx
-import { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from "react";
+// src/components/odontograma/3d/SuperficieSelector.tsx
+import { useState, useEffect, useCallback, useImperativeHandle, forwardRef, useMemo } from "react";
 import { useCrownInteractions } from "../../../hooks/odontogram/useCrownInteractions";
-import { useOdontogramaData } from "../../../hooks/odontogram/useOdontogramaData";
 import { useRootInteractions } from "../../../hooks/odontogram/useRootInteractions";
 import { useToothRootType } from "../../../hooks/odontogram/useToothRootType";
-import { ODONTO_COLORS, type RootGroupKey } from "../../../core/types/typeOdontograma";
+import { ODONTO_COLORS, type RootGroupKey } from "../../../core/types/odontograma.types";
 
 // IMPORTAR SVGs DIRECTAMENTE
 import odontSvg from "../../../assets/images/dental/odonto.svg";
@@ -15,10 +14,12 @@ import raizMolarInferior from "../../../assets/images/roots/raiz_molar_inferior.
 import raizMolarSuperior from "../../../assets/images/roots/raiz_molar_superior.svg";
 import raizPremolar from "../../../assets/images/roots/raiz_premolar.svg";
 import type { PrincipalArea } from "../../../hooks/odontogram/useDiagnosticoSelect";
+import { fdiToMeshName } from "../../../core/utils/toothTraslations";
+import { getRootTypeByFDI } from "../../../hooks/odontogram/diagnosticoHooks/useToothSelection";
+import { groupDentalSurfaces, type GroupedSurface } from "../../../core/utils/groupDentalSurfaces";
 
 const UI_SELECTION_FALLBACK_COLOR = ODONTO_COLORS.SELECCIONADO_UI.fill;
 
-// Mapeo exhaustivo de IDs técnicos a áreas principales.
 const SURFACE_AREA_MAP: Record<string, 'corona' | 'raiz' | 'general'> = {
     // Superficies de la Corona (IDs técnicos)
     'cara_oclusal': 'corona',
@@ -27,12 +28,11 @@ const SURFACE_AREA_MAP: Record<string, 'corona' | 'raiz' | 'general'> = {
     'cara_vestibular': 'corona',
     'cara_lingual': 'corona',
 
-    'raiz:raiz-mesial': 'raiz',
-    'raiz:raiz-distal': 'raiz',
-    'raiz:raiz-palatal': 'raiz',
-    'raiz:raiz-vestibular': 'raiz',
-    'raiz:raiz-principal': 'raiz',
-
+    'raiz_mesial': 'raiz',
+    'raiz_distal': 'raiz',
+    'raiz_palatal': 'raiz',
+    'raiz_vestibular': 'raiz',
+    'raiz_principal': 'raiz',
     'general': 'general',
 };
 
@@ -57,31 +57,15 @@ const getPrincipalArea = (surfaces: string[]): PrincipalArea => {
     return 'general';
 };
 
-const getRootGroupKeyFromType = (type?: string): RootGroupKey | null => {
-    switch (type) {
-        case "raiz_molar_superior":
-            return "molar_superior";
-        case "raiz_molar_inferior":
-            return "molar_inferior";
-        case "raiz_premolar":
-            return "premolar";
-        case "raiz_canino":
-        case "raiz_incisivo":
-            return "anterior";
-        default:
-            return null;
-    }
-};
-
-
 interface SurfaceSelectorProps {
     selectedSurfaces: string[];
     onSurfaceSelect: (surfaces: string[]) => void;
     selectedTooth: string | null;
     isBlocked?: boolean;
     onAreaChange: (area: PrincipalArea) => void;
-
     onRootGroupChange?: (group: RootGroupKey | null) => void;
+    getPermanentColorForSurface: (toothId: string | null, surfaceId: string) => string | null;
+    activeDiagnosisColor: string | null;
 }
 
 export interface SurfaceSelectorRef {
@@ -96,29 +80,70 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
     isBlocked,
     onAreaChange,
     onRootGroupChange,
+    getPermanentColorForSurface,
+    activeDiagnosisColor,
 }, ref) => {
 
     const [svgLoaded, setSvgLoaded] = useState(false);
     const [rootSvgLoaded, setRootSvgLoaded] = useState(false);
     const [requiredAreaWarning, setRequiredAreaWarning] = useState<string | null>(null);
 
-    const rootInfo = useToothRootType(selectedTooth);
+    const meshName = selectedTooth ? fdiToMeshName(selectedTooth) : null;
+    const rootInfo = useToothRootType(meshName);
+
+    // ============================================================================
+    // AGRUPACIÓN DE SUPERFICIES (Igual que en DiagnosticosList)
+    // ============================================================================
+    const groupedSurfaces = useMemo((): GroupedSurface[] => {
+        if (!selectedTooth || selectedSurfaces.length === 0) return [];
+
+        // OBTENER rootType del diente (misma lógica que useToothSelection)
+        const rootType = getRootTypeByFDI(selectedTooth);
+
+        console.log('[SuperficieSelector] Grouping surfaces:', {
+            selectedSurfaces,
+            rootType,
+            grouped: groupDentalSurfaces(selectedSurfaces, rootType)
+        });
+
+        return groupDentalSurfaces(selectedSurfaces, rootType);
+    }, [selectedSurfaces, selectedTooth]);
+
+    // ============================================================================
+    // ÁREA PRINCIPAL desde superficies agrupadas 
+    // ============================================================================
+    const principalAreaFromGrouped = useMemo((): PrincipalArea => {
+        if (groupedSurfaces.length === 0) return null;
+        
+        // Si hay grupo "Raíz completa" → 'raiz'
+        const hasRootGroup = groupedSurfaces.some((gs) => 
+    gs.type === 'group' && gs.isRoot && gs.label === 'Raíz completa'
+);
+        
+        if (hasRootGroup) return 'raiz';
+        
+        // Si hay grupo "Corona completa" → 'corona'
+        const hasCrownGroup = groupedSurfaces.some(
+            (gs): gs is Extract<GroupedSurface, { type: 'group'; isRoot: false }>=> gs.type === 'group' && !gs.isRoot && gs.label === 'Corona completa'
+        );
+        
+        if (hasCrownGroup) return 'corona';
+        
+        // Fallback al área de la primera superficie
+        return getPrincipalArea(selectedSurfaces);
+    }, [groupedSurfaces, selectedSurfaces]);
+
     useEffect(() => {
         if (!selectedTooth) {
             onRootGroupChange?.(null);
             return;
         }
-        const groupKey = getRootGroupKeyFromType(rootInfo.type);
-        onRootGroupChange?.(groupKey);
+        onRootGroupChange?.(rootInfo.type as RootGroupKey);
     }, [selectedTooth, rootInfo.type, onRootGroupChange]);
-    const { getPermanentColorForSurface, tipoDiagnosticoSeleccionado } = useOdontogramaData();
-
-
 
     // Deshabilitado si no hay diente seleccionado O si está bloqueado por prop
     const isDisabled = !selectedTooth || isBlocked;
 
-    const activeDiagnosisColor = ((tipoDiagnosticoSeleccionado as any)?.colorHex) ?? null;
     const uiSelectionColor = UI_SELECTION_FALLBACK_COLOR;
     const DEFAULT_COLOR = "#ffffff";
 
@@ -126,11 +151,11 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         showRequiredAreaWarning: (areas: PrincipalArea[]) => {
             if (!areas || areas.length === 0) return;
             if (areas.includes('corona') && !selectedSurfaces.some(s => SURFACE_AREA_MAP[s] === 'corona')) {
-                setRequiredAreaWarning("⚠️ Este diagnóstico requiere seleccionar al menos una superficie de CORONA");
+                setRequiredAreaWarning("Este diagnóstico requiere seleccionar al menos una superficie de CORONA");
                 return;
             }
             if (areas.includes('raiz') && !selectedSurfaces.some(s => SURFACE_AREA_MAP[s] === 'raiz')) {
-                setRequiredAreaWarning("⚠️ Este diagnóstico requiere seleccionar al menos una superficie de RAÍZ");
+                setRequiredAreaWarning("Este diagnostico requiere seleccionar al menos una superficie de raiz.");
                 return;
             }
         },
@@ -142,15 +167,14 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         setSvgLoaded(false);
         setRootSvgLoaded(false);
         setRequiredAreaWarning(null);
-        onAreaChange(null);
-    }, [selectedTooth, onAreaChange]);
+    }, [selectedTooth]);
 
     const handleSurfaceSelect = useCallback((surfaces: string[]) => {
         onSurfaceSelect(surfaces);
-        const area = getPrincipalArea(surfaces);
+        const area = principalAreaFromGrouped;
         onAreaChange(area);
-        setRequiredAreaWarning(null); // limpia advertencia si seleccionó superficie
-    }, [onSurfaceSelect, onAreaChange]);
+        setRequiredAreaWarning(null);
+    }, [onSurfaceSelect, onAreaChange, principalAreaFromGrouped]); // ➕ principalAreaFromGrouped
 
     // Hooks de interacción
     useCrownInteractions({
@@ -164,11 +188,13 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         DEFAULT_COLOR,
     });
 
+    // ➕ PASAR groupedSurfaces a useRootInteractions
     useRootInteractions({
         rootSvgLoaded,
         selectedTooth,
         rootInfo,
         selectedSurfaces,
+        groupedSurfaces,  // ➕ NUEVO
         onSurfaceSelect: handleSurfaceSelect,
         getPermanentColorForSurface,
         previewColorHex: activeDiagnosisColor,
@@ -176,7 +202,6 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         DEFAULT_COLOR,
     });
 
-    // FUNCIÓN MEJORADA: Retorna la ruta SVG del ROOT_SVG_MAP
     const getRootSvgPath = useCallback(() => {
         const knownRootTypes = [
             'raiz_molar_superior',
@@ -187,26 +212,24 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
         ];
         const type = rootInfo.type || '';
         const pathName = knownRootTypes.includes(type) ? type : 'raiz_dental';
-        return ROOT_SVG_MAP[pathName]; // Retorna URL importada (no string)
+        return ROOT_SVG_MAP[pathName];
     }, [rootInfo.type]);
 
     // Estilos para el contenedor (Se mantiene el escalado general y el espaciado reducido)
     const containerClasses = `
-        relative 
-        flex 
-        flex-col 
-        items-center 
-        justify-center 
-        p-2 
-        space-y-1 
-        transform 
-        scale-[0.9] 
-        transition-opacity 
-        duration-300 
-        ${isDisabled ? 'opacity-50 pointer-events-none' : 'opacity-100'}
-    `;
-
-    // Se eliminó svgBaseClasses para control individual.
+        relative 
+        flex 
+        flex-col 
+        items-center 
+        justify-center 
+        p-2 
+        space-y-1 
+        transform 
+        scale-[0.9] 
+        transition-opacity 
+        duration-300 
+        ${isDisabled ? 'opacity-50 pointer-events-none' : 'opacity-100'}
+    `;
 
     return (
         <>
@@ -218,7 +241,6 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
 
             {/* Contenedor ÚNICO para ambos SVGs (Corona y Raíz) */}
             <div className={containerClasses}>
-
                 {/* SVG DE LA RAÍZ */}
                 <object
                     id="raiz-svg"
@@ -228,7 +250,7 @@ export const SurfaceSelector = forwardRef<SurfaceSelectorRef, SurfaceSelectorPro
                     key={`raiz-${rootInfo.type}-${selectedTooth}`}
                     onLoad={() => setRootSvgLoaded(true)}
                     role="img"
-                    aria-label="Raíz dental seleccionada"
+                    aria-label="Raiz dental seleccionada"
                 />
 
                 {/* SVG DE LA CORONA */}

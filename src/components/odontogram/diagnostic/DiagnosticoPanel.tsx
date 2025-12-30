@@ -1,392 +1,293 @@
-// src/components/Odontograma/DiagnosticoPanel.tsx
-import { useState, useCallback, useRef, type Dispatch, type SetStateAction } from "react";
+// src/components/odontogram/diagnostic/DiagnosticoPanel.tsx
 
-import { DIAGNOSTICO_CATEGORIES } from "../../../core/config/odontograma";
-import type { useOdontogramaData } from "../../../hooks/odontogram/useOdontogramaData";
-import type { DiagnosticoEntry, OdontoColorKey, AreaAfectada, RootGroupKey } from "../../../core/types/typeOdontograma";
-import type { PrincipalArea } from "../../../hooks/odontogram/useDiagnosticoSelect";
+import React, { useCallback, useEffect, useMemo } from 'react';
 
+import { usePacienteActivo } from '../../../context/PacienteContext';
+import { useDiagnosticoPanelManager } from '../../../hooks/odontogram/diagnosticoHooks/useDiagnosticoPanelManager';
+import { useCatalogoDiagnosticos } from '../../../hooks/odontogram/useCatalogoDiagnosticos';
+import { useDiagnosticoSelect } from '../../../hooks/odontogram/useDiagnosticoSelect';
+import { useToothRootType } from '../../../hooks/odontogram/useToothRootType';
+// Componentes
+import { SurfaceSelector } from '../3d/SuperficieSelector';
+import { ActionButtons } from './panel/ActionButtons';
+import { DiagnosticosList } from './panel/DiagnosticosList';
+import { NotificationManager } from './panel/NotificationManager';
+import { ToothInfoCard } from './panel/ToothInfoCard';
+import { DiagnosticoSelectUI } from '../selection/DiagnosticoSelectUI';
+// Utils
+import { groupDentalSurfaces } from '../../../core/utils/groupDentalSurfaces';
+import { SurfaceLabels } from './panel/SurfaceLabels';
+// ============================================================================
+// INTERFACES
+// ============================================================================
 
-import { DiagnosticoSelect } from "./DiagnosticoSelect";
-import { SurfaceSelector, type SurfaceSelectorRef } from "../3d/SuperficieSelector";
+interface DiagnosticoPanelProps {
+  selectedTooth: string | null;
+  odontogramaDataHook?: any;
+  onRootGroupChange?: (group: string | null) => void;
+}
 
-const ALL_SURFACE_IDS = [
-    'cara_vestibular',
-    'cara_distal',
-    'cara_mesial',
-    'cara_lingual',
-    'cara_oclusal',
-    'raiz:raiz-mesial',
-    'raiz:raiz-distal',
-    'raiz:raiz-palatal',
-    'raiz:raiz-vestibular',
-    'raiz:raiz-principal',
-];
-const ROOT_GROUPS: Record<RootGroupKey, {
-    label: string;
-    surfaces: string[];
-}> = {
-    molar_superior: {
-        label: "Raíz (Molar superior)",
-        surfaces: [
-            "raiz:raiz-palatal",
-            "raiz:raiz-mesial",
-            "raiz:raiz-distal",
-        ],
-    },
-    molar_inferior: {
-        label: "Raíz (Molar inferior)",
-        surfaces: [
-            "raiz:raiz-mesial",
-            "raiz:raiz-distal",
-        ],
-    },
-    premolar: {
-        label: "Raíz (Premolar)",
-        surfaces: [
-            "raiz:raiz-palatal",
-            "raiz:raiz-vestibular",
-        ],
-    },
-    anterior: {
-        label: "Raíz (Principal)",
-        surfaces: ["raiz:raiz-principal"],
-    },
-};
+// ============================================================================
+// COMPONENTE PRINCIPAL: DiagnosticoPanel
+// ============================================================================
 
-type DisplaySurface =
-    | { type: "group"; label: string }
-    | { type: "single"; id: string };
+export const DiagnosticoPanel: React.FC<DiagnosticoPanelProps> = ({
+  selectedTooth,
+  odontogramaDataHook,
+  onRootGroupChange,
+}) => {
+  const { pacienteActivo } = usePacienteActivo();
 
-const getSurfaceName = (surfaceId: string): string => {
-    const names: Record<string, string> = {
-        cara_vestibular: "Vestibular",
-        cara_distal: "Distal",
-        cara_mesial: "Mesial",
-        cara_lingual: "Lingual",
-        cara_oclusal: "Oclusal",
-        "raiz:raiz-mesial": "Raíz Mesial",
-        "raiz:raiz-distal": "Raíz Distal",
-        "raiz:raiz-palatal": "Raíz Palatal",
-        "raiz:raiz-vestibular": "Raíz Vestibular",
-        "raiz:raiz-principal": "Raíz Principal",
-    };
-    return names[surfaceId] || surfaceId.replace("raiz:", "").replace(/-/g, " ");
-};
+  // ============================================================================
+  // VALIDACIÓN INICIAL
+  // ============================================================================
 
-type Props = {
-    className?: string;
-    selectedTooth: string | null;
-    selectedSurfaces: string[];
-    onSurfaceSelect: (surfaces: string[]) => void;
-    onPreviewChange: Dispatch<SetStateAction<string | null>>;
-    onPreviewOptionsChange: Dispatch<SetStateAction<Record<string, string>>>;
-    odontogramaDataHook: ReturnType<typeof useOdontogramaData>;
-    rootGroupKey: RootGroupKey | null;
-};
+  if (!odontogramaDataHook) {
+    return (
+      <div className="flex items-center justify-center h-full p-6">
+        <div className="text-center space-y-2">
+          <p className="text-error-600 font-semibold">Error de inicialización</p>
+          <p className="text-sm text-gray-500">
+            El hook del odontograma no está disponible
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-export const DiagnosticoPanel = ({
-    className,
+  // ============================================================================
+  // HOOKS
+  // ============================================================================
+
+  // Hook principal del panel
+  const {
+    state,
+    handleToothChange,
+    handleAddDiagnostico,
+    handleCancelDiagnostico,
+    handleApplyDiagnostico,
+    handleRemoveDiagnostico,
+    handleSurfaceSelect,
+    handleAreaChange,
+    handleRootGroupChange,
+    handleGuardarCompleto,
+    handleClearAll,
+    addNotification,
+    notifications,
+    removeNotification,
+  } = useDiagnosticoPanelManager({
     selectedTooth,
-    selectedSurfaces,
-    onSurfaceSelect,
-    onPreviewChange,
-    onPreviewOptionsChange,
     odontogramaDataHook,
-    rootGroupKey,
-}: Props) => {
-    const {
-        applyDiagnostico,
-        getDiagnosticosForSurface,
-        removeDiagnostico,
-        isToothBlocked,
-        saveOdontogramaData,
-        isSaving,
-        lastSaveTime,
-    } = odontogramaDataHook;
+    pacienteActivoId: pacienteActivo ?? undefined,
+    onRootGroupChange,
+  });
 
-    const [currentArea, setCurrentArea] = useState<PrincipalArea>(null);
-    const surfaceSelectorRef = useRef<SurfaceSelectorRef>(null);
+  const handleRemoveIndividualSurface = useCallback((surfaceId: string) => {
+    const newSurfaces = state.selectedSurfaces.filter(s => s !== surfaceId);
+    handleSurfaceSelect(newSurfaces);
+  }, [state.selectedSurfaces, handleSurfaceSelect]);
 
-    const handleAreaChange = useCallback((area: PrincipalArea) => {
-        setCurrentArea(area);
-    }, []);
+  // Hook del catálogo de diagnósticos
+  const {
+    categorias,
+    isLoading: isCatalogLoading,
+    error: catalogError,
+  } = useCatalogoDiagnosticos();
 
-    const isBlocked = isToothBlocked(selectedTooth);
-    const surfaceIdWithData = selectedTooth && selectedSurfaces.length === 1 ? selectedSurfaces[0] : null;
-    const appliedDiagnosticos: DiagnosticoEntry[] =
-        surfaceIdWithData && selectedTooth ? getDiagnosticosForSurface(selectedTooth, surfaceIdWithData) : [];
+  // Hook del tipo de raíz del diente
+  const rootInfo = useToothRootType(selectedTooth);
+  const grouped = useMemo(() =>
+    groupDentalSurfaces(state.selectedSurfaces, rootInfo.type)
+    , [state.selectedSurfaces, rootInfo.type]);
 
-    // FIX: MOVER LA FUNCIÓN getDisplaySurfaces AQUÍ ARRIBA PARA QUE PUEDA SER LLAMADA SIN ERROR
-    const getDisplaySurfaces = (
-        selectedSurfaces: string[],
-        rootGroupKey: RootGroupKey | null
-    ): DisplaySurface[] => {
+  // Hook del selector de diagnósticos
+  const diagSelect = useDiagnosticoSelect({
+    currentArea: state.currentArea,
+    categorias,
+    onApply: handleApplyDiagnostico,
+    onCancel: handleCancelDiagnostico,
+    onPreviewChange: odontogramaDataHook.setPreviewedDiagnostico || (() => { }),
+    onPreviewOptionsChange: odontogramaDataHook.setAtributosClinicosTemporales || (() => { }),
+  });
 
-        if (!rootGroupKey) {
-            return selectedSurfaces.map(s => ({ type: "single", id: s }));
-        }
+  // ============================================================================
+  // EFECTOS
+  // ============================================================================
 
-        const group = ROOT_GROUPS[rootGroupKey];
+  useEffect(() => {
+    handleToothChange(selectedTooth);
+  }, [selectedTooth, handleToothChange]);
 
-        const rootSurfacesSelected = selectedSurfaces.filter(s => s.startsWith("raiz:"));
-        const nonRootSurfaces = selectedSurfaces.filter(s => !s.startsWith("raiz:"));
+  // ============================================================================
+  // ETIQUETAS DE SUPERFICIES SELECCIONADAS
+  // ============================================================================
 
-        const hasAllRoots =
-            group.surfaces.length > 0 &&
-            group.surfaces.every(s => selectedSurfaces.includes(s));
 
-        const result: DisplaySurface[] = [];
 
-        if (hasAllRoots) {
-            result.push({
-                type: "group",
-                label: group.label,
-            });
-        } else {
-            rootSurfacesSelected.forEach(s =>
-                result.push({ type: "single", id: s })
-            );
-        }
+  // ============================================================================
+  // ESTADO DE CARGA DEL CATÁLOGO
+  // ============================================================================
 
-        nonRootSurfaces.forEach(s =>
-            result.push({ type: "single", id: s })
-        );
-
-        
-        return result;
-    };
-    
-    // FIX: Declarar la variable displaySurfaces aquí, después de que getDisplaySurfaces esté definida
-    const displaySurfaces = getDisplaySurfaces(selectedSurfaces, rootGroupKey);
-
-    const handleDiagnosticoApply = (
-        procedimientoId: string,
-        colorKey: OdontoColorKey,
-        secondaryOptions: Record<string, string>,
-        descripcion: string,
-        afectaArea: AreaAfectada[]
-    ) => {
-        if (!selectedTooth) return;
-
-        // Validar que haya selección en las áreas requeridas
-        if (afectaArea.includes('corona') && !selectedSurfaces.some(s => s.startsWith('cara_'))) {
-            surfaceSelectorRef.current?.showRequiredAreaWarning(['corona']);
-            return;
-        }
-        if (afectaArea.includes('raiz') && !selectedSurfaces.some(s => s.startsWith('raiz:'))) {
-            surfaceSelectorRef.current?.showRequiredAreaWarning(['raiz']);
-            return;
-        }
-
-        let surfacesToApply = selectedSurfaces.length > 0 ? selectedSurfaces : [];
-
-        if (afectaArea.includes('general')) {
-            surfacesToApply = ALL_SURFACE_IDS;
-        }
-
-        const procedimiento = DIAGNOSTICO_CATEGORIES.flatMap(c => c.diagnosticos)
-            .find(p => p.id === procedimientoId);
-        const siglas = procedimiento?.siglas ?? null;
-
-        applyDiagnostico(
-            selectedTooth,
-            surfacesToApply,
-            procedimientoId,
-            colorKey,
-            { ...secondaryOptions, ...(siglas ? { siglas } : {}) },
-            descripcion,
-            afectaArea
-        );
-
-        onSurfaceSelect([]);
-        setCurrentArea(null);
-        surfaceSelectorRef.current?.clearRequiredAreaWarning();
-    };
-
-    const getDiagnosticoLabel = (diag: DiagnosticoEntry) => {
-        let label = diag.procedimientoId.replace(/_/g, " ");
-        Object.entries(diag.secondaryOptions || {}).forEach(([key, value]) => {
-            if (key !== "descripcion") label += ` [${value.replace(/_/g, " ")}]`;
-        });
-        return label;
-    };
-
+  if (isCatalogLoading) {
     return (
-        <div className={`h-full bg-white dark:bg-gray-900 shadow-theme-lg border-l border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden ${className}`}>
-
-            {/* HEADER */}
-            <div className="px-5 py-5 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Panel de Diagnóstico
-                </h2>
-
-            </div>
-
-            {/* CONTENIDO SCROLLABLE */}
-            <div className="px-6 py-3 flex-1 overflow-y-auto custom-scrollbar">
-                <SurfaceSelector
-                    ref={surfaceSelectorRef}
-                    selectedSurfaces={selectedSurfaces}
-                    onSurfaceSelect={onSurfaceSelect}
-                    selectedTooth={selectedTooth}
-                    isBlocked={isBlocked}
-                    onAreaChange={handleAreaChange}
-                />
-
-                {/* ALERTA DIENTE AUSENTE/BLOQUEADO */}
-                {selectedTooth && isBlocked && (
-                    <div className="bg-error-50 border-l-4 border-error-500 text-error-700 dark:bg-error-900/20 dark:text-error-400 p-4 mt-2 text-theme-sm font-medium rounded-r-lg">
-                        Diente {selectedTooth} marcado como Ausente.
-                    </div>
-                )}
-
-                {/* LISTA DE DIAGNÓSTICOS EXISTENTES */}
-                {surfaceIdWithData && appliedDiagnosticos.length > 0 && (
-                    <div className="mt-3 border-t border-gray-200 dark:border-gray-800 pt-4">
-                        <h3 className="text-theme-sm font-semibold text-gray-900 dark:text-white mb-3">
-                            Diagnósticos en {getSurfaceName(surfaceIdWithData)}
-                        </h3>
-                        <ul className="space-y-2">
-                            {appliedDiagnosticos.map((diag) => (
-                                <li key={diag.id} className="group flex items-start justify-between p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-theme-xs hover:shadow-theme-md transition-all">
-                                    <div className="flex flex-col overflow-hidden flex-1">
-                                        <span className="text-theme-sm font-medium overflow-hidden text-ellipsis" style={{ color: diag.colorHex }}>
-                                            {getDiagnosticoLabel(diag)}
-                                        </span>
-                                        {diag.descripcion && (
-                                            <p className="text-theme-xs text-gray-500 dark:text-gray-400 mt-1 break-words">"{diag.descripcion}"</p>
-                                        )}
-                                    </div>
-                                    <button
-                                        onClick={() => removeDiagnostico(selectedTooth!, surfaceIdWithData, diag.id)}
-                                        className="ml-3 p-1.5 bg-error-50 text-error-600 border border-error-100 rounded-md hover:bg-error-100 hover:text-error-700 dark:bg-error-900/30 dark:text-error-400 dark:border-error-800 dark:hover:bg-error-900/50 transition-colors"
-                                        title="Eliminar diagnóstico"
-                                    >
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M18 6L6 18M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-
-                {/* LISTA DE SUPERFICIES SELECCIONADAS  */}
-                {selectedSurfaces.length > 0 ? (
-                    <div className="mt-3 border-t border-gray-200 dark:border-gray-800 pt-4">
-                        <p className="text-theme-sm font-semibold text-gray-900 dark:text-white mb-3">Superficies</p>
-                        <div className="flex flex-wrap gap-2"> {/* Contenedor de chips */}
-                            <div className="flex flex-wrap gap-2">
-    {displaySurfaces.map((item: DisplaySurface, idx) => {
-    if (item.type === "group") {
-        return (
-            <div
-                key={`group-${idx}`}
-                className="inline-flex items-center px-3 py-1
-                           bg-brand-100 dark:bg-brand-900/30
-                           text-brand-800 dark:text-brand-200
-                           text-theme-sm font-medium
-                           rounded-full"
-            >
-                {item.label}
-            </div>
-        );
-    }
-
-    return (
-        <div
-            key={item.id}
-            className="inline-flex items-center gap-1.5 px-3 py-1
-                       bg-brand-50 dark:bg-brand-900/20
-                       border border-brand-100 dark:border-brand-800
-                       rounded-full"
-        >
-            <span className="text-theme-sm font-medium text-brand-700 dark:text-brand-300">
-                {getSurfaceName(item.id)}
-            </span>
-            <button
-                onClick={() =>
-                    onSurfaceSelect(
-                        selectedSurfaces.filter(s => s !== item.id)
-                    )
-                }
-            >
-                ✕
-            </button>
+      <div className="flex items-center justify-center h-full p-6">
+        <div className="text-center space-y-3">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600" />
+          <div>
+            <p className="text-sm font-medium text-gray-700">Cargando catálogo</p>
+            <p className="text-xs text-gray-500">Obteniendo datos del servidor...</p>
+          </div>
         </div>
+      </div>
     );
-})}
-</div>
+  }
 
-                        </div>
-                    </div>
-                ) : (
-                    <div className="mt-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-700 text-center">
-                        <p className="text-theme-sm text-gray-500 dark:text-gray-400">
-                            {selectedTooth && !isBlocked
-                                ? "Haz clic en una superficie para comenzar."
-                                : isBlocked
-                                    ? "Este diente está bloqueado para nuevos diagnósticos."
-                                    : "Selecciona un diente en el odontograma."}
-                        </p>
-                    </div>
-                )}
+  if (catalogError) {
+    return (
+      <div className="flex items-center justify-center h-full p-6">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-error-50">
+            <svg className="w-6 h-6 text-error-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-error-600">Error al cargar catálogo</p>
+            <p className="text-xs text-gray-500">
+              No se pudo conectar con el servidor. Verifica tu conexión e intenta nuevamente.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-                {/* SELECTOR DE DIAGNÓSTICOS */}
-                {!isBlocked && selectedTooth && (
-                    <div className="mt-3">
-                        <DiagnosticoSelect
-                            onApply={handleDiagnosticoApply}
-                            onCancel={() => {
-                                onSurfaceSelect([]);
-                                setCurrentArea(null);
-                                surfaceSelectorRef.current?.clearRequiredAreaWarning();
-                            }}
-                            onPreviewChange={onPreviewChange}
-                            onPreviewOptionsChange={onPreviewOptionsChange}
-                            currentArea={currentArea}
-                        />
-                    </div>
-                )}
+  // ============================================================================
+  // RENDER PRINCIPAL - LAYOUT FLEX OPTIMIZADO
+  // ============================================================================
+
+  return (
+    <div className="h-full w-full flex flex-col bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700">
+      {/* ===== NOTIFICACIONES ===== */}
+      <NotificationManager
+        notifications={notifications}
+        onRemove={removeNotification}
+      />
+
+      {/* ===== HEADER: Info del diente (FIJO) ===== */}
+      <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-700">
+        <ToothInfoCard
+          toothInfo={state.toothInfo}
+          selectedTooth={state.selectedTooth}
+          isBlocked={state.isToothBlocked}
+          diagnosticosCount={state.diagnosticosAplicados.length}
+        />
+      </div>
+
+      {/* ===== CONTENIDO PRINCIPAL (FLEX-GROW CON SCROLL) ===== */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        {state.showDiagnosticoSelect && state.selectedTooth && !state.isToothBlocked ? (
+          /* ========== MODO: AÑADIR DIAGNÓSTICO ========== */
+          <div className="p-4 space-y-4">
+            {/* Selector de superficies */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Selecciona áreas afectadas
+              </h4>
+
+              <SurfaceSelector
+                selectedTooth={state.selectedTooth}
+                selectedSurfaces={state.selectedSurfaces}
+                onSurfaceSelect={handleSurfaceSelect}
+                onAreaChange={handleAreaChange}
+                onRootGroupChange={handleRootGroupChange}
+                getPermanentColorForSurface={odontogramaDataHook.getPermanentColorForSurface}
+                activeDiagnosisColor={diagSelect.diagnosticoSeleccionado?.simboloColor ?? null}
+
+              />
+
+              {/* Etiquetas inteligentes de superficies */}
+              <SurfaceLabels
+                selectedSurfaces={state.selectedSurfaces}
+                groupedSurfaces={grouped}  
+                onRemoveSurface={handleRemoveIndividualSurface}
+                selectedTooth={state.selectedTooth}
+              //principalArea={state.currentArea}
+              />
             </div>
 
-            {/* FOOTER / ACCIONES */}
-            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex flex-col gap-3">
-                <button
-                    onClick={() => {
-                        saveOdontogramaData();
-                        onSurfaceSelect([]);
-                        setCurrentArea(null);
-                        surfaceSelectorRef.current?.clearRequiredAreaWarning();
-                    }}
-                    disabled={isSaving}
-                    className={`w-full py-2.5 text-theme-sm font-medium rounded-lg shadow-theme-sm transition-all duration-200 flex items-center justify-center gap-2 ${isSaving
-                        ? "bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed"
-                        : "bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 dark:bg-brand-500 dark:hover:bg-brand-600"
-                        }`}
-                >
-                    {isSaving ? (
-                        <>
-                            <svg className="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Guardando...
-                        </>
-                    ) : "Guardar Sesión Clínica"}
-                </button>
+            {/* Selector de diagnóstico */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Selecciona un diagnóstico
+              </h4>
 
-                {lastSaveTime && (
-                    <p className="text-theme-xs text-success-600 dark:text-success-400 text-center font-medium flex items-center justify-center gap-1.5">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Guardado: {lastSaveTime.toLocaleTimeString()}
+              <DiagnosticoSelectUI
+                {...diagSelect}
+                currentArea={state.currentArea}
+              />
+            </div>
+          </div>
+        ) : (
+          /* ========== MODO: LISTA DE DIAGNÓSTICOS ========== */
+          <div className="p-4">
+            {state.selectedTooth ? (
+              <DiagnosticosList
+                diagnosticos={state.diagnosticosAplicados}
+                onRemove={handleRemoveDiagnostico}
+                addNotification={addNotification}
+              />
+            ) : (
+              /* Estado vacío: Sin diente seleccionado */
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center space-y-2 max-w-xs">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700">
+                    <svg
+                      className="w-6 h-6 text-gray-400 dark:text-gray-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                      Selecciona un diente
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Haz clic en un diente del odontograma 3D para ver y gestionar diagnósticos.
                     </p>
-                )}
-            </div>
-        </div>
-    );
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ===== FOOTER: Botones de acción (FIJO) ===== */}
+      <div className="flex-shrink-0 px-4 pb-4 pt-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        <ActionButtons
+          selectedTooth={state.selectedTooth}
+          isBlocked={state.isToothBlocked}
+          showDiagnosticoForm={state.showDiagnosticoSelect}
+          diagnosticosCount={state.diagnosticosAplicados.length}
+          isSaving={state.isSaving}
+          lastCompleteSave={state.lastCompleteSave}
+          onAddDiagnostico={handleAddDiagnostico}
+          onCancelDiagnostico={handleCancelDiagnostico}
+          onSaveAll={handleGuardarCompleto}
+          onClearAll={handleClearAll}
+          diagnosticosAplicados={state.diagnosticosAplicados}
+          addNotification={addNotification}
+        />
+      </div>
+    </div>
+  );
 };

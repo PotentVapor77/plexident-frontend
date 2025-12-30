@@ -8,10 +8,10 @@ interface UseCrownInteractionsProps {
   selectedSurfaces: string[];
   onSurfaceSelect: (surfaces: string[]) => void;
   selectedTooth: string | null;
-  previewColorHex: string | null; 
+  previewColorHex: string | null;
   getPermanentColorForSurface: (toothId: string | null, surfaceId: string) => string | null;
-  UI_SELECTION_COLOR: string; 
-  DEFAULT_COLOR: string; 
+  UI_SELECTION_COLOR: string;
+  DEFAULT_COLOR: string;
 }
 
 export const useCrownInteractions = ({
@@ -64,12 +64,17 @@ export const useCrownInteractions = ({
         };
 
         const handleMouseLeave = () => {
-          const permanentColor = getPermanentColorForSurface(selectedTooth, surfaceId);
-          const isSelected = selectedSurfacesRef.current.includes(surfaceId);
-          if (!isSelected && !permanentColor) {
-            element.style.fill = element.dataset.originalFill || DEFAULT_COLOR;
-          }
-        };
+  const permanentColor = getPermanentColorForSurface(selectedTooth, surfaceId);
+  const isSelected = selectedSurfacesRef.current.includes(surfaceId);
+
+  if (isSelected) {
+    element.style.fill = UI_SELECTION_COLOR;
+  } else if (permanentColor) {
+    element.style.fill = permanentColor;
+  } else {
+    element.style.fill = element.dataset.originalFill || DEFAULT_COLOR;
+  }
+};
 
         const handleClick = () => {
           let newSelection: string[];
@@ -78,6 +83,7 @@ export const useCrownInteractions = ({
           } else {
             newSelection = [...selectedSurfacesRef.current, surfaceId];
           }
+          selectedSurfacesRef.current = newSelection
           onSurfaceSelect(newSelection);
         };
 
@@ -116,20 +122,20 @@ export const useCrownInteractions = ({
 
       elements.forEach(el => {
         const element = el as HTMLElement;
-        let finalColor = DEFAULT_COLOR;
+        let finalColor = element.dataset.originalFill || DEFAULT_COLOR;
 
-        if (permanentColor) {
-          finalColor = permanentColor; // Restauración permanente
-        } else if (isSelected && previewColorHex) {
-          finalColor = previewColorHex; // Diagnóstico activo
-        } else if (isSelected) {
-          finalColor = UI_SELECTION_COLOR; // Selección fallback
-        } else {
-          finalColor = element.dataset.originalFill || DEFAULT_COLOR;
+        if (isSelected) {
+          finalColor = UI_SELECTION_COLOR;
+        }
+        else if (previewColorHex && isSelected && !permanentColor) {
+          finalColor = previewColorHex;
+        }
+        else if (permanentColor) {
+          finalColor = permanentColor;
         }
 
         element.style.fill = finalColor;
       });
     });
-  }, [selectedSurfaces, svgLoaded, selectedTooth, previewColorHex, getPermanentColorForSurface, UI_SELECTION_COLOR, DEFAULT_COLOR]);
+  }, [selectedSurfaces, svgLoaded, selectedTooth, previewColorHex, getPermanentColorForSurface, UI_SELECTION_COLOR, DEFAULT_COLOR, onSurfaceSelect]);
 };

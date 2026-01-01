@@ -31,6 +31,7 @@ import { NotificationProvider } from "./context/notifications/NotificationContex
 import { NotificationContainer } from "./context/notifications/NotificationContainer";
 import PersonalBackgroundPage from "./pages/PersonalBackground/personalBackgroundPage";
 import OdontogramaHistoryPage from "./pages/Odontogram/OdontogramaHistoryPage";
+import FamilyBackgroundPage from "./pages/FamilyBackground/familyBackgroundPage";
 
 // ============================================================================
 // RUTAS PÚBLICAS
@@ -106,6 +107,7 @@ function App() {
             <Route path="/pacientes" element={<PatientsPage />} />
             <Route path="/pacientes/:id/editar" element={<PatientsPage />} />
             <Route path="/pacientes/antecedentes-personales" element={<PersonalBackgroundPage />} />
+            <Route path="/pacientes/antecedentes-familiares" element={<FamilyBackgroundPage />} />
             <Route path="/odontogram" element={<OdontogramaPage />} />
 
             <Route path="/pacientes" element={<PatientsPage />} />

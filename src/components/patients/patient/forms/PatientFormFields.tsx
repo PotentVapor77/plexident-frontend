@@ -54,12 +54,16 @@ export default function PatientFormFields({
   mode,
 }: PatientFormFieldsProps) {
   return (
-    <div className="space-y-6">
-      {/* Sección A: Datos Personales */}
-      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-        <h6 className="font-medium text-gray-800 dark:text-white/90 mb-4">
-          A. Datos Personales
-        </h6>
+    <div className="space-y-8">
+      {/* ✅ Sección A: Datos Personales - AZUL */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-theme-sm p-6 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            A. Datos Personales
+          </h3>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -72,7 +76,7 @@ export default function PatientFormFields({
               onChange={onInputChange}
               required
               placeholder="Ej: Juan Carlos"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
             />
           </div>
 
@@ -87,7 +91,7 @@ export default function PatientFormFields({
               onChange={onInputChange}
               required
               placeholder="Ej: Pérez García"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
             />
           </div>
 
@@ -100,7 +104,7 @@ export default function PatientFormFields({
               value={formData.sexo}
               onChange={onInputChange}
               required
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
             >
               <option value="">Seleccionar sexo</option>
               <option value="M">Masculino</option>
@@ -120,7 +124,7 @@ export default function PatientFormFields({
               required
               min="0"
               max="150"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
             />
           </div>
 
@@ -133,7 +137,7 @@ export default function PatientFormFields({
               value={formData.condicion_edad}
               onChange={onInputChange}
               required
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
             >
               <option value="">Seleccionar</option>
               <option value="H">Horas</option>
@@ -153,7 +157,7 @@ export default function PatientFormFields({
                 value={formData.embarazada || ""}
                 onChange={onInputChange}
                 required
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
               >
                 <option value="">Seleccionar</option>
                 <option value="SI">Sí</option>
@@ -164,11 +168,15 @@ export default function PatientFormFields({
         </div>
       </div>
 
-      {/* Identificación */}
-      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-        <h6 className="font-medium text-gray-800 dark:text-white/90 mb-4">
-          Identificación
-        </h6>
+      {/* ✅ Sección: Identificación - VERDE */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-theme-sm p-6 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-2 h-8 bg-gradient-to-b from-green-500 to-green-600 rounded-full" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Identificación
+          </h3>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -181,10 +189,11 @@ export default function PatientFormFields({
               onChange={onInputChange}
               required
               placeholder="Ej: 1709876543"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
             />
           </div>
 
+          {/* ✅ CORRECCIÓN: Eliminado placeholder del input date */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Fecha de Nacimiento *
@@ -196,17 +205,21 @@ export default function PatientFormFields({
               onChange={onInputChange}
               required
               max={new Date().toISOString().split('T')[0]}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:dark:invert"
             />
           </div>
         </div>
       </div>
 
-      {/* Información de Contacto */}
-      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-        <h6 className="font-medium text-gray-800 dark:text-white/90 mb-4">
-          Información de Contacto
-        </h6>
+      {/* ✅ Sección: Información de Contacto - PÚRPURA */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-theme-sm p-6 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-2 h-8 bg-gradient-to-b from-purple-500 to-purple-600 rounded-full" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Información de Contacto
+          </h3>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -219,7 +232,7 @@ export default function PatientFormFields({
               onChange={onInputChange}
               required
               placeholder="Ej: Av. Principal 123"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
             />
           </div>
 
@@ -234,7 +247,7 @@ export default function PatientFormFields({
               onChange={onInputChange}
               required
               placeholder="Ej: 0991234567"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
             />
           </div>
 
@@ -248,17 +261,21 @@ export default function PatientFormFields({
               value={formData.correo}
               onChange={onInputChange}
               placeholder="ejemplo@correo.com"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
             />
           </div>
         </div>
       </div>
 
-      {/* Contacto de Emergencia */}
-      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-        <h6 className="font-medium text-gray-800 dark:text-white/90 mb-4">
-          Contacto de Emergencia
-        </h6>
+      {/* ✅ Sección: Contacto de Emergencia - NARANJA */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-theme-sm p-6 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-2 h-8 bg-gradient-to-b from-orange-500 to-orange-600 rounded-full" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Contacto de Emergencia
+          </h3>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -270,7 +287,7 @@ export default function PatientFormFields({
               value={formData.contacto_emergencia_nombre}
               onChange={onInputChange}
               placeholder="Nombre completo"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
             />
           </div>
 
@@ -284,17 +301,21 @@ export default function PatientFormFields({
               value={formData.contacto_emergencia_telefono}
               onChange={onInputChange}
               placeholder="Ej: 0987654321"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
             />
           </div>
         </div>
       </div>
 
-      {/* Sección B: Motivo de Consulta */}
-      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-        <h6 className="font-medium text-gray-800 dark:text-white/90 mb-4">
-          B. Motivo de Consulta
-        </h6>
+      {/* ✅ Sección B: Motivo de Consulta - AMARILLO */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-theme-sm p-6 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-2 h-8 bg-gradient-to-b from-yellow-500 to-yellow-600 rounded-full" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            B. Motivo de Consulta
+          </h3>
+        </div>
+
         <div>
           <textarea
             name="motivo_consulta"
@@ -302,16 +323,20 @@ export default function PatientFormFields({
             onChange={onInputChange}
             rows={3}
             placeholder="Describa el motivo de consulta del paciente..."
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors resize-none"
           />
         </div>
       </div>
 
-      {/* Sección C: Enfermedad Actual */}
-      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-        <h6 className="font-medium text-gray-800 dark:text-white/90 mb-4">
-          C. Enfermedad Actual
-        </h6>
+      {/* ✅ Sección C: Enfermedad Actual - ROSA */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-theme-sm p-6 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-2 h-8 bg-gradient-to-b from-pink-500 to-pink-600 rounded-full" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            C. Enfermedad Actual
+          </h3>
+        </div>
+
         <div>
           <textarea
             name="enfermedad_actual"
@@ -319,26 +344,21 @@ export default function PatientFormFields({
             onChange={onInputChange}
             rows={3}
             placeholder="Describa la enfermedad actual del paciente..."
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors resize-none"
           />
         </div>
       </div>
 
-         {/* ESTADO DEL PACIENTE */}
-      <div className="mb-8">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-              Estado del Paciente
-            </h2>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Configuración del sistema
-            </p>
-          </div>
+      {/* ✅ Sección: Estado del Paciente - GRIS */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-theme-sm p-6 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-2 h-8 bg-gradient-to-b from-gray-500 to-gray-600 rounded-full" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Estado del Paciente
+          </h3>
         </div>
 
-        <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-          {/* ✅ CORREGIDO: name="activo" en lugar de "activo" */}
+        <div>
           <CheckboxField
             label="Paciente Activo"
             name="activo"
@@ -346,7 +366,8 @@ export default function PatientFormFields({
             onChange={onInputChange}
           />
           <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            Los pacientes inactivos no podrán agendar citas ni recibir tratamientos hasta ser reactivados          </p>
+            Los pacientes inactivos no podrán agendar citas ni recibir tratamientos hasta ser reactivados
+          </p>
         </div>
       </div>
 
@@ -356,14 +377,14 @@ export default function PatientFormFields({
           type="button"
           onClick={onReset}
           disabled={submitLoading}
-          className="px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+          className="px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
         >
           Limpiar Formulario
         </button>
         <button
           type="submit"
           disabled={submitLoading}
-          className={`px-6 py-3 text-sm font-medium text-white rounded-lg focus:ring-4 disabled:opacity-50 ${
+          className={`px-6 py-3 text-sm font-medium text-white rounded-lg focus:ring-4 disabled:opacity-50 transition-colors ${
             mode === "edit"
               ? "bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-300 dark:bg-yellow-600 dark:hover:bg-yellow-700"
               : "bg-blue-600 hover:bg-blue-700 focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600"

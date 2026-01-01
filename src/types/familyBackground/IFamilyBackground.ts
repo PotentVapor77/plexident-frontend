@@ -31,11 +31,7 @@ export interface IFamilyBackground {
   cancer_familiar: FamiliarMemberType;
   enfermedad_mental_familiar: FamiliarMemberType;
   
-  // Campos booleanos
-  endocrino_metabolico_familiar: boolean;
-  tuberculosis_familiar: boolean;
-  enfermedad_infecciosa_familiar: boolean;
-  malformacion_familiar: boolean;
+ 
   
   // Campo texto
   otros_antecedentes_familiares: string;
@@ -123,10 +119,6 @@ export const contarAntecedentesActivos = (background: IFamilyBackground): number
   if (background.enfermedad_vascular_familiar !== "NO") count++;
   if (background.cancer_familiar !== "NO") count++;
   if (background.enfermedad_mental_familiar !== "NO") count++;
-  if (background.endocrino_metabolico_familiar) count++;
-  if (background.tuberculosis_familiar) count++;
-  if (background.enfermedad_infecciosa_familiar) count++;
-  if (background.malformacion_familiar) count++;
   if (background.otros_antecedentes_familiares?.trim()) count++;
   
   return count;

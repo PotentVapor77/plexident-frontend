@@ -80,6 +80,7 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "Pacientes", path: "/pacientes", pro: false },
       { name: "Antecedentes Personales", path: "/pacientes/antecedentes-personales", pro: false },
+      { name: "Antecedentes Familiares", path: "/pacientes/antecedentes-familiares", pro: false },
     ],
   },
   {

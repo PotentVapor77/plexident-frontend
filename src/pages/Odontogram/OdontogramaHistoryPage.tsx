@@ -148,6 +148,7 @@ const OdontogramaHistoryPageInner = () => {
           totalSnapshots={effectiveSnapshots.length}
           comparisonMode={comparisonMode}
           onToggleComparisonMode={toggleComparisonMode}
+          patient={pacienteActivo} 
         />
 
         <div className="flex-1 overflow-y-auto no-scrollbar">

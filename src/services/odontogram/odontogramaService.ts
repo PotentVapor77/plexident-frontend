@@ -24,6 +24,7 @@ const ODONTOGRAM_ENDPOINTS = {
   categorias: '/odontogram/catalogo/categorias/con-diagnosticos/',
   diagnosticos: '/odontogram/catalogo/diagnosticos/',
   atributosClinicos: '/odontogram/catalogo/atributos-clinicos/',
+  
   odontogramaCompleto: (pacienteId: string) =>
     `/odontogram/odontogramas/${pacienteId}/completo/`,
 
@@ -48,7 +49,7 @@ const ODONTOGRAM_ENDPOINTS = {
   historial: '/odontogram/historial/',
   historialPorDiente: (dienteId: string) => `/odontogram/historial/?diente_id=${dienteId}`,
   historialPorPaciente: (pacienteId: string) => `/odontogram/historial/?paciente_id=${pacienteId}`,
-
+  historialPorOdontologo: (odontologoId: number | string) =>`/odontogram/historial/?odontologo_id=${odontologoId}`,
 
 } as const;
 
@@ -354,6 +355,7 @@ export async function marcarDienteAusente(
 export async function obtenerHistorialPaciente(
   pacienteId: string
 ): Promise<HistorialOdontogramaBackend[]> {
+  console.log('[SERVICE] [HISTORIAL] obtenerHistorialPaciente -> pacienteId:', pacienteId);
   try {
     const { data } = await api.get<{
       success: boolean;
@@ -361,15 +363,21 @@ export async function obtenerHistorialPaciente(
       message: string;
       data: HistorialOdontogramaBackend[];
     }>(ODONTOGRAM_ENDPOINTS.historialPorPaciente(pacienteId));
+    console.log(
+      '[SERVICE][HISTORIAL] respuesta paciente',
+      { success: data.success, status: data.status_code, registros: data.data?.length ?? 0 },
+    );
 
     return data.data || [];
   } catch (error) {
+    console.error('[SERVICE][HISTORIAL] error paciente', error);
     throw createApiError(error);
   }
 }
 export async function obtenerHistorialDiente(
   dienteId: string
 ): Promise<HistorialOdontogramaBackend[]> {
+  console.log('[SERVICE][HISTORIAL] obtenerHistorialDiente → dienteId:', dienteId);
   try {
     const { data } = await api.get<{
       success: boolean;
@@ -377,9 +385,39 @@ export async function obtenerHistorialDiente(
       message: string;
       data: HistorialOdontogramaBackend[];
     }>(ODONTOGRAM_ENDPOINTS.historialPorDiente(dienteId));
+console.log(
+      '[SERVICE][HISTORIAL] respuesta diente',
+      { success: data.success, status: data.status_code, registros: data.data?.length ?? 0 },
+    );
+    return data.data || [];
+  } catch (error) {
+    console.error('[SERVICE][HISTORIAL] error diente', error);
+    throw createApiError(error);
+  }
+}
+
+export async function obtenerHistorialOdontologo(
+  odontologoId: number | string,
+): Promise<HistorialOdontogramaBackend[]> {
+  console.log('[SERVICE][HISTORIAL] obtenerHistorialOdontologo →', odontologoId);
+
+  try {
+    const { data } = await api.get<{
+      success: boolean;
+      status_code: number;
+      message: string;
+      data: HistorialOdontogramaBackend[];
+    }>(ODONTOGRAM_ENDPOINTS.historialPorOdontologo(odontologoId));
+
+    console.log('[SERVICE][HISTORIAL] respuesta odontologo', {
+      success: data.success,
+      status: data.status_code,
+      registros: data.data?.length ?? 0,
+    });
 
     return data.data || [];
   } catch (error) {
+    console.error('[SERVICE][HISTORIAL] error odontologo', error);
     throw createApiError(error);
   }
 }

@@ -2,8 +2,9 @@ export interface OdontogramaSnapshot {
     id: string;
     fecha: Date;
     descripcion: string;
-    odontogramaData: any; // Estructura de datos del odontograma
+    odontogramaData: any; 
     profesionalId: string;
+    pacienteNombre?: string;
     profesionalNombre: string;
 }
 

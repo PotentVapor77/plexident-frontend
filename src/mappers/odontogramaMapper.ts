@@ -22,11 +22,11 @@ const PRIORIDAD_BACKEND_TO_FRONTEND: Record<number, PrioridadKey> = {
 };
 
 //const PRIORIDAD_KEY_TO_BACKEND: Record<PrioridadKey, string> = {
- // 'ALTA': 'ALTA',
- // 'ESTRUCTURAL': 'ESTRUCTURAL',
- // 'MEDIA': 'MEDIA',
- // 'BAJA': 'BAJA',
- // 'INFORMATIVA': 'INFORMATIVA',
+// 'ALTA': 'ALTA',
+// 'ESTRUCTURAL': 'ESTRUCTURAL',
+// 'MEDIA': 'MEDIA',
+// 'BAJA': 'BAJA',
+// 'INFORMATIVA': 'INFORMATIVA',
 //};
 
 // ============================================================================
@@ -267,45 +267,45 @@ export function mapearOdontogramaBackendToFrontend(
   // 3) Naplicar también odontograma_data plano (formato /completo/)
   const odData = odontograma.odontograma_data || {};
 
-Object.entries(odData).forEach(([codigoFdi, superficies]) => {
-  if (!data[codigoFdi]) {
-    data[codigoFdi] = {};
-  }
-
-  Object.entries(superficies as Record<string, any[]>).forEach(
-    ([nombreSuperficie, lista]) => {
-      if (!Array.isArray(lista)) return;
-
-      const surfaceId = superficieBackendToFrontend(nombreSuperficie);
-      if (!data[codigoFdi][surfaceId]) {
-        data[codigoFdi][surfaceId] = [];
-      }
-
-      lista.forEach((diag: any) => {
-        const entry: DiagnosticoEntry = {
-          id: diag.id,
-          key: diag.key || diag.procedimientoId,
-          procedimientoId: diag.procedimientoId,
-          colorHex: diag.colorHex || 
-                   (diag.tipo_registro === 'azul' ? '#0ea5e9' : '#ef4444'),
-          secondaryOptions: diag.secondaryOptions || {},
-          descripcion: diag.descripcion || '',
-          areasafectadas: diag.afectaArea || ['general'],
-          superficieId: surfaceId,
-          siglas: diag.siglas || '?',
-          nombre: diag.nombre || 'Desconocido',
-          priority: diag.prioridad ?? 3,
-          prioridadKey: PRIORIDAD_BACKEND_TO_FRONTEND[diag.prioridad ?? 3] || 'MEDIA',
-        };
-
-        data[codigoFdi][surfaceId].push(entry);
-      });
+  Object.entries(odData).forEach(([codigoFdi, superficies]) => {
+    if (!data[codigoFdi]) {
+      data[codigoFdi] = {};
     }
-  );
-});
+
+    Object.entries(superficies as Record<string, any[]>).forEach(
+      ([nombreSuperficie, lista]) => {
+        if (!Array.isArray(lista)) return;
+
+        const surfaceId = superficieBackendToFrontend(nombreSuperficie);
+        if (!data[codigoFdi][surfaceId]) {
+          data[codigoFdi][surfaceId] = [];
+        }
+
+        lista.forEach((diag: any) => {
+          const entry: DiagnosticoEntry = {
+            id: diag.id,
+            key: diag.key || diag.procedimientoId,
+            procedimientoId: diag.procedimientoId,
+            colorHex: diag.colorHex ||
+              (diag.tipo_registro === 'azul' ? '#0ea5e9' : '#ef4444'),
+            secondaryOptions: diag.secondaryOptions || {},
+            descripcion: diag.descripcion || '',
+            areasafectadas: diag.afectaArea || ['general'],
+            superficieId: surfaceId,
+            siglas: diag.siglas || '?',
+            nombre: diag.nombre || 'Desconocido',
+            priority: diag.prioridad ?? 3,
+            prioridadKey: PRIORIDAD_BACKEND_TO_FRONTEND[diag.prioridad ?? 3] || 'MEDIA',
+          };
+
+          data[codigoFdi][surfaceId].push(entry);
+        });
+      }
+    );
+  });
 
 
-return data;
+  return data;
 }
 
 // ============================================================================

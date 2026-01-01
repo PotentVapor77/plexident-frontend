@@ -1,10 +1,5 @@
 // src/types/odontogram/typeBackendOdontograma.ts
 
-/**
- * Tipos que mapean EXACTAMENTE a los modelos de Django
- * y los serializers del backend
- */
-
 // ============================================================================
 // CATÁLOGO DE DIAGNÓSTICOS
 // ============================================================================
@@ -208,4 +203,6 @@ export interface HistorialOdontogramaBackend {
 
   datos_anteriores: Record<string, any>; 
   datos_nuevos: Record<string, any>;    
+
+  version_id: string;
 }

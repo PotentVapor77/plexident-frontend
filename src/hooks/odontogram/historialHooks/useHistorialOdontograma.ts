@@ -1,58 +1,93 @@
+// src/hooks/odontogram/historialHooks/useHistorialOdontograma.ts
 import { useQuery } from '@tanstack/react-query';
 import type { OdontogramaSnapshot, TimelineEvent } from '../../../core/types/odontogramaHistory.types';
 import { mapHistorialToSnapshots, mapHistorialToTimeline } from '../../../mappers/historialMapper';
-import { obtenerHistorialPaciente } from '../../../services/odontogram/odontogramaService';
+import { obtenerHistorialDiente, obtenerHistorialOdontologo, obtenerHistorialPaciente } from '../../../services/odontogram/odontogramaService';
 
-
-// src/hooks/odontogram/historialHooks/useHistorialOdontograma.ts
 interface UseHistorialOptions {
-  pacienteId?: string;
-  dienteId?: string;
-  enabled?: boolean;
+    pacienteId?: string;
+    dienteId?: string;
+    odontologoId?: number | string;
+    enabled?: boolean;
 }
 
 /**
  * Hook genérico para cargar el historial (por paciente o por diente)
  */
 export function useHistorialOdontograma({
-  pacienteId,
-  dienteId,
-  enabled = true,
+    pacienteId,
+    dienteId,
+    odontologoId,
+    enabled = true,
 }: UseHistorialOptions) {
-  const isByPaciente = !!pacienteId && !dienteId;
-  const isByDiente = !!dienteId;
+    const isByPaciente = !!pacienteId && !dienteId;
+    const isByDiente = !!dienteId;
+    const isByOdontologo = !isByPaciente && !isByDiente && !!odontologoId;
 
-  const queryKey = isByPaciente
-    ? ['odontograma', 'historial', 'paciente', pacienteId]
-    : ['odontograma', 'historial', 'diente', dienteId];
+    console.log('[HOOK][Historial] init', {
+        pacienteId,
+        dienteId,
+        odontologoId,
+        enabled,
+        isByPaciente,
+        isByDiente,
+        isByOdontologo,
+    });
 
-  const queryFn = async () => {
-    if (isByPaciente && pacienteId) {
-      return obtenerHistorialPaciente(pacienteId);
-    }
-    if (isByDiente && dienteId) {
-      return obtenerHistorialPaciente(dienteId);
-    }
-    return [];
-  };
+    const queryKey = isByPaciente
+        ? ['odontograma', 'historial', 'paciente', pacienteId]
+        : isByDiente
+            ? ['odontograma', 'historial', 'diente', dienteId]
+            : ['odontograma', 'historial', 'odontologo', odontologoId];
 
-  const queryResult = useQuery({
-    queryKey,
-    queryFn,
-    enabled: enabled && (isByPaciente || isByDiente),
-  });
+    const queryFn = async () => {
+        console.log('[HOOK][Historial] queryFn', { isByPaciente, isByDiente, isByOdontologo });
 
-  const snapshots: OdontogramaSnapshot[] = queryResult.data
-    ? mapHistorialToSnapshots(queryResult.data)
-    : [];
+        if (isByPaciente && pacienteId) {
+            return obtenerHistorialPaciente(pacienteId);
+        }
 
-  const timeline: TimelineEvent[] = queryResult.data
-    ? mapHistorialToTimeline(queryResult.data)
-    : [];
+        if (isByDiente && dienteId) {
+            return obtenerHistorialDiente(dienteId);
+        }
 
-  return {
-    ...queryResult,
-    snapshots,
-    timeline,
-  };
+        if (isByOdontologo && odontologoId) {
+            return obtenerHistorialOdontologo(odontologoId);
+        }
+
+        console.warn('[HOOK][Historial] queryFn sin parámetros válidos');
+        return [];
+    };
+
+    const queryResult = useQuery({
+        queryKey,
+        queryFn,
+        enabled: enabled && (isByPaciente || isByDiente || isByOdontologo),
+    });
+
+    const raw = queryResult.data;
+
+    console.log('[HOOK][Historial] raw data', raw);
+
+    const historialArray =
+        Array.isArray(raw)
+            ? raw
+            : Array.isArray((raw as any)?.results)
+                ? (raw as any).results
+                : [];
+
+    const snapshots: OdontogramaSnapshot[] = mapHistorialToSnapshots(historialArray);
+    const timeline: TimelineEvent[] = mapHistorialToTimeline(historialArray);
+
+    console.log('[HOOK][Historial] mapped', {
+        rawCount: historialArray.length,
+        snapshotsCount: snapshots.length,
+        timelineCount: timeline.length,
+    });
+
+    return {
+        ...queryResult,
+        snapshots,
+        timeline,
+    };
 }

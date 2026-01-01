@@ -1,11 +1,9 @@
-// src/components/odontogram/history/historyView/HistoryEmptyState.tsx
-// Vista Unica (selectSnapshot) de Odontogramas
+// src/components/odontogram/history/historyView/HistorySingleView.tsx
+// Vista Única (selectSnapshot) de Odontogramas
 
-import { Calendar, Clock, User } from "lucide-react";
+import { Calendar, Clock, User, UserCircle } from "lucide-react";
 import { OdontogramaHistoryViewer } from "../..";
 import type { OdontogramaSnapshot } from "../../../../core/types/odontogramaHistory.types";
-
-
 
 interface HistorySingleViewProps {
   snapshot: OdontogramaSnapshot;
@@ -53,6 +51,17 @@ export const HistorySingleView = ({ snapshot }: HistorySingleViewProps) => {
             <User className="w-4 h-4" />
             <span>Dr. {snapshot.profesionalNombre}</span>
           </div>
+
+          {/* Paciente (si existe) */}
+          {snapshot.pacienteNombre && (
+            <>
+              <span className="text-gray-300 dark:text-gray-600">•</span>
+              <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+                <UserCircle className="w-4 h-4" />
+                <span className="font-medium">{snapshot.pacienteNombre}</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

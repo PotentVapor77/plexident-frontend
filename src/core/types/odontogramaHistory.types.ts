@@ -4,6 +4,7 @@ export interface OdontogramaSnapshot {
     descripcion: string;
     odontogramaData: any; 
     profesionalId: string;
+    pacienteNombre?: string;
     profesionalNombre: string;
 }
 

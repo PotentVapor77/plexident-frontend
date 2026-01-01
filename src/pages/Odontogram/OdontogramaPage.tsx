@@ -34,9 +34,9 @@ const OdontogramaPage = () => {
                 id="odontograma-root"
                 className="relative w-full h-[calc(100vh-4.8rem)] overflow-hidden rounded-xl bg-white shadow-sm"
             >
-                <OdontogramaViewer 
-                    onSelectTooth={setSelectedTooth} 
-                    freezeResize={false} 
+                <OdontogramaViewer
+                    onSelectTooth={setSelectedTooth}
+                    freezeResize={false}
                 />
             </div>
         </PacienteProvider>

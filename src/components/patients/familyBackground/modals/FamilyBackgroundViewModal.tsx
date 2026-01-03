@@ -54,7 +54,7 @@ export function FamilyBackgroundViewModal({
     }
   };
 
-  // 🔍 FUNCIÓN MEJORADA - Maneja paciente desde el hook o del background
+  // 🔍 FUNCIÓN MEJORADA - Solo muestra antecedentes SI hay datos relevantes
   const getPacienteInfo = () => {
     // Si tenemos datos del paciente desde el hook
     if (pacienteData) {
@@ -116,11 +116,11 @@ export function FamilyBackgroundViewModal({
   const totalAntecedentes = contarAntecedentesActivos(background);
   const tieneCriticos = tieneAntecedentesCriticos(background);
 
-  // Construir lista de antecedentes activos (para el resumen)
+  // ✅ SOLUCIÓN: Solo lista antecedentes que NO son "NO" o "No hay"
   const getAntecedentesActivos = (): string[] => {
     const lista: string[] = [];
 
-    // Antecedentes con choices
+    // Solo agrega si NO es "NO"
     if (background.cardiopatia_familiar !== "NO") {
       lista.push(`Cardiopatía: ${getFamiliarMemberLabel(background.cardiopatia_familiar)}`);
     }
@@ -141,10 +141,16 @@ export function FamilyBackgroundViewModal({
       lista.push(`Enfermedad Mental: ${getFamiliarMemberLabel(background.enfermedad_mental_familiar)}`);
     }
 
-    // Otros antecedentes
-    if (background.otros_antecedentes_familiares?.trim()) {
-      lista.push(`Otros: ${background.otros_antecedentes_familiares}`);
-    }
+    // Otros antecedentes solo si existen
+     if (
+    background.otros_antecedentes_familiares && 
+    background.otros_antecedentes_familiares !== "NO" && 
+    background.otros_antecedentes_familiares !== "No" && 
+    background.otros_antecedentes_familiares !== "no" && 
+    background.otros_antecedentes_familiares.trim()
+  ) {
+    lista.push(`Otros: ${background.otros_antecedentes_familiares}`);
+  }
 
     return lista;
   };
@@ -242,7 +248,7 @@ export function FamilyBackgroundViewModal({
 
       {/* Body */}
       <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-900">
-        {/* Resumen de Antecedentes */}
+        {/* Resumen de Antecedentes - SOLO si hay antecedentes */}
         {listaAntecedentes.length > 0 && (
           <section className="bg-white dark:bg-gray-800 rounded-xl border border-blue-100 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
             <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
@@ -260,34 +266,35 @@ export function FamilyBackgroundViewModal({
           </section>
         )}
 
-        {/* Grid de secciones detalladas */}
+        {/* Grid de secciones detalladas - SIEMPRE muestra, pero con "No hay" */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <InfoSection title="Enfermedades Cardiovasculares" icon="❤️">
             <InfoField
               label="Cardiopatía"
-              value={getFamiliarMemberLabel(background.cardiopatia_familiar)}
+              value={background.cardiopatia_familiar === "NO" ? "No hay antecedentes" : getFamiliarMemberLabel(background.cardiopatia_familiar)}
             />
             <InfoField
               label="Hipertensión Arterial"
-              value={getFamiliarMemberLabel(background.hipertension_arterial_familiar)}
+              value={background.hipertension_arterial_familiar === "NO" ? "No hay antecedentes" : getFamiliarMemberLabel(background.hipertension_arterial_familiar)}
             />
             <InfoField
               label="Enfermedad Vascular"
-              value={getFamiliarMemberLabel(background.enfermedad_vascular_familiar)}
+              value={background.enfermedad_vascular_familiar === "NO" ? "No hay antecedentes" : getFamiliarMemberLabel(background.enfermedad_vascular_familiar)}
             />
           </InfoSection>
 
           <InfoSection title="Condiciones Oncológicas y Mentales" icon="🧠">
             <InfoField
               label="Cáncer"
-              value={getFamiliarMemberLabel(background.cancer_familiar)}
+              value={background.cancer_familiar === "NO" ? "No hay antecedentes" : getFamiliarMemberLabel(background.cancer_familiar)}
             />
             <InfoField
               label="Enfermedad Mental"
-              value={getFamiliarMemberLabel(background.enfermedad_mental_familiar)}
+              value={background.enfermedad_mental_familiar === "NO" ? "No hay antecedentes" : getFamiliarMemberLabel(background.enfermedad_mental_familiar)}
             />
           </InfoSection>
         </div>
+
         {/* Otros antecedentes si existen */}
         {background.otros_antecedentes_familiares?.trim() && (
           <InfoSection title="Otros Antecedentes" icon="📋">
@@ -319,7 +326,7 @@ export function FamilyBackgroundViewModal({
   );
 }
 
-// ✅ Componentes auxiliares (idénticos a PersonalBackgroundViewModal)
+// ✅ Componentes auxiliares
 const InfoSection: React.FC<{
   title: string;
   children: React.ReactNode;

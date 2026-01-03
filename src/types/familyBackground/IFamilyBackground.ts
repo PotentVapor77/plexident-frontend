@@ -31,8 +31,6 @@ export interface IFamilyBackground {
   cancer_familiar: FamiliarMemberType;
   enfermedad_mental_familiar: FamiliarMemberType;
   
- 
-  
   // Campo texto
   otros_antecedentes_familiares: string;
   
@@ -69,6 +67,7 @@ export interface IFamilyBackgroundUpdate {
   enfermedad_infecciosa_familiar?: boolean;
   malformacion_familiar?: boolean;
   otros_antecedentes_familiares?: string;
+  activo?: boolean;
 }
 
 // ============================================================================
@@ -119,7 +118,13 @@ export const contarAntecedentesActivos = (background: IFamilyBackground): number
   if (background.enfermedad_vascular_familiar !== "NO") count++;
   if (background.cancer_familiar !== "NO") count++;
   if (background.enfermedad_mental_familiar !== "NO") count++;
-  if (background.otros_antecedentes_familiares?.trim()) count++;
+  if (
+    background.otros_antecedentes_familiares && 
+    background.otros_antecedentes_familiares !== "NO" && 
+    background.otros_antecedentes_familiares !== "No" &&
+    background.otros_antecedentes_familiares !== "no" && 
+    background.otros_antecedentes_familiares.trim()
+  ) count++;
   
   return count;
 };

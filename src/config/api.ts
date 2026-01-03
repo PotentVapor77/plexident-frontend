@@ -55,6 +55,23 @@ export const ENDPOINTS = {
     byId: (id: string) => `/patients/antecedentes-familiares/${id}/`,
     byPaciente: (pacienteId: string) => `/patients/antecedentes-familiares/?paciente=${pacienteId}`,
   },
+
+     // ============================================================================
+  // signo vitales
+  // ============================================================================
+  vitalSigns: {
+    base: '/patients/constantes-vitales/',
+    byId: (id: string) => `/patients/constantes-vitales/${id}/`,
+    byPaciente: (pacienteId: string) => `/patients/constantes-vitales/?paciente=${pacienteId}`,
+  },
+
+   stomatognathicExam: {
+    base: '/patients/examen-estomatognatico/',
+    byId: (id: string) => `/patients/examen-estomatognatico/${id}/`,
+    byPaciente: (pacienteId: string) => `/patients/examen-estomatognatico/by-paciente/${pacienteId}/`,
+    resumenPatologias: (id: string) => `/patients/examen-estomatognatico/${id}/resumen_patologias/`,
+  },
+  
   
 } as const;
 

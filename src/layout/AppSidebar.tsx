@@ -81,6 +81,8 @@ const navItems: NavItem[] = [
       { name: "Pacientes", path: "/pacientes", pro: false },
       { name: "Antecedentes Personales", path: "/pacientes/antecedentes-personales", pro: false },
       { name: "Antecedentes Familiares", path: "/pacientes/antecedentes-familiares", pro: false },
+      { name: "Constantes Vitales", path: "/pacientes/constantes-vitales", pro: false },
+      { name: "Examen Estomatognatico", path: "/pacientes/examen-estomatognatico", pro: false },
     ],
   },
   {

@@ -148,6 +148,7 @@ export function FamilyBackgroundCreateEditModal({
           enfermedad_infecciosa_familiar: formData.enfermedad_infecciosa_familiar,
           malformacion_familiar: formData.malformacion_familiar,
           otros_antecedentes_familiares: formData.otros_antecedentes_familiares,
+          activo,
         };
 
         await updateMutation.mutateAsync({

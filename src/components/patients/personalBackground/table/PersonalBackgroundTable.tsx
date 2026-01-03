@@ -154,6 +154,20 @@ export function PersonalBackgroundTable({
     return 'N/A';
   };
 
+   // Función para formatear la fecha en formato DD/MM/YYYY
+  const formatDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch (error) {
+      console.error("Error al formatear fecha:", error);
+      return "Fecha inválida";
+    }
+  };
+
   // LOADING (incluye loading de pacientes)
   if (isLoading || (pacienteIds.length > 0 && isLoadingPacientes)) {
     return (
@@ -384,7 +398,7 @@ export function PersonalBackgroundTable({
                     {/* Fecha */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(background.fecha_creacion).toLocaleDateString("es-EC")}
+                        {formatDate(background.fecha_creacion)}
                       </div>
                     </td>
 

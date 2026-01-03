@@ -32,6 +32,8 @@ import { NotificationContainer } from "./context/notifications/NotificationConta
 import PersonalBackgroundPage from "./pages/PersonalBackground/personalBackgroundPage";
 import OdontogramaHistoryPage from "./pages/Odontogram/OdontogramaHistoryPage";
 import FamilyBackgroundPage from "./pages/FamilyBackground/familyBackgroundPage";
+import ConstantesVitalesPage from "./pages/VitalSigns/ConstantesVitalesPage";
+import StomatognathicExamPage from "./pages/StomatognathicExam/StomatognathicExamPage";
 
 // ============================================================================
 // RUTAS PÚBLICAS
@@ -108,8 +110,12 @@ function App() {
             <Route path="/pacientes/:id/editar" element={<PatientsPage />} />
             <Route path="/pacientes/antecedentes-personales" element={<PersonalBackgroundPage />} />
             <Route path="/pacientes/antecedentes-familiares" element={<FamilyBackgroundPage />} />
-            <Route path="/odontogram" element={<OdontogramaPage />} />
+            <Route path="/pacientes/constantes-vitales" element={<ConstantesVitalesPage />} />
+            <Route path="/pacientes/examen-estomatognatico" element={<StomatognathicExamPage/>} />
 
+
+            
+            <Route path="/odontogram" element={<OdontogramaPage />} />
             <Route path="/pacientes" element={<PatientsPage />} />
             <Route path="/odontograma" element={<OdontogramaPage />} />
             <Route path="/odontograma-timeline" element={<OdontogramaHistoryPage />} />

@@ -10,6 +10,7 @@ interface HistorySingleViewProps {
 }
 
 export const HistorySingleView = ({ snapshot }: HistorySingleViewProps) => {
+  console.log('HistorySingleView snapshot', snapshot);
   return (
     <div className="flex flex-col h-full p-6">
       {/* Header con información del snapshot */}

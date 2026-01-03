@@ -13,12 +13,12 @@ import { superficieBackendToFrontend } from "./odontogramaMapper";
  * con todas las propiedades requeridas (colorHex, priority, etc.)
  */
 function transformHistorialData(datosNuevos: Record<string, any>): OdontogramaData {
-    console.log('[MAPPER][DEBUG] datosNuevos RAW:', JSON.stringify(datosNuevos, null, 2));
+    //console.log('[MAPPER][DEBUG] datosNuevos RAW:', JSON.stringify(datosNuevos, null, 2));
     const data: OdontogramaData = {};
 
     Object.entries(datosNuevos).forEach(([codigoFdi, superficies]) => {
         if (!data[codigoFdi]) data[codigoFdi] = {};
-        console.log(`[MAPPER][DEBUG] Diente ${codigoFdi} superficies:`, superficies);
+        //console.log(`[MAPPER][DEBUG] Diente ${codigoFdi} superficies:`, superficies);
 
 
         Object.entries(superficies as Record<string, any[]>).forEach(
@@ -26,15 +26,15 @@ function transformHistorialData(datosNuevos: Record<string, any>): OdontogramaDa
                 const surfaceId = superficieBackendToFrontend(nombreSuperficie);
 
                 if (!Array.isArray(diagnosticos)) return;
-                console.log(`[MAPPER][DEBUG] Diente ${codigoFdi} superficie ${surfaceId} diagnósticos:`, diagnosticos);
+                //console.log(`[MAPPER][DEBUG] Diente ${codigoFdi} superficie ${surfaceId} diagnósticos:`, diagnosticos);
 
                 // Transformar cada diagnóstico asegurando campos requeridos
                 data[codigoFdi][surfaceId] = diagnosticos.map((diag: any) => {
-                    console.log('[MAPPER][DEBUG] Diagnóstico individual:', {
-                        tiene_colorHex: !!diag.colorHex,
-                        colorHex: diag.colorHex,
-                        todas_propiedades: Object.keys(diag)
-                    });
+                    //console.log('[MAPPER][DEBUG] Diagnóstico individual:', {
+                       // tiene_colorHex: !!diag.colorHex,
+                       // colorHex: diag.colorHex,
+                      //  todas_propiedades: Object.keys(diag)
+                   // });
                     const entry: DiagnosticoEntry = {
                         id: diag.id,
                         key: diag.key || diag.procedimientoId,
@@ -63,19 +63,22 @@ export function mapHistorialToSnapshots(
     historial?: HistorialOdontogramaBackend[] | null,
 ): OdontogramaSnapshot[] {
     if (!Array.isArray(historial)) {
-        console.warn(
-            "[MAPPER][Historial] mapHistorialToSnapshots → historial no es array",
-            historial,
-        );
+        ///console.warn(
+            //"[MAPPER][Historial] mapHistorialToSnapshots → historial no es array",
+          //  historial,
+        //);
         return [];
     }
 
-    const soloVersiones = historial.filter((h) => !!h.version_id);
+    const soloVersiones = historial.filter(
+  (h) => !!h.version_id && 
+  (h.tipo_cambio === 'snapshot_completo' || h.tipo_cambio === 'SNAPSHOT_COMPLETO')
+);
 
-    console.log("[MAPPER][Historial] soloVersiones", {
-        rawCount: historial.length,
-        versionedCount: soloVersiones.length,
-    });
+    //console.log("[MAPPER][Historial] soloVersiones", {
+      //  rawCount: historial.length,
+      //  versionedCount: soloVersiones.length,
+   // });
 
     const grupos: Record<string, HistorialOdontogramaBackend[]> = {};
 
@@ -99,16 +102,16 @@ export function mapHistorialToSnapshots(
             if (snapshotCompleto && snapshotCompleto.datos_nuevos) {
                 // Usar el snapshot completo directamente
                 datosNuevosCombinados = snapshotCompleto.datos_nuevos;
-                console.log("[MAPPER][Historial] Usando snapshot completo:", {
-                    version_id: first.version_id,
-                    dientes: Object.keys(datosNuevosCombinados).length,
-                });
+               // console.log("[MAPPER][Historial] Usando snapshot completo:", {
+                  //  version_id: first.version_id,
+                  //  dientes: Object.keys(datosNuevosCombinados).length,
+               // });
             } else {
                 // Fallback: Combinar todos los datos_nuevos del grupo (comportamiento anterior)
-                console.log("[MAPPER][Historial] Combinando cambios individuales:", {
-                    version_id: first.version_id,
-                    cambios: grupo.length,
-                });
+               // console.log("[MAPPER][Historial] Combinando cambios individuales:", {
+                //   version_id: first.version_id,
+                 //   cambios: grupo.length,
+               // });
                 
                 grupo.forEach((h) => {
                     const datosNuevos = h.datos_nuevos || {};
@@ -150,16 +153,16 @@ export function mapHistorialToSnapshots(
                 0
             );
 
-            console.log("[MAPPER][Historial] Snapshot procesado:", {
-                version_id: first.version_id,
-                esSnapshotCompleto: !!snapshotCompleto,
-                dientes: Object.keys(odontogramaData).length,
-                primerDiente: Object.keys(odontogramaData)[0],
-                totalDiagnosticos,
-                sample: odontogramaData[Object.keys(odontogramaData)[0]]?.[
-                    Object.keys(odontogramaData[Object.keys(odontogramaData)[0]])[0]
-                ]?.[0],
-            });
+            //console.log("[MAPPER][Historial] Snapshot procesado:", {
+             //   version_id: first.version_id,
+              //  esSnapshotCompleto: !!snapshotCompleto,
+              //  dientes: Object.keys(odontogramaData).length,
+              //  primerDiente: Object.keys(odontogramaData)[0],
+               // totalDiagnosticos,
+             //   sample: odontogramaData[Object.keys(odontogramaData)[0]]?.[
+              //      Object.keys(odontogramaData[Object.keys(odontogramaData)[0]])[0]
+                //]?.[0],
+           // });
 
             let descripcion = first.descripcion || first.tipo_cambio_display || "Odontograma guardado";
             
@@ -176,6 +179,7 @@ export function mapHistorialToSnapshots(
                 odontogramaData,
                 profesionalId: first.odontologo,
                 profesionalNombre: first.odontologo_nombre ?? "N/A",
+                pacienteNombre: first.paciente_nombre,
             } as OdontogramaSnapshot;
         },
     );

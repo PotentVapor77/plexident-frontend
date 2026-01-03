@@ -144,16 +144,14 @@ export const OdontogramaTimelineList = ({
                                 {snapshot.descripcion}
                             </p>
 
-                            {/* Footer: Información del profesional */}
+                            {/* Footer: Información del profesional y paciente */}
                             <div className="flex items-center gap-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                                {/* Avatar del profesional */}
                                 <div
-                                    className={`
-                                        flex items-center justify-center w-9 h-9 rounded-full text-xs font-bold shrink-0
-                                        ${isSelected
+                                    className={`flex items-center justify-center w-9 h-9 rounded-full text-xs font-bold shrink-0 ${isSelected
                                             ? "bg-brand-200 dark:bg-brand-800/60 text-brand-700 dark:text-brand-300 ring-2 ring-brand-300/50 dark:ring-brand-700/50"
                                             : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-                                        }
-                                    `}
+                                        }`}
                                 >
                                     {snapshot.profesionalNombre
                                         .split(" ")
@@ -162,9 +160,26 @@ export const OdontogramaTimelineList = ({
                                         .substring(0, 2)
                                         .toUpperCase()}
                                 </div>
+
                                 <div className="flex-1 min-w-0">
+                                    {/* Nombre del paciente */}
+                                    {snapshot.pacienteNombre && (
+                                        <p
+                                            className={`text-xs font-medium truncate mb-0.5 ${isSelected
+                                                    ? "text-brand-600 dark:text-brand-400"
+                                                    : "text-gray-600 dark:text-gray-400"
+                                                }`}
+                                        >
+                                            Paciente: {snapshot.pacienteNombre}
+                                        </p>
+                                    )}
+
+                                    {/* Nombre del profesional */}
                                     <p
-                                        className={`text-sm font-semibold truncate ${isSelected ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-200"}`}
+                                        className={`text-sm font-semibold truncate ${isSelected
+                                                ? "text-gray-900 dark:text-white"
+                                                : "text-gray-700 dark:text-gray-200"
+                                            }`}
                                     >
                                         {snapshot.profesionalNombre}
                                     </p>
@@ -175,13 +190,10 @@ export const OdontogramaTimelineList = ({
 
                                 {/* Icono de chevron */}
                                 <svg
-                                    className={`
-                                        w-5 h-5 shrink-0 transition-all duration-200
-                                        ${isSelected
+                                    className={`w-5 h-5 shrink-0 transition-all duration-200 ${isSelected
                                             ? "text-brand-500 dark:text-brand-400 rotate-0"
                                             : "text-gray-400 dark:text-gray-500 -rotate-90 group-hover:rotate-0 group-hover:text-gray-600 dark:group-hover:text-gray-300"
-                                        }
-                                    `}
+                                        }`}
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"

@@ -443,5 +443,44 @@ export const fetchSurfaceDefinitions = async (): Promise<SurfaceDefinition[]> =>
   return response.data.definiciones;
 };
 
+export async function eliminarDiagnosticosBatch(
+  diagnosticoIds: string[]
+): Promise<{ success: boolean; eliminados: number; versionid: string; descripcion: string }> {
+  
+  if (!diagnosticoIds || diagnosticoIds.length === 0) {
+    throw new Error('No se proporcionaron IDs de diagnósticos');
+  }
 
+  try {
+    const url = ODONTOGRAM_ENDPOINTS.eliminarDiagnostico(diagnosticoIds[0]);
+    
+    console.log('[SERVICE] eliminarDiagnosticosBatch - URL:', url);
+    console.log('[SERVICE] eliminarDiagnosticosBatch - IDs:', diagnosticoIds);
+    
+    const { data } = await api.delete<{
+      success: boolean;
+      eliminados: number;
+      version_id: string;
+      descripcion: string;
+    }>(url, {
+      data: { diagnostico_ids: diagnosticoIds }
+    });
 
+    console.log('[SERVICE] eliminarDiagnosticosBatch - Respuesta:', data);
+
+    if (!data.success) {
+      throw new Error('Error al eliminar diagnósticos');
+    }
+
+    return {
+      success: data.success,
+      eliminados: data.eliminados,
+      versionid: data.version_id,
+      descripcion: data.descripcion
+    };
+    
+  } catch (error) {
+    console.error('[SERVICE] eliminarDiagnosticosBatch - Error:', error);
+    throw createApiError(error);
+  }
+}

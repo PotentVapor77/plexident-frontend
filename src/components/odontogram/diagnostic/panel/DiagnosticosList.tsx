@@ -1,9 +1,8 @@
 // src/core/types/DiagnosticosList.tsx
 
-import React, { useEffect, useRef, useState, type JSX } from 'react';
+import React, { useEffect, useRef, useState, } from 'react';
 import { formatGroupedSurfaces, type GroupedDiagnostic } from '../../../../core/utils/groupDiagnostics';
 import type { NotificationOptions } from '../../../../core/types/diagnostic.types';
-import { eliminarDiagnostico } from '../../../../services/odontogram/odontogramaService';
 
 // ============================================================================
 // INTERFACES
@@ -27,7 +26,7 @@ export const DiagnosticosList: React.FC<DiagnosticosListProps> = ({
   // ============================================================================
   // ESTADO VACÍO
   // ============================================================================
-const prioridadOrden = ['ALTA', 'ESTRUCTURAL', 'MEDIA', 'BAJA', 'INFORMATIVA'];
+  const prioridadOrden = ['ALTA', 'ESTRUCTURAL', 'MEDIA', 'BAJA', 'INFORMATIVA'];
   if (diagnosticos.length === 0) {
     return (
       <div className="h-full flex items-center justify-center p-6">
@@ -79,21 +78,21 @@ const prioridadOrden = ['ALTA', 'ESTRUCTURAL', 'MEDIA', 'BAJA', 'INFORMATIVA'];
 
       {/* Cards de diagnósticos */}
       <div className="space-y-2.5">
-  {[...diagnosticos]
-    .sort(
-      (a, b) =>
-        prioridadOrden.indexOf(a.prioridadKey) -
-        prioridadOrden.indexOf(b.prioridadKey)
-    )
-    .map((diagnostico) => (
-      <DiagnosticoCard
-        key={diagnostico.groupId}
-        diagnostico={diagnostico}
-        onRemove={onRemove}
-        addNotification={addNotification}
-      />
-    ))}
-</div>
+        {[...diagnosticos]
+          .sort(
+            (a, b) =>
+              prioridadOrden.indexOf(a.prioridadKey) -
+              prioridadOrden.indexOf(b.prioridadKey)
+          )
+          .map((diagnostico) => (
+            <DiagnosticoCard
+              key={diagnostico.groupId}
+              diagnostico={diagnostico}
+              onRemove={onRemove}
+              addNotification={addNotification}
+            />
+          ))}
+      </div>
     </div>
   );
 };
@@ -184,29 +183,8 @@ const DiagnosticoCard: React.FC<DiagnosticoCardProps> = ({
     detallesClinicos,
     descripcion: diagnostico.descripcion
   });
-  const getSecondaryOptions = (): Record<string, any> | undefined => {
-    return (diagnostico as any).secondaryOptions;
-  };
 
 
-  const formatDiagnosticoIds = (): JSX.Element[] => {
-    const uniqueIds = [...new Set(diagnostico.diagnosticoIds.map(d => d.id))];
-    return uniqueIds.map((id, idx) => (
-      <div key={idx} className="flex items-center gap-1.5">
-        {esIdTemporal(id) ? (
-          <>
-            <span className="text-yellow-400">🕐</span>
-            <span>Pendiente de guardar</span>
-          </>
-        ) : (
-          <>
-            <span className="text-green-400">✓</span>
-            <span className="font-mono text-xs">{id.slice(0, 12)}...</span>
-          </>
-        )}
-      </div>
-    ));
-  };
 
 
 
@@ -250,70 +228,66 @@ const DiagnosticoCard: React.FC<DiagnosticoCardProps> = ({
   // ============================================================================
 
   const handleRemove = async () => {
-    const superficiesDisplay = formatGroupedSurfaces(diagnostico);
+  const superficiesDisplay = formatGroupedSurfaces(diagnostico);
+  
+  const confirmMessage =
+    diagnostico.superficies.length > 1
+      ? `¿Deseas eliminar este diagnóstico de todas las superficies?\n${superficiesDisplay}\n\n⚠️ Los cambios se aplicarán cuando presiones "Guardar todo".`
+      : `¿Deseas eliminar este diagnóstico?\n${superficiesDisplay}\n\n⚠️ Los cambios se aplicarán cuando presiones "Guardar todo".`;
 
-    const confirmMessage =
-      diagnostico.superficies.length > 1
-        ? `¿Deseas eliminar este diagnóstico de todas las superficies?\n\n${superficiesDisplay}`
-        : `¿Deseas eliminar este diagnóstico?\n\n${superficiesDisplay}`;
+  if (!window.confirm(confirmMessage)) return;
 
-    if (!window.confirm(confirmMessage)) {
-      return;
+  setIsDeleting(true);
+
+  try {
+    // ✅ NUEVO: Solo eliminar del estado local, NO del backend
+    // Eliminar del estado local (tanto temporales como persistentes)
+    for (const { id, superficieId } of diagnostico.diagnosticoIds) {
+      onRemove(id, superficieId);
     }
 
-    setIsDeleting(true);
+    // Clasificar para el mensaje
+    const diagnosticosTemporales: Array<{ id: string; superficieId: string }> = [];
+    const diagnosticosPersistentes: Array<{ id: string; superficieId: string }> = [];
 
-    try {
-      const diagnosticosTemporales: Array<{ id: string; superficieId: string }> = [];
-      const diagnosticosPersistentes: Array<{ id: string; superficieId: string }> = [];
-
-      for (const { id, superficieId } of diagnostico.diagnosticoIds) {
-        if (esIdTemporal(id)) {
-          diagnosticosTemporales.push({ id, superficieId });
-        } else {
-          diagnosticosPersistentes.push({ id, superficieId });
-        }
+    for (const { id, superficieId } of diagnostico.diagnosticoIds) {
+      if (esIdTemporal(id)) {
+        diagnosticosTemporales.push({ id, superficieId });
+      } else {
+        diagnosticosPersistentes.push({ id, superficieId });
       }
-
-
-      for (const { id } of diagnosticosPersistentes) {
-        try {
-          await eliminarDiagnostico(id);
-          // console.log('[DiagnosticoCard] ✓ Eliminado del backend:', id);
-        } catch (error) {
-          console.error('[DiagnosticoCard] Error eliminando del backend:', id, error);
-          throw error;
-        }
-      }
-
-      for (const { id, superficieId } of diagnostico.diagnosticoIds) {
-        onRemove(id, superficieId);
-      }
-
-      const mensaje = diagnosticosTemporales.length > 0 && diagnosticosPersistentes.length > 0
-        ? `Eliminado de ${diagnostico.superficies.length} superficie(s) (${diagnosticosTemporales.length} pendiente(s) de guardar)`
-        : `Eliminado de ${diagnostico.superficies.length} superficie(s)`;
-
-      addNotification({
-        type: 'success',
-        title: 'Diagnóstico eliminado',
-        message: mensaje,
-      });
-
-    } catch (error) {
-      console.error('[DiagnosticoCard] Error al eliminar:', error);
-
-      addNotification({
-        type: 'error',
-        title: 'Error al eliminar',
-        message: 'No se pudo eliminar el diagnóstico del servidor. Intenta nuevamente.',
-      });
-    } finally {
-      setIsDeleting(false);
     }
-  };
-  const secondaryOptions = getSecondaryOptions();
-  const hasSecondaryOptions = secondaryOptions && Object.keys(secondaryOptions).length > 0;
+
+    // Mensaje adaptado según el tipo de diagnósticos eliminados
+    const mensaje =
+      diagnosticosTemporales.length > 0 && diagnosticosPersistentes.length > 0
+        ? `Eliminado de ${diagnostico.superficies.length} superficie(s). Presiona "Guardar todo" para confirmar (${diagnosticosTemporales.length} temporal(es), ${diagnosticosPersistentes.length} guardado(s)).`
+        : diagnosticosPersistentes.length > 0
+        ? `Eliminado de ${diagnostico.superficies.length} superficie(s). Presiona "Guardar todo" para confirmar.`
+        : `Eliminado de ${diagnostico.superficies.length} superficie(s) (pendiente de guardar).`;
+
+    addNotification({
+      type: 'info',
+      title: 'Diagnóstico eliminado localmente',
+      message: mensaje,
+    });
+  } catch (error) {
+    console.error('[DiagnosticoCard] Error al eliminar:', error);
+    addNotification({
+      type: 'error',
+      title: 'Error al eliminar',
+      message:
+        error instanceof Error
+          ? error.message
+          : 'No se pudo eliminar el diagnóstico. Intenta nuevamente.',
+    });
+  } finally {
+    setIsDeleting(false);
+  }
+};
+
+  //const secondaryOptions = getSecondaryOptions();
+  //const hasSecondaryOptions = secondaryOptions && Object.keys(secondaryOptions).length > 0;
   // ============================================================================
   // RENDER
   // ============================================================================
@@ -336,25 +310,23 @@ const DiagnosticoCard: React.FC<DiagnosticoCardProps> = ({
           }}
         >
           {/* Flecha del tooltip */}
-          <div 
-            className={`absolute top-1/2 -translate-y-1/2 w-0 h-0 ${
-              tooltipPosition.isLeftSide 
+          <div
+            className={`absolute top-1/2 -translate-y-1/2 w-0 h-0 ${tooltipPosition.isLeftSide
                 ? '-right-[9px] border-t-[8px] border-b-[8px] border-l-[8px] border-transparent border-l-gray-200 dark:border-l-gray-700'
                 : '-left-[9px] border-t-[8px] border-b-[8px] border-r-[8px] border-transparent border-r-gray-200 dark:border-r-gray-700'
-            }`}
+              }`}
           >
-            <div 
-              className={`absolute top-[-8px] w-0 h-0 border-t-[8px] border-b-[8px] ${
-                tooltipPosition.isLeftSide
+            <div
+              className={`absolute top-[-8px] w-0 h-0 border-t-[8px] border-b-[8px] ${tooltipPosition.isLeftSide
                   ? 'left-[-10px] border-l-[8px] border-transparent border-l-white dark:border-l-gray-800'
                   : 'right-[-10px] border-r-[8px] border-transparent border-r-white dark:border-r-gray-800'
-              }`}
+                }`}
             ></div>
           </div>
-          
+
           {/* Header */}
           <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
-            <span 
+            <span
               className="w-3 h-3 rounded-full flex-shrink-0 ring-2 ring-white dark:ring-gray-800"
               style={{ backgroundColor: diagnostico.colorHex }}
             />

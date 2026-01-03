@@ -198,7 +198,7 @@ export interface HistorialOdontogramaBackend {
 
   odontologo: string; 
   odontologo_nombre: string | null; 
-
+  paciente_nombre: string | null; 
   fecha: string; 
 
   datos_anteriores: Record<string, any>; 

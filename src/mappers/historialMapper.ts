@@ -179,6 +179,7 @@ export function mapHistorialToSnapshots(
                 odontogramaData,
                 profesionalId: first.odontologo,
                 profesionalNombre: first.odontologo_nombre ?? "N/A",
+                pacienteNombre: first.paciente_nombre,
             } as OdontogramaSnapshot;
         },
     );

@@ -11,10 +11,12 @@ import { Modal } from "../../ui/modal";
 import { PatientDeleteModal } from "./modals/PatientDeleteModal";
 import { useNotification } from "../../../context/notifications/NotificationContext";
 import { usePacientes } from "../../../hooks/patient/usePatients";
+import { usePacienteActivo } from "../../../context/PacienteContext";
 
 export default function PatientMain() {
   const navigate = useNavigate();
   const { notify } = useNotification();
+  const { setPacienteActivo, pacienteActivo } = usePacienteActivo(); 
 
   const [patientToView, setPatientToView] = useState<IPaciente | null>(null);
   const [patientToEdit, setPatientToEdit] = useState<IPaciente | null>(null);
@@ -59,6 +61,26 @@ export default function PatientMain() {
   const handleOpenDeletePatient = (patient: IPaciente) => {
     setPatientToDelete(patient);
     openDeleteModal();
+  };
+
+  const handleActivatePatient = (patient: IPaciente) => {
+    // Si es el mismo paciente, desfijarlo
+    if (pacienteActivo?.id === patient.id) {
+      setPacienteActivo(null);
+      notify({
+        type: "info",
+        title: "Paciente desfijado",
+        message: `${patient.nombres} ${patient.apellidos} ya no está fijado`,
+      });
+    } else {
+      // Si es otro paciente o no hay ninguno fijado, fijarlo
+      setPacienteActivo(patient);
+      notify({
+        type: "success",
+        title: "Paciente fijado",
+        message: `${patient.nombres} ${patient.apellidos} está ahora fijado. Accede al menú Odontograma para ver su información`,
+      });
+    }
   };
 
   // ✅ Solo cierra el modal - La notificación se muestra en PatientForm cuando es exitoso
@@ -121,6 +143,7 @@ export default function PatientMain() {
         onView={handleViewPatient}
         onEdit={handleEditPatient}
         onDelete={handleOpenDeletePatient}
+        onActivate={handleActivatePatient}
       />
 
       {/* Ver paciente */}

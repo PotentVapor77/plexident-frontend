@@ -26,17 +26,16 @@ import { useAuth } from "./hooks/auth/useAuth";
 import PatientsPage from "./pages/Patients/PatientsPage";
 import ForgotPasswordForm from "./pages/AuthPages/ForgotPasswordForm";
 import ResetPassword from "./pages/AuthPages/ResetPassword";
-
 import { NotificationProvider } from "./context/notifications/NotificationContext";
 import { NotificationContainer } from "./context/notifications/NotificationContainer";
 import PersonalBackgroundPage from "./pages/PersonalBackground/personalBackgroundPage";
 import OdontogramaHistoryPage from "./pages/Odontogram/OdontogramaHistoryPage";
 import FamilyBackgroundPage from "./pages/FamilyBackground/familyBackgroundPage";
+import { PacienteProvider } from "./context/PacienteContext"; 
 
 // ============================================================================
 // RUTAS PÚBLICAS
 // ============================================================================
-
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
 
@@ -58,7 +57,6 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 // ============================================================================
 // APP
 // ============================================================================
-
 function App() {
   useNetworkStatus();
 
@@ -67,7 +65,7 @@ function App() {
       <ScrollToTop />
 
       <Routes>
-        {/* PÚBLICAS */}
+        {/* =============== RUTAS PÚBLICAS =============== */}
         <Route
           path="/sign-in"
           element={
@@ -95,47 +93,92 @@ function App() {
           }
         />
 
-        {/* PROTEGIDAS */}
-        {/* RUTAS PROTEGIDAS - Solo accesibles si está autenticado */}
-
+        {/* =============== RUTAS PROTEGIDAS =============== */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
+            {/* Dashboard */}
             <Route path="/dashboard" element={<Home />} />
+
+            {/* ✅ Rutas con PacienteProvider - Comparten contexto de paciente */}
+            <Route
+              path="/pacientes"
+              element={
+                <PacienteProvider>
+                  <PatientsPage />
+                </PacienteProvider>
+              }
+            />
+            <Route
+              path="/pacientes/:id/editar"
+              element={
+                <PacienteProvider>
+                  <PatientsPage />
+                </PacienteProvider>
+              }
+            />
+            <Route
+              path="/odontograma"
+              element={
+                <PacienteProvider>
+                  <OdontogramaPage />
+                </PacienteProvider>
+              }
+            />
+            <Route
+              path="/odontograma-timeline"
+              element={
+                <PacienteProvider>
+                  <OdontogramaHistoryPage />
+                </PacienteProvider>
+              }
+            />
+
+            {/* Rutas de antecedentes */}
+            <Route
+              path="/pacientes/antecedentes-personales"
+              element={<PersonalBackgroundPage />}
+            />
+            <Route
+              path="/pacientes/antecedentes-familiares"
+              element={<FamilyBackgroundPage />}
+            />
+
+            {/* Usuarios */}
             <Route path="/usuarios" element={<UsersPage />} />
-
             <Route path="/usuarios/:id/editar" element={<UsersPage />} />
-            <Route path="/pacientes" element={<PatientsPage />} />
-            <Route path="/pacientes/:id/editar" element={<PatientsPage />} />
-            <Route path="/pacientes/antecedentes-personales" element={<PersonalBackgroundPage />} />
-            <Route path="/pacientes/antecedentes-familiares" element={<FamilyBackgroundPage />} />
-            <Route path="/odontogram" element={<OdontogramaPage />} />
+            <Route path="/segurity/users" element={<UsersPage />} />
 
-            <Route path="/pacientes" element={<PatientsPage />} />
-            <Route path="/odontograma" element={<OdontogramaPage />} />
-            <Route path="/odontograma-timeline" element={<OdontogramaHistoryPage />} />
+            {/* Perfil */}
             <Route path="/profile" element={<UserProfiles />} />
+
+            {/* Charts */}
             <Route path="/charts/bar-chart" element={<BarChart />} />
             <Route path="/charts/line-chart" element={<LineChart />} />
+
+            {/* Forms y Tables */}
             <Route path="/forms/form-elements" element={<FormElements />} />
             <Route path="/tables/basic-tables" element={<BasicTables />} />
+
+            {/* Utilidades */}
             <Route path="/calendar" element={<Calendar />} />
+
+            {/* UI Elements */}
             <Route path="/ui-elements/alerts" element={<Alerts />} />
             <Route path="/ui-elements/buttons" element={<Buttons />} />
             <Route path="/ui-elements/avatars" element={<Avatars />} />
             <Route path="/ui-elements/badges" element={<Badges />} />
             <Route path="/ui-elements/images" element={<Images />} />
             <Route path="/ui-elements/videos" element={<Videos />} />
+
+            {/* Blank */}
             <Route path="/blank" element={<Blank />} />
-
-
-            <Route path="/segurity/users" element={<UsersPage />} />
           </Route>
         </Route>
 
-        {/* RAÍZ */}
+        {/* =============== RAÍZ =============== */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        {/* 404 */}
+        {/* =============== 404 =============== */}
         <Route path="*" element={<NotFound />} />
       </Routes>
 

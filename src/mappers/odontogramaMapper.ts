@@ -225,10 +225,6 @@ function mapearDiagnosticoInstanceBackendToFrontend(
   };
 }
 
-/**
- * FIXED: Convierte la respuesta completa del odontograma
- * IMPORTANTE: Genera TODOS los 32 dientes, no solo los que tienen diagnósticos
- */
 export function mapearOdontogramaBackendToFrontend(
   odontograma: OdontogramaCompletoBackend
 ): OdontogramaData {

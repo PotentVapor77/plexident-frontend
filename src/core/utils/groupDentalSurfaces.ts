@@ -149,7 +149,7 @@ export function groupDentalSurfaces(
         );
     }
 
-    console.log(" RESULTADO:", result);
+    //console.log(" RESULTADO:", result);
     return result;
 }
 

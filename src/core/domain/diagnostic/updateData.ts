@@ -25,6 +25,7 @@ export const createBaseDiagnosticoEntry = (
 ): DiagnosticoEntry => {
     return hydrateDiagnosticoEntry({
         id: generateUniqueId(),
+        key: generateUniqueId(),
         procedimientoId: procConfig.id,
         nombre: procConfig.nombre,
         siglas: procConfig.siglas,

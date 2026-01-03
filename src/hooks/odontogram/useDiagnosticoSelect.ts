@@ -59,14 +59,14 @@ export const useDiagnosticoSelect = ({
     // ============================================================================
 
     const filteredCategories = useMemo(() => {
-        console.log('[Filtrado] Iniciando filtrado. currentArea:', currentArea);
+        //console.log('[Filtrado] Iniciando filtrado. currentArea:', currentArea);
 
         return categorias
             .map(category => {
                 const filteredDiagnoses = category.diagnosticos.filter(diag => {
                     // PRIORIDAD 1: Diagnósticos prioritarios siempre visibles
                     if (DIAGNOSTICOS_PRIORITARIOS.includes(diag.id)) {
-                        console.log(` [Prioritario] ${diag.nombre} (${diag.id}) - SIEMPRE VISIBLE`);
+                        //console.log(` [Prioritario] ${diag.nombre} (${diag.id}) - SIEMPRE VISIBLE`);
                         return true;
                     }
 
@@ -85,11 +85,11 @@ export const useDiagnosticoSelect = ({
                 });
 
                 if (filteredDiagnoses.length === 0) {
-                    console.log(`  [Categoría] ${category.nombre} - SIN DIAGNÓSTICOS`);
+                    //console.log(`  [Categoría] ${category.nombre} - SIN DIAGNÓSTICOS`);
                     return null;
                 }
 
-                console.log(` [Categoría] ${category.nombre} - ${filteredDiagnoses.length} diagnósticos`);
+                //console.log(` [Categoría] ${category.nombre} - ${filteredDiagnoses.length} diagnósticos`);
                 return { ...category, diagnosticos: filteredDiagnoses };
             })
             .filter((cat): cat is DiagnosticoCategory => cat !== null);

@@ -76,7 +76,7 @@ export const OdontogramaHistoryViewer = ({
           <Canvas
             camera={{
               fov: 15,
-              position: [0, 1.6, CAMERA_DISTANCE],
+              position: [0, 0, CAMERA_DISTANCE],
               near: 0.1,
               far: 1000,
             }}

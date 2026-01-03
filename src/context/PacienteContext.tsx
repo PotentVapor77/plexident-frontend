@@ -14,7 +14,6 @@ const STORAGE_KEY = "plexident_paciente_activo";
 
 export const PacienteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [pacienteActivo, setPacienteActivoState] = useState<IPaciente | null>(() => {
-        // ✅ Inicializar desde localStorage
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
@@ -26,7 +25,6 @@ export const PacienteProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return null;
     });
 
-    // ✅ Sincronizar con localStorage cada vez que cambia
     useEffect(() => {
         try {
             if (pacienteActivo) {

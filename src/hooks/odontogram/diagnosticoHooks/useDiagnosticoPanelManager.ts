@@ -136,24 +136,24 @@ export const useDiagnosticoPanelManager = ({
     },
     [onRootGroupChange]
   );
-useEffect(() => {
+  useEffect(() => {
   console.log('[Manager] Auto-detecting area from surfaces:', selectedSurfaces);
-  
-  if (selectedSurfaces.length > 0) {
-    const hasCorona = selectedSurfaces.some(s => s.startsWith('cara'));
-    const hasRaiz = selectedSurfaces.some(s => s.startsWith('raiz'));
-    
-    console.log('[Manager] Area detection:', { hasCorona, hasRaiz });
-    
-    if (hasCorona && !hasRaiz) {
-      setCurrentArea('corona');
-    } else if (hasRaiz && !hasCorona) {
-      setCurrentArea('raiz');
-    } else if (hasCorona && hasRaiz) {
-      setCurrentArea('general');
-    }
-  } else {
-    setCurrentArea(null);
+
+  if (selectedSurfaces.length === 0) {
+    return;
+  }
+
+  const hasCorona = selectedSurfaces.some(s => s.startsWith('cara_'));
+  const hasRaiz   = selectedSurfaces.some(s => s.startsWith('raiz:'));
+
+  console.log('[Manager] Area detection:', { hasCorona, hasRaiz });
+
+  if (hasCorona && !hasRaiz) {
+    setCurrentArea('corona');
+  } else if (hasRaiz && !hasCorona) {
+    setCurrentArea('raiz');
+  } else if (hasCorona && hasRaiz) {
+    setCurrentArea('corona');
   }
 }, [selectedSurfaces]);
   // ============================================================================
@@ -190,116 +190,134 @@ useEffect(() => {
   }, []);
 
   const handleApplyDiagnostico = useCallback(
-    (
-      diagnosticoId: string,
-      colorKey: OdontoColorKey,
-      atributos: Record<string, any>,
-      descripcion: string,
-      areas: AreaAfectada[]
-    ) => {
-      if (!selectedTooth) {
-        addNotification({
-          type: 'error',
-          title: 'Error',
-          message: 'No hay diente seleccionado',
-        });
-        return;
-      }
+  (
+    diagnosticoId: string,
+    colorKey: OdontoColorKey,
+    atributos: Record<string, any>,
+    descripcion: string,
+    areas: AreaAfectada[]
+  ) => {
+    if (!selectedTooth) {
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'No hay diente seleccionado',
+      });
+      return;
+    }
 
-      try {
-        const toothData = odontogramaData[selectedTooth];
-        const hasAbsence = toothData && isToothBlockedByAbsence(
+    try {
+      const toothData = odontogramaData[selectedTooth];
+      const hasAbsence =
+        toothData &&
+        isToothBlockedByAbsence(
           Object.values(toothData).flat() as DiagnosticoEntry[]
         );
 
-        // Determinar superficies
-        let surfacesToApply: string[];
-        const isGeneralDiagnosis = areas.includes('general');
+      let surfacesToApply: string[] = [];
 
-        if (isGeneralDiagnosis) {
-          surfacesToApply = ['general'];
-        } else {
-          if (selectedSurfaces.length === 0) {
-            addNotification({
-              type: 'warning',
-              title: 'Selección requerida',
-              message: 'Debes seleccionar al menos una superficie',
-            });
-            return;
-          }
+      // Solo se considera diagnóstico de diente completo
+      // cuando las áreas son EXACTAMENTE ['general']
+      const isPureToothLevel =
+        areas.length === 1 && areas.includes('general');
 
-          const requiresCorona = areas.includes('corona');
-          const requiresRaiz = areas.includes('raiz');
-          const hasCoronaSurface = selectedSurfaces.some(s => s.startsWith('cara'));
-          const hasRaizSurface = selectedSurfaces.some(s => s.startsWith('raiz'));
-
-          if (requiresCorona && !hasCoronaSurface) {
-            addNotification({
-              type: 'warning',
-              title: 'Área requerida',
-              message: 'Este diagnóstico requiere seleccionar superficies de corona',
-            });
-            return;
-          }
-
-          if (requiresRaiz && !hasRaizSurface) {
-            addNotification({
-              type: 'warning',
-              title: 'Área requerida',
-              message: 'Este diagnóstico requiere seleccionar superficies de raíz',
-            });
-            return;
-          }
-
-          surfacesToApply = [...selectedSurfaces];
+      if (isPureToothLevel) {
+        // General puro → se irá a superficie "general"
+        surfacesToApply = ['general'];
+      } else {
+        // Debe haber superficies seleccionadas
+        if (selectedSurfaces.length === 0) {
+          addNotification({
+            type: 'warning',
+            title: 'Selección requerida',
+            message: 'Debes seleccionar al menos una superficie',
+          });
+          return;
         }
 
-        // Aplicar diagnóstico
-        applyDiagnostico(
-          selectedTooth,
-          surfacesToApply,
-          diagnosticoId,
-          colorKey,
-          atributos,
-          descripcion,
-          areas
+        const requiresCorona = areas.includes('corona');
+        const requiresRaiz = areas.includes('raiz');
+        const hasCoronaSurface = selectedSurfaces.some(s =>
+          s.startsWith('cara')
+        );
+        const hasRaizSurface = selectedSurfaces.some(s =>
+          s.startsWith('raiz')
         );
 
-        if (hasAbsence) {
+        if (requiresCorona && !hasCoronaSurface) {
           addNotification({
-            type: 'info',
-            title: 'Diagnóstico de ausencia eliminado',
-            message: `Pieza ${toothInfo?.numero}: El estado de "ausente" fue removido automáticamente.`,
-            duration: 6000,
+            type: 'warning',
+            title: 'Área requerida',
+            message:
+              'Este diagnóstico requiere seleccionar superficies de corona',
           });
-        } else {
-          addNotification({
-            type: 'success',
-            title: 'Diagnóstico aplicado',
-            message: `Pieza ${toothInfo?.numero} actualizada correctamente.`,
-          });
+          return;
         }
 
-        handleCancelDiagnostico();
+        if (requiresRaiz && !hasRaizSurface) {
+          addNotification({
+            type: 'warning',
+            title: 'Área requerida',
+            message:
+              'Este diagnóstico requiere seleccionar superficies de raíz',
+          });
+          return;
+        }
 
-      } catch (error) {
-        console.error('[DiagnosticoPanelManager] Error al aplicar diagnóstico:', error);
+        // Aquí SIEMPRE respetamos las superficies marcadas,
+        // aunque el diagnóstico también permita "general"
+        surfacesToApply = [...selectedSurfaces];
+      }
+
+      // Aplicar diagnóstico
+      applyDiagnostico(
+        selectedTooth,
+        surfacesToApply,
+        diagnosticoId,
+        colorKey,
+        atributos,
+        descripcion,
+        areas
+      );
+
+      if (hasAbsence) {
         addNotification({
-          type: 'error',
-          title: 'Error al aplicar',
-          message: error instanceof Error ? error.message : 'Error desconocido',
+          type: 'info',
+          title: 'Diagnóstico de ausencia eliminado',
+          message: `Pieza ${toothInfo?.numero}: El estado de "ausente" fue removido automáticamente.`,
+          duration: 6000,
+        });
+      } else {
+        addNotification({
+          type: 'success',
+          title: 'Diagnóstico aplicado',
+          message: `Pieza ${toothInfo?.numero} actualizada correctamente.`,
         });
       }
-    },
-    [
-      selectedTooth,
-      selectedSurfaces,
-      toothInfo,
-      odontogramaData,
-      addNotification,
-      handleCancelDiagnostico,
-    ]
-  );
+
+      handleCancelDiagnostico();
+    } catch (error) {
+      console.error(
+        '[DiagnosticoPanelManager] Error al aplicar diagnóstico:',
+        error
+      );
+      addNotification({
+        type: 'error',
+        title: 'Error al aplicar',
+        message:
+          error instanceof Error ? error.message : 'Error desconocido',
+      });
+    }
+  },
+  [
+    selectedTooth,
+    selectedSurfaces,
+    toothInfo,
+    odontogramaData,
+    addNotification,
+    handleCancelDiagnostico,
+  ]
+);
 
   const handleRemoveDiagnostico = useCallback(
     (id: string, superficieId: string) => {

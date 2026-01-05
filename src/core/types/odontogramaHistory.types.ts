@@ -15,3 +15,4 @@ export interface TimelineEvent {
     descripcion: string;
     isActive: boolean;
 }
+

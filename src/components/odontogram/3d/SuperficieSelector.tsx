@@ -48,13 +48,23 @@ const ROOT_SVG_MAP: Record<string, string> = {
 
 // Función CLAVE: Clasifica el ID técnico a un área principal ('corona' o 'raiz').
 const getPrincipalArea = (surfaces: string[]): PrincipalArea => {
-    if (surfaces.length === 0) return null;
-    const firstSurface = surfaces[0];
-    const mappedArea = SURFACE_AREA_MAP[firstSurface];
-    if (mappedArea) return mappedArea;
-    if (firstSurface.startsWith('raiz:')) return 'raiz';
-    if (firstSurface.startsWith('cara_')) return 'corona';
-    return 'general';
+  if (surfaces.length === 0) return null;
+
+  const hasCorona = surfaces.some(
+    (s) => SURFACE_AREA_MAP[s] === 'corona' || s.startsWith('cara_'),
+  );
+  const hasRaiz = surfaces.some(
+    (s) => SURFACE_AREA_MAP[s] === 'raiz' || s.startsWith('raiz:'),
+  );
+
+  if (hasCorona && !hasRaiz) return 'corona';
+  if (!hasCorona && hasRaiz) return 'raiz';
+  if (hasCorona && hasRaiz) return 'corona';
+  const mappedArea = SURFACE_AREA_MAP[surfaces[0]];
+  if (mappedArea) return mappedArea;
+  if (surfaces[0].startsWith('raiz:')) return 'raiz';
+  if (surfaces[0].startsWith('cara_')) return 'corona';
+  return 'general';
 };
 
 interface SurfaceSelectorProps {

@@ -191,18 +191,33 @@ export interface SuperficieConDiagnosticos extends SuperficieDentalBackend {
 
 export interface HistorialOdontogramaBackend {
   id: string;
-  diente: string; 
-  tipo_cambio: string; 
+  diente: string;
+  tipo_cambio: string;
   tipo_cambio_display: string;
   descripcion: string;
-
-  odontologo: string; 
-  odontologo_nombre: string | null; 
-  paciente_nombre: string | null; 
-  fecha: string; 
-
-  datos_anteriores: Record<string, any>; 
-  datos_nuevos: Record<string, any>;    
-
+  odontologo: string;
+  odontologo_nombre: string | null;
+  paciente_nombre: string | null;
+  fecha: string;
+  datos_anteriores: Record<string, any>;
+  datos_nuevos: {
+    [codigoFdi: string]: {
+      [superficieNombre: string]: {
+        id: string;
+        procedimientoId: string;
+        key: string;
+        nombre: string;
+        siglas: string;
+        colorHex: string;
+        prioridad: number;
+        prioridadKey: string;
+        categoria_nombre: string;
+        categoria_color_key: string; 
+        afectaArea: string[];
+        secondaryOptions: Record<string, any>;
+        descripcion: string;
+      }[];
+    };
+  };
   version_id: string;
 }

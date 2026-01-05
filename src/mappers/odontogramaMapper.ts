@@ -112,20 +112,23 @@ export function superficieFrontendToBackend(superficieId: string): string {
 /**
  * Mapea superficie_aplicables del backend a areasafectadas del frontend
  */
-function mapearSuperficiesAplicables(superficies: string[]): ('corona' | 'raiz' | 'general')[] {
-  if (!superficies || superficies.length === 0) return ['general'];
-  if (superficies.includes('general')) return ['general'];
-
-  const tieneCorona = superficies.some(s =>
+function mapearSuperficiesAplicables(superficies?: string[]): ('corona' | 'raiz' | 'general')[] {
+  if (!superficies || superficies.length === 0) {
+    return ['general'];
+  }
+  if (superficies.length === 1 && superficies[0] === 'general') {
+    return ['general'];
+  }
+  
+  const tieneCorona = superficies.some(s => 
     ['vestibular', 'lingual', 'oclusal', 'mesial', 'distal'].includes(s)
   );
-  const tieneRaiz = superficies.some(s => s.startsWith('raiz_'));
-
+  const tieneRaiz = superficies.some(s => s.startsWith('raiz'));
+  
   const result: ('corona' | 'raiz' | 'general')[] = [];
   if (tieneCorona) result.push('corona');
   if (tieneRaiz) result.push('raiz');
-
-  return result.length > 0 ? result : ['general'];
+  return result.length > 0 ? result : ['corona'];  
 }
 
 function mapearAtributosClinicos(

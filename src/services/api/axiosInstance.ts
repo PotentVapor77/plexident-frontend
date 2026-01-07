@@ -22,9 +22,9 @@ axiosRetry(api, {
     if (!error.response) return true;
     const status = error.response.status;
 
-    if (status >= 500) return true;   // 5xx -> reintentar
-    if (status === 429) return false; // ✅ NO reintentar en throttling
-    return false;                     // resto 4xx -> no reintentar
+    if (status >= 500) return true;  
+    if (status === 429) return false; 
+    return false;                    
   },
   onRetry: (retryCount, error, requestConfig) => {
     logger.warn(`Reintentando petición (${retryCount}/3)`, {

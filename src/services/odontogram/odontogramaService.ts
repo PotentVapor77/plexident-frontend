@@ -9,16 +9,17 @@ import type {
   CrearDiagnosticoPayload,
   DienteBackend,
   HistorialOdontogramaBackend,
+  BackendIndicadoresSaludBucal,
 } from '../../types/odontogram/typeBackendOdontograma';
-import { createApiError } from '../../types/api';
+import { createApiError, type PaginatedResponse } from '../../types/api';
 import api from '../api/axiosInstance';
-import type { OdontogramaData } from '../../core/types/odontograma.types';
-import { mapearOdontogramaBackendToFrontend, mapearOdontogramaFrontendToBackend } from '../../mappers/odontogramaMapper';
+import type { IndicadoresSaludBucalCreatePayload, IndicadoresSaludBucalUpdatePayload, OdontogramaData } from '../../core/types/odontograma.types';
+import { mapBackendIndicadoresToDomain, mapearOdontogramaBackendToFrontend, mapearOdontogramaFrontendToBackend } from '../../mappers/odontogramaMapper';
 
 // ============================================================================
 // CONSTANTES DE ENDPOINTS
 // ============================================================================
-
+const INDICADORES_BASE = "/odontogram/indicadores-salud-bucal/";
 const ODONTOGRAM_ENDPOINTS = {
   // Catálogo
   categorias: '/odontogram/catalogo/categorias/con-diagnosticos/',
@@ -484,3 +485,131 @@ export async function eliminarDiagnosticosBatch(
     throw createApiError(error);
   }
 }
+
+export const IndicadoresSaludBucalService = {
+  async listByPaciente(
+    pacienteId: string | null, 
+    page: number = 1,
+    pageSize: number = 10,
+    incluirInactivos: boolean = false,
+    search: string = ""
+  ): Promise<PaginatedResponse<BackendIndicadoresSaludBucal>> {
+    console.log('[IndicadoresSaludBucalService] listByPaciente:', {
+      pacienteId,
+      page,
+      pageSize,
+      incluirInactivos,
+      search,
+    });
+
+    const { data: response } = await api.get<{
+      success: boolean;
+      status_code: number;
+      message: string;
+      data: PaginatedResponse<BackendIndicadoresSaludBucal>;
+      errors: null;
+    }>(INDICADORES_BASE, {
+      params: {
+        ...(pacienteId && { paciente_id: pacienteId }), 
+        page,
+        page_size: pageSize,
+        incluir_inactivos: incluirInactivos,
+        search: search || undefined,
+      },
+    });
+
+    console.log('[IndicadoresSaludBucalService] Raw response:', response);
+
+    const paginatedData = response.data;
+
+    // Filtrado local si no se incluyen inactivos
+    if (!incluirInactivos && paginatedData.results) {
+      paginatedData.results = paginatedData.results.filter(
+        (indicador) => indicador.activo !== false
+      );
+    }
+
+    console.log('[IndicadoresSaludBucalService] Paginated data:', {
+      count: paginatedData.count,
+      results: paginatedData.results?.length ?? 0,
+      hasNext: !!paginatedData.next,
+      hasPrevious: !!paginatedData.previous,
+    });
+
+    return paginatedData;
+  },
+
+  async create(payload: IndicadoresSaludBucalCreatePayload): Promise<BackendIndicadoresSaludBucal> {
+    console.log('[IndicadoresSaludBucalService] create payload:', payload);
+    const { data: response } = await api.post<{
+      success: boolean;
+      status_code: number;
+      message: string;
+      data: BackendIndicadoresSaludBucal;
+      errors: null;
+    }>(INDICADORES_BASE, payload);
+    console.log('[IndicadoresSaludBucalService] create response:', response);
+    return response.data;
+  },
+
+  async update(
+    id: string,
+    payload: IndicadoresSaludBucalUpdatePayload
+  ): Promise<BackendIndicadoresSaludBucal> {
+    console.log('[IndicadoresSaludBucalService] update:', { id, payload });
+    const { data: response } = await api.patch<{
+      success: boolean;
+      status_code: number;
+      message: string;
+      data: BackendIndicadoresSaludBucal;
+      errors: null;
+    }>(`${INDICADORES_BASE}${id}/`, payload);
+    console.log('[IndicadoresSaludBucalService] update response:', response);
+    return response.data;
+  },
+
+  async remove(id: string): Promise<void> {
+    console.log('[IndicadoresSaludBucalService] remove (lógico):', id);
+    await api.delete(`${INDICADORES_BASE}${id}/`);
+    console.log('[IndicadoresSaludBucalService] removed successfully');
+  },
+
+  async restore(id: string): Promise<BackendIndicadoresSaludBucal> {
+    console.log('[IndicadoresSaludBucalService] restore:', id);
+    const { data: response } = await api.post<{
+      success: boolean;
+      status_code: number;
+      message: string;
+      data: BackendIndicadoresSaludBucal;
+      errors: null;
+    }>(`${INDICADORES_BASE}${id}/restaurar/`);
+    console.log('[IndicadoresSaludBucalService] restore response:', response);
+    return response.data;
+  },
+
+  async listEliminados(
+    pacienteId: string,
+    page: number = 1,
+    pageSize: number = 10
+  ): Promise<PaginatedResponse<BackendIndicadoresSaludBucal>> {
+    console.log('[IndicadoresSaludBucalService] listEliminados:', {
+      pacienteId,
+      page,
+      pageSize,
+    });
+    const { data: response } = await api.get<{
+      success: boolean;
+      status_code: number;
+      message: string;
+      data: PaginatedResponse<BackendIndicadoresSaludBucal>;
+      errors: null;
+    }>(`${INDICADORES_BASE}eliminados/`, {
+      params: {
+        paciente_id: pacienteId,
+        page,
+        page_size: pageSize,
+      },
+    });
+    return response.data;
+  },
+};

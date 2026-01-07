@@ -34,6 +34,8 @@ import FamilyBackgroundPage from "./pages/FamilyBackground/familyBackgroundPage"
 import { PacienteProvider } from "./context/PacienteContext"; 
 import ConstantesVitalesPage from "./pages/VitalSigns/ConstantesVitalesPage";
 import StomatognathicExamPage from "./pages/StomatognathicExam/StomatognathicExamPage";
+import { IndicatorsMain } from "./components/odontogram/indicator/IndicatorsMain";
+import IndicadoresSaludBucalPage from "./pages/Odontogram/IndicadoresSaludBucalPage";
 
 // ============================================================================
 // RUTAS PÚBLICAS
@@ -134,6 +136,15 @@ function App() {
               }
             />
 
+            <Route
+              path="/indicadores-salud-bucal"
+              element={
+                <PacienteProvider>
+                  <IndicadoresSaludBucalPage />
+                </PacienteProvider>
+              }
+            
+            />
             {/* Rutas de antecedentes */}
             <Route
               path="/pacientes/antecedentes-personales"

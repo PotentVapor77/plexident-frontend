@@ -96,14 +96,18 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "Nuevo Odontograma", path: "/odontograma", pro: false },
       { name: "Historial", path: "/odontograma-timeline", pro: false },
+      { name: "Indicadores de Salud Bucal", path: "/indicadores-salud-bucal", pro: false },
     ],
   },
+
+
   {
     icon: <PageIcon />,
     name: "Historia Clínica",
     subItems: [
       { name: "Historias Clínicas", path: "/historia-clinica", pro: false },
       { name: "Nueva Historia", path: "/nueva-historia", pro: false },
+
     ],
   },
   {

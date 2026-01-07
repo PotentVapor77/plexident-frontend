@@ -1,6 +1,6 @@
 // src/components/hooks/useOdontogramaData.ts 
 
-import { useState, useMemo, useCallback } from "react";
+import { useState,  useCallback } from "react";
 import { getColorFromEntry, getPermanentColorForSurface, getDominantColorForTooth, getPriorityFromKey } from "../../core/domain/diagnostic/colorResolution";
 import { hydrateOdontogramaData } from "../../core/domain/diagnostic/dataHydration";
 import { getProcConfigFromCategories } from "../../core/domain/diagnostic/procConfig";

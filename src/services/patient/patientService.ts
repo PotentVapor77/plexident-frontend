@@ -99,22 +99,6 @@ export const deletePaciente = async (id: string): Promise<void> => {
   }
 };
 
-export const togglePacienteStatus = async (id: string): Promise<IPaciente> => {
-  try {
-    logger.info('Cambiando estado de paciente', { id });
-    const { data } = await api.patch<{ success: boolean; data: IPaciente }>(
-      ENDPOINTS.patients.toggleStatus(id)
-    );
-    if (!data.success || !data.data) {
-      throw new Error('Error al cambiar estado');
-    }
-    logger.info('✅ Estado de paciente actualizado', { id, activo: data.data.activo });
-    return data.data;
-  } catch (error) {
-    logger.error('Error al cambiar estado de paciente', error);
-    throw createApiError(error);
-  }
-};
 
 // yo lo cree: Navarrete
 

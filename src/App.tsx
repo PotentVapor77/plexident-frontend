@@ -34,6 +34,7 @@ import FamilyBackgroundPage from "./pages/FamilyBackground/familyBackgroundPage"
 import ConstantesVitalesPage from "./pages/VitalSigns/ConstantesVitalesPage";
 import StomatognathicExamPage from "./pages/StomatognathicExam/StomatognathicExamPage";
 import {PacienteProvider } from "./context/PacienteContext"; 
+import AppointmentsPage from "./pages/Appointments/AppointmentsPage";
 
 // ============================================================================
 // RUTAS PÚBLICAS
@@ -156,6 +157,8 @@ function App() {
             <Route path="/pacientes/examen-estomatognatico" element={<StomatognathicExamPage/>} />
 
 
+            <Route path="/citas" element={<AppointmentsPage/>} />
+              
             
             <Route path="/odontogram" element={<OdontogramaPage />} />
             <Route path="/pacientes" element={<PatientsPage />} />

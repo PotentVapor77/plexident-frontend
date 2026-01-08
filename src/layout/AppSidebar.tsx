@@ -88,7 +88,7 @@ const navItems: NavItem[] = [
   {
     icon: <CalenderIcon />,
     name: "Agenda",
-    subItems: [{ name: "Agenda General", path: "/agenda", pro: false }],
+    subItems: [{ name: "Citas", path: "/citas", pro: false }],
   },
   {
     icon: <BoxCubeIcon />,

@@ -71,7 +71,34 @@ export const ENDPOINTS = {
     byPaciente: (pacienteId: string) => `/patients/examen-estomatognatico/by-paciente/${pacienteId}/`,
     resumenPatologias: (id: string) => `/patients/examen-estomatognatico/${id}/resumen_patologias/`,
   },
-  
+
+   // ============================================================================
+  // CITAS / APPOINTMENTS
+  // ============================================================================
+    appointments: {
+    citas: {
+      base: '/appointment/citas/',
+      byId: (id: string) => `/appointment/citas/${id}/`,
+      porOdontologo: (odontologoId: string) => `/appointment/citas/por-odontologo/${odontologoId}/`,
+      porSemana: '/appointment/citas/por-semana/',
+      porPaciente: (pacienteId: string) => `/appointment/citas/by-paciente/${pacienteId}/`,
+      cancelar: (id: string) => `/appointment/citas/${id}/cancelar/`,
+      reprogramar: (id: string) => `/appointment/citas/${id}/reprogramar/`,
+      cambiarEstado: (id: string) => `/appointment/citas/${id}/cambiar-estado/`,
+      horariosDisponibles: '/appointment/citas/horarios-disponibles/',
+    },
+    horarios: {
+      base: '/appointment/horarios/',
+      byId: (id: string) => `/appointment/horarios/${id}/`,
+      porOdontologo: (odontologoId: string) => `/appointment/horarios/por-odontologo/${odontologoId}/`,
+    },
+    recordatorios: {
+      base: '/appointment/recordatorio/',
+      byId: (id: string) => `/appointment/recordatorio/${id}/`,
+    },
+  },
+
+
   
 } as const;
 

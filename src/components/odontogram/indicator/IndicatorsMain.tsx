@@ -33,12 +33,37 @@ export const IndicatorsMain: React.FC = () => {
     ? `${pacienteActivo.nombres} ${pacienteActivo.apellidos}`
     : null;
 
-  const { indicadores, pagination, isLoading, isError, error } =
-    useIndicadoresSaludBucal(pacienteId, {
-      page,
-      page_size: pageSize,
-      search,
-    });
+  // Hook principal: usar search directo, sin debounce
+  const {
+    indicadores = [],
+    pagination: rawPagination,
+    isLoading,
+    isError,
+    error,
+  } = useIndicadoresSaludBucal(pacienteId, {
+    page,
+    page_size: pageSize,
+    search, 
+  });
+
+  // Normalizar paginación a camelCase para el componente
+  const pagination = rawPagination
+    ? {
+        count: rawPagination.count,
+        page: rawPagination.page,
+        pageSize: rawPagination.page_size,
+        totalPages: rawPagination.total_pages,
+        hasNext: rawPagination.has_next,
+        hasPrevious: rawPagination.has_previous,
+      }
+    : {
+        count: 0,
+        page,
+        pageSize,
+        totalPages: 1,
+        hasNext: false,
+        hasPrevious: false,
+      };
 
   const createMutation = useCreateIndicadoresSaludBucal(pacienteId);
   const updateMutation = useUpdateIndicadoresSaludBucal(pacienteId);
@@ -103,43 +128,38 @@ export const IndicatorsMain: React.FC = () => {
     openDeleteModal();
   };
 
-  const handleViewEdit = () => {
-    if (selectedRegistro) {
-      closeViewModal();
-      openCreateEditModal();
+  const handleSubmit = async (payload: IndicadoresSaludBucalCreatePayload) => {
+    try {
+      if (selectedRegistro) {
+        await updateMutation.mutateAsync({ id: selectedRegistro.id, payload });
+        notify({
+          type: "warning",
+          title: "Indicadores actualizados",
+          message:
+            "Los indicadores de salud bucal se actualizaron correctamente.",
+        });
+      } else {
+        await createMutation.mutateAsync(payload);
+        notify({
+          type: "success",
+          title: "Indicadores registrados",
+          message:
+            "Los indicadores de salud bucal se registraron correctamente.",
+        });
+      }
+
+      closeCreateEditModal();
+      setSelectedRegistro(null);
+      openSuccessModal();
+    } catch (error) {
+      console.error("Error al guardar indicadores:", error);
+      notify({
+        type: "error",
+        title: "Error",
+        message: "No se pudieron guardar los indicadores. Intente nuevamente.",
+      });
     }
   };
-
-  const handleSubmit = async (payload: IndicadoresSaludBucalCreatePayload) => {
-  try {
-    if (selectedRegistro) {
-      await updateMutation.mutateAsync({ id: selectedRegistro.id, payload });
-      notify({
-        type: "warning",
-        title: "Indicadores actualizados",
-        message: "Los indicadores de salud bucal se actualizaron correctamente.",
-      });
-    } else {
-      await createMutation.mutateAsync(payload);
-      notify({
-        type: "success",
-        title: "Indicadores registrados",
-        message: "Los indicadores de salud bucal se registraron correctamente.",
-      });
-    }
-
-    closeCreateEditModal();
-    setSelectedRegistro(null);
-    openSuccessModal();
-  } catch (error) {
-    console.error("Error al guardar indicadores:", error);
-    notify({
-      type: "error",
-      title: "Error",
-      message: "No se pudieron guardar los indicadores. Intente nuevamente.",
-    });
-  }
-};
 
   const handleConfirmDelete = async () => {
     if (!selectedRegistro) return;
@@ -280,7 +300,7 @@ export const IndicatorsMain: React.FC = () => {
       </div>
 
       {/* Paginación */}
-      {pagination && pagination.total_pages > 1 && (
+      {pagination && pagination.totalPages > 1 && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-theme-sm px-4 sm:px-6 py-3">
           <p className="text-sm text-gray-700 dark:text-gray-300">
             Mostrando página{" "}
@@ -289,15 +309,15 @@ export const IndicatorsMain: React.FC = () => {
             </span>{" "}
             de{" "}
             <span className="font-semibold text-gray-900 dark:text-white">
-              {pagination.total_pages}
-            </span>{" "}
-            ({pagination.count} registros totales)
+              {pagination.totalPages}
+            </span>
+            , {pagination.count} registros totales
           </p>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPage(page - 1)}
-              disabled={!pagination.has_previous}
+              disabled={!pagination.hasPrevious}
               className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-theme-xs"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -305,7 +325,7 @@ export const IndicatorsMain: React.FC = () => {
             </button>
             <button
               onClick={() => setPage(page + 1)}
-              disabled={!pagination.has_next}
+              disabled={!pagination.hasNext}
               className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-theme-xs"
             >
               Siguiente

@@ -68,6 +68,7 @@ export const HistorySingleView = ({
 
     return grouped;
   }, [allDiagnosticos]);
+
   const getPermanentColorForSurfaceFromSnapshot = useCallback(
     (toothId: string | null, surfaceId: string): string | null => {
       if (!toothId || !snapshot.odontogramaData) return null;
@@ -128,7 +129,9 @@ export const HistorySingleView = ({
         </div>
       </div>
 
+      {/* Layout principal con visor 3D y panel lateral */}
       <div className="flex h-full gap-4">
+        {/* Visor 3D - se expande cuando el panel está oculto */}
         <div
           className={
             viewMode === 'hidden'
@@ -137,44 +140,39 @@ export const HistorySingleView = ({
           }
         >
           <OdontogramaHistoryViewer
-                odontogramaData={snapshot.odontogramaData}
-                selectedTooth={selectedToothFromList}
-                onToothSelect={setSelectedToothFromList}
-                hoveredToothInList={hoveredToothInList}
-              />
+            odontogramaData={snapshot.odontogramaData}
+            selectedTooth={selectedToothFromList}
+            onToothSelect={setSelectedToothFromList}
+            hoveredToothInList={hoveredToothInList}
+          />
         </div>
+
+        {/* Panel lateral - se oculta en modo hidden */}
         <div
           className={
             viewMode === 'hidden'
-              ? 'w-0 opacity-0 pointer-events-none overflow-hidden transition-all duration-300' // EDITADO
-              : 'w-1/3 opacity-100 transition-all duration-300' // EDITADO
+              ? 'w-0 opacity-0 pointer-events-none overflow-hidden transition-all duration-300'
+              : 'w-1/3 opacity-100 transition-all duration-300'
           }
         >
-          {/* Compacta */}
+          {/* Vista Compacta: Lista agrupada de diagnósticos */}
           {viewMode === 'compact' && (
             <CompactDiagnosticsList
-                diagnosticos={allDiagnosticos}
-                onToothHover={setHoveredToothInList}
-                onToothClick={setSelectedToothFromList}
-              />
+              diagnosticos={allDiagnosticos}
+              onToothHover={setHoveredToothInList}
+              onToothClick={setSelectedToothFromList}
+            />
           )}
 
-          {/* Detallada */}
+          {/* Vista Detallada: Inspección individual del diente seleccionado */}
           {viewMode === 'detailed' && (
-            <div className="space-y-4 h-full overflow-y-auto pr-1">
-              {Object.entries(diagnosticosPorDiente).map(([toothId, diags]) => (
-                <DetailedToothView
-                      key={toothId}
-                      toothId={toothId}
-                      diagnosticos={diags}
-                      getPermanentColorForSurface={getPermanentColorForSurfaceFromSnapshot}
-                    />
-
-              ))}
-            </div>
+            <DetailedToothView
+              selectedTooth={selectedToothFromList}
+              diagnosticosPorDiente={diagnosticosPorDiente}
+              getPermanentColorForSurface={getPermanentColorForSurfaceFromSnapshot}
+              onToothSelect={setSelectedToothFromList}
+            />
           )}
-
-          {/* EDITADO: ya no mostramos texto “Historial oculto”, el modo hidden solo colapsa el panel */}
         </div>
       </div>
     </div>

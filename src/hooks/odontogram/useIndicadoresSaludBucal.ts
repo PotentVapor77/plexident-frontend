@@ -48,7 +48,7 @@ interface UseIndicadoresOptions {
 // ============================================================================
 
 export const useIndicadoresSaludBucal = (
-  pacienteId: string | null, // ✅ Ahora acepta null
+  pacienteId: string | null, 
   options: UseIndicadoresOptions
 ) => {
   const { page, page_size, search = "" } = options;
@@ -61,24 +61,18 @@ export const useIndicadoresSaludBucal = (
   });
 
   const query = useQuery<PaginatedResponse<BackendIndicadoresSaludBucal>>({
-    queryKey: indicadoresKey(pacienteId, page, page_size, search),
-    queryFn: () => {
-      console.log('[useIndicadoresSaludBucal] queryFn ejecutando con:', {
-        pacienteId,
-        page,
-        page_size,
-        search,
-      });
-      return IndicadoresSaludBucalService.listByPaciente(
-        pacienteId, 
-        page,
-        page_size,
-        false, 
-        search
-      );
-    },
-    staleTime: 30000,
-  });
+  queryKey: indicadoresKey(pacienteId, page, page_size, search),
+  queryFn: () => {
+    return IndicadoresSaludBucalService.listByPaciente(
+      pacienteId,
+      page,
+      page_size,
+      false,
+      search
+    );
+  },
+  staleTime: 30000,
+});
 
   console.log('[useIndicadoresSaludBucal] Query state:', {
     isLoading: query.isLoading,

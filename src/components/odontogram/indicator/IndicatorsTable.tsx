@@ -1,6 +1,5 @@
 // src/components/odontogram/indicator/IndicatorsTable.tsx
 
-import { useEffect, useState } from "react";
 import { Eye, Edit, Trash2, RotateCcw, Search, X } from "lucide-react";
 import type { BackendIndicadoresSaludBucal } from "../../../types/odontogram/typeBackendOdontograma";
 
@@ -27,26 +26,6 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
   search = "",
   onSearchChange,
 }) => {
-  // ============================================================================
-  // SEARCH LOCAL + DEBOUNCE
-  // ============================================================================
-
-  const [localSearch, setLocalSearch] = useState(search);
-
-  useEffect(() => {
-    setLocalSearch(search);
-  }, [search]);
-
-  useEffect(() => {
-    if (!onSearchChange) return;
-    const handler = setTimeout(() => {
-      if (localSearch !== search) {
-        onSearchChange(localSearch);
-      }
-    }, 400);
-    return () => clearTimeout(handler);
-  }, [localSearch, onSearchChange, search]);
-
   // ============================================================================
   // HELPERS PARA FORMATEAR VALORES
   // ============================================================================
@@ -101,10 +80,12 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
         color: "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400",
       },
     };
+
     const badge = labels[value] || {
       text: value,
       color: "bg-gray-50 text-gray-700",
     };
+
     return (
       <span
         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.color}`}
@@ -138,10 +119,12 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
         color: "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400",
       },
     };
+
     const badge = labels[value] || {
       text: value,
       color: "bg-gray-50 text-gray-700",
     };
+
     return (
       <span
         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.color}`}
@@ -185,10 +168,12 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
         color: "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400",
       },
     };
+
     const badge = labels[value] || {
       text: value,
       color: "bg-gray-50 text-gray-700",
     };
+
     return (
       <span
         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.color}`}
@@ -213,14 +198,14 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
               </div>
               <input
                 type="text"
-                value={localSearch}
-                onChange={(e) => setLocalSearch(e.target.value)}
+                value={search}
+                onChange={(e) => onSearchChange?.(e.target.value)}
                 placeholder="Buscar por fecha, enfermedad, oclusión..."
                 className="block w-full pl-9 pr-9 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-colors text-sm"
               />
-              {localSearch && (
+              {search && (
                 <button
-                  onClick={() => setLocalSearch("")}
+                  onClick={() => onSearchChange?.("")}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   <X className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" />
@@ -250,8 +235,8 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
             No hay registros de indicadores
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-            {localSearch
-              ? `No se encontraron resultados para "${localSearch}"`
+            {search
+              ? `No se encontraron resultados para "${search}"`
               : "Cree un nuevo registro para comenzar"}
           </p>
         </div>
@@ -282,14 +267,14 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
               </div>
               <input
                 type="text"
-                value={localSearch}
-                onChange={(e) => setLocalSearch(e.target.value)}
+                value={search}
+                onChange={(e) => onSearchChange?.(e.target.value)}
                 placeholder="Buscar por fecha, enfermedad, oclusión..."
                 className="block w-full pl-9 pr-9 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-colors text-sm"
               />
-              {localSearch && (
+              {search && (
                 <button
-                  onClick={() => setLocalSearch("")}
+                  onClick={() => onSearchChange?.("")}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   <X className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" />
@@ -301,7 +286,6 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
       )}
 
       <div className="bg-white dark:bg-gray-900 rounded-b-xl border border-gray-200 dark:border-gray-800 shadow-theme-sm flex flex-col">
-        {/* Contenedor scrollable solo para la tabla */}
         <div className="overflow-x-auto overflow-y-auto max-h-130 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800 scrollbar-track-gray-100 dark:scrollbar-track-gray-900">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
             <thead>

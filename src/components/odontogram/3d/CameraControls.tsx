@@ -9,7 +9,7 @@ export interface ViewPreset {
   position: [number, number, number];
   target: [number, number, number];
   label: string;
-  icon?: React.ReactNode; // Añadido para soporte de iconos en UI
+  icon?: React.ReactNode; 
 }
 
 export type ViewPresetKey = 'FRONT' | 'TOP' | 'LEFT' | 'OPEN_MOUTH' | 'FREE' | 'RIGHT';
@@ -44,7 +44,6 @@ interface CameraControlsProps {
 export const CameraControls = ({ currentView, setJawOpenState }: CameraControlsProps) => {
   const controlsRef = useRef<any>(null);
   const { camera } = useThree();
-
   const wasOpenRef = useRef(false);
   const isFreeMode = currentView === 'FREE';
 
@@ -70,14 +69,21 @@ export const CameraControls = ({ currentView, setJawOpenState }: CameraControlsP
 
   useEffect(() => {
     const isOpenView = currentView === 'OPEN_MOUTH';
-    if (controlsRef.current) {
-      if (isFreeMode) {
-        controlsRef.current.enabled = true;
-        setJawOpenState(wasOpenRef.current);
+
+    if (!controlsRef.current) return;
+
+    if (isFreeMode) {
+      controlsRef.current.enabled = true;
+      setJawOpenState(wasOpenRef.current);
+    } else {
+      controlsRef.current.enabled = false;
+
+      if (isOpenView) {
+        setJawOpenState(true);
+        wasOpenRef.current = true;
       } else {
-        controlsRef.current.enabled = false;
-        setJawOpenState(isOpenView);
-        wasOpenRef.current = isOpenView;
+        setJawOpenState(false);
+        wasOpenRef.current = false;
       }
     }
   }, [currentView, isFreeMode, setJawOpenState]);
@@ -93,15 +99,22 @@ export const CameraControls = ({ currentView, setJawOpenState }: CameraControlsP
   );
 };
 
-// --- 3. Componente de UI (Botones flotantes) ---
 interface PerspectiveButtonsProps {
   currentView: ViewPresetKey;
   setCurrentView: React.Dispatch<React.SetStateAction<ViewPresetKey>>;
+  compact?: boolean; // <- NUEVO
 }
 
-export const PerspectiveButtons = ({ currentView, setCurrentView }: PerspectiveButtonsProps) => {
+export const PerspectiveButtons = ({
+  currentView,
+  setCurrentView,
+  compact = false,
+}: PerspectiveButtonsProps) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const fixedViews = Object.entries(VIEW_PRESETS) as [Exclude<ViewPresetKey, 'FREE'>, ViewPreset][];
+  const fixedViews = Object.entries(VIEW_PRESETS) as [
+    Exclude<ViewPresetKey, 'FREE'>,
+    ViewPreset
+  ][];
   const isFreeMode = currentView === 'FREE';
 
   const handleSelectFixedView = (key: Exclude<ViewPresetKey, 'FREE'>) => {
@@ -110,36 +123,112 @@ export const PerspectiveButtons = ({ currentView, setCurrentView }: PerspectiveB
   };
 
   const handleToggleFreeMode = () => {
-    if (isFreeMode) {
-      setCurrentView('FRONT');
-    } else {
-      setCurrentView('FREE');
-    }
+    setCurrentView(isFreeMode ? 'FRONT' : 'FREE');
     setDropdownOpen(false);
   };
 
+  // ======== VERSIÓN COMPACTA PARA COMPARACIÓN ========
+  if (compact) {
+    return (
+      <div className="absolute top-2 right-2 z-20">
+        <div className="relative">
+          <button
+            onClick={() => setDropdownOpen((v) => !v)}
+            className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 shadow-theme-sm text-xs"
+            title="Cambiar vista"
+          >
+            {/* Icono simple tipo brújula */}
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="10 14 14 10 12 12 10 14" />
+            </svg>
+          </button>
+
+          {dropdownOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setDropdownOpen(false)}
+              />
+              <div className="absolute right-0 mt-2 w-40 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-theme-xl z-20 py-1.5 text-xs">
+                <button
+                  onClick={handleToggleFreeMode}
+                  className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                >
+                  {isFreeMode ? 'Bloquear vista' : 'Modo libre'}
+                </button>
+                <div className="border-t border-gray-100 dark:border-gray-800 my-1" />
+                {fixedViews.map(([key, preset]) => (
+                  <button
+                    key={key}
+                    onClick={() => handleSelectFixedView(key)}
+                    className={`w-full flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                      currentView === key
+                        ? 'font-semibold text-brand-600 dark:text-brand-400'
+                        : 'text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={
+                        currentView === key
+                          ? 'text-brand-500'
+                          : 'text-gray-400'
+                      }
+                    >
+                      {preset.icon}
+                    </span>
+                    <span>{preset.label}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ======== VERSIÓN COMPLETA ACTUAL ========
   return (
     <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
       <div className="flex items-center gap-1 p-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border border-gray-200 dark:border-gray-800 rounded-xl shadow-theme-lg">
-        
         {/* Botón Modo Libre */}
         <button
           onClick={handleToggleFreeMode}
           className={`
             flex items-center gap-2 px-4 py-2 text-theme-sm font-medium rounded-lg transition-all duration-200
-            ${isFreeMode
-              ? "bg-brand-500 text-white shadow-sm hover:bg-brand-600"
-              : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            ${
+              isFreeMode
+                ? 'bg-brand-500 text-white shadow-sm hover:bg-brand-600'
+                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
             }
           `}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           </svg>
-          {isFreeMode ? "Modo Libre" : "Explorar"}
+          {isFreeMode ? 'Modo Libre' : 'Explorar'}
         </button>
 
-        <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+        <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
 
         {/* Dropdown Vistas */}
         <div className="relative">
@@ -147,35 +236,42 @@ export const PerspectiveButtons = ({ currentView, setCurrentView }: PerspectiveB
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className={`
               flex items-center gap-2 px-4 py-2 text-theme-sm font-medium rounded-lg transition-all duration-200
-              ${!isFreeMode
-                ? "bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 border border-brand-200 dark:border-brand-800"
-                : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              ${
+                !isFreeMode
+                  ? 'bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 border border-brand-200 dark:border-brand-800'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               }
             `}
           >
             <span>
-              {!isFreeMode 
-                ? VIEW_PRESETS[currentView as Exclude<ViewPresetKey, 'FREE'>]?.label 
-                : "Vistas Fijas"
-              }
+              {!isFreeMode
+                ? VIEW_PRESETS[currentView as Exclude<ViewPresetKey, 'FREE'>]
+                    ?.label
+                : 'Vistas Fijas'}
             </span>
             <svg
-              className={`w-4 h-4 transition-transform duration-200 text-gray-400 ${dropdownOpen ? 'rotate-180' : ''}`}
-              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              className={`w-4 h-4 transition-transform duration-200 text-gray-400 ${
+                dropdownOpen ? 'rotate-180' : ''
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
 
-          {/* Menú Dropdown */}
           {dropdownOpen && (
             <>
-              {/* Overlay transparente para cerrar al hacer clic fuera */}
-              <div 
-                className="fixed inset-0 z-10" 
+              <div
+                className="fixed inset-0 z-10"
                 onClick={() => setDropdownOpen(false)}
-              ></div>
-              
+              />
               <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-900 rounded-xl shadow-theme-xl border border-gray-200 dark:border-gray-800 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
                 <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Seleccionar vista
@@ -186,15 +282,20 @@ export const PerspectiveButtons = ({ currentView, setCurrentView }: PerspectiveB
                     onClick={() => handleSelectFixedView(key)}
                     className={`
                       w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors text-left
-                      ${currentView === key
-                        ? "bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-400 font-medium"
-                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      ${
+                        currentView === key
+                          ? 'bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-400 font-medium'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                       }
                     `}
                   >
-                    <span className={`
-                      ${currentView === key ? "text-brand-500" : "text-gray-400"}
-                    `}>
+                    <span
+                      className={`${
+                        currentView === key
+                          ? 'text-brand-500'
+                          : 'text-gray-400'
+                      }`}
+                    >
                       {preset.icon}
                     </span>
                     {preset.label}

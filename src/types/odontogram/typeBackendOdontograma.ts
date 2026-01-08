@@ -191,18 +191,82 @@ export interface SuperficieConDiagnosticos extends SuperficieDentalBackend {
 
 export interface HistorialOdontogramaBackend {
   id: string;
-  diente: string; 
-  tipo_cambio: string; 
+  diente: string;
+  tipo_cambio: string;
   tipo_cambio_display: string;
   descripcion: string;
-
-  odontologo: string; 
-  odontologo_nombre: string | null; 
-  paciente_nombre: string | null; 
-  fecha: string; 
-
-  datos_anteriores: Record<string, any>; 
-  datos_nuevos: Record<string, any>;    
-
+  odontologo: string;
+  odontologo_nombre: string | null;
+  paciente_nombre: string | null;
+  fecha: string;
+  datos_anteriores: Record<string, any>;
+  datos_nuevos: {
+    [codigoFdi: string]: {
+      [superficieNombre: string]: {
+        id: string;
+        procedimientoId: string;
+        key: string;
+        nombre: string;
+        siglas: string;
+        colorHex: string;
+        prioridad: number;
+        prioridadKey: string;
+        categoria_nombre: string;
+        categoria_color_key: string; 
+        afectaArea: string[];
+        secondaryOptions: Record<string, any>;
+        descripcion: string;
+      }[];
+    };
+  };
   version_id: string;
 }
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+export type BackendIndicadoresSaludBucal = {
+  id: string;
+  paciente: string;         
+  fecha: string;   
+  // ===== CAMPOS DE AUDITORÍA =====
+  creado_por?: string | null;
+  actualizado_por?: string | null;
+  eliminado_por?: string | null;
+  fecha_modificacion?: string | null;
+  fecha_eliminacion?: string | null;
+  
+  // ===== BORRADO LÓGICO =====
+  activo: boolean; 
+  // ================================
+
+  paciente_nombre?: string;
+  paciente_apellido?: string;
+  paciente_cedula?: string;
+
+  pieza_16_placa: number | null;
+  pieza_16_calculo: number | null;
+  pieza_11_placa: number | null;
+  pieza_11_calculo: number | null;
+  pieza_26_placa: number | null;
+  pieza_26_calculo: number | null;
+  pieza_36_placa: number | null;
+  pieza_36_calculo: number | null;
+  pieza_31_placa: number | null;
+  pieza_31_calculo: number | null;
+  pieza_46_placa: number | null;
+  pieza_46_calculo: number | null;
+
+  ohi_promedio_placa: number | null;
+  ohi_promedio_calculo: number | null;
+
+  enfermedad_periodontal: "LEVE" | "MODERADA" | "SEVERA" | null;
+  tipo_oclusion: "ANGLE_I" | "ANGLE_II" | "ANGLE_III" | null;
+  nivel_fluorosis: "NINGUNA" | "LEVE" | "MODERADA" | "SEVERA" | null;
+
+  observaciones: string | null;
+};
+
+

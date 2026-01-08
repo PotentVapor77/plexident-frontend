@@ -1,5 +1,5 @@
 // src/components/odontogram/preview/hooks/useToothIconDecision.tsx
-import React, { useMemo } from 'react';
+import  { useMemo } from 'react';
 import { getDominantDiagnosticIcon } from '../../../../core/constants/diagnosticIcons';
 import type { Diagnostico } from '../ToothStatusDisplay';
 
@@ -45,7 +45,7 @@ export const useToothIconDecision = (
             masPrioritario.procedimientoId ||
             'diente_sano';
 
-        const iconData = getDominantDiagnosticIcon([procId]);
+        const iconData = getDominantDiagnosticIcon(masPrioritario.procedimientoId ? [masPrioritario.procedimientoId] : []);
         console.log('ICON DEBUG', diagsUnicos.map(d => ({
             id: d.id,
             key: d.key,

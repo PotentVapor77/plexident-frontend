@@ -1,5 +1,6 @@
 // src/core/utils/groupDiagnostics.ts
 
+import type { DiagnosticoEntryWithContext } from "../types/historyView.types";
 import { ROOT_SURFACES_BY_TYPE } from "./groupDentalSurfaces";
 
 export interface GroupedDiagnostic {
@@ -170,3 +171,19 @@ export function formatGroupedSurfaces(group: GroupedDiagnostic): string {
 
     return parts.join(', ');
 }
+
+export const groupDiagnosticsByTooth = (
+  diagnosticos: DiagnosticoEntryWithContext[]
+): Record<string, DiagnosticoEntryWithContext[]> => {
+  const grouped: Record<string, DiagnosticoEntryWithContext[]> = {};
+  
+  diagnosticos.forEach(diag => {
+    const toothId = diag.dienteId || 'general';
+    if (!grouped[toothId]) {
+      grouped[toothId] = [];
+    }
+    grouped[toothId].push(diag);
+  });
+
+  return grouped;
+};

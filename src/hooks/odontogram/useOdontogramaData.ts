@@ -1,6 +1,6 @@
 // src/components/hooks/useOdontogramaData.ts 
 
-import { useState, useMemo, useCallback } from "react";
+import { useState,  useCallback } from "react";
 import { getColorFromEntry, getPermanentColorForSurface, getDominantColorForTooth, getPriorityFromKey } from "../../core/domain/diagnostic/colorResolution";
 import { hydrateOdontogramaData } from "../../core/domain/diagnostic/dataHydration";
 import { getProcConfigFromCategories } from "../../core/domain/diagnostic/procConfig";
@@ -84,31 +84,31 @@ export const useOdontogramaData = (initialData: OdontogramaData = {}) => {
         // Si el nuevo diagnÃ³stico es de ausencia, no limpiar nada.
         const toothData = data[toothId];
         if (isToothBlockedByAbsence([newEntry])) {
-    let workingData = { ...data };
-    Object.entries(toothData).forEach(([surfaceId, entries]) => {
-      (entries as DiagnosticoEntry[]).forEach(entry => {
-        if (!isToothBlockedByAbsence([entry])) {  // â† Eliminar caries/obturaciones/etc
-          workingData = removeDiagnosticoFromData(workingData, toothId, surfaceId, entry.id);
+            let workingData = { ...data };
+            Object.entries(toothData).forEach(([surfaceId, entries]) => {
+                (entries as DiagnosticoEntry[]).forEach(entry => {
+                    if (!isToothBlockedByAbsence([entry])) {  // â† Eliminar caries/obturaciones/etc
+                        workingData = removeDiagnosticoFromData(workingData, toothId, surfaceId, entry.id);
+                    }
+                });
+            });
+            return workingData;
         }
-      });
-    });
-    return workingData;
-  }
 
-  // âŒ Caso anterior (newEntry NO ausencia â†’ eliminar ausencias previas)
-  const allExisting = Object.values(toothData).flat() as DiagnosticoEntry[];
-  if (!isToothBlockedByAbsence(allExisting)) return data;
+        // âŒ Caso anterior (newEntry NO ausencia â†’ eliminar ausencias previas)
+        const allExisting = Object.values(toothData).flat() as DiagnosticoEntry[];
+        if (!isToothBlockedByAbsence(allExisting)) return data;
 
-  let workingData = { ...data };
-  Object.entries(toothData).forEach(([surfaceId, entries]) => {
-    (entries as DiagnosticoEntry[]).forEach(entry => {
-      if (isToothBlockedByAbsence([entry])) {
-        workingData = removeDiagnosticoFromData(workingData, toothId, surfaceId, entry.id);
-      }
-    });
-  });
-  return workingData;
-};
+        let workingData = { ...data };
+        Object.entries(toothData).forEach(([surfaceId, entries]) => {
+            (entries as DiagnosticoEntry[]).forEach(entry => {
+                if (isToothBlockedByAbsence([entry])) {
+                    workingData = removeDiagnosticoFromData(workingData, toothId, surfaceId, entry.id);
+                }
+            });
+        });
+        return workingData;
+    };
 
     const eliminarAusenciasBackend = useCallback(async (toothId: string) => {
         const toothData = data[toothId];
@@ -133,7 +133,7 @@ export const useOdontogramaData = (initialData: OdontogramaData = {}) => {
             });
         }
     }, [data]);
-
+    const isTempId = (id: string) => id.startsWith('temp-');
     // --- Funciones de Escritura Refactorizadas ---
     const applyDiagnostico = useCallback(
         (
@@ -190,7 +190,9 @@ export const useOdontogramaData = (initialData: OdontogramaData = {}) => {
                 return;
             }
 
-            const affectsEntireTooth = afectaArea.includes('general');
+            const affectsEntireTooth = Array.isArray(afectaArea)
+                ? afectaArea.length === 1 && afectaArea[0] === 'general'
+                : afectaArea === 'general';
 
             const prevToothData = data[toothId];
             const prevDiagnoses = prevToothData ? Object.values(prevToothData).flat() as DiagnosticoEntry[] : [];
@@ -230,23 +232,36 @@ export const useOdontogramaData = (initialData: OdontogramaData = {}) => {
             });
 
             if (activeDxIdsToDelete.length > 0) {
-    console.info(`[Auto-limpieza] Eliminando ${activeDxIdsToDelete.length} diagnÃ³sticos previos del diente ${toothId}`);
-    Promise.allSettled(
-      activeDxIdsToDelete.map(id => eliminarDiagnostico(id))
-    ).catch(err => {
-      console.error('[Auto-limpieza] Error eliminando backend:', err);
-    });
-  }
+                console.info(
+                    `[Auto-limpieza] Eliminando ${activeDxIdsToDelete.length} diagnósticos previos del diente ${toothId}`,
+                );
+
+                const persistentIds = activeDxIdsToDelete.filter(id => !isTempId(id));
+
+                if (persistentIds.length > 0) {
+                    Promise.allSettled(persistentIds.map(id => eliminarDiagnostico(id))).catch(err => {
+                        console.error('[Auto-limpieza] Error eliminando backend:', err);
+                    });
+                }
+            }
 
         }, [categorias, data]);
 
-    const removeDiagnostico = useCallback(async (toothId: string, surfaceId: string, entryIdToRemove: string) => {
-        setData(prevData => removeDiagnosticoFromData(prevData, toothId, surfaceId, entryIdToRemove));
+    const removeDiagnostico = useCallback(
+        async (toothId: string, surfaceId: string, entryIdToRemove: string) => {
+            setData(prevData =>
+                removeDiagnosticoFromData(prevData, toothId, surfaceId, entryIdToRemove),
+            );
+            if (isTempId(entryIdToRemove)) {
+                return;
+            }
 
-        eliminarDiagnostico(entryIdToRemove).catch(err => {
-            console.error('Error eliminando diagnÃ³stico backend:', err);
-        });
-    }, []);
+            eliminarDiagnostico(entryIdToRemove).catch(err => {
+                console.error('Error eliminando diagnóstico backend:', err);
+            });
+        },
+        [],
+    );
 
     const saveOdontogramaData = useCallback(async () => {
         if (isSaving) return;

@@ -12,10 +12,16 @@ import { DentalBackground } from "../../../hooks/gradients/DentalGradient";
 
 interface OdontogramaHistoryViewerProps {
   odontogramaData: any;
+  selectedTooth?: string | null; 
+  onToothSelect?: (toothId: string | null) => void; 
+  hoveredToothInList?: string | null;
 }
 
 export const OdontogramaHistoryViewer = ({
   odontogramaData,
+  selectedTooth = null,
+  onToothSelect,
+  hoveredToothInList = null
 }: OdontogramaHistoryViewerProps) => {
   const [currentView, setCurrentView] = useState<ViewPresetKey>("FRONT");
   const [isJawOpen, setIsJawOpen] = useState(false);
@@ -24,16 +30,13 @@ export const OdontogramaHistoryViewer = ({
   // Inicializar el hook SIN datos iniciales
   const odontogramaDataHook = useOdontogramaData();
 
-  // CLAVE: Cargar datos cuando cambia la selección del timeline
   useEffect(() => {
     console.log('[HISTORY_VIEWER] odontogramaData cambió:', odontogramaData);
     if (odontogramaData) {
-      // Cargar los nuevos datos del snapshot seleccionado
       odontogramaDataHook.loadFromBackend(odontogramaData);
     }
-  }, [odontogramaData]); // Se ejecuta cada vez que cambia el snapshot seleccionado
+  }, [odontogramaData]);
 
-  // ResizeObserver para manejar cambios de tamaño del canvas
   useEffect(() => {
     if (!canvasContainerRef.current) return;
     const container = canvasContainerRef.current;
@@ -59,24 +62,23 @@ export const OdontogramaHistoryViewer = ({
   }, []);
 
   const CAMERA_DISTANCE = 0.5;
+const highlightedTooth = hoveredToothInList || selectedTooth;
 
+  const handleToothSelect = (toothId: string | null) => {
+    onToothSelect?.(toothId);
+  };
   return (
     <div className="relative w-full h-full flex flex-col min-h-[600px] bg-muted/5 rounded-xl overflow-hidden border shadow-inner">
       <div
         ref={canvasContainerRef}
-        style={{
-          position: "absolute",
-          inset: 0,
-          overflow: "hidden",
-          zIndex: 0,
-        }}
+        style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0 }}
         className="canvas-container flex w-full h-full bg-gray-100"
       >
         <div className="relative flex-grow h-full overflow-hidden">
           <Canvas
             camera={{
               fov: 15,
-              position: [0, 1.6, CAMERA_DISTANCE],
+              position: [0, 0, CAMERA_DISTANCE],
               near: 0.1,
               far: 1000,
             }}
@@ -104,8 +106,8 @@ export const OdontogramaHistoryViewer = ({
             />
 
             <OdontogramaModel
-              selectedTooth={null}
-              setSelectedTooth={() => {}}
+              selectedTooth={highlightedTooth}
+              setSelectedTooth={handleToothSelect}
               isJawOpen={isJawOpen}
               odontogramaDataHook={odontogramaDataHook}
               previewColorHex={null}
@@ -144,4 +146,5 @@ export const OdontogramaHistoryViewer = ({
   );
 };
 
-export default OdontogramaHistoryViewer;
+
+export default OdontogramaHistoryViewer; 

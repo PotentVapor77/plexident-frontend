@@ -33,7 +33,7 @@ interface PatientFormProps {
   mode?: "create" | "edit";
   initialData?: Partial<PatientFormData>;
   patientId?: string;
-  notify: ReturnType<typeof useNotification>["notify"]; // ✅ Nueva prop obligatoria
+  notify: ReturnType<typeof useNotification>["notify"]; 
 }
 
 type InputElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
@@ -43,7 +43,7 @@ export default function PatientForm({
   mode = "create",
   initialData,
   patientId,
-  notify, // ✅ Recibir notify
+  notify, 
 }: PatientFormProps) {
   const [formData, setFormData] = useState<PatientFormData>({
     nombres: initialData?.nombres ?? "",

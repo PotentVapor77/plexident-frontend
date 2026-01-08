@@ -35,6 +35,8 @@ import ConstantesVitalesPage from "./pages/VitalSigns/ConstantesVitalesPage";
 import StomatognathicExamPage from "./pages/StomatognathicExam/StomatognathicExamPage";
 import {PacienteProvider } from "./context/PacienteContext"; 
 import AppointmentsPage from "./pages/Appointments/AppointmentsPage";
+import IndicadoresSaludBucalPage from "./pages/Odontogram/IndicadoresSaludBucalPage";
+
 
 // ============================================================================
 // RUTAS PÚBLICAS
@@ -102,7 +104,6 @@ function App() {
             {/* Dashboard */}
             <Route path="/dashboard" element={<Home />} />
 
-            {/* ✅ Rutas con PacienteProvider - Comparten contexto de paciente */}
             <Route
               path="/pacientes"
               element={
@@ -136,6 +137,15 @@ function App() {
               }
             />
 
+            <Route
+              path="/indicadores-salud-bucal"
+              element={
+                <PacienteProvider>
+                  <IndicadoresSaludBucalPage />
+                </PacienteProvider>
+              }
+            
+            />
             {/* Rutas de antecedentes */}
             <Route
               path="/pacientes/antecedentes-personales"
@@ -145,10 +155,13 @@ function App() {
               path="/pacientes/antecedentes-familiares"
               element={<FamilyBackgroundPage />}
             />
+            <Route path="/pacientes/constantes-vitales" element={<ConstantesVitalesPage />} />
+            <Route path="/pacientes/examen-estomatognatico" element={<StomatognathicExamPage/>} />
 
             {/* Usuarios */}
             <Route path="/usuarios" element={<UsersPage />} />
             <Route path="/usuarios/:id/editar" element={<UsersPage />} />
+
             <Route path="/pacientes" element={<PatientsPage />} />
             <Route path="/pacientes/:id/editar" element={<PatientsPage />} />
             <Route path="/pacientes/antecedentes-personales" element={<PersonalBackgroundPage />} />
@@ -164,6 +177,7 @@ function App() {
             <Route path="/pacientes" element={<PatientsPage />} />
             <Route path="/odontograma" element={<OdontogramaPage />} />
             <Route path="/odontograma-timeline" element={<OdontogramaHistoryPage />} />
+
 
             <Route path="/segurity/users" element={<UsersPage />} />
 

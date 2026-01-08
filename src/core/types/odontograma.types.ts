@@ -1,5 +1,7 @@
 // src/components/odontogram/typeOdontograma.ts
 
+import type { BackendIndicadoresSaludBucal } from "../../types/odontogram/typeBackendOdontograma";
+
 /**
  * Tipos específicos de UI del odontograma
  * Importa y transforma tipos del backend cuando sea necesario
@@ -130,16 +132,51 @@ export type DiagnosticoEntry = {
 // ESTRUCTURAS DE DATOS (Estado del odontograma)
 // ============================================================================
 
-/**
- * Estructura completa del odontograma en memoria
- * Formato: { "11": { "vestibular": [DiagnosticoEntry[]], ... }, ... }
- */
 export type OdontogramaData = Record<string, Record<string, DiagnosticoEntry[]>>;
 
-/**
- * Estado global de dientes (ausencia, color dominante)
- */
 export type DienteGlobalData = Record<
   string,
   { ausente: boolean; dominanteColor: string | null }
+>;
+
+
+export type IndicadoresSaludBucal = {
+  id: string;
+  pacienteId: string;
+  fecha: Date;
+
+  placa: {
+    16: number | null;
+    11: number | null;
+    26: number | null;
+    36: number | null;
+    31: number | null;
+    46: number | null;
+  };
+  calculo: {
+    16: number | null;
+    11: number | null;
+    26: number | null;
+    36: number | null;
+    31: number | null;
+    46: number | null;
+  };
+
+  ohiPromedioPlaca: number | null;
+  ohiPromedioCalculo: number | null;
+
+  enfermedadPeriodontal: "LEVE" | "MODERADA" | "SEVERA" | null;
+  tipoOclusion: "ANGLE_I" | "ANGLE_II" | "ANGLE_III" | null;
+  nivelFluorosis: "NINGUNA" | "LEVE" | "MODERADA" | "SEVERA" | null;
+
+  observaciones: string | null;
+};
+
+export type IndicadoresSaludBucalCreatePayload = Omit<
+  BackendIndicadoresSaludBucal,
+  "id" | "fecha"
+>;
+
+export type IndicadoresSaludBucalUpdatePayload = Partial<
+  IndicadoresSaludBucalCreatePayload
 >;

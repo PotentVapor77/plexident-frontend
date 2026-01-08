@@ -17,12 +17,10 @@ const OdontogramaPage = () => {
             maxWidth: el.style.maxWidth,
         };
 
-        // Removemos padding y max-width para que el odontograma ocupe todo el espacio
         el.style.padding = "0";
         el.style.maxWidth = "100%";
 
         return () => {
-            // Restauramos estilos al desmontar
             el.style.padding = prev.padding;
             el.style.maxWidth = prev.maxWidth;
         };

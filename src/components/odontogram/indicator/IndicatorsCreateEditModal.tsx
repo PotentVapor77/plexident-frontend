@@ -26,7 +26,6 @@ export const IndicatorsCreateEditModal: React.FC<IndicatorsCreateEditModalProps>
     pacienteNombreCompleto,
     initialData,
     onSubmit,
-    submitting = false,
 }) => {
     const isEdit = !!initialData;
     const { notify } = useNotification();

@@ -15,6 +15,7 @@ const STYLES = {
   sectionTitle: "text-lg font-semibold text-gray-900 dark:text-white",
   infoCard: "rounded-xl border border-blue-light-200 bg-blue-light-50/50 p-4 dark:border-blue-light-500/20 dark:bg-blue-light-500/5",
   warningCard: "rounded-xl border border-warning-200 bg-warning-50/50 p-4 dark:border-warning-500/20 dark:bg-warning-500/5",
+  card: "rounded-xl border border-gray-200 bg-gray-50/50 p-5 dark:border-gray-700 dark:bg-gray-800/50",
 };
 
 // ============================================================================
@@ -25,10 +26,14 @@ interface SessionFormFieldsProps {
   formData: {
     fecha_programada: string;
     estado: string;
+    autocompletar_diagnosticos: boolean;
     notas: string;
   };
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  onCheckboxChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   mode: "create" | "edit";
+  gruposDisponiblesTotal: number;
+  totalDiagnosticos: number;
   disabled?: boolean;
 }
 
@@ -39,7 +44,10 @@ interface SessionFormFieldsProps {
 export default function SessionFormFields({
   formData,
   onChange,
+  onCheckboxChange,
   mode,
+  gruposDisponiblesTotal,
+  totalDiagnosticos,
   disabled = false,
 }: SessionFormFieldsProps) {
   return (
@@ -115,6 +123,41 @@ export default function SessionFormFields({
           </div>
         </div>
       </section>
+
+      {/* ======================================================================
+          AUTOCOMPLETAR DIAGNÓSTICOS (Solo en modo crear)
+      ====================================================================== */}
+      {mode === "create" && (
+        <section className={STYLES.card}>
+          <div className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              id="autocompletar_diagnosticos"
+              name="autocompletar_diagnosticos"
+              checked={formData.autocompletar_diagnosticos}
+              onChange={onCheckboxChange}
+              disabled={disabled}
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-brand-400"
+            />
+            <div className="flex-1">
+              <label
+                htmlFor="autocompletar_diagnosticos"
+                className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer"
+              >
+                Autocompletar con diagnósticos del odontograma
+              </label>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Se cargarán automáticamente los procedimientos sugeridos basados en{" "}
+                <span className="font-semibold text-brand-600 dark:text-brand-400">
+                  {gruposDisponiblesTotal}
+                </span>{" "}
+                grupo{gruposDisponiblesTotal !== 1 ? "s" : ""} de diagnósticos
+                {" "}({totalDiagnosticos} superficie{totalDiagnosticos !== 1 ? "s" : ""})
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
 
       <div className="h-px bg-gray-200 dark:bg-gray-700" />
 

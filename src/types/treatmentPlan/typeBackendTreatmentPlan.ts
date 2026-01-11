@@ -61,6 +61,7 @@ export interface DiagnosticoSnapshot {
     descripcion: string;
     estado_tratamiento: "diagnosticado" | "en_tratamiento" | "tratado" | "cancelado";
     atributos_clinicos: Record<string, any>;
+    es_nuevo?: boolean;
 }
 
 export interface Procedimiento {

@@ -1,7 +1,6 @@
 // frontend/src/components/appointments/AppointmentRescheduleModal.tsx
 
 import { useState, useEffect } from 'react';
-import { toast } from 'react-hot-toast';
 import {
   ClockIcon,
   CalendarDaysIcon,
@@ -16,6 +15,7 @@ import { format, parseISO, isBefore, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { ICita, IHorarioDisponible } from '../../types/appointments/IAppointment';
 import { useAppointment } from '../../hooks/appointments/useAppointment';
+import { useNotification } from '../../context/notifications/NotificationContext';
 
 interface AppointmentRescheduleModalProps {
   isOpen: boolean;
@@ -31,6 +31,7 @@ const AppointmentRescheduleModal = ({
   onRescheduleSuccess,
 }: AppointmentRescheduleModalProps) => {
   const { reprogramarCita, fetchHorariosDisponibles, horariosDisponibles, fetchingHorarios, loading } = useAppointment();
+  const { notify } = useNotification(); // Añadido
 
   const [formData, setFormData] = useState({
     fecha: cita.fecha,
@@ -97,7 +98,11 @@ const AppointmentRescheduleModal = ({
     } else if (formData.fecha && formData.hora_inicio) {
       if (isDateTimeInPast(formData.fecha, formData.hora_inicio)) {
         newErrors.hora_inicio = 'No puede seleccionar un horario que ya pasó';
-        toast.error('No puede seleccionar un horario que ya pasó');
+        notify({
+          type: 'warning',
+          title: 'Horario pasado',
+          message: 'No puede seleccionar un horario que ya pasó'
+        });
       }
     }
 
@@ -107,7 +112,11 @@ const AppointmentRescheduleModal = ({
       formData.hora_inicio === cita.hora_inicio
     ) {
       newErrors.general = 'Debe modificar al menos la fecha u hora de la cita';
-      toast.error('Debe modificar al menos la fecha u hora de la cita');
+      notify({
+        type: 'warning',
+        title: 'Sin cambios',
+        message: 'Debe modificar al menos la fecha u hora de la cita'
+      });
     }
 
     setErrors(newErrors);
@@ -134,6 +143,12 @@ const AppointmentRescheduleModal = ({
         formData.hora_inicio
       );
 
+      notify({
+        type: 'success',
+        title: 'Cita reprogramada',
+        message: 'La cita se ha reprogramado exitosamente'
+      });
+
       onRescheduleSuccess();
       onClose();
     } catch (error: any) {
@@ -151,7 +166,11 @@ const AppointmentRescheduleModal = ({
         errorMessage = error.response.data.detail;
       }
 
-      toast.error(errorMessage);
+      notify({
+        type: 'error',
+        title: 'Error al reprogramar',
+        message: errorMessage
+      });
     }
   };
 

@@ -1,7 +1,6 @@
 // frontend/src/components/appointments/AppointmentDetailModal.tsx
 
 import { useState } from 'react';
-import { toast } from 'react-hot-toast';
 import {
   XMarkIcon,
   CalendarIcon,
@@ -22,6 +21,8 @@ import { es } from 'date-fns/locale';
 import type { ICita } from '../../types/appointments/IAppointment';
 import { useAppointment } from '../../hooks/appointments/useAppointment';
 import AppointmentRescheduleModal from './AppointmentRescheduleModal';
+import { useNotification } from '../../context/notifications/NotificationContext';
+import RecordatorioSendModal from './RecordatorioSendModal';
 
 interface AppointmentDetailModalProps {
   isOpen: boolean;
@@ -37,10 +38,12 @@ const AppointmentDetailModal = ({
   onUpdate,
 }: AppointmentDetailModalProps) => {
   const { cancelarCita, cambiarEstadoCita, deleteCita, loading } = useAppointment();
+  const { notify } = useNotification();
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [motivoCancelacion, setMotivoCancelacion] = useState('');
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [showRecordatorioModal, setShowRecordatorioModal] = useState(false);
 
   const getEstadoBadgeColor = (estado: string) => {
     const colors: Record<string, string> = {
@@ -57,81 +60,133 @@ const AppointmentDetailModal = ({
 
   const handleCancelar = async () => {
     if (!motivoCancelacion.trim()) {
-      toast.error('Ingrese el motivo de cancelación');
+      notify({
+        type: 'error',
+        title: 'Motivo requerido',
+        message: 'Ingrese el motivo de cancelación'
+      });
       return;
     }
 
     try {
       await cancelarCita(cita.id, motivoCancelacion);
-      toast.success('Cita cancelada exitosamente');
+      notify({
+        type: 'success',
+        title: 'Cita cancelada',
+        message: 'Cita cancelada exitosamente'
+      });
       setShowCancelConfirm(false);
       setMotivoCancelacion('');
       if (onUpdate) onUpdate();
       onClose();
     } catch (error) {
       console.error('Error al cancelar cita:', error);
-      toast.error('Error al cancelar la cita');
+      notify({
+        type: 'error',
+        title: 'Error al cancelar',
+        message: 'Error al cancelar la cita'
+      });
     }
   };
 
   const handleDelete = async () => {
     try {
       await deleteCita(cita.id);
-      toast.success('Cita eliminada exitosamente');
+      notify({
+        type: 'success',
+        title: 'Cita eliminada',
+        message: 'Cita eliminada exitosamente'
+      });
       setShowDeleteConfirm(false);
       if (onUpdate) onUpdate();
       onClose();
     } catch (error) {
       console.error('Error al eliminar cita:', error);
-      toast.error('Error al eliminar la cita');
+      notify({
+        type: 'error',
+        title: 'Error al eliminar',
+        message: 'Error al eliminar la cita'
+      });
     }
   };
 
   const handleConfirmar = async () => {
     try {
       await cambiarEstadoCita(cita.id, 'CONFIRMADA');
-      toast.success('Cita confirmada exitosamente');
+      notify({
+        type: 'success',
+        title: 'Cita confirmada',
+        message: 'Cita confirmada exitosamente'
+      });
       if (onUpdate) onUpdate();
       onClose();
     } catch (error) {
       console.error('Error al confirmar cita:', error);
-      toast.error('Error al confirmar la cita');
+      notify({
+        type: 'error',
+        title: 'Error al confirmar',
+        message: 'Error al confirmar la cita'
+      });
     }
   };
 
   const handleMarcarAsistida = async () => {
     try {
       await cambiarEstadoCita(cita.id, 'ASISTIDA');
-      toast.success('Cita marcada como asistida');
+      notify({
+        type: 'success',
+        title: 'Cita marcada como asistida',
+        message: 'Cita marcada como asistida'
+      });
       if (onUpdate) onUpdate();
       onClose();
     } catch (error) {
       console.error('Error al marcar como asistida:', error);
-      toast.error('Error al marcar como asistida');
+      notify({
+        type: 'error',
+        title: 'Error al marcar',
+        message: 'Error al marcar como asistida'
+      });
     }
   };
 
   const handleMarcarNoAsistida = async () => {
     try {
       await cambiarEstadoCita(cita.id, 'NO_ASISTIDA');
-      toast.success('Cita marcada como no asistida');
+      notify({
+        type: 'success',
+        title: 'Cita marcada como no asistida',
+        message: 'Cita marcada como no asistida'
+      });
       if (onUpdate) onUpdate();
       onClose();
     } catch (error) {
       console.error('Error al marcar como no asistida:', error);
-      toast.error('Error al marcar como no asistida');
+      notify({
+        type: 'error',
+        title: 'Error al marcar',
+        message: 'Error al marcar como no asistida'
+      });
     }
   };
 
   const handleIniciarAtencion = async () => {
     try {
       await cambiarEstadoCita(cita.id, 'EN_ATENCION');
-      toast.success('Atención iniciada correctamente');
+      notify({
+        type: 'success',
+        title: 'Atención iniciada',
+        message: 'Atención iniciada correctamente'
+      });
       if (onUpdate) onUpdate();
       onClose();
     } catch (error) {
       console.error('Error al iniciar atención:', error);
-      toast.error('Error al iniciar atención');
+      notify({
+        type: 'error',
+        title: 'Error al iniciar',
+        message: 'Error al iniciar atención'
+      });
     }
   };
 
@@ -147,7 +202,7 @@ const AppointmentDetailModal = ({
   // Estado: PROGRAMADA 🟡
   const renderButtonsPROGRAMADA = () => (
     <>
-      {/* Primera fila: Confirmar, Reprogramar y Cancelar */}
+      {/* Primera fila: Confirmar, Reprogramar, Recordatorio y Cancelar */}
       <div className="flex flex-wrap justify-center gap-3 mb-4">
         {/* ✅ Confirmar cita */}
         <button
@@ -166,6 +221,15 @@ const AppointmentDetailModal = ({
         >
           <ArrowPathIcon className="h-5 w-5 mr-2" />
           Reprogramar
+        </button>
+
+        {/* 📧 Recordatorio */}
+        <button
+          onClick={() => setShowRecordatorioModal(true)}
+          className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-indigo-700 rounded-lg hover:from-indigo-600 hover:to-indigo-800 transition-all shadow-md"
+        >
+          <EnvelopeIcon className="h-5 w-5 mr-2" />
+          Recordatorio
         </button>
 
         {/* ❌ Cancelar cita */}
@@ -205,7 +269,7 @@ const AppointmentDetailModal = ({
   // Estado: CONFIRMADA 🟢
   const renderButtonsCONFIRMADA = () => (
     <>
-      {/* Primera fila: Iniciar atención, Reprogramar y Cancelar */}
+      {/* Primera fila: Iniciar atención, Reprogramar, Recordatorio y Cancelar */}
       <div className="flex flex-wrap justify-center gap-3 mb-4">
         {/* ▶️ Iniciar atención */}
         <button
@@ -224,6 +288,15 @@ const AppointmentDetailModal = ({
         >
           <ArrowPathIcon className="h-5 w-5 mr-2" />
           Reprogramar
+        </button>
+
+        {/* 📧 Recordatorio */}
+        <button
+          onClick={() => setShowRecordatorioModal(true)}
+          className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-indigo-700 rounded-lg hover:from-indigo-600 hover:to-indigo-800 transition-all shadow-md"
+        >
+          <EnvelopeIcon className="h-5 w-5 mr-2" />
+          Recordatorio
         </button>
 
         {/* ❌ Cancelar cita */}
@@ -305,6 +378,8 @@ const AppointmentDetailModal = ({
         Reprogramar
       </button>
 
+    
+
       {/* 🗑️ Eliminar */}
       <button
         onClick={() => setShowDeleteConfirm(true)}
@@ -337,6 +412,8 @@ const AppointmentDetailModal = ({
         Reprogramar
       </button>
 
+    
+
       {/* 🗑️ Eliminar */}
       <button
         onClick={() => setShowDeleteConfirm(true)}
@@ -360,27 +437,34 @@ const AppointmentDetailModal = ({
   // Estado: REPROGRAMADA 🟣
   const renderButtonsREPROGRAMADA = () => (
     <div className="flex justify-center gap-3">
+      {/* Confirmar */}
+      <button
+        onClick={handleConfirmar}
+        disabled={loading}
+        className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-green-700 rounded-lg hover:from-green-600 hover:to-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
+      >
+        <CheckCircleIcon className="h-5 w-5 mr-2" />
+        Confirmar Cita
+      </button>
 
-        {/* Confirmarda */}
-       <button
-          onClick={handleConfirmar}
-          disabled={loading}
-          className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-green-700 rounded-lg hover:from-green-600 hover:to-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
-        >
-          <CheckCircleIcon className="h-5 w-5 mr-2" />
-          Confirmar Cita
-        </button>
+      {/* 📧 Recordatorio */}
+      <button
+        onClick={() => setShowRecordatorioModal(true)}
+        className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-indigo-700 rounded-lg hover:from-indigo-600 hover:to-indigo-800 transition-all shadow-md"
+      >
+        <EnvelopeIcon className="h-5 w-5 mr-2" />
+        Recordatorio
+      </button>
 
-
-        {/* ❌ Cancelar cita */}
-        <button
-          onClick={() => setShowCancelConfirm(true)}
-          disabled={loading}
-          className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-500 to-red-700 rounded-lg hover:from-red-600 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
-        >
-          <XCircleIcon className="h-5 w-5 mr-2" />
-          Cancelar Cita
-        </button>
+      {/* ❌ Cancelar cita */}
+      <button
+        onClick={() => setShowCancelConfirm(true)}
+        disabled={loading}
+        className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-500 to-red-700 rounded-lg hover:from-red-600 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
+      >
+        <XCircleIcon className="h-5 w-5 mr-2" />
+        Cancelar Cita
+      </button>
 
       {/* 🗑️ Eliminar */}
       <button
@@ -412,6 +496,15 @@ const AppointmentDetailModal = ({
       >
         <ArrowPathIcon className="h-5 w-5 mr-2" />
         Reprogramar
+      </button>
+
+      {/* 📧 Recordatorio */}
+      <button
+        onClick={() => setShowRecordatorioModal(true)}
+        className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-indigo-700 rounded-lg hover:from-indigo-600 hover:to-indigo-800 transition-all shadow-md"
+      >
+        <EnvelopeIcon className="h-5 w-5 mr-2" />
+        Recordatorio
       </button>
 
       {/* 🗑️ Eliminar */}
@@ -542,6 +635,9 @@ const AppointmentDetailModal = ({
                     </p>
                   </div>
                 </div>
+
+              
+                
               </div>
             </div>
 
@@ -771,6 +867,24 @@ const AppointmentDetailModal = ({
           onClose={() => setShowRescheduleModal(false)}
           cita={cita}
           onRescheduleSuccess={handleRescheduleSuccess}
+        />
+      )}
+
+      {/* Modal de Recordatorio */}
+      {showRecordatorioModal && (
+        <RecordatorioSendModal
+          isOpen={showRecordatorioModal}
+          onClose={() => setShowRecordatorioModal(false)}
+          citaId={cita.id}
+          onSuccess={() => {
+            notify({
+              type: 'success',
+              title: 'Recordatorio enviado',
+              message: 'El recordatorio se ha enviado exitosamente'
+            });
+            if (onUpdate) onUpdate();
+            setShowRecordatorioModal(false);
+          }}
         />
       )}
     </>

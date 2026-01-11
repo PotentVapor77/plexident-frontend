@@ -10,6 +10,8 @@ import AppointmentDetailModal from './AppointmentDetailModal';
 import ScheduleModal from './ScheduleModal';
 import type { ICita, VistaCalendario } from '../../types/appointments/IAppointment';
 import { useAppointment } from '../../hooks/appointments/useAppointment';
+import { useAuth } from '../../hooks/auth/useAuth';
+import { useNotification } from '../../context/notifications/NotificationContext';
 
 const AppointmentCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -23,6 +25,22 @@ const AppointmentCalendar = () => {
   const [selectedTime, setSelectedTime] = useState('');
 
   const { citas, loading, fetchCitas, fetchCitasBySemana, fetchCitasByOdontologo } = useAppointment();
+  const { notify } = useNotification(); // Añadido
+
+  // Obtener el usuario actual desde el contexto de autenticación
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  
+  // Obtener el rol del usuario
+  const userRole = user?.rol || user?.rol || '';
+
+  // Log para depuración
+  console.log('👤 Auth state:', { 
+    user, 
+    userRole, 
+    isAuthenticated, 
+    authLoading,
+    userObject: user ? JSON.stringify(user) : 'No user'
+  });
 
   const isFetchingRef = useRef(false);
   const lastFetchParamsRef = useRef<string>('');
@@ -81,11 +99,16 @@ const AppointmentCalendar = () => {
       console.log('✅ Carga completada exitosamente', { fetchKey: currentFetchKey, citasObtenidas: citas.length });
     } catch (error) {
       console.error('❌ Error en loadAppointments:', error);
+      notify({
+        type: 'error',
+        title: 'Error al cargar citas',
+        message: 'No se pudieron cargar las citas. Por favor, intente nuevamente.'
+      });
       lastFetchParamsRef.current = '';
     } finally {
       isFetchingRef.current = false;
     }
-  }, [currentDate, selectedView, selectedOdontologo, fetchCitas, fetchCitasBySemana, fetchCitasByOdontologo, getFetchKey, citas.length]);
+  }, [currentDate, selectedView, selectedOdontologo, fetchCitas, fetchCitasBySemana, fetchCitasByOdontologo, getFetchKey, citas.length, notify]);
 
   const debouncedLoadAppointments = useCallback(() => {
     if (debounceTimerRef.current !== null) {
@@ -186,6 +209,7 @@ const AppointmentCalendar = () => {
         selectedOdontologo={selectedOdontologo}
         onOdontologoChange={setSelectedOdontologo}
         citas={citas}
+        userRole={userRole} // Pasa el rol al CalendarHeader
       />
 
       {/* Vista del calendario */}

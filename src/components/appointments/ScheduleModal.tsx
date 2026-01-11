@@ -1,7 +1,6 @@
 // frontend/src/components/appointments/ScheduleModal.tsx
 
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { toast } from 'react-hot-toast';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   ClockIcon,
   UserIcon,
@@ -20,6 +19,7 @@ import { getUsers } from '../../services/user/userService';
 import type { IUser } from '../../types/user/IUser';
 import type { IHorarioAtencion, IHorarioAtencionCreate } from '../../types/appointments/IAppointment';
 import { useSchedule } from '../../hooks/appointments/useSchedule';
+import { useNotification } from '../../context/notifications/NotificationContext';
 
 interface IUserGroup {
   id?: string | number;
@@ -51,6 +51,18 @@ const DURACIONES_PREDEFINIDAS = [
   { value: 60, label: '1 hora' },
 ];
 
+// Tipo para el error de la API
+interface ApiError {
+  message?: string;
+  response?: {
+    data?: {
+      message?: string;
+      error?: string;
+      detail?: string;
+    };
+  };
+}
+
 const ScheduleModal = ({ 
   isOpen, 
   onClose, 
@@ -58,6 +70,7 @@ const ScheduleModal = ({
   selectedOdontologoName = '' 
 }: ScheduleModalProps) => {
   const { horarios, loading, fetchHorarios, createHorario, updateHorario, toggleActive } = useSchedule();
+  const { notify } = useNotification();
   const [odontologos, setOdontologos] = useState<IUser[]>([]);
   const [loadingOdontologos, setLoadingOdontologos] = useState(false);
   const [selectedOdontologo, setSelectedOdontologo] = useState(selectedOdontologoId);
@@ -83,68 +96,76 @@ const ScheduleModal = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Cargar odontólogos
-  useEffect(() => {
-    const loadOdontologos = async () => {
-      if (!isOpen) return;
+  const loadOdontologos = useCallback(async () => {
+    if (!isOpen) return;
 
-      setLoadingOdontologos(true);
-      try {
-        const usersResponse = await getUsers({ is_active: true, page_size: 1000 });
+    setLoadingOdontologos(true);
+    try {
+      const usersResponse = await getUsers({ is_active: true, page_size: 1000 });
 
-        let usersList: IUser[] = [];
+      let usersList: IUser[] = [];
 
-        if (usersResponse && typeof usersResponse === 'object') {
-          if ('results' in usersResponse && Array.isArray((usersResponse as { results: IUser[] }).results)) {
-            usersList = (usersResponse as { results: IUser[] }).results;
-          } else if ('data' in usersResponse) {
-            const dataObj = (usersResponse as { data: { results: IUser[] } }).data;
-            if (dataObj && typeof dataObj === 'object' && 'results' in dataObj && Array.isArray(dataObj.results)) {
-              usersList = dataObj.results;
-            }
+      if (usersResponse && typeof usersResponse === 'object') {
+        if ('results' in usersResponse && Array.isArray((usersResponse as { results: IUser[] }).results)) {
+          usersList = (usersResponse as { results: IUser[] }).results;
+        } else if ('data' in usersResponse) {
+          const dataObj = (usersResponse as { data: { results: IUser[] } }).data;
+          if (dataObj && typeof dataObj === 'object' && 'results' in dataObj && Array.isArray(dataObj.results)) {
+            usersList = dataObj.results;
           }
         }
-
-        const odontologosList = usersList.filter((user: IUser) => {
-          if (user.rol && typeof user.rol === 'string') {
-            const rol = user.rol.toLowerCase();
-            return rol.includes('odontologo') || rol.includes('odontólogo') || rol.includes('doctor');
-          }
-
-          if ('es_odontologo' in user && (user as { es_odontologo?: boolean }).es_odontologo === true) {
-            return true;
-          }
-
-          if ('groups' in user && Array.isArray((user as { groups?: IUserGroup[] }).groups)) {
-            return (user as { groups: IUserGroup[] }).groups.some((group: IUserGroup) =>
-              group.name?.toLowerCase().includes('odontologo') || group.name?.toLowerCase().includes('doctor')
-            );
-          }
-
-          return false;
-        });
-
-        if (odontologosList.length === 0) {
-          console.warn('⚠️ No se encontraron odontólogos activos en la respuesta', usersList);
-          toast.error('No se encontraron odontólogos activos');
-        }
-
-        setOdontologos(odontologosList);
-
-        if (selectedOdontologoId && !odontologosList.some(doc => doc.id === selectedOdontologoId)) {
-          console.warn(`⚠️ Odontólogo con ID ${selectedOdontologoId} no encontrado en la lista cargada`);
-        }
-      } catch (error) {
-        console.error('❌ Error loading odontologos:', error);
-        toast.error('Error al cargar odontólogos');
-      } finally {
-        setLoadingOdontologos(false);
       }
-    };
 
+      const odontologosList = usersList.filter((user: IUser) => {
+        if (user.rol && typeof user.rol === 'string') {
+          const rol = user.rol.toLowerCase();
+          return rol.includes('odontologo') || rol.includes('odontólogo') || rol.includes('doctor');
+        }
+
+        if ('es_odontologo' in user && (user as { es_odontologo?: boolean }).es_odontologo === true) {
+          return true;
+        }
+
+        if ('groups' in user && Array.isArray((user as { groups?: IUserGroup[] }).groups)) {
+          return (user as { groups: IUserGroup[] }).groups.some((group: IUserGroup) =>
+            group.name?.toLowerCase().includes('odontologo') || group.name?.toLowerCase().includes('doctor')
+          );
+        }
+
+        return false;
+      });
+
+      if (odontologosList.length === 0) {
+        console.warn('⚠️ No se encontraron odontólogos activos en la respuesta', usersList);
+        notify({
+          type: 'error',
+          title: 'Sin odontólogos',
+          message: 'No se encontraron odontólogos activos'
+        });
+      }
+
+      setOdontologos(odontologosList);
+
+      if (selectedOdontologoId && !odontologosList.some(doc => doc.id === selectedOdontologoId)) {
+        console.warn(`⚠️ Odontólogo con ID ${selectedOdontologoId} no encontrado en la lista cargada`);
+      }
+    } catch (error) {
+      console.error('❌ Error loading odontologos:', error);
+      notify({
+        type: 'error',
+        title: 'Error al cargar',
+        message: 'Error al cargar odontólogos'
+      });
+    } finally {
+      setLoadingOdontologos(false);
+    }
+  }, [isOpen, selectedOdontologoId, notify]);
+
+  useEffect(() => {
     loadOdontologos();
-  }, [isOpen, selectedOdontologoId]);
+  }, [loadOdontologos]);
 
-  // Cargar horarios cuando se selecciona un odontólogo
+  // Cargar horarios cuando se selecciona un odontólogo o se abre el modal
   useEffect(() => {
     if (isOpen) {
       if (selectedOdontologo) {
@@ -168,13 +189,13 @@ const ScheduleModal = ({
     }
   }, [selectedOdontologoId, odontologos]);
 
-  // Filtrar odontólogos mejorado
+  // Filtrar odontólogos
   const filteredOdontologos = useMemo(() => {
     if (!searchQuery.trim()) return odontologos;
     
     const cleanQuery = searchQuery
       .toLowerCase()
-      .replace(/^(dr\.?|dra\.?)\\s*/i, '')
+      .replace(/^(dr\.?|dra\.?)\s*/i, '')
       .trim();
     
     if (!cleanQuery) return odontologos;
@@ -283,22 +304,35 @@ const ScheduleModal = ({
     e.preventDefault();
 
     if (!validateForm()) {
-      toast.error('Por favor complete todos los campos correctamente');
+      notify({
+        type: 'warning',
+        title: 'Formulario incompleto',
+        message: 'Por favor complete todos los campos correctamente'
+      });
       return;
     }
 
     try {
       if (editingHorario) {
         await updateHorario(editingHorario.id, formData);
-        toast.success('Horario actualizado correctamente');
+        notify({
+          type: 'success',
+          title: 'Horario actualizado',
+          message: 'Horario actualizado correctamente'
+        });
         setEditingHorario(null);
       } else {
         await createHorario(formData);
+        notify({
+          type: 'success',
+          title: 'Horario creado',
+          message: 'Horario creado correctamente'
+        });
       }
       
       setShowForm(false);
       setFormData({
-        odontologo: selectedOdontologoId || '',
+        odontologo: selectedOdontologo || '', // Usar selectedOdontologo en lugar de selectedOdontologoId
         dia_semana: 0,
         hora_inicio: '08:00',
         hora_fin: '17:00',
@@ -311,11 +345,28 @@ const ScheduleModal = ({
 
       if (selectedOdontologo) {
         fetchHorarios({ odontologo: selectedOdontologo });
-      } else {
-        fetchHorarios();
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ Error en handleSubmit:', error);
+      
+      let errorMessage = 'Error al guardar el horario';
+      const apiError = error as ApiError;
+      
+      if (apiError?.message) {
+        errorMessage = apiError.message;
+      } else if (apiError?.response?.data?.message) {
+        errorMessage = apiError.response.data.message;
+      } else if (apiError?.response?.data?.error) {
+        errorMessage = apiError.response.data.error;
+      } else if (apiError?.response?.data?.detail) {
+        errorMessage = apiError.response.data.detail;
+      }
+
+      notify({
+        type: 'error',
+        title: 'Error',
+        message: errorMessage
+      });
     }
   };
 
@@ -332,13 +383,14 @@ const ScheduleModal = ({
     setDurationInputValue(horario.duracion_cita.toString());
     setShowForm(true);
     setCustomDuration(false);
+    setSelectedOdontologo(horario.odontologo);
   };
 
   const handleCancelEdit = () => {
     setEditingHorario(null);
     setShowForm(false);
     setFormData({
-      odontologo: selectedOdontologoId || '',
+      odontologo: selectedOdontologo || '',
       dia_semana: 0,
       hora_inicio: '08:00',
       hora_fin: '17:00',
@@ -353,11 +405,41 @@ const ScheduleModal = ({
   const handleToggleActive = async (id: string, activo: boolean) => {
     try {
       await toggleActive(id, !activo);
+      
+      const action = activo ? 'desactivado' : 'activado';
+      const notificationType = activo ? 'warning' : 'success';
+      const notificationTitle = activo ? 'Horario desactivado' : 'Horario activado';
+      
+      notify({
+        type: notificationType,
+        title: notificationTitle,
+        message: `Horario ${action} correctamente`
+      });
+      
       if (selectedOdontologo) {
         await fetchHorarios({ odontologo: selectedOdontologo });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ Error toggling active:', error);
+      
+      let errorMessage = 'Error al cambiar el estado del horario';
+      const apiError = error as ApiError;
+      
+      if (apiError?.message) {
+        errorMessage = apiError.message;
+      } else if (apiError?.response?.data?.message) {
+        errorMessage = apiError.response.data.message;
+      } else if (apiError?.response?.data?.error) {
+        errorMessage = apiError.response.data.error;
+      } else if (apiError?.response?.data?.detail) {
+        errorMessage = apiError.response.data.detail;
+      }
+
+      notify({
+        type: 'error',
+        title: 'Error',
+        message: errorMessage
+      });
     }
   };
 
@@ -387,12 +469,27 @@ const ScheduleModal = ({
     setSearchQuery(`Dr. ${odontologo.nombres} ${odontologo.apellidos}`);
     setShowDropdown(false);
     setFormData(prev => ({ ...prev, odontologo: odontologo.id }));
+    // Si estamos en modo edición, actualizar el odontólogo del horario en edición
+    if (editingHorario) {
+      setFormData(prev => ({ ...prev, odontologo: odontologo.id }));
+    }
   };
 
   const handleClearSelection = () => {
     setSelectedOdontologo('');
     setSearchQuery('');
     setShowDropdown(false);
+    setFormData(prev => ({ ...prev, odontologo: '' }));
+  };
+
+  const handleToggleForm = () => {
+    if (showForm && !editingHorario) {
+      setShowForm(false);
+    } else if (editingHorario) {
+      handleCancelEdit();
+    } else {
+      setShowForm(true);
+    }
   };
 
   const filteredHorarios = selectedOdontologo
@@ -419,6 +516,11 @@ const ScheduleModal = ({
 
     return 'Odontólogo';
   };
+
+  // Determinar si mostrar el formulario o la lista
+  const shouldShowForm = showForm || editingHorario;
+  const shouldShowNoSelectionMessage = !selectedOdontologo && !shouldShowForm && !loading;
+  const shouldShowHorariosList = selectedOdontologo && !shouldShowForm && !loading;
 
   return (
     <Modal 
@@ -457,10 +559,12 @@ const ScheduleModal = ({
         <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 shadow-sm">
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-1">
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <div className="flex items-center gap-2 mb-2">
                 <UserIcon className="h-4 w-4 text-blue-600" />
-                Buscar odontólogo
-              </label>
+                <span className="text-sm font-semibold text-gray-700">
+                  Buscar odontólogo
+                </span>
+              </div>
               <div className="relative">
                 <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -525,24 +629,16 @@ const ScheduleModal = ({
 
             {/* Botón principal */}
             <button
-              onClick={() => {
-                if (showForm && !editingHorario) {
-                  setShowForm(false);
-                } else if (editingHorario) {
-                  handleCancelEdit();
-                } else {
-                  setShowForm(true);
-                }
-              }}
+              onClick={handleToggleForm}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all font-semibold shadow-md hover:shadow-lg ${
-                showForm
+                shouldShowForm
                   ? 'bg-white text-gray-700 border-2 border-gray-300 hover:bg-gray-50'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
             >
               <PlusIcon className="h-5 w-5" />
               <span>
-                {showForm ? 'Cancelar' : 'Crear Nuevo Horario'}
+                {shouldShowForm ? 'Cancelar' : 'Crear Nuevo Horario'}
               </span>
             </button>
           </div>
@@ -575,36 +671,13 @@ const ScheduleModal = ({
           )}
         </div>
 
-        {/* Mensaje cuando no hay odontólogo seleccionado */}
-        {!selectedOdontologo && !showForm && !loading && (
-          <div className="text-center py-16 bg-blue-50 rounded-2xl border-2 border-blue-200 shadow-sm">
-            <div className="inline-flex items-center justify-center h-20 w-20 bg-blue-600 rounded-2xl mb-5 shadow-lg">
-              <UserIcon className="h-10 w-10 text-white" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">
-              Selecciona un odontólogo
-            </h3>
-            <p className="text-gray-600 max-w-md mx-auto mb-8 px-4">
-              Para ver o gestionar horarios, primero selecciona un odontólogo usando el buscador
-            </p>
-            <div className="flex items-center justify-center gap-3 text-sm text-gray-500">
-              <div className="h-px w-12 bg-gray-300"></div>
-              <span className="font-medium">o</span>
-              <div className="h-px w-12 bg-gray-300"></div>
-            </div>
-            <p className="text-sm text-gray-500 mt-8 px-4">
-              Haz clic en <strong className="text-blue-600">"Crear Nuevo Horario"</strong> para comenzar desde cero
-            </p>
-          </div>
-        )}
-
-        {/* ✅ Formulario de Creación/Edición */}
-        {showForm && (
+        {/* ✅ Mostrar formulario cuando corresponda */}
+        {shouldShowForm && (
           <form onSubmit={handleSubmit} className="bg-white border-2 border-blue-200 rounded-2xl p-6 shadow-lg">
             <div className="flex items-center gap-3 mb-6">
               <div className={`h-12 w-12 rounded-xl flex items-center justify-center shadow-md ${
                 editingHorario 
-                  ? 'bg-blue-500' // ✅ MODIFICADO: Azul normal para editar
+                  ? 'bg-blue-500'
                   : 'bg-blue-600'
               }`}>
                 {editingHorario ? (
@@ -618,7 +691,7 @@ const ScheduleModal = ({
                   {editingHorario 
                     ? `Editar horario de ${DIAS_SEMANA[editingHorario.dia_semana]?.label || 'día'}`
                     : selectedOdontologo 
-                      ? `Nuevo horario para ${getOdontologoName(selectedOdontologo)}` 
+                      ? `Nuevo horario` 
                       : 'Crear Nuevo Horario'}
                 </h3>
                 <p className="text-sm text-gray-500">
@@ -628,15 +701,15 @@ const ScheduleModal = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Select de odontólogo cuando no hay uno seleccionado */}
+              {/* Mostrar select de odontólogo solo si no hay uno seleccionado */}
               {!selectedOdontologo && (
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    <span className="flex items-center gap-1">
-                      <UserIcon className="h-4 w-4 text-blue-600" />
+                  <div className="flex items-center gap-1 mb-2">
+                    <UserIcon className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-semibold text-gray-700">
                       Odontólogo <span className="text-red-500">*</span>
                     </span>
-                  </label>
+                  </div>
                   <select
                     name="odontologo"
                     value={formData.odontologo}
@@ -662,14 +735,37 @@ const ScheduleModal = ({
                 </div>
               )}
 
+              {/* Si hay odontólogo seleccionado, mostrar info en lugar de select */}
+              {selectedOdontologo && (
+                <div className="md:col-span-2">
+                  <div className="flex items-center gap-1 mb-2">
+                    <UserIcon className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-semibold text-gray-700">
+                      Odontólogo
+                    </span>
+                  </div>
+                  <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <UserIcon className="h-5 w-5 text-blue-700" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">{getOdontologoName(selectedOdontologo)}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">Seleccionado actualmente</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Día de la semana */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  <span className="flex items-center gap-1">
-                    <CalendarDaysIcon className="h-4 w-4 text-blue-600" />
+                <div className="flex items-center gap-1">
+                  <CalendarDaysIcon className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-semibold text-gray-700">
                     Día de la semana <span className="text-red-500">*</span>
                   </span>
-                </label>
+                </div>
                 <div className="relative">
                   <select
                     name="dia_semana"
@@ -693,12 +789,12 @@ const ScheduleModal = ({
 
               {/* Duración de cita */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  <span className="flex items-center gap-1">
-                    <ClockIcon className="h-4 w-4 text-blue-600" />
+                <div className="flex items-center gap-1">
+                  <ClockIcon className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-semibold text-gray-700">
                     Duración de cita <span className="text-red-500">*</span>
                   </span>
-                </label>
+                </div>
                 
                 {customDuration ? (
                   <div className="flex gap-2">
@@ -798,12 +894,12 @@ const ScheduleModal = ({
 
               {/* Hora de inicio */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  <span className="flex items-center gap-1">
-                    <ClockIcon className="h-4 w-4 text-blue-600" />
+                <div className="flex items-center gap-1">
+                  <ClockIcon className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-semibold text-gray-700">
                     Hora de inicio <span className="text-red-500">*</span>
                   </span>
-                </label>
+                </div>
                 <input
                   type="time"
                   name="hora_inicio"
@@ -823,12 +919,12 @@ const ScheduleModal = ({
 
               {/* Hora de fin */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  <span className="flex items-center gap-1">
-                    <ClockIcon className="h-4 w-4 text-blue-600" />
+                <div className="flex items-center gap-1">
+                  <ClockIcon className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-semibold text-gray-700">
                     Hora de fin <span className="text-red-500">*</span>
                   </span>
-                </label>
+                </div>
                 <input
                   type="time"
                   name="hora_fin"
@@ -890,7 +986,7 @@ const ScheduleModal = ({
                 disabled={loading}
                 className={`px-6 py-3 text-sm font-semibold text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md ${
                   editingHorario
-                    ? 'bg-blue-500 hover:bg-blue-600' // ✅ MODIFICADO: Azul normal para editar
+                    ? 'bg-blue-500 hover:bg-blue-600'
                     : 'bg-blue-600 hover:bg-blue-700'
                 }`}
               >
@@ -907,8 +1003,31 @@ const ScheduleModal = ({
           </form>
         )}
 
-        {/* ✅ Lista de Horarios con SCROLL */}
-        {selectedOdontologo && !showForm && (
+        {/* ✅ Mensaje cuando no hay odontólogo seleccionado */}
+        {shouldShowNoSelectionMessage && (
+          <div className="text-center py-16 bg-blue-50 rounded-2xl border-2 border-blue-200 shadow-sm">
+            <div className="inline-flex items-center justify-center h-20 w-20 bg-blue-600 rounded-2xl mb-5 shadow-lg">
+              <UserIcon className="h-10 w-10 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">
+              Selecciona un odontólogo
+            </h3>
+            <p className="text-gray-600 max-w-md mx-auto mb-8 px-4">
+              Para ver o gestionar horarios, primero selecciona un odontólogo usando el buscador
+            </p>
+            <div className="flex items-center justify-center gap-3 text-sm text-gray-500">
+              <div className="h-px w-12 bg-gray-300"></div>
+              <span className="font-medium">o</span>
+              <div className="h-px w-12 bg-gray-300"></div>
+            </div>
+            <p className="text-sm text-gray-500 mt-8 px-4">
+              Haz clic en <strong className="text-blue-600">"Crear Nuevo Horario"</strong> para comenzar desde cero
+            </p>
+          </div>
+        )}
+
+        {/* ✅ Lista de Horarios cuando hay odontólogo seleccionado */}
+        {shouldShowHorariosList && (
           <div className="min-h-[200px]">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-16">
@@ -1020,7 +1139,6 @@ const ScheduleModal = ({
                           )}
 
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {/* ✅ Filtrar horarios según showInactivos */}
                             {(showInactivos ? horariosOdontologo : horariosActivos).map((horario) => {
                               const diaInfo = DIAS_SEMANA.find(d => d.value === horario.dia_semana);
                               const diaLabel = diaInfo?.label || horario.dia_semana_display || `Día ${horario.dia_semana}`;
@@ -1036,7 +1154,6 @@ const ScheduleModal = ({
                                       : 'border-red-200 bg-red-50'
                                   }`}
                                 >
-                                  {/* Header de la card */}
                                   <div className="flex items-start justify-between mb-3">
                                     <div className="flex items-center gap-2">
                                       <CalendarDaysIcon className={`h-5 w-5 ${horario.activo ? 'text-blue-600' : 'text-red-500'}`} />
@@ -1051,7 +1168,6 @@ const ScheduleModal = ({
                                     </span>
                                   </div>
 
-                                  {/* Detalles del horario */}
                                   <div className="space-y-2 mb-4">
                                     <div className="flex items-center gap-2 text-sm">
                                       <ClockIcon className={`h-4 w-4 ${horario.activo ? 'text-gray-400' : 'text-red-400'}`} />
@@ -1069,9 +1185,7 @@ const ScheduleModal = ({
                                     </div>
                                   </div>
 
-                                  {/* ✅ BOTONES DE ACCIÓN - SIN ELIMINAR */}
                                   <div className="flex gap-2 pt-3 border-t border-gray-200">
-                                    {/* Botón Editar - Azul */}
                                     <button
                                       onClick={() => handleEdit(horario)}
                                       className="flex-1 px-3 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1"
@@ -1081,13 +1195,12 @@ const ScheduleModal = ({
                                       Editar
                                     </button>
                                     
-                                    {/* Botón Activar/Desactivar - Verde/Rojo */}
                                     <button
                                       onClick={() => handleToggleActive(horario.id, horario.activo)}
                                       className={`flex-1 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
                                         horario.activo
-                                          ? 'bg-red-500 text-white hover:bg-red-600' // ✅ Desactivar: Rojo
-                                          : 'bg-green-500 text-white hover:bg-green-600' // ✅ Activar: Verde
+                                          ? 'bg-red-500 text-white hover:bg-red-600'
+                                          : 'bg-green-500 text-white hover:bg-green-600'
                                       }`}
                                       title={horario.activo ? 'Desactivar horario' : 'Activar horario'}
                                     >

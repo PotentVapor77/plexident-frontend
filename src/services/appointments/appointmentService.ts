@@ -210,6 +210,49 @@ reprogramarCita: async (
       throw error;
     }
   },
+
+
+  // Enviar recordatorio
+enviarRecordatorio: async (
+  citaId: string,
+  data: {
+    tipo_recordatorio: string;
+    destinatario: string;
+    mensaje_personalizado?: string;
+  }
+): Promise<unknown> => {
+  try {
+    console.log('📤 enviarRecordatorio - Cita ID:', citaId, 'Datos:', data);
+    const response = await api.post(
+      ENDPOINTS.appointments.citas.enviarRecordatorio(citaId),
+      data
+    );
+    console.log('✅ enviarRecordatorio - Respuesta:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('❌ enviarRecordatorio - Error:', error);
+    throw error;
+  }
+},
+
+// Obtener estadísticas de recordatorios
+getEstadisticasRecordatorios: async (): Promise<unknown> => {
+  try {
+    console.log('📊 getEstadisticasRecordatorios - Solicitando...');
+    const response = await api.get(ENDPOINTS.appointments.citas.estadisticasRecordatorios);
+    console.log('✅ getEstadisticasRecordatorios - Respuesta:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('❌ getEstadisticasRecordatorios - Error:', error);
+    throw error;
+  }
+},
+
+
+
+
+  
 };
+
 
 export default appointmentService;

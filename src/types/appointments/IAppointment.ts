@@ -38,6 +38,7 @@ export type TipoConsulta =
   | 'ENDODONCIA'
   | 'CIRUGIA'
   | 'PROTESIS'
+  | 'SESION'
   | 'OTRO';
 
 export interface ICita {
@@ -61,6 +62,8 @@ export interface ICita {
   activo: boolean;
   fecha_creacion: string;
   fecha_modificacion: string;
+  recordatorioEnviado?: boolean;
+  fechaRecordatorio?: string;
 }
 
 export interface ICitaCreate {
@@ -124,4 +127,45 @@ export interface IHorarioAtencionCreate {
 
 export interface IHorarioAtencionUpdate extends Partial<IHorarioAtencionCreate> {
   activo?: boolean;
+}
+
+// ✅ TIPOS PARA RECORDATORIOS
+export type TipoRecordatorio = 'EMAIL';
+
+export type DestinatarioRecordatorio = 'PACIENTE' | 'ODONTOLOGO' | 'AMBOS';
+
+export interface IRecordatorioEnvio {
+  tipo_recordatorio: TipoRecordatorio;
+  destinatario: DestinatarioRecordatorio;
+  mensaje_personalizado?: string;
+}
+
+export interface IRecordatorioCita {
+  id: string;
+  cita: string;
+  cita_detalle?: ICita;
+  destinatario: DestinatarioRecordatorio;
+  destinatario_display?: string;
+  tipo_recordatorio: TipoRecordatorio;
+  tipo_recordatorio_display?: string;
+  fecha_envio: string;
+  enviado_exitosamente: boolean;
+  mensaje: string;
+  error: string;
+  email_destinatario?: string;
+  paciente_nombre?: string;
+  odontologo_nombre?: string;
+}
+
+export interface IRecordatorioEstadisticas {
+  total_enviados: number;
+  exitosos: number;
+  fallidos: number;
+  tasa_exito: number;
+  por_destinatario: {
+    PACIENTE: number;
+    ODONTOLOGO: number;
+    AMBOS: number;
+  };
+  ultimos_recordatorios: IRecordatorioCita[];
 }

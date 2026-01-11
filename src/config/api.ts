@@ -86,6 +86,9 @@ export const ENDPOINTS = {
       reprogramar: (id: string) => `/appointment/citas/${id}/reprogramar/`,
       cambiarEstado: (id: string) => `/appointment/citas/${id}/cambiar-estado/`,
       horariosDisponibles: '/appointment/citas/horarios-disponibles/',
+            // ✅ NUEVO: Endpoints para recordatorios
+      enviarRecordatorio: (id: string) => `/appointment/citas/${id}/recordatorio/`,
+      estadisticasRecordatorios: '/appointment/citas/estadisticas-recordatorios/',
     },
     horarios: {
       base: '/appointment/horarios/',

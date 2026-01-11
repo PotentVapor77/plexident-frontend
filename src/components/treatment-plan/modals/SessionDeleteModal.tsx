@@ -4,6 +4,7 @@ import { AlertTriangle, X } from "lucide-react";
 import { formatDateToReadable } from "../../../mappers/treatmentPlanMapper";
 import type { SesionTratamientoListResponse } from "../../../types/treatmentPlan/typeBackendTreatmentPlan";
 import Button from "../../ui/button/Button";
+import { Modal } from "../../ui/modal";
 
 // ============================================================================
 // PROPS
@@ -31,7 +32,12 @@ export default function SessionDeleteModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <Modal
+              isOpen={isOpen}
+              onClose={onClose}
+              className="max-w-3xl w-full max-h-[90vh] p-0 overflow-hidden"
+            >
+<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-xl shadow-2xl">
         {/* ====================================================================
             HEADER
@@ -123,5 +129,9 @@ export default function SessionDeleteModal({
         </div>
       </div>
     </div>
-  );
-}
+  
+
+
+            </Modal>
+    
+)}

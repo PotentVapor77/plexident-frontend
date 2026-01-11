@@ -1,10 +1,36 @@
 // src/components/odontogram/treatmentPlan/TreatmentPlanViewModal.tsx
 
-
-import { formatDateToReadable, getEstadoSesionLabel, getEstadoSesionColor } from "../../../mappers/treatmentPlanMapper";
-import { X, FileText, Calendar, User, ClipboardList, CheckCircle2, Clock, XCircle } from "lucide-react";
-import Button from "../../ui/button/Button";
+import { Modal } from "../../ui/modal";
 import { usePlanTratamiento } from "../../../hooks/treatmentPlan/useTreatmentPlan";
+import {
+  Eye,
+  FileText,
+  Calendar,
+  User,
+  Activity,
+  Link2,
+  BarChart3,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
+  Loader2,
+  ClipboardList,
+} from "lucide-react";
+
+// ============================================================================
+// HELPERS
+// ============================================================================
+
+const formatDateToReadable = (dateString: string | null): string => {
+  if (!dateString) return "No especificada";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("es-ES", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 
 // ============================================================================
 // PROPS
@@ -25,301 +51,290 @@ export default function TreatmentPlanViewModal({
   onClose,
   planId,
 }: TreatmentPlanViewModalProps) {
-  const { data: plan, isLoading, isError } = usePlanTratamiento(planId);
+  const { data: plan, isLoading, error } = usePlanTratamiento(planId);
 
   if (!isOpen) return null;
 
-  // ============================================================================
-  // RENDER
-  // ============================================================================
+  // Estado de badge según el estado de la sesión
+  const getEstadoBadge = (estado: string) => {
+    const badges = {
+      planificada: "bg-blue-light-50 text-blue-light-700 ring-blue-light-600/20 dark:bg-blue-light-400/10 dark:text-blue-light-400 dark:ring-blue-light-400/20",
+      en_progreso: "bg-warning-50 text-warning-700 ring-warning-600/20 dark:bg-warning-400/10 dark:text-warning-400 dark:ring-warning-400/20",
+      completada: "bg-success-50 text-success-700 ring-success-600/20 dark:bg-success-400/10 dark:text-success-400 dark:ring-success-400/20",
+      cancelada: "bg-error-50 text-error-700 ring-error-600/20 dark:bg-error-400/10 dark:text-error-400 dark:ring-error-400/20",
+    };
+    return badges[estado as keyof typeof badges] || badges.planificada;
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-5xl max-h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-2xl overflow-hidden">
-        {/* ====================================================================
-            HEADER
-        ==================================================================== */}
-        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-gradient-to-r from-brand-600 to-brand-700 text-white">
-          <div className="flex items-center gap-3">
-            <FileText className="w-6 h-6" />
-            <h2 className="text-xl font-bold">Detalle del Plan de Tratamiento</h2>
+    <Modal isOpen={isOpen} onClose={onClose} className="max-w-5xl">
+      {/* ====================================================================
+          HEADER
+      ==================================================================== */}
+      <div className="border-b border-gray-200 px-6 py-5 dark:border-gray-700">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-brand-50 dark:bg-brand-500/10">
+            <Eye className="h-6 w-6 text-brand-600 dark:text-brand-400" />
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Detalles del Plan de Tratamiento
+            </h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Información completa del plan y seguimiento de sesiones
+            </p>
+          </div>
         </div>
+      </div>
 
-        {/* ====================================================================
-            CONTENIDO
-        ==================================================================== */}
-        <div className="overflow-y-auto max-h-[calc(90vh-80px)] p-6 space-y-6">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
-              <span className="ml-4 text-gray-600 dark:text-gray-400">
-                Cargando plan...
-              </span>
-            </div>
-          ) : isError || !plan ? (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
-              <p className="text-red-800 dark:text-red-200 font-semibold">
-                Error al cargar el plan
-              </p>
-              <p className="text-red-600 dark:text-red-400 mt-2">
-                No se pudo obtener la información del plan de tratamiento.
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* ==============================================================
-                  INFORMACIÓN GENERAL
-              ============================================================== */}
-              <section>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-brand-600 dark:text-brand-400" />
-                  Información General
-                </h3>
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Título</p>
-                      <p className="font-semibold text-gray-900 dark:text-white">
-                        {plan.titulo}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Paciente</p>
-                      <p className="font-semibold text-gray-900 dark:text-white">
-                        {plan.paciente_info.nombres} {plan.paciente_info.apellidos}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        CI: {plan.paciente_info.cedula_pasaporte}
-                      </p>
-                    </div>
-                  </div>
+      {/* ====================================================================
+          CONTENIDO
+      ==================================================================== */}
+      <div className="max-h-[calc(90vh-180px)] overflow-y-auto px-6 py-6">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500" />
+          </div>
+        ) : error ? (
+          <div className="rounded-xl border border-error-200 bg-error-50 p-6 text-center dark:border-error-500/20 dark:bg-error-500/5">
+            <AlertCircle className="mx-auto h-12 w-12 text-error-500" />
+            <h3 className="mt-3 text-base font-semibold text-gray-900 dark:text-white">
+              Error al cargar el plan
+            </h3>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+              No se pudo obtener la información del plan de tratamiento.
+            </p>
+          </div>
+        ) : plan ? (
+          <div className="space-y-6">
+            {/* ================================================================
+                INFORMACIÓN GENERAL
+            ================================================================ */}
+            <section className="rounded-xl border border-gray-200 bg-gray-50/50 p-6 dark:border-gray-700 dark:bg-gray-800/50">
+              <div className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
+                <FileText className="h-5 w-5 text-brand-500" />
+                Información General
+              </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Fecha de creación
-                      </p>
-                      <p className="font-semibold text-gray-900 dark:text-white">
-                        {formatDateToReadable(plan.fecha_creacion)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Creado por</p>
-                      <p className="font-semibold text-gray-900 dark:text-white">
-                        {plan.creado_por_info
-                          ? `${plan.creado_por_info.nombres} ${plan.creado_por_info.apellidos}`
-                          : "No especificado"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {plan.notas_generales && (
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                        Notas generales
-                      </p>
-                      <p className="text-gray-900 dark:text-white whitespace-pre-wrap">
-                        {plan.notas_generales}
-                      </p>
-                    </div>
-                  )}
-
-                  {plan.version_odontograma && (
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                      <p className="text-sm text-blue-800 dark:text-blue-200">
-                        Este plan está vinculado a una versión específica del odontograma
-                      </p>
-                    </div>
-                  )}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <dt className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Título
+                  </dt>
+                  <dd className="mt-1 text-base font-semibold text-gray-900 dark:text-white">
+                    {plan.titulo}
+                  </dd>
                 </div>
-              </section>
 
-              {/* ==============================================================
-                  ESTADÍSTICAS DEL PLAN
-              ============================================================== */}
-              <section>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                  <ClipboardList className="w-5 h-5 text-brand-600 dark:text-brand-400" />
-                  Estadísticas del Plan
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  {/* Total */}
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center">
-                    <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                      <FileText className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-                    </div>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {plan.estadisticas.total}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Total</p>
-                  </div>
-
-                  {/* Planificadas */}
-                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
-                    <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                      <Calendar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                      {plan.estadisticas.planificadas}
-                    </p>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">Planificadas</p>
-                  </div>
-
-                  {/* En progreso */}
-                  <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 text-center">
-                    <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-full">
-                      <Clock className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
-                    </div>
-                    <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">
-                      {plan.estadisticas.en_progreso}
-                    </p>
-                    <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                      En progreso
-                    </p>
-                  </div>
-
-                  {/* Completadas */}
-                  <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
-                    <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 bg-green-100 dark:bg-green-900/30 rounded-full">
-                      <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
-                    </div>
-                    <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-                      {plan.estadisticas.completadas}
-                    </p>
-                    <p className="text-sm text-green-700 dark:text-green-300">Completadas</p>
-                  </div>
-
-                  {/* Canceladas */}
-                  <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 text-center">
-                    <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2 bg-red-100 dark:bg-red-900/30 rounded-full">
-                      <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
-                    </div>
-                    <p className="text-2xl font-bold text-red-900 dark:text-red-100">
-                      {plan.estadisticas.canceladas}
-                    </p>
-                    <p className="text-sm text-red-700 dark:text-red-300">Canceladas</p>
-                  </div>
+                <div>
+                  <dt className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    <User className="h-3.5 w-3.5" />
+                    Paciente
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-white">
+                    {plan.paciente_info.nombres} {plan.paciente_info.apellidos}
+                  </dd>
+                  <dd className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                    CI: {plan.paciente_info.cedula_pasaporte}
+                  </dd>
                 </div>
-              </section>
 
-              {/* ==============================================================
-                  SESIONES DEL PLAN
-              ============================================================== */}
-              <section>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-brand-600 dark:text-brand-400" />
-                  Sesiones de Tratamiento ({plan.sesiones.length})
-                </h3>
+                <div>
+                  <dt className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    <Calendar className="h-3.5 w-3.5" />
+                    Fecha de creación
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-white">
+                    {formatDateToReadable(plan.fecha_creacion)}
+                  </dd>
+                </div>
 
-                {plan.sesiones.length === 0 ? (
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-8 text-center">
-                    <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                    <p className="text-gray-600 dark:text-gray-400">
-                      No hay sesiones registradas para este plan
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                      Las sesiones se agregarán conforme se planifique el tratamiento
-                    </p>
+                <div className="sm:col-span-2">
+                  <dt className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    <User className="h-3.5 w-3.5" />
+                    Creado por
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-white">
+                    {plan.creado_por_info
+                      ? `${plan.creado_por_info.nombres} ${plan.creado_por_info.apellidos}`
+                      : "No especificado"}
+                  </dd>
+                </div>
+
+                {plan.notas_generales && (
+                  <div className="sm:col-span-2">
+                    <dt className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Notas generales
+                    </dt>
+                    <dd className="mt-1 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                      {plan.notas_generales}
+                    </dd>
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    {plan.sesiones.map((sesion) => (
-                      <div
-                        key={sesion.id}
-                        className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:border-brand-500 dark:hover:border-brand-500 transition-colors"
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <span className="px-3 py-1 bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-full text-sm font-semibold">
-                                Sesión #{sesion.numero_sesion}
-                              </span>
+                )}
+              </div>
+
+              {plan.version_odontograma  && (
+                <div className="mt-4 flex items-center gap-2 rounded-lg border border-blue-light-200 bg-blue-light-50 px-3 py-2 text-sm dark:border-blue-light-500/20 dark:bg-blue-light-500/5">
+                  <Link2 className="h-4 w-4 flex-shrink-0 text-blue-light-600 dark:text-blue-light-400" />
+                  <span className="text-gray-700 dark:text-gray-300">
+                    Este plan está vinculado a una versión específica del odontograma
+                  </span>
+                </div>
+              )}
+            </section>
+
+            {/* ================================================================
+                ESTADÍSTICAS DE SESIONES
+            ================================================================ */}
+            <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+              <div className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
+                <BarChart3 className="h-5 w-5 text-brand-500" />
+                Resumen de Sesiones
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-5">
+                {/* Total */}
+                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center dark:border-gray-700 dark:bg-gray-800/50">
+                  <dt className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Total
+                  </dt>
+                  <dd className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
+                    {plan.estadisticas.total}
+                  </dd>
+                </div>
+
+                {/* Planificadas */}
+                <div className="rounded-lg border border-blue-light-200 bg-blue-light-50 p-4 text-center dark:border-blue-light-500/20 dark:bg-blue-light-500/5">
+                  <dt className="flex items-center justify-center gap-1 text-xs font-medium uppercase tracking-wide text-blue-light-700 dark:text-blue-light-400">
+                    <Clock className="h-3.5 w-3.5" />
+                    Planificadas
+                  </dt>
+                  <dd className="mt-2 text-2xl font-bold text-blue-light-700 dark:text-blue-light-400">
+                    {plan.estadisticas.planificadas}
+                  </dd>
+                </div>
+
+                {/* En progreso */}
+                <div className="rounded-lg border border-warning-200 bg-warning-50 p-4 text-center dark:border-warning-500/20 dark:bg-warning-500/5">
+                  <dt className="flex items-center justify-center gap-1 text-xs font-medium uppercase tracking-wide text-warning-700 dark:text-warning-400">
+                    <Loader2 className="h-3.5 w-3.5" />
+                    En progreso
+                  </dt>
+                  <dd className="mt-2 text-2xl font-bold text-warning-700 dark:text-warning-400">
+                    {plan.estadisticas.en_progreso}
+                  </dd>
+                </div>
+
+                {/* Completadas */}
+                <div className="rounded-lg border border-success-200 bg-success-50 p-4 text-center dark:border-success-500/20 dark:bg-success-500/5">
+                  <dt className="flex items-center justify-center gap-1 text-xs font-medium uppercase tracking-wide text-success-700 dark:text-success-400">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    Completadas
+                  </dt>
+                  <dd className="mt-2 text-2xl font-bold text-success-700 dark:text-success-400">
+                    {plan.estadisticas.completadas}
+                  </dd>
+                </div>
+
+                {/* Canceladas */}
+                <div className="rounded-lg border border-error-200 bg-error-50 p-4 text-center dark:border-error-500/20 dark:bg-error-500/5">
+                  <dt className="flex items-center justify-center gap-1 text-xs font-medium uppercase tracking-wide text-error-700 dark:text-error-400">
+                    <XCircle className="h-3.5 w-3.5" />
+                    Canceladas
+                  </dt>
+                  <dd className="mt-2 text-2xl font-bold text-error-700 dark:text-error-400">
+                    {plan.estadisticas.canceladas}
+                  </dd>
+                </div>
+              </div>
+            </section>
+
+            {/* ================================================================
+                LISTA DE SESIONES
+            ================================================================ */}
+            <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+              <div className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
+                <Activity className="h-5 w-5 text-brand-500" />
+                Sesiones Registradas
+              </div>
+
+              {!plan.sesiones || plan.sesiones.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-200 py-8 text-center dark:border-gray-700">
+                  <ClipboardList className="h-10 w-10 text-gray-400" />
+                  <h4 className="mt-3 text-sm font-medium text-gray-900 dark:text-white">
+                    No hay sesiones registradas para este plan
+                  </h4>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    Las sesiones se agregarán conforme se planifique el tratamiento
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {plan.sesiones.map((sesion, index) => (
+                    <div
+                      key={sesion.id}
+                      className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3">
+                          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-400">
+                            #{sesion.numero_sesion}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                                Sesión {sesion.numero_sesion}
+                              </h4>
                               <span
-                                className={`px-3 py-1 rounded-full text-sm font-medium ${getEstadoSesionColor(
+                                className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${getEstadoBadge(
                                   sesion.estado
                                 )}`}
                               >
                                 {sesion.estado_display}
                               </span>
-                              {sesion.esta_firmada && (
-                                <span className="text-sm text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
-                                  <CheckCircle2 className="w-4 h-4" />
-                                  Firmada
-                                </span>
-                              )}
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                            <div className="mt-2 grid gap-2 text-xs sm:grid-cols-3">
                               <div>
-                                <p className="text-gray-500 dark:text-gray-400">
-                                  Fecha programada
-                                </p>
-                                <p className="font-medium text-gray-900 dark:text-white">
+                                <span className="font-medium text-gray-600 dark:text-gray-400">
+                                  Fecha programada:{" "}
+                                </span>
+                                <span className="text-gray-900 dark:text-white">
                                   {sesion.fecha_programada
                                     ? formatDateToReadable(sesion.fecha_programada)
                                     : "No especificada"}
-                                </p>
+                                </span>
                               </div>
-
                               <div>
-                                <p className="text-gray-500 dark:text-gray-400">
-                                  Fecha de realización
-                                </p>
-                                <p className="font-medium text-gray-900 dark:text-white">
+                                <span className="font-medium text-gray-600 dark:text-gray-400">
+                                  Fecha de realización:{" "}
+                                </span>
+                                <span className="text-gray-900 dark:text-white">
                                   {sesion.fecha_realizacion
                                     ? formatDateToReadable(sesion.fecha_realizacion)
                                     : "No realizada"}
-                                </p>
+                                </span>
                               </div>
-
                               <div>
-                                <p className="text-gray-500 dark:text-gray-400">Odontólogo</p>
-                                <p className="font-medium text-gray-900 dark:text-white">
+                                <span className="font-medium text-gray-600 dark:text-gray-400">
+                                  Odontólogo:{" "}
+                                </span>
+                                <span className="text-gray-900 dark:text-white">
                                   {sesion.odontologo_nombre || "No asignado"}
-                                </p>
+                                </span>
                               </div>
-                            </div>
-
-                            <div className="flex items-center gap-4 mt-3 text-sm text-gray-600 dark:text-gray-400">
-                              <span>
-                                {sesion.total_diagnosticos} diagnóstico(s)
-                              </span>
-                              <span>•</span>
-                              <span>
-                                {sesion.total_procedimientos} procedimiento(s)
-                              </span>
-                              <span>•</span>
-                              <span>
-                                {sesion.total_prescripciones} prescripción(es)
-                              </span>
                             </div>
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </section>
-            </>
-          )}
-        </div>
-
-        {/* ====================================================================
-            FOOTER
-        ==================================================================== */}
-        <div className="sticky bottom-0 flex justify-end px-6 py-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-          <Button variant="outline" onClick={onClose}>
-            Cerrar
-          </Button>
-        </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        ) : null}
       </div>
-    </div>
+    </Modal>
   );
 }

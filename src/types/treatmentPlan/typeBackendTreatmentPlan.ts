@@ -50,7 +50,7 @@ export interface BackendSesionTratamiento {
 
 export interface DiagnosticoSnapshot {
     id: string;
-    diente: string; // FDI code
+    diente: string; 
     superficie: string;
     diagnostico_key: string;
     diagnostico_nombre: string;

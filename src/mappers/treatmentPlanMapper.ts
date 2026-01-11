@@ -197,3 +197,5 @@ export function validatePrescripcion(presc: Partial<Prescripcion>): boolean {
 export function generateTempId(): string {
   return `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
+
+

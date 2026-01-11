@@ -16,14 +16,13 @@ import type {
 // ============================================================================
 // QUERY KEYS
 // ============================================================================
-
 const sesionKeys = {
   all: ['sesiones-tratamiento'] as const,
   lists: () => [...sesionKeys.all, 'list'] as const,
   list: (planId: string | null, page: number, pageSize: number, pacienteId?: string, estado?: EstadoSesion) =>
     [...sesionKeys.lists(), planId || 'all', page, pageSize, pacienteId || 'all', estado || 'all'] as const,
   details: () => [...sesionKeys.all, 'detail'] as const,
-  detail: (id: string) => [...sesionKeys.details(), id] as const,
+  detail: (id: string | null) => [...sesionKeys.details(), id || 'null'] as const, 
 };
 
 // ============================================================================
@@ -92,8 +91,13 @@ export const useSesionesTratamiento = (
 
 export const useSesionTratamiento = (sesionId: string | null) => {
   return useQuery<SesionTratamientoDetailResponse>({
-    queryKey: sesionKeys.detail(sesionId!),
-    queryFn: () => sessionService.getSessionById(sesionId!),
+    queryKey: sesionId ? sesionKeys.detail(sesionId) : ['sesiones-tratamiento', 'detail', 'null'],
+    queryFn: () => {
+      if (!sesionId) {
+        throw new Error('Session ID is required');
+      }
+      return sessionService.getSessionById(sesionId);
+    },
     enabled: !!sesionId,
     staleTime: 30000,
   });
@@ -197,15 +201,22 @@ export const useCompletarSesion = (sesionId: string, planId: string) => {
       console.log('[useCompletarSesion] Sesión completada exitosamente');
       // Invalida el detalle de la sesión
       qc.invalidateQueries({
-        queryKey: sesionKeys.detail(sesionId),
+        queryKey: ['sesiones-tratamiento', 'detail', sesionId],
       });
-      // Invalida la lista de sesiones
+
+      // Invalida la(s) lista(s) de sesiones
       qc.invalidateQueries({
-        queryKey: sesionKeys.lists(),
+        queryKey: ['sesiones-tratamiento', 'list'],
+        exact: false,
       });
-      // Invalida el detalle del plan
+
+      // Invalida el detalle del plan (estadísticas, sesiones, etc.)
       qc.invalidateQueries({
         queryKey: ['planes-tratamiento', 'detail', planId],
+      });
+      qc.invalidateQueries({
+        queryKey: ['planes-tratamiento', 'list'],
+        exact: false,
       });
     },
     onError: (error) => {

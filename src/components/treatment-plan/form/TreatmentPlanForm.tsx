@@ -226,179 +226,209 @@ export default function TreatmentPlanForm({
   const getInitial = (value: string | null | undefined): string =>
   (value ?? "").toString().charAt(0);
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* ======================================================================
-          SELECTOR DE PACIENTE (Solo en modo crear sin paciente fijado)
-      ====================================================================== */}
-      {!pacienteId && mode === "create" && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Seleccionar Paciente *
-          </label>
-
-          {selectedPaciente ? (
-            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 font-semibold">
-                {getInitial(selectedPaciente?.nombres)}
-                {getInitial(selectedPaciente?.apellidos)}
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-gray-900 dark:text-white">
-                  {selectedPaciente.nombres} {selectedPaciente.apellidos}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  CI: {selectedPaciente.cedula_pasaporte}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleClearPaciente}
-                className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
-          ) : (
-            <div className="relative">
-  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-  <input
-    type="text"
-    value={searchPaciente}
-    onChange={(e) => {
-      setSearchPaciente(e.target.value);
-      setShowPacienteDropdown(true);
-    }}
-    onFocus={() => setShowPacienteDropdown(true)}
-    placeholder="Buscar paciente por nombre o cédula..."
-    className="block w-full pl-10 pr-10 py-3 border ..."
-  />
-  {/* NUEVO: Spinner mientras busca */}
-  {loadingPacientes && searchPaciente && (
-    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-      <div className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-    </div>
-  )}
-</div>
-          )}
-
-          {!selectedPaciente && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              Debe seleccionar un paciente para continuar
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* ======================================================================
-          INFORMACIÓN DEL PACIENTE FIJADO
-      ====================================================================== */}
-      {pacienteId && pacienteNombreCompleto && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-            Paciente activo
-          </p>
-          <p className="text-blue-900 dark:text-blue-100 font-semibold mt-1">
-            {pacienteNombreCompleto}
-          </p>
-        </div>
-      )}
-
-      {/* ======================================================================
-          TÍTULO DEL PLAN
-      ====================================================================== */}
-      <div>
-        <label
-          htmlFor="titulo"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-        >
-          Título del plan *
-        </label>
-        <input
-          type="text"
-          id="titulo"
-          name="titulo"
-          value={formData.titulo}
-          onChange={handleInputChange}
-          required
-          placeholder="Ej: Plan de rehabilitación oral completa"
-          className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors"
-        />
-      </div>
-
-      {/* ======================================================================
-          NOTAS GENERALES
-      ====================================================================== */}
-      <div>
-        <label
-          htmlFor="notas_generales"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-        >
-          Notas generales
-        </label>
-        <textarea
-          id="notas_generales"
-          name="notas_generales"
-          value={formData.notas_generales}
-          onChange={handleInputChange}
-          rows={4}
-          placeholder="Observaciones, objetivos del tratamiento, consideraciones especiales..."
-          className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors resize-none"
-        />
-      </div>
-
-      {/* ======================================================================
-          USAR ÚLTIMO ODONTOGRAMA (Solo en modo crear)
-      ====================================================================== */}
-      {mode === "create" && (
-        <div className="flex items-start gap-3">
-          <input
-            type="checkbox"
-            id="usar_ultimo_odontograma"
-            name="usar_ultimo_odontograma"
-            checked={formData.usar_ultimo_odontograma}
-            onChange={handleCheckboxChange}
-            className="mt-1 w-4 h-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500"
-          />
-          <div>
-            <label
-              htmlFor="usar_ultimo_odontograma"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
-            >
-              Usar último odontograma registrado
+    <div className="max-w-3xl mx-auto space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* SELECTOR DE PACIENTE (solo create sin paciente fijado) */}
+        {!pacienteId && mode === "create" && (
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Seleccionar Paciente <span className="text-red-500">*</span>
             </label>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Se vinculará automáticamente el odontograma más reciente del paciente
-            </p>
-          </div>
-        </div>
-      )}
 
-      {/* ======================================================================
-          BOTONES DE ACCIÓN
-      ====================================================================== */}
-      <div className="flex gap-3 pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={submitLoading}
-        >
-          Cancelar
-        </Button>
-        <Button
-          type="submit"
-          variant="primary"
-          disabled={submitLoading || (!formData.paciente && !pacienteId)}
-        >
-          {submitLoading
-            ? mode === "create"
-              ? "Creando..."
-              : "Guardando..."
-            : mode === "create"
+            {selectedPaciente ? (
+              <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">
+                    {getInitial(selectedPaciente?.nombres)}
+                    {getInitial(selectedPaciente?.apellidos)}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                      {selectedPaciente.nombres} {selectedPaciente.apellidos}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      CI: {selectedPaciente.cedula_pasaporte}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleClearPaciente}
+                  className="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <Search className="w-5 h-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={searchPaciente}
+                  onChange={(e) => {
+                    setSearchPaciente(e.target.value);
+                    setShowPacienteDropdown(true);
+                  }}
+                  onFocus={() => setShowPacienteDropdown(true)}
+                  placeholder="Buscar paciente por nombre o cédula..."
+                  className="block w-full pl-10 pr-10 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                />
+
+                {/* Dropdown de pacientes */}
+                {showPacienteDropdown && searchPaciente && (
+                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {loadingPacientes ? (
+                      <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                        Buscando pacientes...
+                      </div>
+                    ) : pacientes && pacientes.length > 0 ? (
+                      pacientes.map((paciente: IPaciente) => (
+                        <button
+                          key={paciente.id}
+                          type="button"
+                          onClick={() => handleSelectPaciente(paciente)}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-semibold">
+                            {getInitial(paciente.nombres)}
+                            {getInitial(paciente.apellidos)}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 dark:text-gray-100">
+                              {paciente.nombres} {paciente.apellidos}
+                            </p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              CI: {paciente.cedula_pasaporte}
+                            </p>
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                        No se encontraron pacientes con "{searchPaciente}"
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!selectedPaciente && (
+              <p className="text-sm text-red-600 dark:text-red-400">
+                Debe seleccionar un paciente para continuar.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* PACIENTE FIJADO */}
+        {pacienteId && pacienteNombreCompleto && (
+          <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-semibold">
+              {getInitial(pacienteNombreCompleto.split(" ")[0])}
+              {getInitial(pacienteNombreCompleto.split(" ")[1])}
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Paciente activo
+              </p>
+              <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                {pacienteNombreCompleto}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* BLOQUE: Datos del plan */}
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-theme-sm p-4 sm:p-6 space-y-4">
+          <div className="space-y-1">
+            <label
+              htmlFor="titulo"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Título del plan <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="titulo"
+              name="titulo"
+              type="text"
+              value={formData.titulo}
+              onChange={handleInputChange}
+              className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              placeholder="Ej: Plan integral de rehabilitación oral"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label
+              htmlFor="notas_generales"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Notas generales
+            </label>
+            <textarea
+              id="notas_generales"
+              name="notas_generales"
+              rows={4}
+              value={formData.notas_generales}
+              onChange={handleInputChange}
+              className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              placeholder="Observaciones globales del plan, prioridades de tratamiento, etc."
+            />
+          </div>
+
+          {mode === "create" && (
+            <div className="mt-2 flex items-start gap-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 px-3 py-3 border border-blue-200 dark:border-blue-800">
+              <input
+                id="usar_ultimo_odontograma"
+                type="checkbox"
+                name="usar_ultimo_odontograma"
+                checked={formData.usar_ultimo_odontograma}
+                onChange={handleCheckboxChange}
+                className="mt-1 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+              />
+              <div className="space-y-1">
+                <label
+                  htmlFor="usar_ultimo_odontograma"
+                  className="text-sm font-medium text-blue-900 dark:text-blue-100"
+                >
+                  Usar último odontograma registrado
+                </label>
+                <p className="text-xs text-blue-800 dark:text-blue-200">
+                  Se vinculará automáticamente el odontograma más reciente del paciente al plan de
+                  tratamiento.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* BOTONES DE ACCIÓN */}
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              resetForm();
+              onCancel();
+            }}
+            disabled={submitLoading}
+          >
+            Cancelar
+          </Button>
+          <Button type="submit" variant="primary" disabled={submitLoading}>
+            {submitLoading
+              ? mode === "create"
+                ? "Creando..."
+                : "Guardando..."
+              : mode === "create"
               ? "Crear plan"
               : "Guardar cambios"}
-        </Button>
-      </div>
-    </form>
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }

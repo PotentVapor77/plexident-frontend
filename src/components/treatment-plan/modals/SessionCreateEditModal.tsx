@@ -1,7 +1,9 @@
 // src/components/odontogram/treatmentPlan/SessionCreateEditModal.tsx
 
-import { X, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import SessionForm from "../form/SessionForm";
+import { Modal } from "../../ui/modal";
+
 // ============================================================================
 // PROPS
 // ============================================================================
@@ -36,42 +38,42 @@ export default function SessionCreateEditModal({
       : "Actualice la información de la sesión de tratamiento";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-2xl overflow-hidden flex flex-col">
-        {/* ====================================================================
-            HEADER
-        ==================================================================== */}
-        <div className="flex-shrink-0 px-6 py-4 bg-gradient-to-r from-brand-600 to-brand-700 text-white">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Calendar className="w-6 h-6" />
-              <div>
-                <h2 className="text-xl font-bold">{title}</h2>
-                <p className="text-sm text-brand-100 mt-0.5">{subtitle}</p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      className="max-w-4xl"
+    >
+      {/* ====================================================================
+          HEADER
+      ==================================================================== */}
+      <div className="border-b border-gray-200 px-6 py-5 dark:border-gray-700">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-brand-50 dark:bg-brand-500/10">
+            <Calendar className="h-6 w-6 text-brand-600 dark:text-brand-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              {title}
+            </h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {subtitle}
+            </p>
           </div>
         </div>
-
-        {/* ====================================================================
-            CONTENIDO SCROLLABLE
-        ==================================================================== */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <SessionForm
-            mode={mode}
-            planId={planId}
-            sesionId={sesionId}
-            onSuccess={onSuccess}
-            onCancel={onClose}
-          />
-        </div>
       </div>
-    </div>
+
+      {/* ====================================================================
+          CONTENIDO SCROLLABLE
+      ==================================================================== */}
+      <div className="max-h-[calc(90vh-180px)] overflow-y-auto px-6 py-6">
+        <SessionForm
+          mode={mode}
+          planId={planId}
+          sesionId={sesionId}
+          onSuccess={onSuccess}
+          onCancel={onClose}
+        />
+      </div>
+    </Modal>
   );
 }

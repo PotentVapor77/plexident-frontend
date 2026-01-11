@@ -33,10 +33,10 @@ import OdontogramaHistoryPage from "./pages/Odontogram/OdontogramaHistoryPage";
 import FamilyBackgroundPage from "./pages/FamilyBackground/familyBackgroundPage";
 import ConstantesVitalesPage from "./pages/VitalSigns/ConstantesVitalesPage";
 import StomatognathicExamPage from "./pages/StomatognathicExam/StomatognathicExamPage";
-import {PacienteProvider } from "./context/PacienteContext"; 
+import { PacienteProvider } from "./context/PacienteContext";
 import AppointmentsPage from "./pages/Appointments/AppointmentsPage";
 import IndicadoresSaludBucalPage from "./pages/Odontogram/IndicadoresSaludBucalPage";
-
+import TreatmentPlanPage from "./pages/TreatmentPlan/TreatmentPlanPage";
 
 // ============================================================================
 // RUTAS PÚBLICAS
@@ -144,8 +144,8 @@ function App() {
                   <IndicadoresSaludBucalPage />
                 </PacienteProvider>
               }
-            
             />
+
             {/* Rutas de antecedentes */}
             <Route
               path="/pacientes/antecedentes-personales"
@@ -156,7 +156,7 @@ function App() {
               element={<FamilyBackgroundPage />}
             />
             <Route path="/pacientes/constantes-vitales" element={<ConstantesVitalesPage />} />
-            <Route path="/pacientes/examen-estomatognatico" element={<StomatognathicExamPage/>} />
+            <Route path="/pacientes/examen-estomatognatico" element={<StomatognathicExamPage />} />
 
             {/* Usuarios */}
             <Route path="/usuarios" element={<UsersPage />} />
@@ -166,18 +166,35 @@ function App() {
             <Route path="/pacientes/:id/editar" element={<PatientsPage />} />
             <Route path="/pacientes/antecedentes-personales" element={<PersonalBackgroundPage />} />
             <Route path="/pacientes/antecedentes-familiares" element={<FamilyBackgroundPage />} />
-            <Route path="/pacientes/constantes-vitales" element={<ConstantesVitalesPage />} />
-            <Route path="/pacientes/examen-estomatognatico" element={<StomatognathicExamPage/>} />
-
-
-            <Route path="/citas" element={<AppointmentsPage/>} />
+            <Route path="/pacientes/constantes-vitales" element={
+              <PacienteProvider>
+                <ConstantesVitalesPage />
+              </PacienteProvider>
               
-            
+
+              } />
+            <Route path="/pacientes/examen-estomatognatico" element={
+              <PacienteProvider>
+
+                <StomatognathicExamPage/>
+              </PacienteProvider>
+              
+
+              } />
+
+
+            <Route path="/citas" element={<AppointmentsPage />} />
+
+
             <Route path="/odontogram" element={<OdontogramaPage />} />
             <Route path="/pacientes" element={<PatientsPage />} />
             <Route path="/odontograma" element={<OdontogramaPage />} />
             <Route path="/odontograma-timeline" element={<OdontogramaHistoryPage />} />
 
+            <Route path="plan-tratamiento" element={<PacienteProvider>
+        <TreatmentPlanPage />
+      </PacienteProvider>} />
+            
 
             <Route path="/segurity/users" element={<UsersPage />} />
 

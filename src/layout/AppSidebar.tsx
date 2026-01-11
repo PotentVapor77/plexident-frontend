@@ -9,7 +9,6 @@ import {
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
-  ListIcon,
   PageIcon,
   PieChartIcon,
   PlugInIcon,
@@ -111,13 +110,13 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    icon: <ListIcon />,
-    name: "Plan Tratamiento",
-    subItems: [
-      { name: "Planes de Tratamiento", path: "/plan-tratamiento", pro: false },
-      { name: "Nuevo Plan", path: "/nuevo-plan", pro: false },
-    ],
-  },
+    icon: <TableIcon />,
+  name: "Plan Tratamiento",
+  subItems: [
+    { name: "Planes de Tratamiento", path: "/plan-tratamiento", pro: false },
+    { name: "Nuevo Plan", path: "/nuevo-plan", pro: false },
+  ],
+},
   {
     icon: <PieChartIcon />,
     name: "Presupuestos",

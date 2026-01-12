@@ -9,7 +9,7 @@ import { generateTempId } from "../../../mappers/treatmentPlanMapper";
 export function useProcedimientos(
     procedimientos: Procedimiento[],
     setProcedimientos: (procedimientos: Procedimiento[]) => void,
-    autoTexto: string | null = null 
+
 ) {
     const handleAdd = useCallback(() => {
         const newProcedimiento: Procedimiento = {

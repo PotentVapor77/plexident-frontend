@@ -1,7 +1,7 @@
 // src/components/odontogram/treatmentPlan/SessionForm.tsx
 
 import { useState, useEffect } from "react";
-import { Calendar, CheckCircle2, Activity, StickyNote, Info } from "lucide-react";
+import { Calendar, Activity, StickyNote, Info } from "lucide-react";
 import Button from "../../ui/button/Button";
 import { useNotification } from "../../../context/notifications/NotificationContext";
 import {
@@ -9,7 +9,7 @@ import {
   useSesionTratamiento,
   useUpdateSesionTratamiento,
 } from "../../../hooks/treatmentPlan/useTreatmentSession";
-import { useDiagnosticosDisponibles } from "../../../hooks/treatmentPlan/useTreatmentPlan";
+import { useDiagnosticosDisponibles, usePlanTratamiento } from "../../../hooks/treatmentPlan/useTreatmentPlan";
 import type { Procedimiento, Prescripcion } from "../../../types/treatmentPlan/typeBackendTreatmentPlan";
 
 // Componentes refactorizados
@@ -22,8 +22,12 @@ import { useSessionFormSubmit } from "../../../hooks/treatmentPlan/sessionFormHo
 import DiagnosticosSelector from "../selector/DiagnosticosSelector";
 import ProcedimientosList from "../list/ProcedimientosList";
 import PrescripcionesList from "../list/PrescripcionesList";
-import { tr } from "date-fns/locale";
 import { useAutoProcedimientosFromDiagnosticos } from "../../../hooks/treatmentPlan/sessionFormHooks/useAutoProcedimientosFromDiagnosticos";
+import { usePacienteActivo } from "../../../context/PacienteContext";
+import { useAvailableSlots } from "../../../hooks/treatmentPlan/sessionFormHooks/useAvailableSlots";
+import { useAppointment } from "../../../hooks/appointments/useAppointment";
+import { useAuth } from "../../../hooks/auth/useAuth";
+import type { ICitaCreate, TipoConsulta } from "../../../types/appointments/IAppointment";
 
 // ============================================================================
 // STYLES & TOKENS
@@ -48,11 +52,13 @@ interface SessionFormProps {
   sesionId?: string;
   onSuccess: () => void;
   onCancel: () => void;
+
 }
 
 // ============================================================================
 // COMPONENT
 // ============================================================================
+
 
 export default function SessionForm({
   mode,
@@ -62,7 +68,13 @@ export default function SessionForm({
   onCancel,
 }: SessionFormProps) {
   const { notify } = useNotification();
-
+  const { user } = useAuth();
+const { pacienteActivo } = usePacienteActivo();
+useAuth();
+const { createCita } = useAppointment();
+const { data: plan } = usePlanTratamiento(planId);
+const { slots, loading, error, loadSlots } = useAvailableSlots();
+const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   // Estados del formulario
   const [formData, setFormData] = useState({
     plan_tratamiento: planId,
@@ -102,23 +114,30 @@ export default function SessionForm({
   } = useDiagnosticosFilter(diagnosticosDisponibles);
 
   const procedimientosHooks = useProcedimientos(
-  formData.procedimientos,
-  (procedimientos) => setFormData((prev) => ({ ...prev, procedimientos }))
-);
+    formData.procedimientos,
+    (procedimientos) => setFormData((prev) => ({ ...prev, procedimientos }))
+  );
 
-useAutoProcedimientosFromDiagnosticos({
-  autocompletar: mode === "create" && formData.autocompletar_diagnosticos,
-  selectedDiagnosticos,
-  procedimientos: formData.procedimientos,
-  setProcedimientos: (procedimientosActualizados) =>
-    setFormData((prev) => ({ ...prev, procedimientos: procedimientosActualizados })),
-});
+  useAutoProcedimientosFromDiagnosticos({
+    autocompletar: mode === "create" && formData.autocompletar_diagnosticos,
+    selectedDiagnosticos,
+    procedimientos: formData.procedimientos,
+    setProcedimientos: (procedimientosActualizados) =>
+      setFormData((prev) => ({ ...prev, procedimientos: procedimientosActualizados })),
+  });
 
   const prescripcionesHooks = usePrescripciones(
     formData.prescripciones,
     (prescripciones) => setFormData((prev) => ({ ...prev, prescripciones }))
   );
+const getMotivoConsulta = () => {
+    const numeroSesion =
+      (sesionData as any)?.numero_sesion ??
+      (sesionData as any)?.num_sesion ??
+      1;
 
+    return `Sesión #${numeroSesion} de tratamiento del plan "${plan?.titulo}"`;
+  };
   const { handleSubmit, isSubmitting } = useSessionFormSubmit({
     formData,
     selectedDiagnosticos,
@@ -129,6 +148,10 @@ useAutoProcedimientosFromDiagnosticos({
     updateMutation: updateSesionMutation,
     onSuccess,
     notify,
+    selectedSlot,           
+  getMotivoConsulta,     
+  pacienteId: pacienteActivo?.id ?? null,
+  odontologoId: user ? String(user.id) : null,
   });
 
   // ============================================================================
@@ -154,6 +177,13 @@ useAutoProcedimientosFromDiagnosticos({
       }
     }
   }, [mode, sesionData, planId, setSelectedDiagnosticos]);
+  useEffect(() => {
+    if (!formData.fecha_programada || !user?.id) return;
+
+    // Por ahora 30 min; si luego usas duración dinámica, ajustas
+    loadSlots(String(user.id), formData.fecha_programada, 30);
+  }, [formData.fecha_programada, user?.id, loadSlots]);
+
 
   // ============================================================================
   // HANDLERS
@@ -188,47 +218,100 @@ useAutoProcedimientosFromDiagnosticos({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* FECHA PROGRAMADA Y ESTADO */}
-      <div className={STYLES.card}>
-        <div className="mb-4 flex items-center gap-3">
-          <Calendar className="h-5 w-5 text-gray-900 dark:text-white" />
-          <h3 className={STYLES.sectionTitle}>Información General</h3>
+    {/* FECHA PROGRAMADA Y ESTADO */}
+    <div className={STYLES.card}>
+      <div className="mb-4 flex items-center gap-3">
+        <Calendar className="h-5 w-5 text-gray-900 dark:text-white" />
+        <h3 className={STYLES.sectionTitle}>Información General</h3>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="fecha_programada" className={STYLES.label}>
+            Fecha programada *
+          </label>
+          <input
+            type="date"
+            id="fecha_programada"
+            name="fecha_programada"
+            value={formData.fecha_programada}
+            onChange={handleInputChange}
+            className={STYLES.input}
+          />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="fecha_programada" className={STYLES.label}>
-              Fecha programada *
-            </label>
-            <input
-              type="date"
-              id="fecha_programada"
-              name="fecha_programada"
-              value={formData.fecha_programada}
-              onChange={handleInputChange}
-              className={STYLES.input}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="estado" className={STYLES.label}>
-              Estado de la sesión *
-            </label>
-            <select
-              id="estado"
-              name="estado"
-              value={formData.estado}
-              onChange={handleInputChange}
-              className={STYLES.input}
-            >
-              <option value="planificada">Planificada</option>
-              <option value="en_progreso">En progreso</option>
-              <option value="completada">Completada</option>
-              <option value="cancelada">Cancelada</option>
-            </select>
-          </div>
+        <div>
+          <label htmlFor="estado" className={STYLES.label}>
+            Estado de la sesión *
+          </label>
+          <select
+            id="estado"
+            name="estado"
+            value={formData.estado}
+            onChange={handleInputChange}
+            className={STYLES.input}
+          >
+            <option value="planificada">Planificada</option>
+            <option value="en_progreso">En progreso</option>
+            <option value="completada">Completada</option>
+            <option value="cancelada">Cancelada</option>
+          </select>
         </div>
       </div>
+
+      {/* AYUDA VISUAL PARA AGENDAR CITA VINCULADA */}
+      {formData.fecha_programada && (
+        <div className="mt-4">
+          <div className="mb-2 flex items-center justify-between">
+            <p className={STYLES.sectionDesc}>
+              Seleccione un horario disponible para crear y vincular una cita a esta sesión.
+            </p>
+            {formData.cita_id && (
+              <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                Cita vinculada
+              </span>
+            )}
+          </div>
+
+          {loading && (
+            <p className="text-xs text-gray-500">Cargando horarios disponibles...</p>
+          )}
+
+          {error && (
+            <p className="text-xs text-red-600">{error}</p>
+          )}
+
+          {!loading && !error && (
+            slots.length === 0 ? (
+              <p className="text-xs text-amber-600">
+                No hay horarios disponibles para esta fecha según la agenda del odontólogo.
+              </p>
+            ) : (
+              <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {slots.map((slot, idx) => {
+                  const isSelected = selectedSlot === slot.horainicio;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setSelectedSlot(slot.horainicio)}
+                      className={[
+                        "rounded-lg border px-2 py-1 text-xs font-medium transition-colors",
+                        isSelected
+                          ? "border-green-500 bg-green-50 text-green-700"
+                          : "border-gray-200 bg-white text-gray-800 hover:border-brand-500 hover:bg-brand-50",
+                      ].join(" ")}
+                    >
+                      {slot.horainicio} – {slot.horafin}
+                    </button>
+                  );
+                })}
+              </div>
+            )
+          )}
+        </div>
+      )}
+    </div>
 
       {/* AUTOCOMPLETAR DIAGNÓSTICOS */}
       {mode === "create" && (

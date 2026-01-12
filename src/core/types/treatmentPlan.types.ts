@@ -25,7 +25,7 @@ export interface SesionTratamientoCreatePayload {
     notas?: string;
     cita_id?: string | null; // UUID
     estado?: EstadoSesion;
-    diagnosticoscomplicaciones?: DiagnosticoSnapshot[];
+    diagnosticos_complicaciones?: DiagnosticoSnapshot[];
 }
 
 export interface SesionTratamientoUpdatePayload extends Partial<SesionTratamientoCreatePayload> {

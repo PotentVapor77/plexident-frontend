@@ -75,6 +75,7 @@ export interface Procedimiento {
     completado?: boolean;
     fecha_completado?: string;
     notas?: string;
+    autogenerado?: boolean;
 }
 
 export interface Prescripcion {
@@ -166,3 +167,5 @@ export interface DiagnosticosDisponiblesResponse {
     total_diagnosticos: number;
     diagnosticos: DiagnosticoSnapshot[];
 }
+
+

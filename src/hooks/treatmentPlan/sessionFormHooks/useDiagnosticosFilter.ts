@@ -107,21 +107,21 @@ export function useDiagnosticosFilter(
   };
 
   const handleToggleDiagnostico = (group: GroupedTreatmentDiagnostic) => {
-    setSelectedDiagnosticos((prev) => {
-      const isGroupSelected = group.diagnostico_ids.some((id) =>
-        prev.some((d) => d.id === id)
-      );
+  setSelectedDiagnosticos((prev) => {
+    const isGroupSelected = group.diagnostico_ids.some((id) =>
+      prev.some((d) => d.id === id)
+    );
 
-      if (isGroupSelected) {
-        return prev.filter((d) => !group.diagnostico_ids.includes(d.id));
-      } else {
-        const diagnosticosOriginales = diagnosticosFiltrados.filter((d) =>
-          group.diagnostico_ids.includes(d.id)
-        );
-        return [...prev, ...diagnosticosOriginales];
-      }
-    });
-  };
+    if (isGroupSelected) {
+      return prev.filter((d) => !group.diagnostico_ids.includes(d.id));
+    } else {
+      const diagnosticosOriginales = diagnosticosFiltrados.filter((d) =>
+        group.diagnostico_ids.includes(d.id)
+      );
+      return [...prev, ...diagnosticosOriginales];
+    }
+  });
+};
 
   return {
     selectedDiagnosticos,

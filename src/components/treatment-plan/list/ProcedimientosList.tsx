@@ -60,69 +60,79 @@ export default function ProcedimientosList({
       ) : (
         <div className="space-y-4">
           {procedimientos.map((proc, index) => (
-            <div key={proc.id} className={STYLES.cardInner}>
-              <div className="mb-3 flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Procedimiento #{index + 1}
-                </h4>
-                <button
-                  type="button"
-                  onClick={() => onRemove(index)}
-                  className={STYLES.iconButton}
-                  title="Eliminar procedimiento"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
+  <div key={proc.id ?? index} className={STYLES.cardInner}>
+    <div className="mb-3 flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          Procedimiento #{index + 1}
+        </h4>
 
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor={`proc-desc-${index}`} className={STYLES.label}>
-                    Descripción
-                  </label>
-                  <input
-                    type="text"
-                    id={`proc-desc-${index}`}
-                    value={proc.descripcion}
-                    onChange={(e) => onChange(index, "descripcion", e.target.value)}
-                    placeholder="Ej: Profilaxis completa, Resina compuesta..."
-                    className={STYLES.input}
-                  />
-                </div>
+        {proc.autogenerado && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
+            Sugerido
+          </span>
+        )}
+      </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor={`proc-diente-${index}`} className={STYLES.label}>
-                      Diente
-                    </label>
-                    <input
-                      type="text"
-                      id={`proc-diente-${index}`}
-                      value={proc.diente || ""}
-                      onChange={(e) => onChange(index, "diente", e.target.value)}
-                      placeholder="Ej: 11"
-                      maxLength={2}
-                      className={`${STYLES.input} text-center`}
-                    />
-                  </div>
+      <button
+        type="button"
+        onClick={() => onRemove(index)}
+        className={STYLES.iconButton}
+        title="Eliminar procedimiento"
+      >
+        <Trash2 className="h-4 w-4" />
+      </button>
+    </div>
 
-                  <div>
-                    <label htmlFor={`proc-superficie-${index}`} className={STYLES.label}>
-                      Superficie
-                    </label>
-                    <input
-                      type="text"
-                      id={`proc-superficie-${index}`}
-                      value={proc.superficie || ""}
-                      onChange={(e) => onChange(index, "superficie", e.target.value)}
-                      placeholder="O, M, D"
-                      className={`${STYLES.input} text-center uppercase`}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+    <div className="space-y-4">
+      <div>
+        <label htmlFor={`proc-desc-${index}`} className={STYLES.label}>
+          Descripción
+        </label>
+        <input
+          type="text"
+          id={`proc-desc-${index}`}
+          value={proc.descripcion}
+          onChange={(e) => onChange(index, "descripcion", e.target.value)}
+          placeholder="Ej: Profilaxis completa, Resina compuesta..."
+          className={STYLES.input}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label htmlFor={`proc-diente-${index}`} className={STYLES.label}>
+            Diente
+          </label>
+          <input
+            type="text"
+            id={`proc-diente-${index}`}
+            value={proc.diente || ""}
+            onChange={(e) => onChange(index, "diente", e.target.value)}
+            placeholder="Ej: 11"
+            maxLength={2}
+            className={`${STYLES.input} text-center`}
+          />
+        </div>
+
+        <div>
+          <label htmlFor={`proc-superficie-${index}`} className={STYLES.label}>
+            Superficie
+          </label>
+          <input
+            type="text"
+            id={`proc-superficie-${index}`}
+            value={proc.superficie || ""}
+            onChange={(e) => onChange(index, "superficie", e.target.value)}
+            placeholder="O, M, D"
+            className={`${STYLES.input} text-center uppercase`}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+))}
+
         </div>
       )}
     </section>

@@ -22,6 +22,8 @@ import { useSessionFormSubmit } from "../../../hooks/treatmentPlan/sessionFormHo
 import DiagnosticosSelector from "../selector/DiagnosticosSelector";
 import ProcedimientosList from "../list/ProcedimientosList";
 import PrescripcionesList from "../list/PrescripcionesList";
+import { tr } from "date-fns/locale";
+import { useAutoProcedimientosFromDiagnosticos } from "../../../hooks/treatmentPlan/sessionFormHooks/useAutoProcedimientosFromDiagnosticos";
 
 // ============================================================================
 // STYLES & TOKENS
@@ -100,9 +102,17 @@ export default function SessionForm({
   } = useDiagnosticosFilter(diagnosticosDisponibles);
 
   const procedimientosHooks = useProcedimientos(
-    formData.procedimientos,
-    (procedimientos) => setFormData((prev) => ({ ...prev, procedimientos }))
-  );
+  formData.procedimientos,
+  (procedimientos) => setFormData((prev) => ({ ...prev, procedimientos }))
+);
+
+useAutoProcedimientosFromDiagnosticos({
+  autocompletar: mode === "create" && formData.autocompletar_diagnosticos,
+  selectedDiagnosticos,
+  procedimientos: formData.procedimientos,
+  setProcedimientos: (procedimientosActualizados) =>
+    setFormData((prev) => ({ ...prev, procedimientos: procedimientosActualizados })),
+});
 
   const prescripcionesHooks = usePrescripciones(
     formData.prescripciones,

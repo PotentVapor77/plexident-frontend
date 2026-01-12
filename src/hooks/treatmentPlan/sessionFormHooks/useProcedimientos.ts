@@ -3,9 +3,13 @@ import { useCallback } from "react";
 import type { Procedimiento } from "../../../types/treatmentPlan/typeBackendTreatmentPlan";
 import { generateTempId } from "../../../mappers/treatmentPlanMapper";
 
+
+
+
 export function useProcedimientos(
     procedimientos: Procedimiento[],
-    setProcedimientos: (procedimientos: Procedimiento[]) => void
+    setProcedimientos: (procedimientos: Procedimiento[]) => void,
+    autoTexto: string | null = null 
 ) {
     const handleAdd = useCallback(() => {
         const newProcedimiento: Procedimiento = {

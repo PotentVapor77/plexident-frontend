@@ -9,7 +9,7 @@ import { usePacienteActivo } from '../../../context/PacienteContext';
 import type { IAnamnesis } from '../../../types/anamnesis/IAnamnesis';
 import { useAnamnesis } from '../../../hooks/anamnesis/useAnamnesis';
 
-// ✅ AGREGAR: Interface para props
+
 interface AnamnesisMainProps {
   onEditAnamnesis?: (anamnesis: IAnamnesis) => void;
 }
@@ -18,8 +18,6 @@ export default function AnamnesisMain({ onEditAnamnesis }: AnamnesisMainProps) {
   const { pacienteActivo } = usePacienteActivo();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  
-  // ✅ AGREGAR: Estado para búsqueda
   const [searchTerm, setSearchTerm] = useState('');
 
   const [anamnesisToView, setAnamnesisToView] = useState<IAnamnesis | null>(null);
@@ -37,13 +35,10 @@ export default function AnamnesisMain({ onEditAnamnesis }: AnamnesisMainProps) {
     closeModal: closeDeleteModal,
   } = useModal();
 
-  // ✅ MODIFICADO: Incluir pacienteId y search en el hook useAnamnesis
   const { data, isLoading } = useAnamnesis({
     page: currentPage,
     page_size: pageSize,
-    // ✅ AGREGAR: Filtro por paciente activo
     paciente: pacienteActivo?.id,
-    // ✅ AGREGAR: Búsqueda
     search: searchTerm,
   });
 
@@ -53,14 +48,12 @@ export default function AnamnesisMain({ onEditAnamnesis }: AnamnesisMainProps) {
   const hasNext = currentPage < totalPages;
   const hasPrevious = currentPage > 1;
 
-  // Handlers
   const handleViewAnamnesis = (anamnesis: IAnamnesis) => {
     setAnamnesisToView(anamnesis);
     openViewModal();
   };
 
   const handleEditAnamnesis = (anamnesis: IAnamnesis) => {
-    // ✅ Usar la prop onEditAnamnesis si está disponible
     if (onEditAnamnesis) {
       onEditAnamnesis(anamnesis);
     }
@@ -84,17 +77,13 @@ export default function AnamnesisMain({ onEditAnamnesis }: AnamnesisMainProps) {
     }
   };
 
-  // ✅ AGREGAR: Handler para búsqueda
   const handleSearch = (term: string) => {
     setSearchTerm(term);
-    setCurrentPage(1); // Resetear a primera página al buscar
+    setCurrentPage(1);
   };
 
   return (
     <>
-      {/* Paciente fijado - YA EXISTE */}
-
-      {/* Tabla principal */}
       <AnamnesisTable
         anamnesisData={anamnesisData}
         isLoading={isLoading}
@@ -109,13 +98,11 @@ export default function AnamnesisMain({ onEditAnamnesis }: AnamnesisMainProps) {
         hasPrevious={hasPrevious}
         pageSize={pageSize}
         onPageSizeChange={setPageSize}
-        // ✅ AGREGAR: Props para búsqueda y paciente
         searchTerm={searchTerm}
         onSearchChange={handleSearch}
         pacienteActivo={pacienteActivo}
       />
 
-      {/* Ver anamnesis */}
       {anamnesisToView && (
         <AnamnesisViewModal
           isOpen={isViewModalOpen}
@@ -125,7 +112,6 @@ export default function AnamnesisMain({ onEditAnamnesis }: AnamnesisMainProps) {
         />
       )}
 
-      {/* Eliminar anamnesis */}
       {anamnesisToDelete && (
         <AnamnesisDeleteModal
           isOpen={isDeleteModalOpen}

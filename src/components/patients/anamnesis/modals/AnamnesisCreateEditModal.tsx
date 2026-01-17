@@ -35,7 +35,6 @@ export function AnamnesisCreateEditModal({
       className="max-w-4xl p-6 lg:p-8 max-h-[90vh] overflow-y-auto"
     >
       <>
-        {/* Encabezado del Modal */}
         <div className="flex justify-between items-start mb-6">
           <div>
             <h5 className="font-semibold text-gray-800 text-xl dark:text-white/90 lg:text-2xl">
@@ -59,28 +58,12 @@ export function AnamnesisCreateEditModal({
           </div>
         </div>
 
-        {/* Formulario */}
         <AnamnesisForm
           mode={mode}
           onAnamnesisCreated={handleSuccess}
           initialData={
             mode === 'edit' && anamnesis
-              ? {
-                  paciente: anamnesis.paciente,
-                  tiene_alergias: anamnesis.tiene_alergias,
-                  alergias_detalle: anamnesis.alergias_detalle || '',
-                  antecedentes_personales: anamnesis.antecedentes_personales || '',
-                  antecedentes_familiares: anamnesis.antecedentes_familiares || '',
-                  problemas_coagulacion: anamnesis.problemas_coagulacion,
-                  problemas_coagulacion_detalle: anamnesis.problemas_coagulacion_detalle || '',
-                  problemas_anestesicos: anamnesis.problemas_anestesicos,
-                  problemas_anestesicos_detalle: anamnesis.problemas_anestesicos_detalle || '',
-                  toma_medicamentos: anamnesis.toma_medicamentos,
-                  medicamentos_actuales: anamnesis.medicamentos_actuales || '',
-                  habitos: anamnesis.habitos || '',
-                  otros: anamnesis.otros || '',
-                  activo: anamnesis.activo, // ✅ YA ESTABA
-                }
+              ? anamnesis
               : undefined
           }
           anamnesisId={mode === 'edit' && anamnesis ? anamnesis.id : undefined}

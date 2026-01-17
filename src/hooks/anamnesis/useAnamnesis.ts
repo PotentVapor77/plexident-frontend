@@ -109,12 +109,12 @@ export const useDeleteAnamnesis = () => {
 };
 
 /**
- * Hook para obtener resumen de riesgos médicos
+ * Hook para obtener resumen de condiciones
  */
-export const useResumenRiesgos = (id: string, enabled = true) => {
+export const useResumen = (id: string, enabled = true) => {
   return useQuery({
-    queryKey: [QUERY_KEY, id, 'resumen-riesgos'],
-    queryFn: () => anamnesisService.getResumenRiesgos(id),
+    queryKey: [QUERY_KEY, id, 'resumen'],
+    queryFn: () => anamnesisService.getResumen(id),
     enabled: enabled && !!id,
   });
 };

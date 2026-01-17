@@ -10,7 +10,27 @@ interface StandardResponse<T> {
   status_code: number;
   message: string;
   data: T;
-  errors: Record<string, string[]> | null; // ✅ CORREGIDO: Sin any
+  errors: Record<string, string[]> | null;
+}
+
+// Tipo para resumen de condiciones
+interface ResumenCondiciones {
+  resumen_condiciones: string;
+  alergias: {
+    antibioticos: string;
+    anestesia: string;
+    otras_alergias: boolean;
+  };
+  condiciones_criticas: {
+    problemas_coagulacion: boolean;
+    problemas_anestesicos: boolean;
+    enfermedad_cardiaca: boolean;
+  };
+  enfermedades_cronicas: {
+    diabetes: boolean;
+    hipertension: boolean;
+    asma: boolean;
+  };
 }
 
 export const anamnesisService = {
@@ -98,17 +118,12 @@ export const anamnesisService = {
   },
 
   /**
-   * Obtener resumen de riesgos médicos
+   * Obtener resumen de condiciones médicas
    */
-  getResumenRiesgos: async (id: string) => {
-    const response = await axiosInstance.get<StandardResponse<{
-      tiene_alergias: boolean;
-      problemas_coagulacion: boolean;
-      problemas_anestesicos: boolean;
-      toma_medicamentos: boolean;
-      nivel_riesgo: 'BAJO' | 'MEDIO' | 'ALTO';
-      observaciones: string[];
-    }>>(ENDPOINTS.anamnesis.resumenRiesgos(id));
+  getResumen: async (id: string) => {
+    const response = await axiosInstance.get<StandardResponse<ResumenCondiciones>>(
+      ENDPOINTS.anamnesis.resumenRiesgos(id)
+    );
     return response.data.data;
   },
 };

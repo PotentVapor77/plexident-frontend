@@ -12,8 +12,6 @@ export interface ConsultationFormData {
   fecha_consulta: string;
   motivo_consulta: string;
   enfermedad_actual: string;
-  diagnostico: string;
-  plan_tratamiento: string;
   observaciones: string;
   activo: boolean;
 }
@@ -44,8 +42,6 @@ export default function ConsultationForm({
     fecha_consulta: initialData?.fecha_consulta ?? new Date().toISOString().split('T')[0],
     motivo_consulta: initialData?.motivo_consulta ?? '',
     enfermedad_actual: initialData?.enfermedad_actual ?? '',
-    diagnostico: initialData?.diagnostico ?? '',
-    plan_tratamiento: initialData?.plan_tratamiento ?? '',
     observaciones: initialData?.observaciones ?? '',
     activo: initialData?.activo ?? true,
   });
@@ -100,8 +96,6 @@ export default function ConsultationForm({
       fecha_consulta: new Date().toISOString().split('T')[0],
       motivo_consulta: '',
       enfermedad_actual: '',
-      diagnostico: '',
-      plan_tratamiento: '',
       observaciones: '',
       activo: true,
     });
@@ -124,8 +118,6 @@ export default function ConsultationForm({
         fecha_consulta: formData.fecha_consulta,
         motivo_consulta: formData.motivo_consulta.trim(),
         enfermedad_actual: formData.enfermedad_actual.trim(),
-        diagnostico: formData.diagnostico.trim() || undefined,
-        plan_tratamiento: formData.plan_tratamiento.trim() || undefined,
         observaciones: formData.observaciones.trim() || undefined,
         activo: formData.activo,
       };

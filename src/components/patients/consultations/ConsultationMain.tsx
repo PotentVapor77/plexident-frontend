@@ -37,13 +37,13 @@ export default function ConsultationMain({ onEditConsultation }: ConsultationMai
     closeModal: closeDeleteModal,
   } = useModal();
 
-  // ✅ Hook para obtener consultas
+  // ✅ Hook para obtener consultas CON búsqueda incluida
   const { data, isLoading } = useConsultations({
     page: currentPage,
     page_size: pageSize,
     // ✅ Filtro por paciente activo
     paciente: pacienteActivo?.id,
-    // ✅ Búsqueda
+    // ✅ Incluir búsqueda en los parámetros
     search: searchTerm,
   });
 
@@ -60,7 +60,6 @@ export default function ConsultationMain({ onEditConsultation }: ConsultationMai
   };
 
   const handleEditConsultation = (consultation: IConsultation) => {
-    // ✅ Usar la prop onEditConsultation si está disponible
     if (onEditConsultation) {
       onEditConsultation(consultation);
     }
@@ -84,10 +83,21 @@ export default function ConsultationMain({ onEditConsultation }: ConsultationMai
     }
   };
 
-  // ✅ Handler para búsqueda
+  // ✅ Handler para búsqueda - actualiza el estado searchTerm
   const handleSearch = (term: string) => {
     setSearchTerm(term);
     setCurrentPage(1); // Resetear a primera página al buscar
+  };
+
+  // ✅ Handler para cambio de página
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // ✅ Handler para cambio de tamaño de página
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1); // Reset a primera página
   };
 
   return (
@@ -101,15 +111,14 @@ export default function ConsultationMain({ onEditConsultation }: ConsultationMai
         onDelete={handleOpenDeleteConsultation}
         currentPage={currentPage}
         totalPages={totalPages}
-        onPageChange={setCurrentPage}
+        onPageChange={handlePageChange}
         totalCount={totalCount}
         hasNext={hasNext}
         hasPrevious={hasPrevious}
         pageSize={pageSize}
-        onPageSizeChange={setPageSize}
-        // ✅ Props para búsqueda y paciente
-        searchTerm={searchTerm}
-        onSearchChange={handleSearch}
+        onPageSizeChange={handlePageSizeChange}
+        // ✅ CORREGIDO: Pasar onSearch (no searchTerm)
+        onSearch={handleSearch}
         pacienteActivo={pacienteActivo}
       />
 

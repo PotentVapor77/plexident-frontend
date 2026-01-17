@@ -148,6 +148,19 @@ function App() {
 
            
 {/* 
+=======
+            <Route 
+                path="/historia-clinica" 
+
+                element={
+                  <PacienteProvider>
+                    <ClinicalRecordsPage />
+                  </PacienteProvider>
+              }  
+
+              />
+
+            {/* Rutas de antecedentes */}
             <Route
               path="/pacientes/examen-estomatognatico"
               element={

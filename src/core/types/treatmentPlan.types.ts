@@ -1,5 +1,5 @@
 // src/core/types/treatmentPlan.types.ts
-import type { EstadoSesion, Prescripcion, Procedimiento } from "../../types/treatmentPlan/typeBackendTreatmentPlan";
+import type { DiagnosticoSnapshot, EstadoSesion, Prescripcion, Procedimiento } from "../../types/treatmentPlan/typeBackendTreatmentPlan";
 
 
 // ============================================================================
@@ -25,6 +25,7 @@ export interface SesionTratamientoCreatePayload {
     notas?: string;
     cita_id?: string | null; // UUID
     estado?: EstadoSesion;
+    diagnosticos_complicaciones?: DiagnosticoSnapshot[];
 }
 
 export interface SesionTratamientoUpdatePayload extends Partial<SesionTratamientoCreatePayload> {

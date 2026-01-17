@@ -14,7 +14,7 @@ import type {
 import { createApiError, type PaginatedResponse } from '../../types/api';
 import api from '../api/axiosInstance';
 import type { IndicadoresSaludBucalCreatePayload, IndicadoresSaludBucalUpdatePayload, OdontogramaData } from '../../core/types/odontograma.types';
-import { mapBackendIndicadoresToDomain, mapearOdontogramaBackendToFrontend, mapearOdontogramaFrontendToBackend } from '../../mappers/odontogramaMapper';
+import {  mapearOdontogramaBackendToFrontend, mapearOdontogramaFrontendToBackend } from '../../mappers/odontogramaMapper';
 
 // ============================================================================
 // CONSTANTES DE ENDPOINTS

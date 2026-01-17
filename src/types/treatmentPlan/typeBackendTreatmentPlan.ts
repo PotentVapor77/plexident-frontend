@@ -50,7 +50,7 @@ export interface BackendSesionTratamiento {
 
 export interface DiagnosticoSnapshot {
     id: string;
-    diente: string; // FDI code
+    diente: string; 
     superficie: string;
     diagnostico_key: string;
     diagnostico_nombre: string;
@@ -61,6 +61,7 @@ export interface DiagnosticoSnapshot {
     descripcion: string;
     estado_tratamiento: "diagnosticado" | "en_tratamiento" | "tratado" | "cancelado";
     atributos_clinicos: Record<string, any>;
+    es_nuevo?: boolean;
 }
 
 export interface Procedimiento {
@@ -74,6 +75,7 @@ export interface Procedimiento {
     completado?: boolean;
     fecha_completado?: string;
     notas?: string;
+    autogenerado?: boolean;
 }
 
 export interface Prescripcion {
@@ -165,3 +167,5 @@ export interface DiagnosticosDisponiblesResponse {
     total_diagnosticos: number;
     diagnosticos: DiagnosticoSnapshot[];
 }
+
+

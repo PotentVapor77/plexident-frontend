@@ -93,6 +93,7 @@ export default function TreatmentPlanManagement() {
         isLoading: isLoadingPlanes,
         isError: isErrorPlanes,
         error: errorPlanes,
+        refetch: refetchPlanes,
     } = usePlanesTratamiento(pacienteActivo?.id ?? null, pagePlanes, pageSize, "");
 
     const deletePlanMutation = useDeletePlanTratamiento(pacienteId);
@@ -108,7 +109,7 @@ export default function TreatmentPlanManagement() {
         isError: isErrorSesiones,
         error: errorSesiones,
     } = useSesionesTratamiento(
-        planSeleccionadoId,  
+        planSeleccionadoId,
         pageSesiones,
         pageSizeSesiones,
         pacienteActivo?.id,
@@ -180,6 +181,7 @@ export default function TreatmentPlanManagement() {
         setVistaActual("planes");
         setPlanSeleccionadoId(null);
         setPageSesiones(1);
+        refetchPlanes();
     };
 
     const handleCreateSesionClick = () => {
@@ -235,46 +237,42 @@ export default function TreatmentPlanManagement() {
     return (
         <div className="treatment-plan-management-container">
             {/* ======================================================================
-          VISTA DE PLANES
-      ====================================================================== */}
+            VISTA DE PLANES
+            ====================================================================== */}
             {vistaActual === "planes" && (
                 <>
                     {/* Header */}
                     <div className="mb-8">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-3 bg-brand-100 dark:bg-brand-900/30 rounded-lg">
-                                <FileText className="w-8 h-8 text-brand-600 dark:text-brand-400" />
-                            </div>
+                        <div className="flex items-start justify-between gap-4">
+                            {/* Título + descripciones */}
                             <div>
                                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                                     {pacienteActivo
                                         ? `Planes de tratamiento de ${pacienteNombreCompleto}`
                                         : "Planes de tratamiento"}
                                 </h1>
-                                <p className="text-gray-600 dark:text-gray-400 mt-1">
+                                <p className="mt-1 text-gray-600 dark:text-gray-400">
                                     {pacienteActivo
                                         ? "Gestiona los planes de tratamiento del paciente"
                                         : "Administra los planes de tratamiento de todos los pacientes"}
                                 </p>
+
+                                {pacienteActivo && (
+                                    <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-200">
+                                        Solo se muestran planes del paciente activo. Haga clic en{" "}
+                                        <span className="font-semibold">"Ver sesiones"</span> para gestionar
+                                        las sesiones de tratamiento de cada plan.
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex items-start">
+                                <Button variant="primary" onClick={handleCreatePlanClick}>
+                                    <Plus className="mr-2 h-5 w-5" />
+                                    Crear plan
+                                </Button>
                             </div>
                         </div>
-
-                        {pacienteActivo && (
-                            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                                <p className="text-sm text-blue-800 dark:text-blue-200">
-                                    Solo se muestran planes del paciente activo. Haga clic en "Ver sesiones" para
-                                    gestionar las sesiones de tratamiento de cada plan.
-                                </p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Barra de acciones */}
-                    <div className="flex justify-end mb-6">
-                        <Button variant="primary" onClick={handleCreatePlanClick}>
-                            <Plus className="w-5 h-5 mr-2" />
-                            Crear plan
-                        </Button>
                     </div>
 
                     {/* Contenido */}
@@ -341,45 +339,48 @@ export default function TreatmentPlanManagement() {
                 <>
                     {/* Header */}
                     <div className="mb-8">
+                        {/* Botón volver */}
                         <Button
                             variant="outline"
                             onClick={handleVolverAPlanes}
-                            className="mb-4"
+                            className="mb-4 inline-flex items-center"
                         >
-                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            <ArrowLeft className="mr-2 h-4 w-4" />
                             Volver a planes
                         </Button>
 
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-3 bg-brand-100 dark:bg-brand-900/30 rounded-lg">
-                                <Calendar className="w-8 h-8 text-brand-600 dark:text-brand-400" />
+                        {/* Título + texto + botón Crear sesión */}
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="rounded-lg bg-brand-100 p-3 dark:bg-brand-900/30">
+                                    <Calendar className="h-8 w-8 text-brand-600 dark:text-brand-400" />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                                        Sesiones de tratamiento
+                                    </h1>
+                                    <p className="mt-1 text-gray-600 dark:text-gray-400">
+                                        {planDetalle
+                                            ? `Plan: ${planDetalle.titulo}`
+                                            : "Gestiona las sesiones del plan seleccionado"}
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                                    Sesiones de tratamiento
-                                </h1>
-                                <p className="text-gray-600 dark:text-gray-400 mt-1">
-                                    {planDetalle
-                                        ? `Plan: ${planDetalle.titulo}`
-                                        : "Gestiona las sesiones del plan seleccionado"}
-                                </p>
+
+                            <div className="flex items-start">
+                                <Button variant="primary" onClick={handleCreateSesionClick}>
+                                    <Plus className="mr-2 h-5 w-5" />
+                                    Crear sesión
+                                </Button>
                             </div>
                         </div>
 
-                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                             <p className="text-sm text-blue-800 dark:text-blue-200">
-                                Las sesiones representan las visitas o procedimientos programados dentro del plan de
-                                tratamiento seleccionado.
+                                Las sesiones representan las visitas o procedimientos programados
+                                dentro del plan de tratamiento seleccionado.
                             </p>
                         </div>
-                    </div>
-
-                    {/* Barra de acciones */}
-                    <div className="flex justify-end mb-6">
-                        <Button variant="primary" onClick={handleCreateSesionClick}>
-                            <Plus className="w-5 h-5 mr-2" />
-                            Crear sesión
-                        </Button>
                     </div>
 
                     {/* Contenido */}
@@ -401,12 +402,17 @@ export default function TreatmentPlanManagement() {
                         </div>
                     ) : (
                         <>
-                            <SessionTable
-                                sesiones={sesiones}
-                                onViewClick={handleViewSesionClick}
-                                onEditClick={handleEditSesionClick}
-                                onDeleteClick={handleDeleteSesionClick}
-                            />
+                            <div className="space-y-3">
+                                {/* card header sesiones ... */}
+                                <div className="space-y-3 w-full">
+                                    <SessionTable
+                                        sesiones={sesiones}
+                                        onViewClick={handleViewSesionClick}
+                                        onEditClick={handleEditSesionClick}
+                                        onDeleteClick={handleDeleteSesionClick}
+                                    />
+                                </div>
+                            </div>
 
                             {paginationSesiones && paginationSesiones.total_pages > 1 && (
                                 <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600 dark:text-gray-400">
@@ -491,6 +497,7 @@ export default function TreatmentPlanManagement() {
                     isOpen={isViewSesionModalOpen}
                     onClose={closeViewSesionModal}
                     sesionId={selectedSesion.id}
+                    
                 />
             )}
 

@@ -59,166 +59,213 @@ const SessionTable: React.FC<SessionTableProps> = ({
 
   const rows = useMemo(
     () =>
-      sesiones.map((sesion) => (
-        <tr
-          key={sesion.id}
-          className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50/60 dark:hover:bg-gray-800/60 transition-colors"
-        >
-          {/* Sesión */}
-          <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
-            <div className="flex items-center gap-2">
-              <span>Sesión #{sesion.numero_sesion}</span>
-              {getFirmadaBadge(sesion.esta_firmada)}
-            </div>
-          </td>
+      sesiones.map((sesion) => {
+        const isLocked =
+          sesion.estado === "completada" || sesion.estado === "cancelada";
 
-          {/* Fecha programada */}
-          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
-            {sesion.fecha_programada
-              ? formatDateToReadable(sesion.fecha_programada)
-              : "No especificada"}
-          </td>
-
-          {/* Fecha realización */}
-          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
-            {sesion.fecha_realizacion
-              ? formatDateToReadable(sesion.fecha_realizacion)
-              : "No realizada"}
-          </td>
-
-          {/* Estado */}
-          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
-            {getEstadoBadge(sesion.estado, sesion.estado_display)}
-          </td>
-
-          {/* Odontólogo */}
-          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
-            {sesion.odontologo_nombre || "No asignado"}
-          </td>
-
-          {/* Contenido */}
-          <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-400">
-            <div className="space-y-1">
-              <div>
-                <span className="font-medium">{sesion.total_diagnosticos}</span>{" "}
-                diagnóstico(s)
+        return (
+          <tr
+            key={sesion.id}
+            className="border-b border-gray-100 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900/60"
+          >
+            {/* Sesión */}
+            <td className="px-4 py-3 align-top">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300">
+                    <Calendar className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    Sesión #{sesion.numero_sesion}
+                  </span>
+                </div>
+                <div>{getFirmadaBadge(sesion.esta_firmada)}</div>
               </div>
-              <div>
-                <span className="font-medium">
-                  {sesion.total_procedimientos}
-                </span>{" "}
-                procedimiento(s)
-              </div>
-              <div>
-                <span className="font-medium">
-                  {sesion.total_prescripciones}
-                </span>{" "}
-                prescripción(es)
-              </div>
-            </div>
-          </td>
+            </td>
 
-          {/* Acciones */}
-          <td className="px-4 py-3 text-right whitespace-nowrap">
-            <div className="inline-flex items-center gap-1">
-              {onViewClick && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  aria-label="Ver sesión"
-                  onClick={() => onViewClick(sesion)}
-                >
-                  <Eye className="w-4 h-4" />
-                </Button>
-              )}
-              {onEditClick &&
-                sesion.estado !== "completada" &&
-                sesion.estado !== "cancelada" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    aria-label="Editar sesión"
-                    onClick={() => onEditClick(sesion)}
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </Button>
+            {/* Fecha Programada */}
+            <td className="px-4 py-3 align-top text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
+  {sesion.fecha_programada ? formatDateToReadable(sesion.fecha_programada) : "No especificada"}
+</td>
+
+            {/* Fecha Realización */}
+            <td className="px-4 py-3 align-top text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
+  {sesion.fecha_realizacion ? formatDateToReadable(sesion.fecha_realizacion) : "No realizada"}
+</td>
+
+            {/* Estado */}
+            <td className="px-4 py-3 align-top text-sm whitespace-nowrap">
+  {getEstadoBadge(sesion.estado, sesion.estado_display)}
+</td>
+
+            {/* Odontólogo */}
+            <td className="px-4 py-3 align-top text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
+  {sesion.odontologo_nombre || "No asignado"}
+</td>
+
+            {/* Contenido */}
+            <td className="px-4 py-3 align-top text-xs text-gray-600 dark:text-gray-400">
+              <div className="flex flex-col gap-0.5">
+                <span>
+                  <span className="font-semibold">
+                    {sesion.total_diagnosticos}
+                  </span>{" "}
+                  diagnóstico(s)
+                </span>
+                <span>
+                  <span className="font-semibold">
+                    {sesion.total_procedimientos}
+                  </span>{" "}
+                  procedimiento(s)
+                </span>
+                <span>
+                  <span className="font-semibold">
+                    {sesion.total_prescripciones}
+                  </span>{" "}
+                  prescripción(es)
+                </span>
+              </div>
+            </td>
+
+            {/* Acciones */}
+            <td className="px-4 py-3 align-top">
+              <div className="flex flex-wrap items-center justify-end gap-1">
+                {onViewClick && (
+                  <div className="group relative">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      aria-label="Ver sesión"
+                      onClick={() => onViewClick(sesion)}
+                      className="border-none bg-transparent text-gray-500 hover:bg-brand-50 hover:text-brand-600 dark:text-gray-400 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
+                    >
+                      <Eye className="h-4 w-4 text-brand-500 dark:text-brand-300" />
+                    </Button>
+                    <span className="pointer-events-none absolute -bottom-8 right-0 z-10 w-max rounded-md bg-gray-900 px-2 py-1 text-[11px] font-medium text-white opacity-0 shadow-theme-sm transition-opacity group-hover:opacity-100 dark:bg-black">
+                      Ver detalle
+                    </span>
+                  </div>
                 )}
-              {onDeleteClick &&
-  sesion.estado !== "completada" &&
-  sesion.estado !== "cancelada" && (
-    <Button
-      variant="outline"
-      size="sm"
-      aria-label="Eliminar sesión"
-      onClick={() => onDeleteClick(sesion)}
-    >
-      <Trash2 className="w-4 h-4" />
-    </Button>
-)}
-            </div>
-          </td>
-        </tr>
-      )),
+
+                {onEditClick && (
+                  <div className="group relative">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      aria-label="Editar sesión"
+                      onClick={() => !isLocked && onEditClick(sesion)}
+                      disabled={isLocked}
+                      className={`border-none bg-transparent text-gray-500 dark:text-gray-400 ${
+                        isLocked
+                          ? "cursor-not-allowed opacity-40"
+                          : "hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-500/10 dark:hover:text-orange-300"
+                      }`}
+                    >
+                      <Edit2
+                        className={`h-4 w-4 ${
+                          isLocked
+                            ? "text-gray-400 dark:text-gray-500"
+                            : "text-orange-500 dark:text-orange-300"
+                        }`}
+                      />
+                    </Button>
+                    <span className="pointer-events-none absolute -bottom-8 right-1/2 z-10 w-max translate-x-1/2 rounded-md bg-gray-900 px-2 py-1 text-[11px] font-medium text-white opacity-0 shadow-theme-sm transition-opacity group-hover:opacity-100 dark:bg-black">
+                      {isLocked ? "No editable" : "Editar sesión"}
+                    </span>
+                  </div>
+                )}
+
+                {onDeleteClick && (
+                  <div className="group relative">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      aria-label="Eliminar sesión"
+                      onClick={() => !isLocked && onDeleteClick(sesion)}
+                      disabled={isLocked}
+                      className={`border-none bg-transparent text-gray-500 dark:text-gray-400 ${
+                        isLocked
+                          ? "cursor-not-allowed opacity-40"
+                          : "hover:bg-error-50 hover:text-error-600 dark:hover:bg-error-500/10 dark:hover:text-error-300"
+                      }`}
+                    >
+                      <Trash2
+                        className={`h-4 w-4 ${
+                          isLocked
+                            ? "text-gray-400 dark:text-gray-500"
+                            : "text-error-500 dark:text-error-300"
+                        }`}
+                      />
+                    </Button>
+                    <span className="pointer-events-none absolute -bottom-8 right-0 z-10 w-max rounded-md bg-gray-900 px-2 py-1 text-[11px] font-medium text-white opacity-0 shadow-theme-sm transition-opacity group-hover:opacity-100 dark:bg-black">
+                      {isLocked ? "No eliminable" : "Eliminar sesión"}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </td>
+          </tr>
+        );
+      }),
     [sesiones, getFirmadaBadge, getEstadoBadge, onViewClick, onEditClick, onDeleteClick]
   );
+
 
   // ========================================================================
   // RENDER
   // ========================================================================
 
   if (!sesiones || sesiones.length === 0) {
-    return (
-      <div className="border border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-6 text-center text-sm text-gray-500 dark:text-gray-400">
-        <div className="flex flex-col items-center gap-2">
-          <Calendar className="w-6 h-6 text-gray-400" />
-          <p className="font-medium">
-            No hay sesiones registradas para este plan
-          </p>
-          <p className="text-xs">
-            Cree una nueva sesión para comenzar el tratamiento
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-sm">
-        <thead className="bg-gray-50 dark:bg-gray-800/80">
-          <tr>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Sesión
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Fecha Programada
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Fecha Realización
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Estado
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Odontólogo
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Contenido
-            </th>
-            <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Acciones
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
-          {rows}
-        </tbody>
-      </table>
-      <div className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800">
-        Total de sesiones: {sesiones.length}
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-12 text-center text-sm text-gray-500 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400">
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-500 dark:bg-brand-500/10 dark:text-brand-400">
+        <Calendar className="h-6 w-6" />
       </div>
+      <p className="font-medium">No hay sesiones registradas para este plan</p>
+      <p className="mt-1 text-xs">
+        Cree una nueva sesión para comenzar el tratamiento
+      </p>
     </div>
   );
+}
+  return (
+  <div className="w-full overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+    <table className=" min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-800">
+      <thead className="bg-gray-50 dark:bg-gray-900">
+        <tr>
+          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">
+            Sesión
+          </th>
+          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">
+            Fecha programada
+          </th>
+          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">
+            Fecha realización
+          </th>
+          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">
+            Estado
+          </th>
+          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">
+            Odontólogo
+          </th>
+          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Contenido
+          </th>
+          <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">
+            Acciones
+          </th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+        {rows}
+      </tbody>
+    </table>
+
+    <div className="border-t border-gray-100 px-4 py-2 text-xs text-gray-500 dark:border-gray-800 dark:text-gray-400">
+      Total de sesiones: {sesiones.length}
+    </div>
+  </div>
+);
 };
 
 // Memo con comparación personalizada

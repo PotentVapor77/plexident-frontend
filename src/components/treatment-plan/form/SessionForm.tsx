@@ -25,9 +25,8 @@ import PrescripcionesList from "../list/PrescripcionesList";
 import { useAutoProcedimientosFromDiagnosticos } from "../../../hooks/treatmentPlan/sessionFormHooks/useAutoProcedimientosFromDiagnosticos";
 import { usePacienteActivo } from "../../../context/PacienteContext";
 import { useAvailableSlots } from "../../../hooks/treatmentPlan/sessionFormHooks/useAvailableSlots";
-import { useAppointment } from "../../../hooks/appointments/useAppointment";
 import { useAuth } from "../../../hooks/auth/useAuth";
-import type { ICitaCreate, TipoConsulta } from "../../../types/appointments/IAppointment";
+
 
 // ============================================================================
 // STYLES & TOKENS
@@ -71,7 +70,6 @@ export default function SessionForm({
   const { user } = useAuth();
 const { pacienteActivo } = usePacienteActivo();
 useAuth();
-const { createCita } = useAppointment();
 const { data: plan } = usePlanTratamiento(planId);
 const { slots, loading, error, loadSlots } = useAvailableSlots();
 const [selectedSlot, setSelectedSlot] = useState<string | null>(null);

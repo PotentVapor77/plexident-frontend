@@ -64,6 +64,7 @@ export interface ICita {
   fecha_modificacion: string;
   recordatorioEnviado?: boolean;
   fechaRecordatorio?: string;
+  minutos_faltantes?: number;
 }
 
 export interface ICitaCreate {

@@ -1,7 +1,6 @@
 // src/components/stomatognathicExam/forms/StomatognathicExamFormFields.tsx
 
 import { useState, useEffect, useMemo } from 'react';
-import { Search, X, ChevronDown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getPacientes } from '../../../../services/patient/patientService';
 import type {
@@ -16,6 +15,8 @@ interface StomatognathicExamFormFieldsProps {
   mode: 'create' | 'edit';
   activo?: boolean;
   onActivoChange?: (checked: boolean) => void;
+  // ✅ AGREGAR: Prop para paciente activo
+  pacienteActivo?: IPaciente | null;
 }
 
 interface RegionConfig {
@@ -207,11 +208,13 @@ export function StomatognathicExamFormFields({
   mode,
   activo = true,
   onActivoChange,
+  // ✅ RECIBIR: paciente activo
+  pacienteActivo,
 }: StomatognathicExamFormFieldsProps) {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<IPaciente | null>(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  // ✅ MODIFICADO: Solo cargar pacientes en modo edit
   const { data: patientsResponse, isLoading: patientsLoading } = useQuery({
     queryKey: ['patients', searchTerm],
     queryFn: async () => {
@@ -228,26 +231,23 @@ export function StomatognathicExamFormFields({
       }
     },
     staleTime: 5 * 60 * 1000,
-    enabled: true,
+    // ✅ SOLO habilitar en modo edit
+    enabled: mode === 'edit',
   });
 
   const patients = useMemo(() => patientsResponse?.results || [], [patientsResponse]);
 
   useEffect(() => {
-    if (formData.paciente && patients.length > 0) {
+    // ✅ EN MODO EDIT: Cargar paciente desde datos
+    if (mode === 'edit' && formData.paciente && patients.length > 0) {
       const found = patients.find((p: IPaciente) => p.id === formData.paciente);
       setSelectedPatient(found || null);
-    } else {
-      setSelectedPatient(null);
     }
-  }, [formData.paciente, patients]);
-
-  const handlePatientSelect = (patientId: string) => {
-    onChange('paciente', patientId);
-    const patient = patients.find((p: IPaciente) => p.id === patientId) || null;
-    setSelectedPatient(patient);
-    setIsDropdownOpen(false);
-  };
+    // ✅ EN MODO CREATE: Establecer paciente activo si existe
+    else if (mode === 'create' && pacienteActivo) {
+      setSelectedPatient(pacienteActivo);
+    }
+  }, [formData.paciente, patients, mode, pacienteActivo]);
 
   const getPatientFullName = (patient: IPaciente) => {
     return `${patient.nombres} ${patient.apellidos}`.trim();
@@ -268,111 +268,103 @@ export function StomatognathicExamFormFields({
           </h3>
         </div>
         <div className="grid grid-cols-1 gap-6">
-          {mode === 'create' && (
+          {/* ✅ MODO CREATE CON PACIENTE ACTIVO - DISEÑO MEJORADO */}
+          {mode === 'create' && pacienteActivo && (
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Buscar paciente
+                Paciente
               </label>
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar por nombre, cédula o documento..."
-                  className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-900 shadow-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
-                />
-                {searchTerm && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchTerm('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  >
-                    <X className="h-4 w-4 text-gray-400" />
-                  </button>
-                )}
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-xl shadow-md">
+                    {(pacienteActivo.nombres?.charAt(0) || 'P').toUpperCase()}
+                    {(pacienteActivo.apellidos?.charAt(0) || '').toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-base text-gray-900 dark:text-white">
+                      {pacienteActivo.nombres} {pacienteActivo.apellidos}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      CI {pacienteActivo.cedula_pasaporte}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Badge de paciente fijado */}
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Paciente fijado activamente
+                  </span>
+                </div>
+
+                {/* Nota informativa */}
+                <div className="mt-4 flex gap-2 rounded-md bg-blue-100 p-3 dark:bg-blue-900/30">
+                  <span className="text-base flex-shrink-0">📌</span>
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-blue-900 dark:text-blue-200">
+                      <span className="font-semibold">Nota:</span> Este registro
+                      se asociará automáticamente al paciente fijado. Para
+                      cambiar de paciente, regrese a la pestaña "Gestión de
+                      Pacientes" y fije otro paciente.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {mode === 'create' ? 'Seleccionar paciente' : 'Paciente'}
-              {mode === 'create' && <span className="text-red-500">*</span>}
-            </label>
-            {mode === 'create' ? (
-              <div className="relative" data-dropdown-container>
-                <button
-                  type="button"
-                  onClick={() => !patientsLoading && setIsDropdownOpen((prev) => !prev)}
-                  disabled={patientsLoading}
-                  className={`flex w-full items-center justify-between rounded-lg border px-4 py-2.5 text-left text-sm text-gray-900 transition-colors focus:ring-2 focus:ring-blue-500 dark:text-gray-100 ${
-                    errors.paciente
-                      ? 'border-red-300 dark:border-red-600'
-                      : 'border-gray-300 dark:border-gray-600'
-                  } ${
-                    patientsLoading
-                      ? 'cursor-not-allowed bg-gray-100 dark:bg-gray-800'
-                      : 'bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800'
-                  }`}
+          {/* ✅ MODO CREATE SIN PACIENTE ACTIVO - SOLO MENSAJE */}
+          {mode === 'create' && !pacienteActivo && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <svg
+                  className="w-6 h-6 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
                 >
-                  <span>
-                    {formData.paciente && selectedPatient
-                      ? `${getPatientFullName(selectedPatient)} - CI: ${selectedPatient.cedula_pasaporte}`
-                      : patientsLoading
-                      ? 'Cargando pacientes...'
-                      : 'Seleccionar paciente...'}
-                  </span>
-                  <ChevronDown
-                    className={`h-5 w-5 transform transition-transform ${
-                      isDropdownOpen ? 'rotate-180' : ''
-                    }`}
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
                   />
-                </button>
-
-                {isDropdownOpen && !patientsLoading && (
-                  <div className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-900">
-                    {patients.length === 0 ? (
-                      <div className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                        No se encontraron pacientes
-                      </div>
-                    ) : (
-                      patients.map((patient: IPaciente) => (
-                        <button
-                          key={patient.id}
-                          type="button"
-                          onClick={() => handlePatientSelect(patient.id)}
-                          className={`flex w-full items-center justify-between border-b px-4 py-3 text-left text-sm transition-colors last:border-b-0 dark:border-gray-800 ${
-                            formData.paciente === patient.id
-                              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                              : 'text-gray-900 hover:bg-blue-50 dark:text-gray-100 dark:hover:bg-blue-900/20'
-                          }`}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-xs font-bold text-white shadow-md">
-                              {patient.nombres?.charAt(0) || 'P'}
-                              {patient.apellidos?.charAt(0) || ''}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate font-medium">{getPatientFullName(patient)}</p>
-                              <p className="truncate text-xs text-gray-500 dark:text-gray-400">
-                                CI: {patient.cedula_pasaporte} • {patient.sexo === 'M' ? '👨 Masculino' : '👩 Femenino'} • Edad: {patient.edad}
-                              </p>
-                            </div>
-                          </div>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                )}
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300">
+                    No hay paciente fijado
+                  </p>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
+                    Para fijar un paciente, vaya a la pestaña "Gestión de
+                    Pacientes" y haga clic en el botón 📌 junto al paciente
+                    deseado.
+                  </p>
+                </div>
               </div>
-            ) : (
+            </div>
+          )}
+
+          {/* ✅ MODO EDIT - MOSTRAR PACIENTE PERO NO PERMITIR CAMBIAR */}
+          {mode === 'edit' && (
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Paciente
+              </label>
               <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
                 {selectedPatient ? (
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 font-medium text-white shadow-md">
-                      {selectedPatient.nombres?.charAt(0) || 'P'}
-                      {selectedPatient.apellidos?.charAt(0) || ''}
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white font-medium shadow-md">
+                      {(selectedPatient.nombres?.charAt(0) || 'P').toUpperCase()}
+                      {(selectedPatient.apellidos?.charAt(0) || '').toUpperCase()}
                     </div>
                     <div>
                       <p className="font-medium">{getPatientFullName(selectedPatient)}</p>
@@ -383,16 +375,19 @@ export function StomatognathicExamFormFields({
                   </div>
                 ) : (
                   <p className="italic text-gray-500 dark:text-gray-400">
-                    {patientsLoading ? 'Cargando datos del paciente...' : 'No se encontraron datos del paciente'}
+                    {patientsLoading
+                      ? 'Cargando datos del paciente...'
+                      : 'No se encontraron datos del paciente'}
                   </p>
                 )}
               </div>
-            )}
-            {errors.paciente && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.paciente}</p>
-            )}
-          </div>
+            </div>
+          )}
         </div>
+        {/* Mostrar error de paciente si existe */}
+        {errors.paciente && (
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.paciente}</p>
+        )}
       </div>
 
       {/* Checkbox principal sin patología */}

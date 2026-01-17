@@ -47,8 +47,8 @@ export interface IPaciente {
   correo: string;
   contacto_emergencia_nombre: string;
   contacto_emergencia_telefono: string;
-  motivo_consulta: string;
-  enfermedad_actual: string;
+  fecha_ingreso: string;
+  
   activo: boolean;
   fecha_creacion: string;
   fecha_modificacion?: string;
@@ -74,8 +74,8 @@ export interface IPacienteCreate {
   contacto_emergencia_nombre?: string;
   contacto_emergencia_telefono?: string;
   embarazada?: Embarazada;
-  motivo_consulta?: string;
-  enfermedad_actual?: string;
+  fecha_ingreso: string;
+
 }
 
 // ============================================================================
@@ -96,9 +96,8 @@ export interface IPacienteUpdate {
   contacto_emergencia_nombre?: string;
   contacto_emergencia_telefono?: string;
   embarazada?: Embarazada;
-  motivo_consulta?: string;
-  enfermedad_actual?: string;
   activo?: boolean;
+  fecha_ingreso: string;
 }
 
 // ============================================================================

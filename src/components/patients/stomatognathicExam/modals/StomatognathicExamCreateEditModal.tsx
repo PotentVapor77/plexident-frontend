@@ -7,6 +7,7 @@ import type {
   IStomatognathicExamUpdate,
   IPacienteBasico,
 } from "../../../../types/stomatognathicExam/IStomatognathicExam";
+import type { IPaciente } from "../../../../types/patient/IPatient"; // ✅ AGREGAR
 import {
   useCreateStomatognathicExam,
   useUpdateStomatognathicExam,
@@ -38,6 +39,8 @@ interface StomatognathicExamCreateEditModalProps {
   examId?: string;
   onExamSaved?: () => void;
   notify?: (message: string, type: "success" | "error") => void;
+  // ✅ AGREGAR: Prop para paciente activo
+  pacienteActivo?: IPaciente | null;
 }
 
 export function StomatognathicExamCreateEditModal({
@@ -48,13 +51,18 @@ export function StomatognathicExamCreateEditModal({
   examId,
   onExamSaved,
   notify,
+  // ✅ RECIBIR: paciente activo
+  pacienteActivo,
 }: StomatognathicExamCreateEditModalProps) {
   const createMutation = useCreateStomatognathicExam();
   const updateMutation = useUpdateStomatognathicExam();
+   console.log("🎯 En modal - pacienteActivo recibido:", pacienteActivo);
+  console.log("🎯 En modal - mode:", mode);
 
   // Estado inicial - todos los SP en false inicialmente, se manejarán en el form
   const [formData, setFormData] = useState<IStomatognathicExamCreate>({
-    paciente: "",
+    // ✅ INICIALIZAR con paciente activo si está disponible
+    paciente: pacienteActivo?.id || "",
     examen_sin_patologia: false,
     atm_cp: false,
     atm_sp: false,
@@ -288,7 +296,6 @@ export function StomatognathicExamCreateEditModal({
         const spValue = newFormData[spKey];
         
         if (!cpValue && !spValue) {
-          // Usando el tipo extendido que permite propiedades dinámicas
           newFormData[spKey] = true;
         }
       });
@@ -303,7 +310,7 @@ export function StomatognathicExamCreateEditModal({
     } else if (mode === "create") {
       // Reset para create - establecer SP en true para todas las regiones
       setFormData({
-        paciente: "",
+        paciente: pacienteActivo?.id || "",
         examen_sin_patologia: false,
         atm_cp: false,
         atm_sp: true,
@@ -406,7 +413,17 @@ export function StomatognathicExamCreateEditModal({
       });
       setActivo(true);
     }
-  }, [initialData, mode]);
+  }, [initialData, mode, pacienteActivo]);
+
+  // ✅ Actualizar formData cuando cambia pacienteActivo (solo en modo create)
+  useEffect(() => {
+    if (mode === "create" && pacienteActivo?.id && !initialData) {
+      setFormData(prev => ({
+        ...prev,
+        paciente: pacienteActivo.id,
+      }));
+    }
+  }, [pacienteActivo, mode, initialData]);
 
   if (!isOpen) return null;
 
@@ -550,6 +567,8 @@ export function StomatognathicExamCreateEditModal({
           mode={mode}
           activo={activo}
           onActivoChange={setActivo}
+          // ✅ Pasar paciente activo al formulario
+          pacienteActivo={mode === "create" ? pacienteActivo : undefined}
         />
 
         {/* Mostrar errores de validación */}

@@ -1,7 +1,6 @@
 // src/components/patients/PatientMain.tsx
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { PatientTable } from "./table/PatientTable";
 import { PacienteViewModal } from "./modals/PatientViewModal";
 import PatientForm from "./forms/PatientForm";
@@ -14,57 +13,61 @@ import { usePacientes } from "../../../hooks/patient/usePatients";
 import { usePacienteActivo } from "../../../context/PacienteContext";
 
 export default function PatientMain() {
-  const navigate = useNavigate();
   const { notify } = useNotification();
-  const { setPacienteActivo, pacienteActivo } = usePacienteActivo(); 
+  const { setPacienteActivo, pacienteActivo } = usePacienteActivo();
 
+  // Estados para pacientes
   const [patientToView, setPatientToView] = useState<IPaciente | null>(null);
   const [patientToEdit, setPatientToEdit] = useState<IPaciente | null>(null);
   const [patientToDelete, setPatientToDelete] = useState<IPaciente | null>(null);
 
+  // Modales para pacientes
   const {
-    isOpen: isViewModalOpen,
-    openModal: openViewModal,
-    closeModal: closeViewModal,
+    isOpen: isPatientViewModalOpen,
+    openModal: openPatientViewModal,
+    closeModal: closePatientViewModal,
   } = useModal();
 
   const {
-    isOpen: isCreateModalOpen,
-    openModal: openCreateModal,
-    closeModal: closeCreateModal,
+    isOpen: isPatientCreateModalOpen,
+    openModal: openPatientCreateModal,
+    closeModal: closePatientCreateModal,
   } = useModal();
+
+  const {
+    isOpen: isPatientEditModalOpen,
+    openModal: openPatientEditModal,
+    closeModal: closePatientEditModal,
+  } = useModal();
+
+  const {
+    isOpen: isPatientDeleteModalOpen,
+    openModal: openPatientDeleteModal,
+    closeModal: closePatientDeleteModal,
+  } = useModal();
+
+  // Hooks para datos
   const { removePaciente } = usePacientes();
-  const {
-    isOpen: isEditModalOpen,
-    openModal: openEditModal,
-    closeModal: closeEditModal,
-  } = useModal();
-
-  const {
-    isOpen: isDeleteModalOpen,
-    openModal: openDeleteModal,
-    closeModal: closeDeleteModal,
-  } = useModal();
 
   // -------------------------------------
-
+  // Handlers para Pacientes
+  // -------------------------------------
   const handleViewPatient = (patient: IPaciente) => {
     setPatientToView(patient);
-    openViewModal();
+    openPatientViewModal();
   };
 
   const handleEditPatient = (patient: IPaciente) => {
     setPatientToEdit(patient);
-    openEditModal();
+    openPatientEditModal();
   };
 
   const handleOpenDeletePatient = (patient: IPaciente) => {
     setPatientToDelete(patient);
-    openDeleteModal();
+    openPatientDeleteModal();
   };
 
   const handleActivatePatient = (patient: IPaciente) => {
-    // Si es el mismo paciente, desfijarlo
     if (pacienteActivo?.id === patient.id) {
       setPacienteActivo(null);
       notify({
@@ -73,42 +76,38 @@ export default function PatientMain() {
         message: `${patient.nombres} ${patient.apellidos} ya no está fijado`,
       });
     } else {
-      // Si es otro paciente o no hay ninguno fijado, fijarlo
       setPacienteActivo(patient);
       notify({
         type: "success",
         title: "Paciente fijado",
-        message: `${patient.nombres} ${patient.apellidos} está ahora fijado. Accede al menú Odontograma para ver su información`,
+        message: `${patient.nombres} ${patient.apellidos} está ahora fijado.`,
       });
     }
   };
 
-  // ✅ Solo cierra el modal - La notificación se muestra en PatientForm cuando es exitoso
   const handlePatientCreated = () => {
-    closeCreateModal();
+    closePatientCreateModal();
   };
 
-  // ✅ Solo cierra modal y limpia estado - La notificación se muestra en PatientForm cuando es exitoso
-  const handleCloseEditModal = () => {
-    closeEditModal();
+  const handleClosePatientEditModal = () => {
+    closePatientEditModal();
     setPatientToEdit(null);
-    navigate("/pacientes");
   };
 
-  const handleViewEdit = () => {
+  const handlePatientViewEdit = () => {
     if (patientToView) {
       const p = patientToView;
       setPatientToView(null);
       handleEditPatient(p);
-      closeViewModal();
+      closePatientViewModal();
     }
   };
 
-  const handleDeleteFinished = async () => {
+  const handlePatientDeleteFinished = async () => {
     if (patientToDelete?.id) {
-      await removePaciente(patientToDelete.id); // ✅ Esto invalida TODO
+      await removePaciente(patientToDelete.id);
     }
-    closeDeleteModal();
+    closePatientDeleteModal();
     setPatientToDelete(null);
   };
 
@@ -116,7 +115,7 @@ export default function PatientMain() {
     <>
       {/* Cabecera */}
       <div className="mb-8">
-        <div className="flex justify-between items-start mb-4">
+        <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               Gestión de Pacientes
@@ -127,9 +126,8 @@ export default function PatientMain() {
           </div>
 
           <div className="flex gap-3">
-            {/* Botón crear */}
             <button
-              onClick={openCreateModal}
+              onClick={openPatientCreateModal}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               + Crear paciente
@@ -138,28 +136,32 @@ export default function PatientMain() {
         </div>
       </div>
 
-      {/* Tabla principal */}
-      <PatientTable
-        onView={handleViewPatient}
-        onEdit={handleEditPatient}
-        onDelete={handleOpenDeletePatient}
-        onActivate={handleActivatePatient}
-      />
+      {/* Tabla de pacientes */}
+      <div className="mt-6">
+        <PatientTable
+          onView={handleViewPatient}
+          onEdit={handleEditPatient}
+          onDelete={handleOpenDeletePatient}
+          onActivate={handleActivatePatient}
+        />
+      </div>
 
-      {/* Ver paciente */}
+      {/* =========================================== */}
+      {/* MODALES PARA PACIENTES */}
+      {/* =========================================== */}
       {patientToView && (
         <PacienteViewModal
-          isOpen={isViewModalOpen}
-          onClose={closeViewModal}
+          isOpen={isPatientViewModalOpen}
+          onClose={closePatientViewModal}
           paciente={patientToView}
-          onEdit={handleViewEdit}
+          onEdit={handlePatientViewEdit}
         />
       )}
 
       {/* Crear paciente */}
       <Modal
-        isOpen={isCreateModalOpen}
-        onClose={closeCreateModal}
+        isOpen={isPatientCreateModalOpen}
+        onClose={closePatientCreateModal}
         className="max-w-4xl p-6 lg:p-8 max-h-[90vh] overflow-y-auto"
       >
         <>
@@ -173,19 +175,15 @@ export default function PatientMain() {
               </p>
             </div>
           </div>
-          {/* ✅ Pasa notify para que muestre la notificación solo si es exitoso */}
-          <PatientForm 
-            onPatientCreated={handlePatientCreated}
-            notify={notify}
-          />
+          <PatientForm onPatientCreated={handlePatientCreated} notify={notify} />
         </>
       </Modal>
 
       {/* Editar paciente */}
       {patientToEdit && (
         <Modal
-          isOpen={isEditModalOpen}
-          onClose={handleCloseEditModal}
+          isOpen={isPatientEditModalOpen}
+          onClose={handleClosePatientEditModal}
           className="max-w-4xl p-6 lg:p-8 max-h-[90vh] overflow-y-auto"
         >
           <>
@@ -199,12 +197,11 @@ export default function PatientMain() {
                 </p>
               </div>
             </div>
-            {/* ✅ Pasa notify para que muestre la notificación solo si es exitoso */}
             <PatientForm
               mode="edit"
               patientId={patientToEdit.id}
               initialData={patientToEdit}
-              onPatientCreated={handleCloseEditModal}
+              onPatientCreated={handleClosePatientEditModal}
               notify={notify}
             />
           </>
@@ -214,11 +211,11 @@ export default function PatientMain() {
       {/* Eliminar paciente */}
       {patientToDelete && (
         <PatientDeleteModal
-          isOpen={isDeleteModalOpen}
-          onClose={closeDeleteModal}
+          isOpen={isPatientDeleteModalOpen}
+          onClose={closePatientDeleteModal}
           patient={patientToDelete}
-          onDeleted={handleDeleteFinished}
-          notify={notify} // ✅ Pasa notify para que muestre la notificación solo si es exitoso
+          onDeleted={handlePatientDeleteFinished}
+          notify={notify}
         />
       )}
     </>

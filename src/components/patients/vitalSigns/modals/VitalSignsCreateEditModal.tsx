@@ -8,6 +8,7 @@ import type {
   IVitalSignsUpdate,
   IPacienteBasico,
 } from "../../../../types/vitalSigns/IVitalSigns";
+import type { IPaciente } from "../../../../types/patient/IPatient"; // ✅ AGREGAR
 import {
   useCreateVitalSigns,
   useUpdateVitalSigns,
@@ -22,6 +23,8 @@ interface VitalSignsCreateEditModalProps {
   vitalId?: string;
   onVitalSaved?: () => void;
   notify?: (message: string, type: "success" | "error") => void;
+  // ✅ AGREGAR: Prop para paciente activo
+  pacienteActivo?: IPaciente | null;
 }
 
 export function VitalSignsCreateEditModal({
@@ -32,12 +35,15 @@ export function VitalSignsCreateEditModal({
   vitalId,
   onVitalSaved,
   notify,
+  // ✅ RECIBIR: paciente activo
+  pacienteActivo,
 }: VitalSignsCreateEditModalProps) {
   const createMutation = useCreateVitalSigns();
   const updateMutation = useUpdateVitalSigns();
 
   const [formData, setFormData] = useState<IVitalSignsCreate>({
-    paciente: "",
+    // ✅ INICIALIZAR con paciente activo si está disponible
+    paciente: pacienteActivo?.id || "",
     temperatura: null,
     pulso: null,
     frecuencia_respiratoria: null,
@@ -68,7 +74,7 @@ export function VitalSignsCreateEditModal({
       setActivo(initialData.activo ?? true);
     } else if (mode === "create") {
       setFormData({
-        paciente: "",
+        paciente: pacienteActivo?.id || "",
         temperatura: null,
         pulso: null,
         frecuencia_respiratoria: null,
@@ -76,7 +82,17 @@ export function VitalSignsCreateEditModal({
       });
       setActivo(true);
     }
-  }, [initialData, mode]);
+  }, [initialData, mode, pacienteActivo]);
+
+  // ✅ Actualizar formData cuando cambia pacienteActivo (solo en modo create)
+  useEffect(() => {
+    if (mode === "create" && pacienteActivo?.id && !initialData) {
+      setFormData(prev => ({
+        ...prev,
+        paciente: pacienteActivo.id,
+      }));
+    }
+  }, [pacienteActivo, mode, initialData]);
 
   if (!isOpen) return null;
 
@@ -175,7 +191,7 @@ export function VitalSignsCreateEditModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      className="max-h-[90vh] max-w-3xl overflow-y-auto"
+      className="max-h-[90vh] max-w-4xl overflow-y-auto"
     >
       <div className="p-6">
         <div className="mb-6">
@@ -192,6 +208,8 @@ export function VitalSignsCreateEditModal({
           mode={mode}
           activo={activo}
           onActivoChange={setActivo}
+          // ✅ Pasar paciente activo al formulario
+          pacienteActivo={mode === "create" ? pacienteActivo : undefined}
         />
 
         <div className="mt-6 flex gap-3 border-t border-gray-200 pt-6 dark:border-gray-700">

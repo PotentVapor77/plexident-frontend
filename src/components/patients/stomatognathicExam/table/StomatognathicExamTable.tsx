@@ -10,6 +10,7 @@ interface StomatognathicExamTableProps {
   onEdit?: (exam: IStomatognathicExam) => void;
   onView?: (exam: IStomatognathicExam) => void;
   onDelete?: (exam: IStomatognathicExam) => void;
+  pacienteId?: string;
 }
 
 interface PacienteCache {
@@ -20,6 +21,7 @@ export function StomatognathicExamTable({
   onEdit,
   onView,
   onDelete,
+  pacienteId,
 }: StomatognathicExamTableProps) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -30,6 +32,7 @@ export function StomatognathicExamTable({
     page,
     pageSize,
     search,
+    paciente: pacienteId, 
   });
 
   const examList = exams ?? [];

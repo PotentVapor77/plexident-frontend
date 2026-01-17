@@ -14,7 +14,6 @@ import {
   PlugInIcon,
   TableIcon,
   UserCircleIcon,
-  AlertIcon, // Agregar ícono de logout si tienes, o usar uno existente
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 
@@ -42,7 +41,6 @@ const canSeeMenu = (menuName: string, rol?: Rol | null): boolean => {
       "Odontograma",
       "Historia Clínica",
       "Plan Tratamiento",
-      "Presupuestos",
       "Usuarios",
       "Reportes",
       "Configuración",
@@ -54,10 +52,9 @@ const canSeeMenu = (menuName: string, rol?: Rol | null): boolean => {
       "Odontograma",
       "Historia Clínica",
       "Plan Tratamiento",
-      "Presupuestos",
       "Reportes",
     ],
-    Asistente: ["Dashboard", "Pacientes", "Agenda", "Presupuestos"],
+    Asistente: ["Dashboard", "Pacientes", "Agenda"],
   };
 
   return MAP[rol].includes(menuName);
@@ -78,10 +75,7 @@ const navItems: NavItem[] = [
     name: "Pacientes",
     subItems: [
       { name: "Pacientes", path: "/pacientes", pro: false },
-      { name: "Antecedentes Personales", path: "/pacientes/antecedentes-personales", pro: false },
-      { name: "Antecedentes Familiares", path: "/pacientes/antecedentes-familiares", pro: false },
-      { name: "Constantes Vitales", path: "/pacientes/constantes-vitales", pro: false },
-      { name: "Examen Estomatognatico", path: "/pacientes/examen-estomatognatico", pro: false },
+      { name: "Detalles de paciente", path: "/pacientes/constantes-vitales", pro: false },
     ],
   },
   {
@@ -98,33 +92,23 @@ const navItems: NavItem[] = [
       { name: "Indicadores de Salud Bucal", path: "/indicadores-salud-bucal", pro: false },
     ],
   },
-
-
   {
     icon: <PageIcon />,
     name: "Historia Clínica",
     subItems: [
       { name: "Historias Clínicas", path: "/historia-clinica", pro: false },
       { name: "Nueva Historia", path: "/nueva-historia", pro: false },
-
     ],
   },
   {
     icon: <TableIcon />,
-  name: "Plan Tratamiento",
-  subItems: [
-    { name: "Planes de Tratamiento", path: "/plan-tratamiento", pro: false },
-    { name: "Nuevo Plan", path: "/nuevo-plan", pro: false },
-  ],
-},
-  {
-    icon: <PieChartIcon />,
-    name: "Presupuestos",
+    name: "Plan Tratamiento",
     subItems: [
-      { name: "Todos los Presupuestos", path: "/presupuestos", pro: false },
-      { name: "Nuevo Presupuesto", path: "/nuevo-presupuesto", pro: false },
+      { name: "Planes de Tratamiento", path: "/plan-tratamiento", pro: false },
+      { name: "Nuevo Plan", path: "/nuevo-plan", pro: false },
     ],
   },
+ 
 ];
 
 const othersItems: NavItem[] = [
@@ -149,7 +133,6 @@ const othersItems: NavItem[] = [
     name: "Configuración",
     subItems: [
       { name: "Permisos Usuario", path: "/permisos-usuario", pro: false },
-     
     ],
   },
 ];
@@ -160,16 +143,14 @@ const othersItems: NavItem[] = [
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
-  const { user, logout } = useAuth(); // Obtener usuario y función de logout
+  const { user } = useAuth(); // Solo obtener usuario, no logout
   const location = useLocation();
 
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";
     index: number;
   } | null>(null);
-  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
-    {}
-  );
+  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({});
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const isActive = useCallback(
@@ -452,47 +433,6 @@ const AppSidebar: React.FC = () => {
             </div>
           </div>
         </nav>
-
-        {/* Sección del usuario en la parte inferior */}
-        <div className="mt-auto pb-6 border-t border-gray-200 dark:border-gray-700 pt-4">
-          {isExpanded || isHovered || isMobileOpen ? (
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 bg-brand-500 rounded-full">
-                  <span className="text-sm font-medium text-white">
-                    {user?.nombres?.charAt(0)}
-                    {user?.apellidos?.charAt(0)}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {user?.nombres} {user?.apellidos}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 capitalize truncate">
-                    {user?.rol}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={logout}
-                className="flex items-center gap-3 px-3 py-2 text-sm text-red-600 transition-colors bg-red-50 rounded-lg hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
-              >
-                <AlertIcon className="w-5 h-5" />
-                <span>Cerrar Sesión</span>
-              </button>
-            </div>
-          ) : (
-            <div className="flex justify-center">
-              <button
-                onClick={logout}
-                className="flex items-center justify-center w-10 h-10 text-red-600 transition-colors bg-red-50 rounded-lg hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
-                title="Cerrar Sesión"
-              >
-                <AlertIcon className="w-5 h-5" />
-              </button>
-            </div>
-          )}
-        </div>
       </div>
     </aside>
   );

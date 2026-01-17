@@ -1,6 +1,6 @@
 // src/components/patients/forms/PatientFormFields.tsx
 
-import React from "react";
+import React, { useRef, useState, useEffect } from "react";
 import type { PatientFormData } from "./PatientForm";
 
 interface PatientFormFieldsProps {
@@ -53,6 +53,142 @@ export default function PatientFormFields({
   submitLoading,
   mode,
 }: PatientFormFieldsProps) {
+  const dateInputRef = useRef<HTMLInputElement>(null);
+  const [isDateValid, setIsDateValid] = useState(true);
+  const [dateValue, setDateValue] = useState("");
+  // ❌ ELIMINADO: const [fechaRegistro] = useState(new Date().toISOString().split('T')[0]);
+
+  // Calcular fecha máxima (hoy)
+  const maxDate = new Date().toISOString().split('T')[0];
+
+  // ✅ Función para calcular edad desde fecha de nacimiento
+  const calcularEdad = (fechaNacimiento: string): number => {
+    if (!fechaNacimiento) return 0;
+    
+    const hoy = new Date();
+    const nacimiento = new Date(fechaNacimiento);
+    
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
+    
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--;
+    }
+    
+    return edad >= 0 ? edad : 0;
+  };
+
+  // ✅ Calcular la condición de edad automáticamente
+  const calcularCondicionEdad = (edad: number): string => {
+    if (edad === 0) return "M"; // Meses para recién nacidos
+    if (edad < 1) return "D"; // Días
+    if (edad < 2) return "M"; // Meses
+    return "A"; // Años
+  };
+
+  // Sincronizar el valor de fecha cuando cambia formData
+  useEffect(() => {
+    if (formData.fecha_nacimiento) {
+      if (formData.fecha_nacimiento.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        setDateValue(formData.fecha_nacimiento);
+      } else {
+        try {
+          const date = new Date(formData.fecha_nacimiento);
+          if (!isNaN(date.getTime())) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            setDateValue(`${year}-${month}-${day}`);
+          } else {
+            setDateValue("");
+          }
+        } catch {
+          setDateValue("");
+        }
+      }
+    } else {
+      setDateValue("");
+    }
+  }, [formData.fecha_nacimiento]);
+
+  // ✅ Manejo personalizado del cambio de fecha CON CÁLCULO AUTOMÁTICO DE EDAD
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
+    setDateValue(value);
+    
+    if (value > maxDate) {
+      setIsDateValid(false);
+      return;
+    }
+    
+    setIsDateValid(true);
+    
+    // ✅ Calcular edad automáticamente
+    const edad = calcularEdad(value);
+    const condicionEdad = calcularCondicionEdad(edad);
+    
+    // ✅ Actualizar fecha de nacimiento
+    const simulatedEventFecha = {
+      target: {
+        name: "fecha_nacimiento",
+        value: value
+      }
+    } as React.ChangeEvent<HTMLInputElement>;
+    
+    onInputChange(simulatedEventFecha);
+    
+    // ✅ Actualizar edad automáticamente
+    const simulatedEventEdad = {
+      target: {
+        name: "edad",
+        value: edad.toString()
+      }
+    } as React.ChangeEvent<HTMLInputElement>;
+    
+    onInputChange(simulatedEventEdad);
+    
+    // ✅ Actualizar condición de edad automáticamente
+    const simulatedEventCondicion = {
+      target: {
+        name: "condicion_edad",
+        value: condicionEdad
+      }
+    } as React.ChangeEvent<HTMLSelectElement>;
+    
+    onInputChange(simulatedEventCondicion);
+  };
+
+  const handleCalendarIconClick = () => {
+    if (dateInputRef.current) {
+      dateInputRef.current.showPicker();
+    }
+  };
+
+  const handleClearDate = () => {
+    setDateValue("");
+    setIsDateValid(true);
+    
+    const simulatedEvent = {
+      target: {
+        name: "fecha_nacimiento",
+        value: ""
+      }
+    } as React.ChangeEvent<HTMLInputElement>;
+    
+    onInputChange(simulatedEvent);
+    
+    // Limpiar edad también
+    const simulatedEventEdad = {
+      target: {
+        name: "edad",
+        value: "0"
+      }
+    } as React.ChangeEvent<HTMLInputElement>;
+    
+    onInputChange(simulatedEventEdad);
+  };
+
   return (
     <div className="space-y-8">
       {/* ✅ Sección A: Datos Personales - AZUL */}
@@ -112,32 +248,41 @@ export default function PatientFormFields({
             </select>
           </div>
 
+          {/* ✅ EDAD - BLOQUEADA Y CALCULADA AUTOMÁTICAMENTE */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Edad *
+              Edad * (calculada automáticamente)
             </label>
-            <input
-              type="number"
-              name="edad"
-              value={formData.edad}
-              onChange={onInputChange}
-              required
-              min="0"
-              max="150"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
-            />
+            <div className="relative">
+              <input
+                type="number"
+                name="edad"
+                value={formData.edad || ""}
+                readOnly
+                disabled
+                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed"
+              />
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+            </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Se calcula automáticamente desde la fecha de nacimiento
+            </p>
           </div>
 
+          {/* ✅ CONDICIÓN DE EDAD - CALCULADA AUTOMÁTICAMENTE */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Condición de Edad *
+              Condición de Edad * (automática)
             </label>
             <select
               name="condicion_edad"
               value={formData.condicion_edad}
-              onChange={onInputChange}
-              required
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
+              disabled
+              className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed"
             >
               <option value="">Seleccionar</option>
               <option value="H">Horas</option>
@@ -193,25 +338,113 @@ export default function PatientFormFields({
             />
           </div>
 
-          {/* ✅ CORRECCIÓN: Eliminado placeholder del input date */}
+          {/* ✅ FECHA DE NACIMIENTO - Calcula edad automáticamente */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Fecha de Nacimiento *
+              Fecha de Nacimiento * (calcula edad automática)
             </label>
-            <input
-              type="date"
-              name="fecha_nacimiento"
-              value={formData.fecha_nacimiento}
-              onChange={onInputChange}
-              required
-              max={new Date().toISOString().split('T')[0]}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:dark:invert"
-            />
+            <div className="relative">
+              <input
+                ref={dateInputRef}
+                type="date"
+                name="fecha_nacimiento"
+                value={dateValue}
+                onChange={handleDateChange}
+                required
+                max={maxDate}
+                className={`w-full p-3 pr-12 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors appearance-none ${
+                  !isDateValid 
+                    ? 'border-red-300 dark:border-red-500' 
+                    : 'border-gray-300 dark:border-gray-600'
+                }`}
+                style={{
+                  colorScheme: 'dark light',
+                  cursor: 'pointer',
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleCalendarIconClick}
+                className="absolute right-8 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 focus:outline-none"
+                aria-label="Abrir selector de fecha"
+              >
+                <svg 
+                  className="w-5 h-5" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                  />
+                </svg>
+              </button>
+              
+              {dateValue && (
+                <button
+                  type="button"
+                  onClick={handleClearDate}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 focus:outline-none"
+                  aria-label="Limpiar fecha"
+                >
+                  <svg 
+                    className="w-4 h-4" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M6 18L18 6M6 6l12 12" 
+                    />
+                  </svg>
+                </button>
+              )}
+            </div>
+            {!isDateValid && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                La fecha de nacimiento no puede ser futura
+              </p>
+            )}
+            {dateValue && (
+              <p className="mt-1 text-xs text-green-600 dark:text-green-400 font-medium">
+                ✅ Edad calculada: {formData.edad} {formData.condicion_edad === 'A' ? 'años' : formData.condicion_edad === 'M' ? 'meses' : 'días'}
+              </p>
+            )}
+          </div>
+
+          {/* ✅ FECHA DE REGISTRO - AUTOMÁTICA Y BLOQUEADA */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Fecha de Registro (automática)
+            </label>
+            <div className="relative">
+              <input
+                type="date"
+                value={formData.fecha_ingreso}
+                readOnly
+                disabled
+                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed"
+              />
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+            </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Se crea automáticamente al crear el paciente
+            </p>
           </div>
         </div>
       </div>
 
-      {/* ✅ Sección: Información de Contacto - PÚRPURA */}
+      {/* Información de Contacto */}
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-theme-sm p-6 border border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-2 h-8 bg-gradient-to-b from-purple-500 to-purple-600 rounded-full" />
@@ -267,7 +500,7 @@ export default function PatientFormFields({
         </div>
       </div>
 
-      {/* ✅ Sección: Contacto de Emergencia - NARANJA */}
+      {/* Contacto de Emergencia */}
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-theme-sm p-6 border border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-2 h-8 bg-gradient-to-b from-orange-500 to-orange-600 rounded-full" />
@@ -307,49 +540,7 @@ export default function PatientFormFields({
         </div>
       </div>
 
-      {/* ✅ Sección B: Motivo de Consulta - AMARILLO */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-theme-sm p-6 border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-2 mb-6">
-          <div className="w-2 h-8 bg-gradient-to-b from-yellow-500 to-yellow-600 rounded-full" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            B. Motivo de Consulta
-          </h3>
-        </div>
-
-        <div>
-          <textarea
-            name="motivo_consulta"
-            value={formData.motivo_consulta}
-            onChange={onInputChange}
-            rows={3}
-            placeholder="Describa el motivo de consulta del paciente..."
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors resize-none"
-          />
-        </div>
-      </div>
-
-      {/* ✅ Sección C: Enfermedad Actual - ROSA */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-theme-sm p-6 border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-2 mb-6">
-          <div className="w-2 h-8 bg-gradient-to-b from-pink-500 to-pink-600 rounded-full" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            C. Enfermedad Actual
-          </h3>
-        </div>
-
-        <div>
-          <textarea
-            name="enfermedad_actual"
-            value={formData.enfermedad_actual}
-            onChange={onInputChange}
-            rows={3}
-            placeholder="Describa la enfermedad actual del paciente..."
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors resize-none"
-          />
-        </div>
-      </div>
-
-      {/* ✅ Sección: Estado del Paciente - GRIS */}
+      {/* Estado del Paciente */}
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-theme-sm p-6 border border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-2 h-8 bg-gradient-to-b from-gray-500 to-gray-600 rounded-full" />
@@ -415,8 +606,9 @@ export default function PatientFormFields({
             <ul className="list-disc list-inside space-y-1 ml-2">
               <li>Los campos marcados con * son obligatorios</li>
               <li>La cédula/pasaporte debe ser única en el sistema</li>
-              <li>El teléfono debe tener al menos 10 dígitos numéricos</li>
-              <li>El correo electrónico debe ser válido</li>
+              <li>✨ <strong>La edad se calcula automáticamente</strong> al seleccionar la fecha de nacimiento</li>
+              <li>🔒 La fecha de registro se establece automáticamente</li>
+              <li>Haga clic en el ícono 📅 para abrir el selector de fecha</li>
             </ul>
           </div>
         </div>

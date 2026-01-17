@@ -49,8 +49,7 @@ export function PatientCreateEditModal({ isOpen, onClose, patient }: PatientCrea
           contacto_emergencia_nombre: patient.contacto_emergencia_nombre,
           contacto_emergencia_telefono: patient.contacto_emergencia_telefono,
           embarazada: patient.embarazada,
-          motivo_consulta: patient.motivo_consulta,
-          enfermedad_actual: patient.enfermedad_actual,
+          fecha_ingreso: patient.fecha_ingreso,
           activo: patient.activo,
         } 
       });
@@ -69,7 +68,7 @@ export function PatientCreateEditModal({ isOpen, onClose, patient }: PatientCrea
     <>
       <Modal
         isOpen={isOpen}
-        onClose={onClose}
+        onClose={onClose} 
         className="max-w-4xl p-6 lg:p-8 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex flex-col">
@@ -129,8 +128,7 @@ export function PatientCreateEditModal({ isOpen, onClose, patient }: PatientCrea
                 contacto_emergencia_nombre: patient.contacto_emergencia_nombre ?? "",
                 contacto_emergencia_telefono: patient.contacto_emergencia_telefono ?? "",
                 embarazada: patient.embarazada,
-                motivo_consulta: patient.motivo_consulta ?? "",
-                enfermedad_actual: patient.enfermedad_actual ?? "",
+
                 activo: patient.activo,
               }}
               onPatientCreated={handlePatientCreated}

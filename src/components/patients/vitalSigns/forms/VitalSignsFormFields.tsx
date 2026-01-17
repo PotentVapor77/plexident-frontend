@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, X } from "lucide-react";
 import { getPacientes } from "../../../../services/patient/patientService";
-import type { IVitalSignsCreate } from "../../../../types/vitalSigns/IVitalSigns"; // [file:1]
+import type { IVitalSignsCreate } from "../../../../types/vitalSigns/IVitalSigns";
 import type { IPaciente } from "../../../../types/patient/IPatient";
 
 interface VitalSignsFormFieldsProps {
@@ -17,6 +16,7 @@ interface VitalSignsFormFieldsProps {
   mode: "create" | "edit";
   activo?: boolean;
   onActivoChange?: (checked: boolean) => void;
+  pacienteActivo?: IPaciente | null;
 }
 
 export function VitalSignsFormFields({
@@ -26,17 +26,16 @@ export function VitalSignsFormFields({
   mode,
   activo = true,
   onActivoChange,
+  pacienteActivo,
 }: VitalSignsFormFieldsProps) {
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState<IPaciente | null>(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  // Solo cargar pacientes en modo edit
   const { data: patientsResponse, isLoading: patientsLoading } = useQuery({
-    queryKey: ["patients", searchTerm],
+    queryKey: ["patients-vital"],
     queryFn: async () => {
       try {
         const response = await getPacientes({
-          search: searchTerm || undefined,
           page_size: 50,
           activo: true,
         });
@@ -47,7 +46,7 @@ export function VitalSignsFormFields({
       }
     },
     staleTime: 5 * 60 * 1000,
-    enabled: true,
+    enabled: mode === "edit",
   });
 
   const patients: IPaciente[] = useMemo(
@@ -56,41 +55,11 @@ export function VitalSignsFormFields({
   );
 
   useEffect(() => {
-    if (formData.paciente && patients.length > 0) {
-      const found = patients.find(p => p.id === formData.paciente);
+    if (mode === "edit" && formData.paciente && patients.length > 0) {
+      const found = patients.find((p) => p.id === formData.paciente);
       setSelectedPatient(found || null);
-    } else {
-      setSelectedPatient(null);
     }
-  }, [formData.paciente, patients]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (isDropdownOpen && !target.closest("[data-dropdown-container]")) {
-        setIsDropdownOpen(false);
-      }
-    };
-    if (isDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [isDropdownOpen]);
-
-  const handlePatientSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const clearSearch = () => {
-    setSearchTerm("");
-  };
-
-  const handlePatientSelect = (patientId: string) => {
-    onChange("paciente", patientId);
-    const patient = patients.find(p => p.id === patientId) || null;
-    setSelectedPatient(patient);
-    setIsDropdownOpen(false);
-  };
+  }, [formData.paciente, patients, mode]);
 
   const getPatientFullName = (patient: IPaciente): string =>
     `${patient.nombres} ${patient.apellidos}`.trim();
@@ -116,145 +85,97 @@ export function VitalSignsFormFields({
         </div>
 
         <div className="grid grid-cols-1 gap-6">
-          {mode === "create" && (
+          {/* ✅ MODO CREATE CON PACIENTE ACTIVO - DISEÑO MEJORADO */}
+          {mode === "create" && pacienteActivo && (
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Buscar paciente
+                Paciente
               </label>
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={handlePatientSearch}
-                  placeholder="Buscar por nombre, cédula o documento..."
-                  className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-900 shadow-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
-                />
-                {searchTerm && (
-                  <button
-                    type="button"
-                    onClick={clearSearch}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  >
-                    <X className="h-4 w-4 text-gray-400" />
-                  </button>
-                )}
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-xl shadow-md">
+                    {(pacienteActivo.nombres?.charAt(0) || "P").toUpperCase()}
+                    {(pacienteActivo.apellidos?.charAt(0) || "").toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-base text-gray-900 dark:text-white">
+                      {pacienteActivo.nombres} {pacienteActivo.apellidos}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      CI {pacienteActivo.cedula_pasaporte}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Badge de paciente fijado */}
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Paciente fijado activamente
+                  </span>
+                </div>
+
+                {/* Nota informativa */}
+                <div className="mt-4 flex gap-2 rounded-md bg-blue-100 p-3 dark:bg-blue-900/30">
+                  <span className="text-base flex-shrink-0">📌</span>
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-blue-900 dark:text-blue-200">
+                      <span className="font-semibold">Nota:</span> Este registro
+                      se asociará automáticamente al paciente fijado. Para
+                      cambiar de paciente, regrese a la pestaña "Gestión de
+                      Pacientes" y fije otro paciente.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {mode === "create" ? "Seleccionar paciente" : "Paciente"}
-              {mode === "create" && <span className="text-red-500"> *</span>}
-            </label>
-
-            {mode === "create" ? (
-              <>
-                <div
-                  className="relative"
-                  data-dropdown-container
+          {/* ✅ MODO CREATE SIN PACIENTE ACTIVO - SOLO MENSAJE */}
+          {mode === "create" && !pacienteActivo && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <svg
+                  className="w-6 h-6 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
                 >
-                  <button
-                    type="button"
-                    onClick={() => !patientsLoading && setIsDropdownOpen(prev => !prev)}
-                    disabled={patientsLoading}
-                    className={`flex w-full items-center justify-between rounded-lg border px-4 py-2.5 text-left text-sm text-gray-900 transition-colors focus:ring-2 focus:ring-blue-500 dark:text-gray-100 ${
-                      errors.paciente
-                        ? "border-red-300 dark:border-red-600"
-                        : "border-gray-300 dark:border-gray-600"
-                    } ${
-                      patientsLoading
-                        ? "cursor-not-allowed bg-gray-100 dark:bg-gray-800"
-                        : "bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800"
-                    }`}
-                  >
-                    <span>
-                      {formData.paciente && selectedPatient
-                        ? `${getPatientFullName(selectedPatient)} - CI: ${
-                            selectedPatient.cedula_pasaporte
-                          }`
-                        : patientsLoading
-                        ? "Cargando pacientes..."
-                        : "Seleccionar paciente..."}
-                    </span>
-                    <svg
-                      className={`h-5 w-5 transform transition-transform ${
-                        isDropdownOpen ? "rotate-180" : ""
-                      }`}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </button>
-
-                  {isDropdownOpen && !patientsLoading && (
-                    <div className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-900">
-                      {patients.length === 0 ? (
-                        <div className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                          No se encontraron pacientes
-                        </div>
-                      ) : (
-                        patients.map(patient => (
-                          <button
-                            key={patient.id}
-                            type="button"
-                            onClick={() => handlePatientSelect(patient.id)}
-                            className={`flex w-full items-center justify-between border-b px-4 py-3 text-left text-sm transition-colors last:border-b-0 dark:border-gray-800 ${
-                              formData.paciente === patient.id
-                                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-                                : "text-gray-900 hover:bg-blue-50 dark:text-gray-100 dark:hover:bg-blue-900/20"
-                            }`}
-                          >
-                            <div className="flex items-center space-x-3">
-                              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-xs font-bold text-white shadow-md">
-                                {(patient.nombres?.charAt(0) || "P").toUpperCase()}
-                                {(patient.apellidos?.charAt(0) || "").toUpperCase()}
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate font-medium">
-                                  {getPatientFullName(patient)}
-                                </p>
-                                <p className="truncate text-xs text-gray-500 dark:text-gray-400">
-                                  CI {patient.cedula_pasaporte} •{" "}
-                                  {patient.sexo === "M" ? "👨" : "👩"} {patient.edad}{" "}
-                                  {patient.condicion_edad}
-                                </p>
-                              </div>
-                            </div>
-                            {formData.paciente === patient.id && (
-                              <svg
-                                className="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4A1 1 0 014.707 9.293L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            )}
-                          </button>
-                        ))
-                      )}
-                    </div>
-                  )}
-                </div>
-                {errors.paciente && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                    {errors.paciente}
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300">
+                    No hay paciente fijado
                   </p>
-                )}
-              </>
-            ) : (
+                  <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
+                    Para fijar un paciente, vaya a la pestaña "Gestión de
+                    Pacientes" y haga clic en el botón 📌 junto al paciente
+                    deseado.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ✅ MODO EDIT */}
+          {mode === "edit" && (
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Paciente
+              </label>
               <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
                 {selectedPatient ? (
                   <div className="flex items-center gap-3">
@@ -284,8 +205,8 @@ export function VitalSignsFormFields({
                   </p>
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -308,7 +229,7 @@ export function VitalSignsFormFields({
               type="number"
               step="0.1"
               value={formData.temperatura ?? ""}
-              onChange={e =>
+              onChange={(e) =>
                 onChange("temperatura", parseNumber(e.target.value))
               }
               placeholder="Ej: 36.5"
@@ -329,7 +250,7 @@ export function VitalSignsFormFields({
             <input
               type="number"
               value={formData.pulso ?? ""}
-              onChange={e => onChange("pulso", parseNumber(e.target.value))}
+              onChange={(e) => onChange("pulso", parseNumber(e.target.value))}
               placeholder="Ej: 72"
               className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
             />
@@ -348,16 +269,15 @@ export function VitalSignsFormFields({
             <input
               type="number"
               value={formData.frecuencia_respiratoria ?? ""}
-              onChange={e =>
+              onChange={(e) =>
                 onChange("frecuencia_respiratoria", parseNumber(e.target.value))
               }
               placeholder="Ej: 18"
               className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
             />
-            {errors.frecuenciarespiratoria && (
+            {errors.frecuencia_respiratoria && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {errors.frecuenciarespiratoria}
-
+                {errors.frecuencia_respiratoria}
               </p>
             )}
           </div>
@@ -370,7 +290,7 @@ export function VitalSignsFormFields({
             <input
               type="text"
               value={formData.presion_arterial ?? ""}
-              onChange={e => onChange("presion_arterial", e.target.value)}
+              onChange={(e) => onChange("presion_arterial", e.target.value)}
               placeholder="Ej: 120/80"
               className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
             />
@@ -378,6 +298,7 @@ export function VitalSignsFormFields({
         </div>
       </div>
 
+      {/* Estado */}
       {mostrarSeccionEstado && (
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div className="mb-6 flex items-center gap-2">
@@ -392,7 +313,7 @@ export function VitalSignsFormFields({
                 id="activo"
                 type="checkbox"
                 checked={activo}
-                onChange={e => onActivoChange?.(e.target.checked)}
+                onChange={(e) => onActivoChange?.(e.target.checked)}
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label

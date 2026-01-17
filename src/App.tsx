@@ -146,17 +146,29 @@ function App() {
               }
             />
 
-            {/* Rutas de antecedentes */}
+           
+{/* 
             <Route
+              path="/pacientes/examen-estomatognatico"
+              element={
+                <PacienteProvider>
+                  <StomatognathicExamPage />
+                </PacienteProvider>
+              }
+            />
+
+
+            {/* Rutas de antecedentes */}
+            {/* <Route
               path="/pacientes/antecedentes-personales"
               element={<PersonalBackgroundPage />}
             />
             <Route
               path="/pacientes/antecedentes-familiares"
               element={<FamilyBackgroundPage />}
-            />
-            <Route path="/pacientes/constantes-vitales" element={<ConstantesVitalesPage />} />
-            <Route path="/pacientes/examen-estomatognatico" element={<StomatognathicExamPage />} />
+            /> */}
+
+            {/* <Route path="/pacientes/constantes-vitales" element={<ConstantesVitalesPage />} /> */}
 
             {/* Usuarios */}
             <Route path="/usuarios" element={<UsersPage />} />

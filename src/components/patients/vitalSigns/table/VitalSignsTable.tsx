@@ -10,6 +10,7 @@ interface VitalSignsTableProps {
   onEdit?: (vital: IVitalSigns) => void;
   onView?: (vital: IVitalSigns) => void;
   onDelete?: (vital: IVitalSigns) => void;
+  pacienteId?: string;
 }
 
 interface PacienteCache {
@@ -20,6 +21,7 @@ export function VitalSignsTable({
   onEdit,
   onView,
   onDelete,
+  pacienteId,
 }: VitalSignsTableProps) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -31,6 +33,7 @@ export function VitalSignsTable({
     page,
     pageSize,
     search,
+    paciente: pacienteId,
   });
 
   const vitalList = vitalSigns ?? [];
@@ -41,7 +44,8 @@ export function VitalSignsTable({
     try {
       const paciente = await getPacienteById(id);
       setPacienteCache(prev => ({ ...prev, [id]: paciente }));
-    } catch (e) {
+    } catch {
+      // ✅ CORREGIDO: Sin variable 'e'
       // noop
     }
   };
@@ -166,7 +170,7 @@ export function VitalSignsTable({
         </div>
         <div className="flex items-center gap-2">
           <label className="text-sm text-gray-700 dark:text-gray-300">
-            Mostrar
+            Mostrar:
           </label>
           <select
             value={pageSize}

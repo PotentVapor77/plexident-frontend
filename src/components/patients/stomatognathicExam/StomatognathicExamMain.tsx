@@ -10,14 +10,17 @@ import type { IStomatognathicExam } from "../../../types/stomatognathicExam/ISto
 import { useModal } from "../../../hooks/useModal";
 import { useNotification } from "../../../context/notifications/NotificationContext";
 import { useStomatognathicExams } from "../../../hooks/stomatognathicExam/useStomatognathicExam";
+import { usePacienteActivo } from "../../../context/PacienteContext"; // ✅ AGREGAR
 
 export default function StomatognathicExamMain() {
   const { notify } = useNotification();
   const { removeExam } = useStomatognathicExams();
+  const { pacienteActivo } = usePacienteActivo(); // ✅ AGREGAR
 
   const [examToView, setExamToView] = useState<IStomatognathicExam | null>(null);
   const [examToEdit, setExamToEdit] = useState<IStomatognathicExam | null>(null);
   const [examToDelete, setExamToDelete] = useState<IStomatognathicExam | null>(null);
+  console.log("🎯 En StomatognathicExamMain - pacienteActivo:", pacienteActivo);
 
   const {
     isOpen: isViewModalOpen,
@@ -57,7 +60,6 @@ export default function StomatognathicExamMain() {
     setExamToDelete(exam);
     openDeleteModal();
   };
-
 
   const handleCloseEditModal = () => {
     closeEditModal();
@@ -101,7 +103,6 @@ export default function StomatognathicExamMain() {
       message,
     });
   };
-
 
   return (
     <>
@@ -163,6 +164,7 @@ export default function StomatognathicExamMain() {
           initialData={null}
           examId={undefined}
           notify={handleNotify}
+          pacienteActivo={pacienteActivo} // ✅ AGREGAR
         />
       )}
 
@@ -175,6 +177,7 @@ export default function StomatognathicExamMain() {
           initialData={examToEdit}
           examId={examToEdit.id}
           notify={handleNotify}
+          pacienteActivo={pacienteActivo} // ✅ AGREGAR
         />
       )}
 

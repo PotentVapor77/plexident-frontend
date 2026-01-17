@@ -32,8 +32,16 @@ export const ENDPOINTS = {
   patients: {
     base: '/patients/pacientes/',
     byId: (id: string) => `/patients/pacientes/${id}/`,
+    
   },
 
+    // ANAMNESIS GENERAL
+  anamnesis: {
+    base: '/patients/anamnesis-general/',
+    byId: (id: string) => `/patients/anamnesis-general/${id}/`,
+    byPaciente: (pacienteId: string) => `/patients/anamnesis-general/by-paciente/${pacienteId}/`,
+    resumenRiesgos: (id: string) => `/patients/anamnesis-general/${id}/resumen_riesgos/`,
+  },
   
 
    // ============================================================================
@@ -72,6 +80,15 @@ export const ENDPOINTS = {
     resumenPatologias: (id: string) => `/patients/examen-estomatognatico/${id}/resumen_patologias/`,
   },
 
+    // ✅ CONSULTAS
+  consultations: {
+    base: '/patients/consultas/',
+    byId: (id: string) => `/patients/consultas/${id}/`,
+    byPaciente: (pacienteId: string) => `/patients/consultas/by-paciente/${pacienteId}/`,
+  },
+
+  
+
    // ============================================================================
   // CITAS / APPOINTMENTS
   // ============================================================================
@@ -81,6 +98,11 @@ export const ENDPOINTS = {
       byId: (id: string) => `/appointment/citas/${id}/`,
       porOdontologo: (odontologoId: string) => `/appointment/citas/por-odontologo/${odontologoId}/`,
       porSemana: '/appointment/citas/por-semana/',
+      proximas: '/appointment/citas/proximas/',
+      hoy: '/appointment/citas/hoy/',
+      
+
+
       porPaciente: (pacienteId: string) => `/appointment/citas/by-paciente/${pacienteId}/`,
       cancelar: (id: string) => `/appointment/citas/${id}/cancelar/`,
       reprogramar: (id: string) => `/appointment/citas/${id}/reprogramar/`,
@@ -89,6 +111,11 @@ export const ENDPOINTS = {
             // ✅ NUEVO: Endpoints para recordatorios
       enviarRecordatorio: (id: string) => `/appointment/citas/${id}/recordatorio/`,
       estadisticasRecordatorios: '/appointment/citas/estadisticas-recordatorios/',
+
+
+
+
+
     },
     horarios: {
       base: '/appointment/horarios/',

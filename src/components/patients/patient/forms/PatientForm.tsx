@@ -1,6 +1,6 @@
 // src/components/patients/forms/PatientForm.tsx
 
-import { useState } from "react";
+import { useState, useEffect } from "react"; // ✅ Agregar useEffect
 import { AxiosError } from "axios";
 import { useModal } from "../../../../hooks/useModal";
 import { useCreatePaciente, useUpdatePaciente } from "../../../../hooks/patient/usePatients";
@@ -17,14 +17,13 @@ export interface PatientFormData {
   condicion_edad: CondicionEdad | "";
   cedula_pasaporte: string;
   fecha_nacimiento: string;
+  fecha_ingreso: string;
   telefono: string;
   correo: string;
   direccion: string;
   contacto_emergencia_nombre: string;
   contacto_emergencia_telefono: string;
   embarazada?: Embarazada;
-  motivo_consulta: string;
-  enfermedad_actual: string;
   activo: boolean;
 }
 
@@ -53,14 +52,13 @@ export default function PatientForm({
     condicion_edad: initialData?.condicion_edad ?? "",
     cedula_pasaporte: initialData?.cedula_pasaporte ?? "",
     fecha_nacimiento: initialData?.fecha_nacimiento ?? "",
+    fecha_ingreso: initialData?.fecha_ingreso ?? "",
     telefono: initialData?.telefono ?? "",
     correo: initialData?.correo ?? "",
     direccion: initialData?.direccion ?? "",
     contacto_emergencia_nombre: initialData?.contacto_emergencia_nombre ?? "",
     contacto_emergencia_telefono: initialData?.contacto_emergencia_telefono ?? "",
     embarazada: initialData?.embarazada,
-    motivo_consulta: initialData?.motivo_consulta ?? "",
-    enfermedad_actual: initialData?.enfermedad_actual ?? "",
     activo: initialData?.activo ?? true,
   });
 
@@ -74,6 +72,16 @@ export default function PatientForm({
 
   const createPaciente = useCreatePaciente();
   const updatePaciente = useUpdatePaciente();
+
+  // ✅ ESTABLECER FECHA_INGRESO AUTOMÁTICAMENTE EN MODO CREATE
+  useEffect(() => {
+    if (mode === 'create' && !formData.fecha_ingreso) {
+      setFormData(prev => ({
+        ...prev,
+        fecha_ingreso: new Date().toISOString().split('T')[0]
+      }));
+    }
+  }, [mode, formData.fecha_ingreso]);
 
   const handleInputChange = (
     e: React.ChangeEvent<InputElement>
@@ -107,6 +115,7 @@ export default function PatientForm({
     if (!formData.condicion_edad) errors.push("Debe seleccionar la condición de edad");
     if (!formData.cedula_pasaporte.trim()) errors.push("La cédula es obligatoria");
     if (!formData.fecha_nacimiento) errors.push("La fecha de nacimiento es obligatoria");
+    if (!formData.fecha_ingreso) errors.push("La fecha de ingreso es obligatoria");
     if (!formData.telefono.trim()) errors.push("El teléfono es obligatorio");
     if (!formData.direccion.trim()) errors.push("La dirección es obligatoria");
 
@@ -143,15 +152,14 @@ export default function PatientForm({
       condicion_edad: "",
       cedula_pasaporte: "",
       fecha_nacimiento: "",
+      fecha_ingreso: new Date().toISOString().split('T')[0], // ✅ Restablecer con fecha actual
       telefono: "",
       correo: "",
       direccion: "",
       contacto_emergencia_nombre: "",
       contacto_emergencia_telefono: "",
       embarazada: undefined,
-      motivo_consulta: "",
-      enfermedad_actual: "",
-      activo:true,
+      activo: true,
     });
   };
 
@@ -175,14 +183,13 @@ export default function PatientForm({
         condicion_edad: formData.condicion_edad as CondicionEdad,
         cedula_pasaporte: formData.cedula_pasaporte.trim(),
         fecha_nacimiento: formData.fecha_nacimiento,
+        fecha_ingreso: formData.fecha_ingreso,
         telefono: formData.telefono.trim(),
         correo: formData.correo.trim() || undefined,
         direccion: formData.direccion.trim() || undefined,
         contacto_emergencia_nombre: formData.contacto_emergencia_nombre.trim() || undefined,
         contacto_emergencia_telefono: formData.contacto_emergencia_telefono.trim() || undefined,
         embarazada: formData.embarazada,
-        motivo_consulta: formData.motivo_consulta.trim() || undefined,
-        enfermedad_actual: formData.enfermedad_actual.trim() || undefined,
         activo: formData.activo,
       };
 
@@ -190,7 +197,6 @@ export default function PatientForm({
         const pacienteData: IPacienteCreate = baseData;
         await createPaciente.mutateAsync(pacienteData);
         
-        // ✅ Notificar SOLO después de crear exitosamente
         notify({
           type: "success",
           title: "Paciente creado",
@@ -201,7 +207,6 @@ export default function PatientForm({
         const pacienteData: IPacienteUpdate = baseData;
         await updatePaciente.mutateAsync({ id: patientId, data: pacienteData });
         
-        // ✅ Notificar SOLO después de editar exitosamente
         notify({
           type: "warning",
           title: "Paciente actualizado",
@@ -211,10 +216,9 @@ export default function PatientForm({
 
       resetForm();
       openSuccessModal();
-      onPatientCreated?.(); // Ejecutar callback DESPUÉS de éxito
+      onPatientCreated?.();
       
     } catch (err: unknown) {
-      // ❌ NO notificar en caso de error, solo mostrar mensaje específico
       let errorMessage = "❌ Error al guardar el paciente";
 
       if (err instanceof AxiosError && err.response?.data) {

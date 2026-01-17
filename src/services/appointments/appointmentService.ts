@@ -250,9 +250,37 @@ getEstadisticasRecordatorios: async (): Promise<unknown> => {
 
 
 
+  // Obtener citas próximas (en las próximas 2 horas)
+ getCitasProximas: async (): Promise<ICita[]> => {
+    try {
+      console.log('📡 getCitasProximas - Solicitando...');
+      const response = await api.get(ENDPOINTS.appointments.citas.proximas);
+      console.log('📦 getCitasProximas - Respuesta:', response.data);
+      
+      // ✅ CORRECCIÓN: Extraer el array de response.data.data
+      if (response.data && response.data.data) {
+        return response.data.data; // ← Aquí está el array
+      }
+      
+      // Si viene directo como array
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+      
+      // Si no encuentra datos, devolver array vacío
+      console.warn('⚠️ Formato de respuesta inesperado:', response.data);
+      return [];
+    } catch (error) {
+      console.error('❌ getCitasProximas - Error:', error);
+      throw error;
+    }
+  },
+
+
 
   
 };
+
 
 
 export default appointmentService;

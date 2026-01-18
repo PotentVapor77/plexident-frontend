@@ -1,9 +1,9 @@
 // src/components/patients/consultations/table/ConsultationTable.tsx
 
 import { useState, useEffect } from 'react';
-import type { IConsultation } from '../../../../types/consultations/IConsultation';
 import type { IPaciente } from '../../../../types/patient/IPatient';
 import { getPacienteById } from '../../../../services/patient/patientService';
+import type { IConsultation } from '../../../../types/consultations/IConsultation';
 
 interface ConsultationTableProps {
   consultations: IConsultation[];
@@ -19,8 +19,7 @@ interface ConsultationTableProps {
   hasPrevious: boolean;
   pageSize: number;
   onPageSizeChange: (size: number) => void;
-  searchTerm?: string;
-  onSearchChange?: (term: string) => void;
+  onSearch: (term: string) => void;
   pacienteActivo?: IPaciente | null;
 }
 
@@ -30,7 +29,6 @@ interface PacienteCache {
 
 export function ConsultationTable({
   consultations,
-  isLoading,
   onView,
   onEdit,
   onDelete,
@@ -42,13 +40,23 @@ export function ConsultationTable({
   hasPrevious,
   pageSize,
   onPageSizeChange,
-  searchTerm = '',
-  onSearchChange,
+  onSearch,
   pacienteActivo,
 }: ConsultationTableProps) {
   const [pacienteCache, setPacienteCache] = useState<PacienteCache>({});
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
 
-  // ✅ Función para cargar paciente en cache
+  // ✅ FUNCIÓN CORRECTA: Formatear fecha sin conversión de timezone
+  const formatDateSimple = (dateString: string): string => {
+    // Extraer la parte de fecha antes de 'T' o espacio
+    const datePart = dateString.split('T')[0];
+    const [year, month, day] = datePart.split('-');
+    
+    // Retornar en formato DD/MM/YYYY
+    return `${day}/${month}/${year}`;
+  };
+
+  // Función para cargar paciente en cache
   const ensurePatientInCache = async (id: string) => {
     if (pacienteCache[id]) return;
     try {
@@ -59,7 +67,7 @@ export function ConsultationTable({
     }
   };
 
-  // ✅ Cargar pacientes en caché cuando cambia la data
+  // Cargar pacientes en caché cuando cambia la data
   useEffect(() => {
     consultations.forEach(consultation => {
       if (typeof consultation.paciente === "string") {
@@ -68,7 +76,7 @@ export function ConsultationTable({
     });
   }, [consultations]);
 
-  // ✅ Función helper para obtener objeto paciente
+  // Función helper para obtener objeto paciente
   const getPacienteObject = (consultation: IConsultation): IPaciente | null => {
     const p = consultation.paciente;
     if (typeof p === "object" && p !== null) return p as IPaciente;
@@ -76,7 +84,7 @@ export function ConsultationTable({
     return null;
   };
 
-  // ✅ Función helper para obtener nombre del paciente
+  // Función helper para obtener nombre del paciente
   const getPatientName = (consultation: IConsultation): string => {
     const paciente = getPacienteObject(consultation);
     if (paciente) {
@@ -85,7 +93,7 @@ export function ConsultationTable({
     return consultation.paciente_nombre || "Paciente";
   };
 
-  // ✅ Función helper para obtener iniciales
+  // Función helper para obtener iniciales
   const getPatientInitials = (consultation: IConsultation): string => {
     const paciente = getPacienteObject(consultation);
     if (paciente) {
@@ -96,7 +104,7 @@ export function ConsultationTable({
     return "P";
   };
 
-  // ✅ Función helper para obtener cédula
+  // Función helper para obtener cédula
   const getPatientId = (consultation: IConsultation): string => {
     const paciente = getPacienteObject(consultation);
     if (paciente) {
@@ -108,27 +116,31 @@ export function ConsultationTable({
     return "N/A";
   };
 
-  // LOADING
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Cargando consultas...
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // ✅ CAMBIO CRÍTICO: Manejar cambio de búsqueda mientras se escribe
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value;
+    setLocalSearchTerm(term);
+    onSearch(term); // ✅ Llama inmediatamente a onSearch
+  };
+
+  // ✅ Manejar submit del formulario de búsqueda (para Enter)
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onSearch(localSearchTerm);
+  };
+
+  // Limpiar búsqueda
+  const handleClearSearch = () => {
+    setLocalSearchTerm('');
+    onSearch('');
+  };
+
 
   return (
     <div className="space-y-4">
-      {/* Header con información del paciente fijado */}
-    
-      {/* Header con buscador y selector de tamaño */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <div className="w-full sm:flex-1">
+      {/* Header con buscador como formulario */}
+      <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+        <div className="w-full sm:flex-1 flex gap-2">
           <input
             type="text"
             placeholder={
@@ -136,9 +148,9 @@ export function ConsultationTable({
                 ? "Buscar por motivo de consulta dentro del paciente fijado..." 
                 : "Buscar por paciente o motivo de consulta..."
             }
-            value={searchTerm}
-            onChange={(e) => onSearchChange?.(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            value={localSearchTerm}
+            onChange={handleSearchChange} // ✅ Cambiado a handleSearchChange
+            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           />
         </div>
 
@@ -161,7 +173,7 @@ export function ConsultationTable({
             <option value={50}>50</option>
           </select>
         </div>
-      </div>
+      </form>
 
       {/* Tabla */}
       <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
@@ -178,12 +190,6 @@ export function ConsultationTable({
                 Motivo de Consulta
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Diagnóstico
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Fecha Registro
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Estado
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -195,7 +201,7 @@ export function ConsultationTable({
             {consultations.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={6} // ✅ Corregido de 7 a 6 columnas
                   className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
                 >
                   <div className="flex flex-col items-center gap-2">
@@ -214,16 +220,16 @@ export function ConsultationTable({
                     </svg>
                     <p className="text-sm">
                       {pacienteActivo
-                        ? searchTerm 
-                          ? `No se encontraron consultas para "${searchTerm}" en este paciente`
+                        ? localSearchTerm 
+                          ? `No se encontraron consultas para "${localSearchTerm}" en este paciente`
                           : `No hay consultas registradas para ${pacienteActivo.nombres} ${pacienteActivo.apellidos}`
-                        : searchTerm 
+                        : localSearchTerm 
                           ? 'No se encontraron resultados' 
                           : 'No hay registros de consultas'}
                     </p>
-                    {searchTerm && (
+                    {localSearchTerm && (
                       <button
-                        onClick={() => onSearchChange?.('')}
+                        onClick={handleClearSearch}
                         className="text-sm text-blue-600 hover:underline"
                       >
                         Limpiar búsqueda
@@ -243,44 +249,30 @@ export function ConsultationTable({
                     key={consultation.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
-                    {/* ✅ Celda del paciente con cache */}
+                    {/* Celda del paciente con cache */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        {/* Avatar con iniciales */}
                         <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white font-semibold shadow-md shadow-blue-500/30">
                           {patientInitials}
                         </div>
                         <div className="ml-4">
-                          {/* Nombre */}
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
                             {patientName}
                           </div>
-                          {/* Cédula */}
                           <div className="text-xs text-gray-500 dark:text-gray-400">
                             CI {patientId}
                           </div>
                         </div>
                       </div>
                     </td>
+                    {/* ✅ FECHA CONSULTA */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(consultation.fecha_consulta).toLocaleDateString('es-ES')}
+                      {formatDateSimple(consultation.fecha_consulta)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="max-w-xs truncate" title={consultation.motivo_consulta}>
                         {consultation.motivo_consulta}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {consultation.diagnostico ? (
-                        <div className="max-w-xs truncate" title={consultation.diagnostico}>
-                          {consultation.diagnostico}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400 italic">Sin diagnóstico</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(consultation.fecha_creacion).toLocaleDateString('es-ES')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span

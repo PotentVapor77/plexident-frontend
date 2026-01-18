@@ -8,8 +8,6 @@ export interface IConsultation {
   fecha_consulta: string;
   motivo_consulta: string;
   enfermedad_actual: string;
-  diagnostico?: string;
-  plan_tratamiento?: string;
   observaciones?: string;
   
   // Metadata
@@ -25,8 +23,6 @@ export interface IConsultationCreate {
   fecha_consulta: string;
   motivo_consulta: string;
   enfermedad_actual: string;
-  diagnostico?: string;
-  plan_tratamiento?: string;
   observaciones?: string;
 }
 

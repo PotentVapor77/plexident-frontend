@@ -147,7 +147,6 @@ function App() {
               }
             />
 
-           
             <Route 
                 path="/historia-clinica" 
 

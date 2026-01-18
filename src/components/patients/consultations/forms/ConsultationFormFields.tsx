@@ -7,8 +7,6 @@ export interface ConsultationFormData {
   fecha_consulta: string;
   motivo_consulta: string;
   enfermedad_actual: string;
-  diagnostico: string;
-  plan_tratamiento: string;
   observaciones: string;
   activo: boolean;
 }
@@ -163,54 +161,6 @@ export default function ConsultationFormFields({
           />
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
             Incluya síntomas, evolución, tratamientos previos, etc.
-          </p>
-        </div>
-      </div>
-
-      {/* Sección 4: Diagnóstico */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-purple-200 dark:border-purple-800">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-2 h-8 bg-gradient-to-b from-purple-500 to-purple-600 rounded-full" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            🔍 Diagnóstico
-          </h3>
-        </div>
-
-        <div>
-          <textarea
-            name="diagnostico"
-            value={formData.diagnostico}
-            onChange={onInputChange}
-            rows={4}
-            placeholder="Establezca el diagnóstico clínico basado en la exploración..."
-            className="w-full p-3 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:border-purple-600 dark:text-white resize-none"
-          />
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            Ej: Caries profunda en molar 36, gingivitis crónica, fractura coronaria, etc.
-          </p>
-        </div>
-      </div>
-
-      {/* Sección 5: Plan de Tratamiento */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-green-200 dark:border-green-800">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-2 h-8 bg-gradient-to-b from-green-500 to-green-600 rounded-full" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            💊 Plan de Tratamiento
-          </h3>
-        </div>
-
-        <div>
-          <textarea
-            name="plan_tratamiento"
-            value={formData.plan_tratamiento}
-            onChange={onInputChange}
-            rows={5}
-            placeholder="Describa el plan de tratamiento propuesto..."
-            className="w-full p-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:border-green-600 dark:text-white resize-none"
-          />
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            Incluya procedimientos, medicamentos, citas de seguimiento, etc.
           </p>
         </div>
       </div>

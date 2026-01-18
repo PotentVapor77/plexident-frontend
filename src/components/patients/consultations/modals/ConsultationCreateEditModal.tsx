@@ -5,11 +5,14 @@ import ConsultationForm from '../forms/ConsultationForm';
 import { useNotification } from '../../../../context/notifications/NotificationContext';
 import type { IConsultation } from '../../../../types/consultations/IConsultation';
 
+// ✅ AGREGAR onSuccess y consultationData
 interface ConsultationCreateEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  mode: 'create' | 'edit';
+  onSuccess?: () => void; // ✅ AGREGAR ESTA LÍNEA
+  mode?: 'create' | 'edit'; // Hacer opcional para compatibilidad
   consultation?: IConsultation | null;
+  consultationData?: IConsultation | null; // ✅ AGREGAR ESTA LÍNEA (alias)
   pacienteId: string;
   pacienteNombre?: string;
 }
@@ -17,14 +20,22 @@ interface ConsultationCreateEditModalProps {
 export function ConsultationCreateEditModal({
   isOpen,
   onClose,
-  mode,
+  onSuccess, // ✅ AGREGAR ESTA LÍNEA
+  mode: modeProp,
   consultation,
+  consultationData, // ✅ AGREGAR ESTA LÍNEA
   pacienteId,
   pacienteNombre,
 }: ConsultationCreateEditModalProps) {
   const { notify } = useNotification();
 
+  // ✅ Determinar mode usando consultation o consultationData
+  const mode = modeProp || (consultation || consultationData ? 'edit' : 'create');
+  const currentConsultation = consultation || consultationData;
+
   const handleSuccess = () => {
+    // ✅ LLAMAR onSuccess si existe
+    onSuccess?.();
     onClose();
   };
 
@@ -64,20 +75,18 @@ export function ConsultationCreateEditModal({
           mode={mode}
           onConsultationCreated={handleSuccess}
           initialData={
-            mode === 'edit' && consultation
+            mode === 'edit' && currentConsultation
               ? {
-                  paciente: consultation.paciente,
-                  fecha_consulta: consultation.fecha_consulta,
-                  motivo_consulta: consultation.motivo_consulta || '',
-                  enfermedad_actual: consultation.enfermedad_actual || '',
-                  diagnostico: consultation.diagnostico || '',
-                  plan_tratamiento: consultation.plan_tratamiento || '',
-                  observaciones: consultation.observaciones || '',
-                  activo: consultation.activo,
+                  paciente: currentConsultation.paciente,
+                  fecha_consulta: currentConsultation.fecha_consulta,
+                  motivo_consulta: currentConsultation.motivo_consulta || '',
+                  enfermedad_actual: currentConsultation.enfermedad_actual || '',
+                  observaciones: currentConsultation.observaciones || '',
+                  activo: currentConsultation.activo,
                 }
               : undefined
           }
-          consultationId={mode === 'edit' && consultation ? consultation.id : undefined}
+          consultationId={mode === 'edit' && currentConsultation ? currentConsultation.id : undefined}
           notify={notify}
           pacienteId={pacienteId}
           pacienteNombre={pacienteNombre}

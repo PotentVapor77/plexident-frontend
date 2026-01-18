@@ -1,9 +1,9 @@
 // src/components/patients/anamnesis/table/AnamnesisTable.tsx
 
 import { useState, useEffect } from 'react';
-import type { IAnamnesis } from '../../../../types/anamnesis/IAnamnesis';
 import type { IPaciente } from '../../../../types/patient/IPatient';
 import { getPacienteById } from '../../../../services/patient/patientService';
+import type { IAnamnesis } from '../../../../types/anamnesis/IAnamnesis';
 
 interface AnamnesisTableProps {
   anamnesisData: IAnamnesis[];
@@ -27,6 +27,83 @@ interface AnamnesisTableProps {
 interface PacienteCache {
   [key: string]: IPaciente;
 }
+
+// Función helper para obtener etiqueta legible de alergia a antibióticos
+const getAlergiaAntibioticoLabel = (value: string, otro?: string): string => {
+  const labels: Record<string, string> = {
+    'NO': 'No',
+    'PENICILINA': 'Penicilina',
+    'AMOXICILINA': 'Amoxicilina',
+    'CEFALEXINA': 'Cefalexina',
+    'AZITROMICINA': 'Azitromicina',
+    'CLARITROMICINA': 'Claritromicina',
+    'OTRO': otro ? `Otro: ${otro}` : 'Otro',
+  };
+  return labels[value] || value;
+};
+
+// Función helper para obtener etiqueta legible de alergia a anestesia
+const getAlergiaAnestesiaLabel = (value: string, otro?: string): string => {
+  const labels: Record<string, string> = {
+    'NO': 'No',
+    'LIDOCAINA': 'Lidocaína',
+    'ARTICAINA': 'Articaina',
+    'MEPIVACAINA': 'Mepivacaina',
+    'BUPIVACAINA': 'Bupivacaina',
+    'PRILOCAINA': 'Prilocaina',
+    'OTRO': otro ? `Otro: ${otro}` : 'Otro',
+  };
+  return labels[value] || value;
+};
+
+// Función para obtener resumen de condiciones de riesgo
+const getCondicionesRiesgo = (anamnesis: IAnamnesis): string[] => {
+  const condiciones: string[] = [];
+  
+  if (anamnesis.alergia_antibiotico !== 'NO') {
+    condiciones.push('Abx');
+  }
+  
+  if (anamnesis.alergia_anestesia !== 'NO') {
+    condiciones.push('Anest');
+  }
+  
+  if (anamnesis.problemas_coagulacion === 'SI') {
+    condiciones.push('Coag');
+  }
+  
+  if (anamnesis.problemas_anestesicos) {
+    condiciones.push('Prob Anest');
+  }
+  
+  if (anamnesis.diabetes !== 'NO') {
+    condiciones.push('Diab');
+  }
+  
+  if (anamnesis.hipertension !== 'NO') {
+    condiciones.push('HTA');
+  }
+  
+  if (anamnesis.enfermedad_cardiaca !== 'NO') {
+    condiciones.push('Cardio');
+  }
+  
+  if (anamnesis.vih_sida !== 'NEGATIVO' && anamnesis.vih_sida !== 'NO_SABE') {
+    condiciones.push('VIH');
+  }
+  
+  if (anamnesis.tuberculosis !== 'NO' && anamnesis.tuberculosis !== 'VACUNA_BCG') {
+    condiciones.push('TBC');
+  }
+  
+  if (anamnesis.asma !== 'NO') {
+    condiciones.push('Asma');
+  }
+  
+
+  
+  return condiciones;
+};
 
 export function AnamnesisTable({
   anamnesisData,
@@ -82,7 +159,8 @@ export function AnamnesisTable({
     if (paciente) {
       return `${paciente.nombres} ${paciente.apellidos}`.trim();
     }
-    return "Paciente";
+    // Si no tenemos el paciente en cache, usar paciente_nombre si está disponible
+    return anamnesis.paciente_nombre || "Paciente";
   };
 
   // ✅ Función helper para obtener iniciales
@@ -93,7 +171,10 @@ export function AnamnesisTable({
       const last = paciente.apellidos?.charAt(0)?.toUpperCase() || "";
       return `${first}${last}`;
     }
-    return "P";
+    const nombre = anamnesis.paciente_nombre || "Paciente";
+    const first = nombre.charAt(0)?.toUpperCase() || "P";
+    const last = nombre.split(' ')[1]?.charAt(0)?.toUpperCase() || "";
+    return `${first}${last}`;
   };
 
   // ✅ Función helper para obtener cédula
@@ -108,19 +189,31 @@ export function AnamnesisTable({
     return "N/A";
   };
 
-  // LOADING
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Cargando anamnesis...
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // ✅ Función para obtener el color según el nivel de riesgo
+  const getRiskColor = (anamnesis: IAnamnesis): { bg: string; text: string; label: string } => {
+    const condiciones = getCondicionesRiesgo(anamnesis);
+    const count = condiciones.length;
+    
+    if (count === 0) {
+      return {
+        bg: 'bg-green-100 dark:bg-green-900/30',
+        text: 'text-green-800 dark:text-green-400',
+        label: 'Bajo'
+      };
+    } else if (count <= 3) {
+      return {
+        bg: 'bg-yellow-100 dark:bg-yellow-900/30',
+        text: 'text-yellow-800 dark:text-yellow-400',
+        label: 'Moderado'
+      };
+    } else {
+      return {
+        bg: 'bg-red-100 dark:bg-red-900/30',
+        text: 'text-red-800 dark:text-red-400',
+        label: 'Alto'
+      };
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -167,8 +260,8 @@ export function AnamnesisTable({
             type="text"
             placeholder={
               pacienteActivo 
-                ? "Buscar por motivo de consulta dentro del paciente fijado..." 
-                : "Buscar por paciente o motivo..."
+                ? "Buscar por observaciones dentro del paciente fijado..." 
+                : "Buscar por paciente o observaciones..."
             }
             value={searchTerm}
             onChange={(e) => onSearchChange?.(e.target.value)}
@@ -206,13 +299,16 @@ export function AnamnesisTable({
                 Paciente
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Alergias
+                Alergias Críticas
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Riesgos
+                Condiciones
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Fecha
+                Riesgo
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Última modificación
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Estado
@@ -223,7 +319,18 @@ export function AnamnesisTable({
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-            {anamnesisData.length === 0 ? (
+            {isLoading ? (
+              <tr>
+                <td colSpan={7} className="px-6 py-12 text-center">
+                  <div className="flex justify-center">
+                    <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                </td>
+              </tr>
+            ) : anamnesisData.length === 0 ? (
               <tr>
                 <td
                   colSpan={7}
@@ -268,13 +375,15 @@ export function AnamnesisTable({
                 const patientName = getPatientName(anamnesis);
                 const patientInitials = getPatientInitials(anamnesis);
                 const patientId = getPatientId(anamnesis);
+                const riesgo = getRiskColor(anamnesis);
+                const condiciones = getCondicionesRiesgo(anamnesis);
 
                 return (
                   <tr
                     key={anamnesis.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
-                    {/* ✅ Celda del paciente con cache */}
+                    {/* ✅ Celda del paciente */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         {/* Avatar con iniciales */}
@@ -293,69 +402,107 @@ export function AnamnesisTable({
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {anamnesis.tiene_alergias ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-                          ⚠️ Sí
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                          ✓ No
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex gap-1.5 flex-wrap">
-                        {anamnesis.problemas_coagulacion && (
-                          <span 
-                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                            title="Problemas de coagulación"
-                          >
-                            Coag.
-                          </span>
+
+                    {/* ✅ Alergias Críticas */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="space-y-1">
+                        {/* Alergia a antibióticos */}
+                        {anamnesis.alergia_antibiotico !== 'NO' && (
+                          <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                            <span className="text-xs font-medium text-red-700 dark:text-red-400">
+                              {getAlergiaAntibioticoLabel(anamnesis.alergia_antibiotico, anamnesis.alergia_antibiotico_otro)}
+                            </span>
+                          </div>
                         )}
+                        
+                        {/* Alergia a anestesia */}
+                        {anamnesis.alergia_anestesia !== 'NO' && (
+                          <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                            <span className="text-xs font-medium text-orange-700 dark:text-orange-400">
+                              {getAlergiaAnestesiaLabel(anamnesis.alergia_anestesia, anamnesis.alergia_anestesia_otro)}
+                            </span>
+                          </div>
+                        )}
+                 
+                        
+                        {/* Problemas con anestésicos */}
                         {anamnesis.problemas_anestesicos && (
-                          <span 
-                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400"
-                            title="Problemas con anestésicos locales"
-                          >
-                            Anest.
-                          </span>
+                          <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                            <span className="text-xs font-medium text-purple-700 dark:text-purple-400">
+                              Problemas anestésicos
+                            </span>
+                          </div>
                         )}
-                        {anamnesis.toma_medicamentos && (
-                          <span 
-                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400"
-                            title="Toma medicamentos actualmente"
-                          >
-                            Meds.
-                          </span>
+
+                        {/* Si no hay alergias críticas */}
+                        {anamnesis.alergia_antibiotico === 'NO' && 
+                         anamnesis.alergia_anestesia === 'NO' && 
+                         !anamnesis.problemas_anestesicos && (
+                          <span className="text-xs text-gray-400">Sin alergias críticas</span>
                         )}
-                        {!anamnesis.problemas_coagulacion &&
-                          !anamnesis.problemas_anestesicos &&
-                          !anamnesis.toma_medicamentos && (
-                            <span className="text-gray-400">-</span>
-                          )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(anamnesis.fecha_creacion).toLocaleDateString('es-ES')}
+
+                    {/* ✅ Condiciones */}
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1 max-w-[200px]">
+                        {condiciones.slice(0, 4).map((condicion, index) => (
+                          <span
+                            key={index}
+                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                            title={condicion}
+                          >
+                            {condicion}
+                          </span>
+                        ))}
+                        {condiciones.length > 4 && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-300">
+                            +{condiciones.length - 4}
+                          </span>
+                        )}
+                        {condiciones.length === 0 && (
+                          <span className="text-xs text-gray-400">Sin condiciones</span>
+                        )}
+                      </div>
                     </td>
+
+                    {/* ✅ Nivel de riesgo */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${riesgo.bg} ${riesgo.text}`}>
+                        {riesgo.label}
+                      </span>
+                    </td>
+
+                    {/* ✅ Última modificación */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <div>
+                        <div>{new Date(anamnesis.fecha_modificacion).toLocaleDateString('es-ES')}</div>
+          
+                      </div>
+                    </td>
+
+                    {/* ✅ Estado */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          anamnesis.activo
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${anamnesis.activo
                             ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                             : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                        }`}
+                          }`}
                       >
                         {anamnesis.activo ? 'Activo' : 'Inactivo'}
                       </span>
                     </td>
+
+                    {/* ✅ Acciones */}
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
+                        {/* Botón Ver */}
                         <button
                           onClick={() => onView(anamnesis)}
-                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                          className="p-1.5 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20"
                           title="Ver detalles"
                         >
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -363,24 +510,27 @@ export function AnamnesisTable({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                         </button>
+                        
+                        {/* Botón Editar */}
                         <button
                           onClick={() => onEdit(anamnesis)}
-                          className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                          className="p-1.5 text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
                           title="Editar"
                         >
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </button>
+                        
+                        {/* Botón Eliminar */}
                         <button
                           onClick={() => onDelete(anamnesis)}
                           disabled={!anamnesis.activo}
-                          className={`${
-                            !anamnesis.activo
+                          className={`p-1.5 rounded ${!anamnesis.activo
                               ? "text-red-300 dark:text-red-500 cursor-not-allowed opacity-50"
-                              : "text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                          }`}
-                          title={!anamnesis.activo ? "Anamnesis inactivas no se pueden eliminar" : "Borrar definitivamente"}
+                              : "text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            }`}
+                          title={!anamnesis.activo ? "Anamnesis inactivas no se pueden eliminar" : "Eliminar"}
                         >
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

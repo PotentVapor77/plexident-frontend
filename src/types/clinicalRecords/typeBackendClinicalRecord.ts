@@ -1,11 +1,248 @@
 // src/types/clinicalRecord/typeBackendClinicalRecord.ts
 
-// Estados del historial
+// ============================================================================
+// TIPOS BASE
+// ============================================================================
+
 export type EstadoHistorial = "BORRADOR" | "ABIERTO" | "CERRADO";
-
-// Tipo de embarazo
 export type EmbarazoEstado = "SI" | "NO";
+export type Sexo = "M" | "F";
 
+// ============================================================================
+// TIPOS DE DATOS DE SECCIONES (CORREGIDOS SEGÚN BACKEND REAL)
+// ============================================================================
+
+/**
+ * Antecedentes Personales - Estructura REAL del backend
+ */
+export interface AntecedentesPersonalesData {
+  id: string;
+  paciente_nombre: string;
+  paciente_cedula: string;
+  fecha_creacion: string;
+  fecha_modificacion: string;
+  activo: boolean;
+  
+  // Alergias
+  alergia_antibiotico: string | null;
+  alergia_antibiotico_otro: string;
+  alergia_anestesia: string | null;
+  alergia_anestesia_otro: string;
+  
+  // Condiciones médicas
+  hemorragias: string | null;
+  vih_sida: string | null;
+  tuberculosis: string | null;
+  asma: string | null;
+  diabetes: string | null;
+  diabetes_otro: string;
+  hipertension_arterial: string | null;
+  enfermedad_cardiaca: string | null;
+  enfermedad_cardiaca_otro: string;
+  
+  // Metadata
+  creado_por: string;
+  actualizado_por: string;
+  paciente: string;
+}
+
+/**
+ * Antecedentes Familiares - Estructura REAL del backend
+ */
+export interface AntecedentesFamiliaresData {
+  id: string;
+  paciente_nombre: string;
+  paciente_cedula: string;
+  fecha_creacion: string;
+  fecha_modificacion: string;
+  activo: boolean;
+  
+  // Historial familiar
+  cardiopatia_familiar: string | null;
+  hipertension_arterial_familiar: string | null;
+  enfermedad_vascular_familiar: string | null;
+  cancer_familiar: string | null;
+  enfermedad_mental_familiar: string | null;
+  otros_antecedentes_familiares: string;
+  
+  // Metadata
+  creado_por: string;
+  actualizado_por: string;
+  paciente: string;
+}
+
+/**
+ * Constantes Vitales - Estructura REAL del backend
+ */
+export interface ConstantesVitalesData {
+  id: string;
+  paciente_nombre: string;
+  paciente_cedula: string;
+  fecha_creacion: string;
+  fecha_modificacion: string;
+  activo: boolean;
+  
+  // Signos vitales
+  temperatura: string;
+  pulso: number;
+  frecuencia_respiratoria: number;
+  presion_arterial: string;
+  
+  // Metadata
+  creado_por: string;
+  actualizado_por: string;
+  paciente: string;
+}
+
+/**
+ * Examen Estomatognático - Estructura REAL del backend
+ */
+export interface ExamenEstomatognaticoData {
+  id: string;
+  paciente_nombre: string;
+  paciente_cedula: string;
+  fecha_creacion: string;
+  fecha_modificacion: string;
+  activo: boolean;
+  
+  // Flags generales
+  examen_sin_patologia: boolean;
+  tiene_patologias: boolean;
+  total_regiones_anormales: number;
+  
+  // ATM
+  atm_cp: boolean;
+  atm_sp: boolean;
+  atm_absceso: boolean;
+  atm_fibroma: boolean;
+  atm_herpes: boolean;
+  atm_ulcera: boolean;
+  atm_otra_patologia: boolean;
+  atm_observacion: string;
+  
+  // Mejillas
+  mejillas_cp: boolean;
+  mejillas_sp: boolean;
+  mejillas_absceso: boolean;
+  mejillas_fibroma: boolean;
+  mejillas_herpes: boolean;
+  mejillas_ulcera: boolean;
+  mejillas_otra_patologia: boolean;
+  mejillas_descripcion: string;
+  
+  // Maxilar Inferior
+  maxilar_inferior_cp: boolean;
+  maxilar_inferior_sp: boolean;
+  maxilar_inferior_absceso: boolean;
+  maxilar_inferior_fibroma: boolean;
+  maxilar_inferior_herpes: boolean;
+  maxilar_inferior_ulcera: boolean;
+  maxilar_inferior_otra_patologia: boolean;
+  maxilar_inferior_descripcion: string;
+  
+  // Maxilar Superior
+  maxilar_superior_cp: boolean;
+  maxilar_superior_sp: boolean;
+  maxilar_superior_absceso: boolean;
+  maxilar_superior_fibroma: boolean;
+  maxilar_superior_herpes: boolean;
+  maxilar_superior_ulcera: boolean;
+  maxilar_superior_otra_patologia: boolean;
+  maxilar_superior_descripcion: string;
+  
+  // Paladar
+  paladar_cp: boolean;
+  paladar_sp: boolean;
+  paladar_absceso: boolean;
+  paladar_fibroma: boolean;
+  paladar_herpes: boolean;
+  paladar_ulcera: boolean;
+  paladar_otra_patologia: boolean;
+  paladar_descripcion: string;
+  
+  // Piso de Boca
+  piso_boca_cp: boolean;
+  piso_boca_sp: boolean;
+  piso_boca_absceso: boolean;
+  piso_boca_fibroma: boolean;
+  piso_boca_herpes: boolean;
+  piso_boca_ulcera: boolean;
+  piso_boca_otra_patologia: boolean;
+  piso_boca_descripcion: string;
+  
+  // Carrillos
+  carrillos_cp: boolean;
+  carrillos_sp: boolean;
+  carrillos_absceso: boolean;
+  carrillos_fibroma: boolean;
+  carrillos_herpes: boolean;
+  carrillos_ulcera: boolean;
+  carrillos_otra_patologia: boolean;
+  carrillos_descripcion: string;
+  
+  // Glándulas Salivales
+  glandulas_salivales_cp: boolean;
+  glandulas_salivales_sp: boolean;
+  glandulas_salivales_absceso: boolean;
+  glandulas_salivales_fibroma: boolean;
+  glandulas_salivales_herpes: boolean;
+  glandulas_salivales_ulcera: boolean;
+  glandulas_salivales_otra_patologia: boolean;
+  glandulas_salivales_descripcion: string;
+  
+  // Ganglios
+  ganglios_cp: boolean;
+  ganglios_sp: boolean;
+  ganglios_absceso: boolean;
+  ganglios_fibroma: boolean;
+  ganglios_herpes: boolean;
+  ganglios_ulcera: boolean;
+  ganglios_otra_patologia: boolean;
+  ganglios_descripcion: string;
+  
+  // Lengua
+  lengua_cp: boolean;
+  lengua_sp: boolean;
+  lengua_absceso: boolean;
+  lengua_fibroma: boolean;
+  lengua_herpes: boolean;
+  lengua_ulcera: boolean;
+  lengua_otra_patologia: boolean;
+  lengua_descripcion: string;
+  
+  // Labios
+  labios_cp: boolean;
+  labios_sp: boolean;
+  labios_absceso: boolean;
+  labios_fibroma: boolean;
+  labios_herpes: boolean;
+  labios_ulcera: boolean;
+  labios_otra_patologia: boolean;
+  labios_descripcion: string;
+  
+  // Resumen de patologías
+  regiones_con_patologia: Array<{
+    region: string;
+    descripcion: string;
+  }>;
+  atm_patologias: {
+    absceso: boolean;
+    fibroma: boolean;
+    herpes: boolean;
+    ulcera: boolean;
+    otra: boolean;
+    observacion: string;
+  };
+  
+  // Metadata
+  creado_por: string;
+  actualizado_por: string;
+  paciente: string;
+}
+
+// ============================================================================
+// RESPUESTAS DEL BACKEND
+// ============================================================================
 
 /**
  * Respuesta básica de lista de historiales clínicos
@@ -33,6 +270,7 @@ export interface ClinicalRecordListResponse {
  */
 export interface ClinicalRecordDetailResponse {
   id: string;
+  
   // Paciente
   paciente: string;
   paciente_info: {
@@ -40,11 +278,11 @@ export interface ClinicalRecordDetailResponse {
     nombres: string;
     apellidos: string;
     cedula_pasaporte: string;
-    sexo: "M" | "F";
+    sexo: Sexo;
     edad: number;
-    fecha_nacimiento: string;
+    fecha_nacimiento: string | null;
   };
-
+  
   // Odontólogo
   odontologo_responsable: string;
   odontologo_info: {
@@ -53,25 +291,22 @@ export interface ClinicalRecordDetailResponse {
     apellidos: string;
     rol: string;
   };
-
+  
   // Secciones del Form 033
   motivo_consulta: string;
   embarazada: EmbarazoEstado | null;
   enfermedad_actual: string;
-
+  
   // Referencias a secciones
   antecedentes_personales: string | null;
   antecedentes_personales_data?: AntecedentesPersonalesData;
-  
   antecedentes_familiares: string | null;
   antecedentes_familiares_data?: AntecedentesFamiliaresData;
-  
   constantes_vitales: string | null;
   constantes_vitales_data?: ConstantesVitalesData;
-  
   examen_estomatognatico: string | null;
   examen_estomatognatico_data?: ExamenEstomatognaticoData;
-
+  
   // Metadata
   estado: EstadoHistorial;
   estado_display: string;
@@ -84,7 +319,7 @@ export interface ClinicalRecordDetailResponse {
   unicodigo: string;
   establecimiento_salud: string;
   numero_hoja: number;
-
+  
   // Auditoría
   creado_por: string;
   creado_por_info: {
@@ -100,47 +335,50 @@ export interface ClinicalRecordDetailResponse {
 }
 
 /**
- * Tipos auxiliares para las secciones
+ * Datos iniciales pre-cargados del paciente
  */
-export interface AntecedentesPersonalesData {
-  id: string;
-  alergias: string;
-  medicamentos_actuales: string;
-  enfermedades_previas: string;
-  cirugias_previas: string;
-  hospitalizaciones: string;
-}
-
-export interface AntecedentesFamiliaresData {
-  id: string;
-  diabetes: boolean;
-  hipertension: boolean;
-  cardiopatias: boolean;
-  cancer: boolean;
-  otros: string;
-}
-
-export interface ConstantesVitalesData {
-  id: string;
-  presion_arterial: string;
-  frecuencia_cardiaca: number;
-  temperatura: number;
-  peso: number;
-  talla: number;
-}
-
-export interface ExamenEstomatognaticoData {
-  id: string;
-  labios: string;
-  mucosa: string;
-  lengua: string;
-  paladar: string;
-  encias: string;
-  saliva: string;
+export interface ClinicalRecordInitialData {
+  paciente: {
+    id: string;
+    nombre_completo: string;
+    cedula_pasaporte: string;
+    sexo: Sexo;
+    edad: number;
+  };
+  motivo_consulta: string;
+  motivo_consulta_fecha: string | null;
+  embarazada: EmbarazoEstado | null;
+  enfermedad_actual: string;
+  enfermedad_actual_fecha: string | null;
+  
+  // Estructura mejorada: {id, fecha, data}
+  antecedentes_personales: {
+    id: string | null;
+    fecha: string | null;
+    data: AntecedentesPersonalesData | null;
+  } | null;
+  
+  antecedentes_familiares: {
+    id: string | null;
+    fecha: string | null;
+    data: AntecedentesFamiliaresData | null;
+  } | null;
+  
+  constantes_vitales: {
+    id: string | null;
+    fecha: string | null;
+    data: ConstantesVitalesData | null;
+  } | null;
+  
+  examen_estomatognatico: {
+    id: string | null;
+    fecha: string | null;
+    data: ExamenEstomatognaticoData | null;
+  } | null;
 }
 
 // ============================================================================
-// REQUEST TYPES (Lo que enviamos al backend)
+// REQUEST PAYLOADS
 // ============================================================================
 
 /**
@@ -192,7 +430,7 @@ export interface ClinicalRecordReopenPayload {
 }
 
 // ============================================================================
-// PAGINATION
+// PAGINACIÓN Y WRAPPERS
 // ============================================================================
 
 export interface ClinicalRecordPaginatedResponse {
@@ -204,25 +442,6 @@ export interface ClinicalRecordPaginatedResponse {
   current_page: number;
 }
 
-/**
- * Datos iniciales pre-cargados del paciente
- */
-export interface ClinicalRecordInitialData {
-  paciente: {
-    id: string;
-    nombre_completo: string;
-    cedula_pasaporte: string;
-    sexo: "M" | "F";
-    edad: number;
-  };
-  motivo_consulta: string;
-  embarazada: EmbarazoEstado | null;
-  enfermedad_actual: string;
-  antecedentes_personales_id: string | null;
-  antecedentes_familiares_id: string | null;
-  constantes_vitales_id: string | null;
-  examen_estomatognatico_id: string | null;
-}
 export interface ApiListWrapper<T> {
   success: boolean;
   status_code: number;

@@ -63,7 +63,7 @@ const ClinicalRecordViewModal: React.FC<ClinicalRecordViewModalProps> = ({
     return (
       <Modal isOpen={isOpen} onClose={onClose}>
         <div className="p-8 text-center text-red-600">
-           Error al cargar la información.
+          Error al cargar la información.
         </div>
       </Modal>
     );
@@ -77,9 +77,9 @@ const ClinicalRecordViewModal: React.FC<ClinicalRecordViewModalProps> = ({
   // Si después de extraer, no hay record o no tiene ID, no mostramos nada (o error)
   if (!record || !record.id) {
     return (
-       <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={onClose}>
         <div className="p-8 text-center text-gray-500">
-           No se encontraron datos para este historial.
+          No se encontraron datos para este historial.
         </div>
       </Modal>
     );
@@ -216,7 +216,7 @@ const ClinicalRecordViewModal: React.FC<ClinicalRecordViewModalProps> = ({
             </h4>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              
+
               {/* ANTECEDENTES PERSONALES */}
               <div className="space-y-3">
                 <h5 className="font-medium text-gray-700 dark:text-gray-200 text-sm uppercase tracking-wide">Personales</h5>
@@ -231,58 +231,58 @@ const ClinicalRecordViewModal: React.FC<ClinicalRecordViewModalProps> = ({
                     )}
                     {personales.alergia_anestesia && (
                       <li className="bg-red-50 p-2 rounded text-red-700 border border-red-100">
-                         <span className="font-semibold">Alergia Anestesia:</span> {personales.alergia_anestesia}
-                         {personales.alergia_anestesia_otro && ` (${personales.alergia_anestesia_otro})`}
+                        <span className="font-semibold">Alergia Anestesia:</span> {personales.alergia_anestesia}
+                        {personales.alergia_anestesia_otro && ` (${personales.alergia_anestesia_otro})`}
                       </li>
                     )}
 
                     {/* Enfermedades */}
                     {personales.hemorragias === "SI" && (
-                       <li className="bg-orange-50 p-2 rounded text-orange-800 border border-orange-100 font-medium">
-                          ⚠ Sufre de Hemorragias
-                       </li>
+                      <li className="bg-orange-50 p-2 rounded text-orange-800 border border-orange-100 font-medium">
+                        ⚠ Sufre de Hemorragias
+                      </li>
                     )}
                     {personales.vih_sida && (
-                       <li className="bg-gray-50 p-2 rounded border border-gray-100">
-                          <strong>VIH/SIDA:</strong> {personales.vih_sida}
-                       </li>
+                      <li className="bg-gray-50 p-2 rounded border border-gray-100">
+                        <strong>VIH/SIDA:</strong> {personales.vih_sida}
+                      </li>
                     )}
                     {personales.tuberculosis && (
-                       <li className="bg-gray-50 p-2 rounded border border-gray-100">
-                          <strong>Tuberculosis:</strong> {personales.tuberculosis}
-                       </li>
+                      <li className="bg-gray-50 p-2 rounded border border-gray-100">
+                        <strong>Tuberculosis:</strong> {personales.tuberculosis}
+                      </li>
                     )}
                     {personales.asma && (
-                       <li className="bg-gray-50 p-2 rounded border border-gray-100">
-                          <strong>Asma:</strong> {personales.asma}
-                       </li>
+                      <li className="bg-gray-50 p-2 rounded border border-gray-100">
+                        <strong>Asma:</strong> {personales.asma}
+                      </li>
                     )}
                     {personales.diabetes && (
-                       <li className="bg-gray-50 p-2 rounded border border-gray-100">
-                          <strong>Diabetes:</strong> {personales.diabetes} 
-                          {personales.diabetes_otro && ` (${personales.diabetes_otro})`}
-                       </li>
+                      <li className="bg-gray-50 p-2 rounded border border-gray-100">
+                        <strong>Diabetes:</strong> {personales.diabetes}
+                        {personales.diabetes_otro && ` (${personales.diabetes_otro})`}
+                      </li>
                     )}
                     {personales.hipertension_arterial && (
-                       <li className="bg-gray-50 p-2 rounded border border-gray-100">
-                          <strong>Hipertensión:</strong> {personales.hipertension_arterial}
-                       </li>
+                      <li className="bg-gray-50 p-2 rounded border border-gray-100">
+                        <strong>Hipertensión:</strong> {personales.hipertension_arterial}
+                      </li>
                     )}
                     {personales.enfermedad_cardiaca && (
-                       <li className="bg-gray-50 p-2 rounded border border-gray-100">
-                          <strong>Enf. Cardíaca:</strong> {personales.enfermedad_cardiaca}
-                          {personales.enfermedad_cardiaca_otro && ` (${personales.enfermedad_cardiaca_otro})`}
-                       </li>
+                      <li className="bg-gray-50 p-2 rounded border border-gray-100">
+                        <strong>Enf. Cardíaca:</strong> {personales.enfermedad_cardiaca}
+                        {personales.enfermedad_cardiaca_otro && ` (${personales.enfermedad_cardiaca_otro})`}
+                      </li>
                     )}
                     {/* Mensaje si todo está vacío pero el objeto existe */}
                     {Object.values(personales).every(v => !v || v === 'NO') && (
-                       <li className="text-gray-400 italic">Sin antecedentes patológicos marcados.</li>
+                      <li className="text-gray-400 italic">Sin antecedentes patológicos marcados.</li>
                     )}
                   </ul>
                 ) : (
                   <p className="text-sm text-gray-400 italic">No registra antecedentes personales.</p>
                 )}
-                
+
                 <div className="mt-2 text-sm">
                   <span className="font-medium text-gray-500">Enfermedad Actual:</span>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">{record.enfermedad_actual || "Sin registrar"}</p>
@@ -305,19 +305,19 @@ const ClinicalRecordViewModal: React.FC<ClinicalRecordViewModalProps> = ({
                       </li>
                     )}
                     {familiares.cardiopatias && (
-                       <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                         <Info className="h-3 w-3 text-blue-500" /> Cardiopatías
-                       </li>
+                      <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                        <Info className="h-3 w-3 text-blue-500" /> Cardiopatías
+                      </li>
                     )}
-                     {familiares.cancer && (
-                       <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                         <Info className="h-3 w-3 text-blue-500" /> Cáncer
-                       </li>
+                    {familiares.cancer && (
+                      <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                        <Info className="h-3 w-3 text-blue-500" /> Cáncer
+                      </li>
                     )}
                     {familiares.otros && (
-                       <li className="text-gray-600 dark:text-gray-400 border-t pt-2 mt-2">
-                          <span className="font-medium">Otros:</span> {familiares.otros}
-                       </li>
+                      <li className="text-gray-600 dark:text-gray-400 border-t pt-2 mt-2">
+                        <span className="font-medium">Otros:</span> {familiares.otros}
+                      </li>
                     )}
                   </ul>
                 ) : (
@@ -364,22 +364,22 @@ const ClinicalRecordViewModal: React.FC<ClinicalRecordViewModalProps> = ({
             </h4>
             {examen ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                 <div className="p-3 bg-gray-50 rounded border border-gray-100">
-                    <span className="font-medium text-xs text-gray-500 uppercase block mb-1">Labios</span>
-                    <p className="text-sm text-gray-800">{examen.labios || "Sin novedad"}</p>
-                 </div>
-                 <div className="p-3 bg-gray-50 rounded border border-gray-100">
-                    <span className="font-medium text-xs text-gray-500 uppercase block mb-1">Lengua</span>
-                    <p className="text-sm text-gray-800">{examen.lengua || "Sin novedad"}</p>
-                 </div>
-                 <div className="p-3 bg-gray-50 rounded border border-gray-100">
-                    <span className="font-medium text-xs text-gray-500 uppercase block mb-1">Paladar</span>
-                    <p className="text-sm text-gray-800">{examen.paladar || "Sin novedad"}</p>
-                 </div>
-                 <div className="p-3 bg-gray-50 rounded border border-gray-100">
-                    <span className="font-medium text-xs text-gray-500 uppercase block mb-1">Encías</span>
-                    <p className="text-sm text-gray-800">{examen.encias || "Sin novedad"}</p>
-                 </div>
+                <div className="p-3 bg-gray-50 rounded border border-gray-100">
+                  <span className="font-medium text-xs text-gray-500 uppercase block mb-1">Labios</span>
+                  <p className="text-sm text-gray-800">{examen.labios || "Sin novedad"}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded border border-gray-100">
+                  <span className="font-medium text-xs text-gray-500 uppercase block mb-1">Lengua</span>
+                  <p className="text-sm text-gray-800">{examen.lengua || "Sin novedad"}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded border border-gray-100">
+                  <span className="font-medium text-xs text-gray-500 uppercase block mb-1">Paladar</span>
+                  <p className="text-sm text-gray-800">{examen.paladar || "Sin novedad"}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded border border-gray-100">
+                  <span className="font-medium text-xs text-gray-500 uppercase block mb-1">Encías</span>
+                  <p className="text-sm text-gray-800">{examen.encias || "Sin novedad"}</p>
+                </div>
               </div>
             ) : (
               <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-300 dark:bg-gray-800 dark:border-gray-700">

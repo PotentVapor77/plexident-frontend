@@ -37,6 +37,7 @@ import { PacienteProvider } from "./context/PacienteContext";
 import AppointmentsPage from "./pages/Appointments/AppointmentsPage";
 import IndicadoresSaludBucalPage from "./pages/Odontogram/IndicadoresSaludBucalPage";
 import TreatmentPlanPage from "./pages/TreatmentPlan/TreatmentPlanPage";
+import ClinicalRecordsPage from "./pages/ClinicalRecords/ClinicalRecordsPage";
 
 // ============================================================================
 // RUTAS PÚBLICAS
@@ -147,8 +148,6 @@ function App() {
             />
 
            
-{/* 
-=======
             <Route 
                 path="/historia-clinica" 
 

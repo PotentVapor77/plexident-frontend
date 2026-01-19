@@ -25,10 +25,26 @@ import { useCargarOdontogramaCompleto } from "../../hooks/odontogram/useCargarOd
 import type { DiagnosticoEntry } from "../../core/types/odontograma.types";
 import { useCatalogoDiagnosticos } from "../../hooks/odontogram/useCatalogoDiagnosticos";
 import { getProcConfigFromCategories } from "../../core/domain/diagnostic/procConfig";
+import { Upload } from "lucide-react";
+import type { PendingFile } from "../../services/clinicalFiles/clinicalFilesService";
 
+type FilePanelProps = {
+  pendingFiles: PendingFile[];
+  addPendingFile: (file: File) => void;
+  removePendingFile: (tempId: string) => void;
+  uploadAllPendingFiles: () => Promise<void>;
+  isUploading: boolean;
+  isOpen: boolean;
+  onClose: () => void;
+};
 type OdontogramaViewerProps = {
   onSelectTooth: React.Dispatch<React.SetStateAction<string | null>>;
   freezeResize: boolean;
+
+  // Carga de archivos odontograma
+  onOpenFileUpload?: () => void;
+  pendingFilesCount?: number;
+  filePanelProps?: FilePanelProps;
 };
 
 
@@ -36,9 +52,13 @@ type OdontogramaViewerProps = {
 export const OdontogramaViewer = ({
   onSelectTooth,
   freezeResize,
+  onOpenFileUpload,
+  pendingFilesCount = 0,
 }: OdontogramaViewerProps) => {
   // Estado de paciente
   const { pacienteActivo, setPacienteActivo } = usePacienteActivo();
+
+
   const [isPacientePanelCollapsed, setIsPacientePanelCollapsed] = React.useState(true);
   // Hooks odontograma
   const odontogramaDataHook = useOdontogramaData();
@@ -68,14 +88,14 @@ export const OdontogramaViewer = ({
 
     (async () => {
       const data = await cargarOdontograma(pacienteActivo.id);
-      console.log('[VIEWER] Resultado cargarOdontograma:', data);
+      //console.log('[VIEWER] Resultado cargarOdontograma:', data);
 
       if (data) {
-        console.log('[VIEWER] Llamando loadFromBackend con data');
+        //console.log('[VIEWER] Llamando loadFromBackend con data');
         loadFromBackend(data);
-        console.log('[VIEWER] Estado odontogramaData tras loadFromBackend:', odontogramaData);
+        //console.log('[VIEWER] Estado odontogramaData tras loadFromBackend:', odontogramaData);
       } else {
-        console.warn('[VIEWER] cargarOdontograma devolvió null, no se carga');
+        //console.warn('[VIEWER] cargarOdontograma devolvió null, no se carga');
       }
     })();
   }, [pacienteActivo, cargarOdontograma, loadFromBackend]);
@@ -180,6 +200,7 @@ export const OdontogramaViewer = ({
         width: "100%",
         height: "100%",
         display: "flex",
+        overflow: "hidden",
       }}
     >
       {/* COLUMNA IZQUIERDA: Canvas + overlays internos */}
@@ -331,9 +352,29 @@ export const OdontogramaViewer = ({
               </div>
             </div>
           )}
-
-
         </div>
+
+        {/* BOTÓN FLOTANTE: Carga de archivos */}
+
+        {pacienteActivo && onOpenFileUpload && (
+            <button
+              onClick={onOpenFileUpload}
+              className="absolute bottom-4 left-4 bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 group"
+              title="Adjuntar archivos clínicos"
+            >
+              <Upload className="w-5 h-5" />
+              {pendingFilesCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+                  {pendingFilesCount}
+                </span>
+              )}
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                {pendingFilesCount > 0
+                  ? `${pendingFilesCount} archivo(s) pendiente(s)`
+                  : "Adjuntar archivos"}
+              </span>
+            </button>
+          )}
 
         {/* BOTÓN FLOTANTE: Selector de paciente */}
         <PacienteFloatingButton onSelectPaciente={handleSelectPaciente} />

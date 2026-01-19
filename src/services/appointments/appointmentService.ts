@@ -253,9 +253,9 @@ getEstadisticasRecordatorios: async (): Promise<unknown> => {
   // Obtener citas próximas (en las próximas 2 horas)
  getCitasProximas: async (): Promise<ICita[]> => {
     try {
-      console.log('📡 getCitasProximas - Solicitando...');
+      //console.log('📡 getCitasProximas - Solicitando...');
       const response = await api.get(ENDPOINTS.appointments.citas.proximas);
-      console.log('📦 getCitasProximas - Respuesta:', response.data);
+      //console.log('📦 getCitasProximas - Respuesta:', response.data);
       
       // ✅ CORRECCIÓN: Extraer el array de response.data.data
       if (response.data && response.data.data) {

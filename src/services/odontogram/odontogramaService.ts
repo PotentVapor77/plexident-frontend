@@ -77,7 +77,7 @@ export async function obtenerOdontogramaCompletoFrontend(
   }
 
   const frontendData = mapearOdontogramaBackendToFrontend(data.data);
-  console.log('[SERVICE] Datos mapeados a OdontogramaData:', frontendData);
+  //console.log('[SERVICE] Datos mapeados a OdontogramaData:', frontendData);
 
   return frontendData;
 }
@@ -98,6 +98,8 @@ export interface ResultadoGuardado {
   dientes_procesados: string[];
   diagnosticos_guardados: number;
   errores: string[];
+  snapshot_id?: string; 
+  version_id?: string;  
 }
 
 // ============================================================================

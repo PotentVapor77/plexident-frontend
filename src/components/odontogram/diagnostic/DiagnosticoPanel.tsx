@@ -17,14 +17,31 @@ import { DiagnosticoSelectUI } from '../selection/DiagnosticoSelectUI';
 // Utils
 import { groupDentalSurfaces } from '../../../core/utils/groupDentalSurfaces';
 import { SurfaceLabels } from './panel/SurfaceLabels';
+import type { PendingFile } from '../../../services/clinicalFiles/clinicalFilesService';
+import { useClinicalFiles } from '../../../hooks/clinicalFiles/useClinicalFiles';
+import { useClinicalFilesContext } from '../../../context/ClinicalFilesContext';
 // ============================================================================
 // INTERFACES
 // ============================================================================
+
+type FilePanelProps = {
+  pendingFiles: PendingFile[];
+  addPendingFile: (file: File) => void;
+  removePendingFile: (tempId: string) => void;
+  uploadAllPendingFiles: () => Promise<void>;
+  isUploading: boolean;
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+
 
 interface DiagnosticoPanelProps {
   selectedTooth: string | null;
   odontogramaDataHook?: any;
   onRootGroupChange?: (group: string | null) => void;
+  onOpenFileUpload?: () => void;
+  filePanelProps?: FilePanelProps;
 }
 
 // ============================================================================
@@ -37,6 +54,7 @@ export const DiagnosticoPanel: React.FC<DiagnosticoPanelProps> = ({
   onRootGroupChange,
 }) => {
   const { pacienteActivo } = usePacienteActivo();
+  const { uploadAllPendingFiles, hasPendingFiles } = useClinicalFilesContext();
 
   // ============================================================================
   // VALIDACIÓN INICIAL
@@ -80,12 +98,18 @@ export const DiagnosticoPanel: React.FC<DiagnosticoPanelProps> = ({
     odontogramaDataHook,
     pacienteActivoId: pacienteActivo ?? undefined,
     onRootGroupChange,
+    onCompleteSave: async (snapshotId: string) => {
+      if (!pacienteActivo || !hasPendingFiles) return;
+      await uploadAllPendingFiles(pacienteActivo.id, snapshotId);
+    },
+
   });
 
   const handleRemoveIndividualSurface = useCallback((surfaceId: string) => {
     const newSurfaces = state.selectedSurfaces.filter(s => s !== surfaceId);
     handleSurfaceSelect(newSurfaces);
   }, [state.selectedSurfaces, handleSurfaceSelect]);
+
 
   // Hook del catálogo de diagnósticos
   const {
@@ -209,7 +233,7 @@ export const DiagnosticoPanel: React.FC<DiagnosticoPanelProps> = ({
               {/* Etiquetas inteligentes de superficies */}
               <SurfaceLabels
                 selectedSurfaces={state.selectedSurfaces}
-                groupedSurfaces={grouped}  
+                groupedSurfaces={grouped}
                 onRemoveSurface={handleRemoveIndividualSurface}
                 selectedTooth={state.selectedTooth}
               //principalArea={state.currentArea}
@@ -287,6 +311,7 @@ export const DiagnosticoPanel: React.FC<DiagnosticoPanelProps> = ({
           diagnosticosAplicados={state.diagnosticosAplicados}
           addNotification={addNotification}
         />
+
       </div>
     </div>
   );

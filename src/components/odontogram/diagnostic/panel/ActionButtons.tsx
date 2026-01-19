@@ -9,58 +9,59 @@ import type { NotificationOptions } from '../../../../core/types/diagnostic.type
 // ============================================================================
 
 interface ActionButtonsProps {
-    /**
-     * Indica si hay un diente seleccionado
-     */
-    selectedTooth: string | null;
+  /**
+   * Indica si hay un diente seleccionado
+   */
+  selectedTooth: string | null;
 
-    /**
-     * Indica si el diente está bloqueado por ausencia
-     */
-    isBlocked: boolean;
+  /**
+   * Indica si el diente está bloqueado por ausencia
+   */
+  isBlocked: boolean;
 
-    /**
-     * Indica si está mostrando el formulario de diagnóstico
-     */
-    showDiagnosticoForm: boolean;
+  /**
+   * Indica si está mostrando el formulario de diagnóstico
+   */
+  showDiagnosticoForm: boolean;
 
-    /**
-     * Cantidad de diagnósticos aplicados al diente actual
-     */
-    diagnosticosCount: number;
+  /**
+   * Cantidad de diagnósticos aplicados al diente actual
+   */
+  diagnosticosCount: number;
 
-    /**
-     * Estado de guardado
-     */
-    isSaving: boolean;
+  /**
+   * Estado de guardado
+   */
+  isSaving: boolean;
 
-    /**
-     * Timestamp del último guardado completo
-     */
-    lastCompleteSave: Date | null;
+  /**
+   * Timestamp del último guardado completo
+   */
+  lastCompleteSave: Date | null;
 
-    /**
-     * Callback para añadir diagnóstico
-     */
-    onAddDiagnostico: () => void;
+  /**
+   * Callback para añadir diagnóstico
+   */
+  onAddDiagnostico: () => void;
 
-    /**
-     * Callback para cancelar formulario de diagnóstico
-     */
-    onCancelDiagnostico: () => void;
+  /**
+   * Callback para cancelar formulario de diagnóstico
+   */
+  onCancelDiagnostico: () => void;
 
-    /**
-     * Callback para guardar todo el odontograma
-     */
-    onSaveAll: () => void;
+  /**
+   * Callback para guardar todo el odontograma
+   */
+  onSaveAll: () => void;
 
-    /**
-     * Callback para limpiar todos los diagnósticos del diente
-     */
-    onClearAll: () => void;
+  /**
+   * Callback para limpiar todos los diagnósticos del diente
+   */
+  onClearAll: () => void;
 
-    diagnosticosAplicados: GroupedDiagnostic[];
-    addNotification: (options: NotificationOptions) => void;
+  diagnosticosAplicados: GroupedDiagnostic[];
+  addNotification: (options: NotificationOptions) => void;
+
 }
 
 // ============================================================================
@@ -69,51 +70,51 @@ interface ActionButtonsProps {
 
 
 export const ActionButtons: React.FC<ActionButtonsProps> = ({
-    selectedTooth,
-    isBlocked,
-    showDiagnosticoForm,
-    diagnosticosCount,
-    isSaving,
-    lastCompleteSave,
-    onAddDiagnostico,
-    onCancelDiagnostico,
-    onSaveAll,
-    onClearAll,
-    addNotification,
+  selectedTooth,
+  isBlocked,
+  showDiagnosticoForm,
+  diagnosticosCount,
+  isSaving,
+  lastCompleteSave,
+  onAddDiagnostico,
+  onCancelDiagnostico,
+  onSaveAll,
+  onClearAll,
+  addNotification,
 }) => {
 
 
 
-    // ===========================================================================
-    // Eliminar diagnóstico
-    // ===========================================================================
-    const handleClearTooth = async () => {
+  // ===========================================================================
+  // Eliminar diagnóstico
+  // ===========================================================================
+  const handleClearTooth = async () => {
     if (!diagnosticosCount) return;
 
     const ok = window.confirm(
       `¿Deseas eliminar TODOS los diagnósticos de este diente (${diagnosticosCount})?\n\n` +
       `Los cambios se aplicarán cuando presiones "Guardar todo".`
     );
-    
+
     if (!ok) return;
 
     try {
       // Solo limpiar el estado local
       onClearAll();
-      
+
       addNotification({
         type: 'info',
         title: 'Diente limpiado',
         message: `Se eliminaron ${diagnosticosCount} diagnóstico(s) localmente. Presiona "Guardar todo" para confirmar.`,
       });
-      
+
     } catch (error) {
       console.error('[ActionButtons] Error al limpiar diente:', error);
       addNotification({
         type: 'error',
         title: 'Error al limpiar',
-        message: error instanceof Error 
-          ? error.message 
+        message: error instanceof Error
+          ? error.message
           : 'No se pudo limpiar el diente. Intenta nuevamente.',
       });
     }
@@ -123,24 +124,24 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 
 
 
-    // ============================================================================
-    // VALIDACIONES DE ESTADO
-    // ============================================================================
+  // ============================================================================
+  // VALIDACIONES DE ESTADO
+  // ============================================================================
 
 
-    const canAddDiagnostico = selectedTooth && !isBlocked;
-    const canClearDiagnosticos = selectedTooth && diagnosticosCount > 0 && !showDiagnosticoForm;
-    const canSave = !isSaving;
+  const canAddDiagnostico = selectedTooth && !isBlocked;
+  const canClearDiagnosticos = selectedTooth && diagnosticosCount > 0 && !showDiagnosticoForm;
+  const canSave = !isSaving;
 
-    // ============================================================================
-    // RENDER
-    // ============================================================================
+  // ============================================================================
+  // RENDER
+  // ============================================================================
 
-    return (
+  return (
     <div className="sticky bottom-0 z-10 border-t border-gray-200 bg-gray-50 p-4 shadow-lg">
       {/* Botones principales */}
       <div className="flex gap-3 mb-3">
-        
+
         {/* BOTÓN 1: Añadir Diagnóstico / Cancelar */}
         {showDiagnosticoForm ? (
           <button
@@ -158,17 +159,16 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
           <button
             onClick={onAddDiagnostico}
             disabled={!canAddDiagnostico}
-            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all shadow-theme-sm ${
-              canAddDiagnostico
+            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all shadow-theme-sm ${canAddDiagnostico
                 ? 'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 hover:shadow-focus-ring'
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            }`}
+              }`}
             title={
-              !selectedTooth 
-                ? 'Selecciona un diente primero' 
-                : isBlocked 
-                ? 'Este diente está bloqueado'
-                : 'Añadir nuevo diagnóstico'
+              !selectedTooth
+                ? 'Selecciona un diente primero'
+                : isBlocked
+                  ? 'Este diente está bloqueado'
+                  : 'Añadir nuevo diagnóstico'
             }
           >
             <span className="flex items-center justify-center gap-2">
@@ -184,11 +184,10 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
         <button
           onClick={onSaveAll}
           disabled={!canSave}
-          className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all shadow-theme-sm ${
-            canSave
+          className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all shadow-theme-sm ${canSave
               ? 'bg-success-600 text-white hover:bg-success-700 active:bg-success-800 hover:shadow-focus-ring'
               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-          }`}
+            }`}
           title={isSaving ? 'Guardando...' : 'Guardar todos los cambios al servidor'}
         >
           <span className="flex items-center justify-center gap-2">
@@ -251,23 +250,23 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
  * Formatea el timestamp del último guardado de forma amigable
  */
 function formatLastSaveTime(date: Date): string {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMinutes = Math.floor(diffMs / 60000);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / 60000);
 
-    // Menos de 1 minuto
-    if (diffMinutes < 1) {
-        return 'Hace un momento';
-    }
+  // Menos de 1 minuto
+  if (diffMinutes < 1) {
+    return 'Hace un momento';
+  }
 
-    // Menos de 60 minutos
-    if (diffMinutes < 60) {
-        return `Hace ${diffMinutes} min`;
-    }
+  // Menos de 60 minutos
+  if (diffMinutes < 60) {
+    return `Hace ${diffMinutes} min`;
+  }
 
-    // Más de 1 hora: mostrar hora
-    return date.toLocaleTimeString('es-EC', {
-        hour: '2-digit',
-        minute: '2-digit',
-    });
+  // Más de 1 hora: mostrar hora
+  return date.toLocaleTimeString('es-EC', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }

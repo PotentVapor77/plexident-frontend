@@ -177,12 +177,12 @@ const DiagnosticoCard: React.FC<DiagnosticoCardProps> = ({
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
   };
-  console.log('[DiagnosticoCard] Debug:', {
-    nombre: diagnostico.nombre,
-    hasDetallesClinicos,
-    detallesClinicos,
-    descripcion: diagnostico.descripcion
-  });
+  //console.log('[DiagnosticoCard] Debug:', {
+    //nombre: diagnostico.nombre,
+   // hasDetallesClinicos,
+   // detallesClinicos,
+   // descripcion: diagnostico.descripcion
+  //});
 
 
 

@@ -56,7 +56,7 @@ const NotificationDropdown: React.FC = () => {
   setError(null);
   try {
     const response = await appointmentService.getCitasProximas();
-    console.log('📦 Respuesta citas próximas:', response);
+    //console.log('📦 Respuesta citas próximas:', response);
     
     if (Array.isArray(response)) {
       setCitasProximas(response);

@@ -14,7 +14,9 @@ export const useGuardarOdontogramaCompleto = () => {
     const { loadFromBackend } = useOdontogramaData()
 
     const guardarCompleto = useCallback(
-        async (odontogramaData: OdontogramaData, odontologoId?: number) => {
+        async (odontogramaData: OdontogramaData, 
+            odontologoId?: number, 
+            onSnapshotCreated?: (snapshotId: string) => Promise<void>) => {
             if (!pacienteActivo?.id) {
                 throw new Error('No hay paciente activo')
             }
@@ -27,21 +29,28 @@ export const useGuardarOdontogramaCompleto = () => {
                     pacienteActivo.id,
                     odontogramaData,
                     odontologoId
-                )
+                );
 
-                setSaveResult(resultado)
-                setLastCompleteSave(new Date())
+                setSaveResult(resultado);
+                setLastCompleteSave(new Date());
 
-                // 2) Recargar desde backend para reemplazar IDs temporales por UUID reales
-                const frontendData = await obtenerOdontogramaCompletoFrontend(pacienteActivo.id)
-                // esta función ya devuelve OdontogramaData mapeado
-                if (frontendData) {
-                    loadFromBackend(frontendData)
+                // 2) Si hay callback para subir archivos con snapshot_id
+                if (onSnapshotCreated && resultado.snapshot_id) {
+                    await onSnapshotCreated(resultado.snapshot_id);
                 }
 
-                return resultado
+                // 3) Recargar desde backend
+                const frontendData = await obtenerOdontogramaCompletoFrontend(
+                    pacienteActivo.id
+                );
+
+                if (frontendData) {
+                    loadFromBackend(frontendData);
+                }
+
+                return resultado;
             } finally {
-                setIsSavingComplete(false)
+                setIsSavingComplete(false);
             }
         },
         [pacienteActivo?.id, loadFromBackend]

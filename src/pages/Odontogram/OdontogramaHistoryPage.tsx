@@ -57,19 +57,16 @@ const OdontogramaHistoryPageInner = () => {
     const prev = {
       padding: el.style.padding,
       maxWidth: el.style.maxWidth,
-      height: el.style.height,
       overflow: el.style.overflow,
     };
 
     el.style.padding = "0";
     el.style.maxWidth = "100%";
-    el.style.height = "calc(100vh - 80px)";
     el.style.overflow = "hidden";
 
     return () => {
       el.style.padding = prev.padding;
       el.style.maxWidth = prev.maxWidth;
-      el.style.height = prev.height;
       el.style.overflow = prev.overflow;
     };
   }, []);

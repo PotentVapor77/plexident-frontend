@@ -11,21 +11,21 @@ export function useCargarOdontogramaCompleto() {
         async (pacienteId: string): Promise<OdontogramaData | null> => {
             if (!pacienteId) return null;
 
-            console.log('[HOOK] cargarOdontograma → start', pacienteId);
+            //console.log('[HOOK] cargarOdontograma → start', pacienteId);
             setLoading(true);
             setError(null);
 
             try {
                 const data = await obtenerOdontogramaCompletoFrontend(pacienteId);
-                console.log('[HOOK] cargarOdontograma → data recibida', data);
+                //console.log('[HOOK] cargarOdontograma → data recibida', data);
                 return data;
             } catch (e: any) {
-                console.error('[HOOK] cargarOdontograma → error', e);
+                //console.error('[HOOK] cargarOdontograma → error', e);
                 setError(e?.message ?? 'Error desconocido');
                 return null;
             } finally {
                 setLoading(false);
-                console.log('[HOOK] cargarOdontograma → end');
+                //console.log('[HOOK] cargarOdontograma → end');
             }
         },
         [],

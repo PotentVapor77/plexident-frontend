@@ -41,6 +41,9 @@ export interface DiagnosticoPanelState {
   // Estado de carga de datos
   isLoadingData: boolean;
   dataError: string | null;
+
+  // Files 
+  
 }
 
 // ============================================================================

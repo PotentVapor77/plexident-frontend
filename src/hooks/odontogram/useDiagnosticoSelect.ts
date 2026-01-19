@@ -109,7 +109,7 @@ export const useDiagnosticoSelect = ({
     // ============================================================================
 
     useEffect(() => {
-        console.log('[Reset] Área cambió a:', currentArea);
+        //console.log('[Reset] Área cambió a:', currentArea);
         setCategoriaSeleccionada(null);
         setDiagnosticoSeleccionado(null);
         setAtributosClinicosSeleccionados({});
@@ -177,7 +177,7 @@ export const useDiagnosticoSelect = ({
         } else if (currentArea) {
             areasToApply = [currentArea as AreaAfectada];
         } else {
-            console.log('[Apply] No se puede aplicar - Sin área y diagnóstico no es general');
+            //console.log('[Apply] No se puede aplicar - Sin área y diagnóstico no es general');
             return;
         }
 
@@ -263,12 +263,12 @@ export const useDiagnosticoSelect = ({
     // Si hay un error usa      formValid
     const handleApply = useCallback(() => {
         if (!diagnosticoSeleccionado) {
-            console.log('[Apply] No se puede aplicar - No hay diagnóstico seleccionado');
+           // console.log('[Apply] No se puede aplicar - No hay diagnóstico seleccionado');
             return;
         }
 
         if (!isFormValid()) {
-            console.log('[Apply] No se puede aplicar - Formulario inválido');
+            //console.log('[Apply] No se puede aplicar - Formulario inválido');
             return;
         }
 
@@ -280,7 +280,7 @@ export const useDiagnosticoSelect = ({
         } else if (currentArea) {
             areasToApply = [currentArea as AreaAfectada];
         } else {
-            console.log('[Apply] No se puede aplicar - Sin área y diagnóstico no es general');
+            //console.log('[Apply] No se puede aplicar - Sin área y diagnóstico no es general');
             return;
         }
 

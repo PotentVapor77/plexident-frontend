@@ -102,15 +102,15 @@ export function groupDiagnostics(
         const normalizedExpected = expectedRootSurfaces.map(normalize);
         const normalizedRaiz = raizSurfaces.map(normalize);
 
-        console.log('[groupDiagnostics] DEBUG raíz', {
-            rootType,
-            groupId: group.groupId,
-            superficies: group.superficies,
-            raizSurfaces,
-            expectedRootSurfaces,
-            normalizedExpected,
-            normalizedRaiz,
-        });
+       // console.log('[groupDiagnostics] DEBUG raíz', {
+          //  rootType,
+          //  groupId: group.groupId,
+          //  superficies: group.superficies,
+          //  raizSurfaces,
+          //  expectedRootSurfaces,
+         //   normalizedExpected,
+         //   normalizedRaiz,
+       // });
 
         // Verificar si TODOS los esperados están en los actuales
         const isRaizCompleta = expectedRootSurfaces.length > 0 &&
@@ -118,11 +118,11 @@ export function groupDiagnostics(
                 normalizedRaiz.includes(expectedNorm)
             );
 
-        console.log('[groupDiagnostics] resultado', {
-            groupId: group.groupId,
-            isCoronaCompleta,
-            isRaizCompleta,
-        });
+        //console.log('[groupDiagnostics] resultado', {
+        //    groupId: group.groupId,
+         //   isCoronaCompleta,
+        //    isRaizCompleta,
+        //});
 
         return {
             ...group,

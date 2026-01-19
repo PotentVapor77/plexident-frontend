@@ -4,23 +4,24 @@ import { useState, useEffect } from 'react';
 import { AxiosError } from 'axios';
 import AnamnesisFormFields from './AnamnesisFormFields';
 import { useNotification } from '../../../../context/notifications/NotificationContext';
-import type { IAnamnesisCreate, IAnamnesisError, IAnamnesisUpdate } from '../../../../types/anamnesis/IAnamnesis';
 import { useCreateAnamnesis, useUpdateAnamnesis } from '../../../../hooks/anamnesis/useAnamnesis';
-
+import type { IAnamnesisCreate, IAnamnesisError, IAnamnesisUpdate } from '../../../../types/anamnesis/IAnamnesis';
 
 export interface AnamnesisFormData {
   // Paciente
   paciente: string;
+  
+  // ========== ANTECEDENTES PERSONALES ==========
   
   // Alergias específicas
   alergia_antibiotico: string;
   alergia_antibiotico_otro: string;
   alergia_anestesia: string;
   alergia_anestesia_otro: string;
-  tiene_alergias: boolean;
   
-  // Problemas de coagulación
-  problemas_coagulacion: string;
+  // Hemorragias / Problemas de coagulación
+  hemorragias: string;
+  hemorragias_detalle: string;
   
   // Enfermedades y condiciones
   vih_sida: string;
@@ -31,29 +32,40 @@ export interface AnamnesisFormData {
   asma_otro: string;
   diabetes: string;
   diabetes_otro: string;
-  hipertension: string;
-  hipertension_otro: string;
+  hipertension_arterial: string;
+  hipertension_arterial_otro: string;
   enfermedad_cardiaca: string;
-  enfermedad_cardiaca_otra: string;
-  problemas_anestesicos: boolean;
+  enfermedad_cardiaca_otro: string;
+  otro_antecedente_personal: string;
   
-  // Antecedentes familiares
+  // ========== ANTECEDENTES FAMILIARES ==========
+  
+  // Antecedentes familiares completos
   cardiopatia_familiar: string;
   cardiopatia_familiar_otro: string;
   hipertension_familiar: string;
   hipertension_familiar_otro: string;
-  diabetes_familiar: string;
-  diabetes_familiar_otro: string;
+  enfermedad_cerebrovascular_familiar: string;
+  enfermedad_cerebrovascular_familiar_otro: string;
+  endocrino_metabolico_familiar: string;
+  endocrino_metabolico_familiar_otro: string;
   cancer_familiar: string;
   cancer_familiar_otro: string;
+  tuberculosis_familiar: string;
+  tuberculosis_familiar_otro: string;
   enfermedad_mental_familiar: string;
   enfermedad_mental_familiar_otro: string;
+  enfermedad_infecciosa_familiar: string;
+  enfermedad_infecciosa_familiar_otro: string;
+  malformacion_familiar: string;
+  malformacion_familiar_otro: string;
+  otro_antecedente_familiar: string;
   
-  // Hábitos y observaciones
+  // ========== HÁBITOS Y OBSERVACIONES ==========
   habitos: string;
   observaciones: string;
   
-  // Estado
+  // ========== ESTADO ==========
   activo: boolean;
 }
 
@@ -82,15 +94,17 @@ export default function AnamnesisForm({
     // Paciente
     paciente: initialData?.paciente ?? pacienteId,
     
+    // ========== ANTECEDENTES PERSONALES ==========
+    
     // Alergias específicas
     alergia_antibiotico: initialData?.alergia_antibiotico ?? 'NO',
     alergia_antibiotico_otro: initialData?.alergia_antibiotico_otro ?? '',
     alergia_anestesia: initialData?.alergia_anestesia ?? 'NO',
     alergia_anestesia_otro: initialData?.alergia_anestesia_otro ?? '',
-    tiene_alergias: initialData?.tiene_alergias ?? false,
     
-    // Problemas de coagulación
-    problemas_coagulacion: initialData?.problemas_coagulacion ?? 'NO',
+    // Hemorragias / Problemas de coagulación
+    hemorragias: initialData?.hemorragias ?? 'NO',
+    hemorragias_detalle: initialData?.hemorragias_detalle ?? '',
     
     // Enfermedades y condiciones
     vih_sida: initialData?.vih_sida ?? 'NEGATIVO',
@@ -101,29 +115,40 @@ export default function AnamnesisForm({
     asma_otro: initialData?.asma_otro ?? '',
     diabetes: initialData?.diabetes ?? 'NO',
     diabetes_otro: initialData?.diabetes_otro ?? '',
-    hipertension: initialData?.hipertension ?? 'NO',
-    hipertension_otro: initialData?.hipertension_otro ?? '',
+    hipertension_arterial: initialData?.hipertension_arterial ?? 'NO',
+    hipertension_arterial_otro: initialData?.hipertension_arterial_otro ?? '',
     enfermedad_cardiaca: initialData?.enfermedad_cardiaca ?? 'NO',
-    enfermedad_cardiaca_otra: initialData?.enfermedad_cardiaca_otra ?? '',
-    problemas_anestesicos: initialData?.problemas_anestesicos ?? false,
+    enfermedad_cardiaca_otro: initialData?.enfermedad_cardiaca_otro ?? '',
+    otro_antecedente_personal: initialData?.otro_antecedente_personal ?? '',
     
-    // Antecedentes familiares
+    // ========== ANTECEDENTES FAMILIARES ==========
+    
+    // Antecedentes familiares completos
     cardiopatia_familiar: initialData?.cardiopatia_familiar ?? 'NO',
     cardiopatia_familiar_otro: initialData?.cardiopatia_familiar_otro ?? '',
     hipertension_familiar: initialData?.hipertension_familiar ?? 'NO',
     hipertension_familiar_otro: initialData?.hipertension_familiar_otro ?? '',
-    diabetes_familiar: initialData?.diabetes_familiar ?? 'NO',
-    diabetes_familiar_otro: initialData?.diabetes_familiar_otro ?? '',
+    enfermedad_cerebrovascular_familiar: initialData?.enfermedad_cerebrovascular_familiar ?? 'NO',
+    enfermedad_cerebrovascular_familiar_otro: initialData?.enfermedad_cerebrovascular_familiar_otro ?? '',
+    endocrino_metabolico_familiar: initialData?.endocrino_metabolico_familiar ?? 'NO',
+    endocrino_metabolico_familiar_otro: initialData?.endocrino_metabolico_familiar_otro ?? '',
     cancer_familiar: initialData?.cancer_familiar ?? 'NO',
     cancer_familiar_otro: initialData?.cancer_familiar_otro ?? '',
+    tuberculosis_familiar: initialData?.tuberculosis_familiar ?? 'NO',
+    tuberculosis_familiar_otro: initialData?.tuberculosis_familiar_otro ?? '',
     enfermedad_mental_familiar: initialData?.enfermedad_mental_familiar ?? 'NO',
     enfermedad_mental_familiar_otro: initialData?.enfermedad_mental_familiar_otro ?? '',
+    enfermedad_infecciosa_familiar: initialData?.enfermedad_infecciosa_familiar ?? 'NO',
+    enfermedad_infecciosa_familiar_otro: initialData?.enfermedad_infecciosa_familiar_otro ?? '',
+    malformacion_familiar: initialData?.malformacion_familiar ?? 'NO',
+    malformacion_familiar_otro: initialData?.malformacion_familiar_otro ?? '',
+    otro_antecedente_familiar: initialData?.otro_antecedente_familiar ?? '',
     
-    // Hábitos y observaciones
+    // ========== HÁBITOS Y OBSERVACIONES ==========
     habitos: initialData?.habitos ?? '',
     observaciones: initialData?.observaciones ?? '',
     
-    // Estado
+    // ========== ESTADO ==========
     activo: initialData?.activo ?? true,
   });
 
@@ -172,56 +197,37 @@ export default function AnamnesisForm({
     }
 
     // Validar campos "Otro" que requieren especificación
-    if (formData.alergia_antibiotico === 'OTRO' && !formData.alergia_antibiotico_otro.trim()) {
-      errors.push('Debe especificar el antibiótico cuando selecciona "Otro"');
-    }
+    const camposOtroValidacion = [
+      { campo: 'alergia_antibiotico', valor: 'OTRO', campoOtro: 'alergia_antibiotico_otro', mensaje: 'el antibiótico' },
+      { campo: 'alergia_anestesia', valor: 'OTRO', campoOtro: 'alergia_anestesia_otro', mensaje: 'la anestesia' },
+      { campo: 'vih_sida', valor: 'OTRO', campoOtro: 'vih_sida_otro', mensaje: 'el estado VIH/SIDA' },
+      { campo: 'tuberculosis', valor: 'OTRO', campoOtro: 'tuberculosis_otro', mensaje: 'el estado de tuberculosis' },
+      { campo: 'asma', valor: 'OTRO', campoOtro: 'asma_otro', mensaje: 'el tipo de asma' },
+      { campo: 'diabetes', valor: 'OTRO', campoOtro: 'diabetes_otro', mensaje: 'el tipo de diabetes' },
+      { campo: 'hipertension_arterial', valor: 'OTRO', campoOtro: 'hipertension_arterial_otro', mensaje: 'el tipo de hipertensión' },
+      { campo: 'enfermedad_cardiaca', valor: 'OTRO', campoOtro: 'enfermedad_cardiaca_otro', mensaje: 'la enfermedad cardíaca' },
+      { campo: 'cardiopatia_familiar', valor: 'OTRO', campoOtro: 'cardiopatia_familiar_otro', mensaje: 'el familiar con cardiopatía' },
+      { campo: 'hipertension_familiar', valor: 'OTRO', campoOtro: 'hipertension_familiar_otro', mensaje: 'el familiar con hipertensión' },
+      { campo: 'enfermedad_cerebrovascular_familiar', valor: 'OTRO', campoOtro: 'enfermedad_cerebrovascular_familiar_otro', mensaje: 'el tipo de enfermedad cerebrovascular' },
+      { campo: 'endocrino_metabolico_familiar', valor: 'OTRO', campoOtro: 'endocrino_metabolico_familiar_otro', mensaje: 'el tipo de enfermedad endocrino-metabólica' },
+      { campo: 'cancer_familiar', valor: 'OTRO', campoOtro: 'cancer_familiar_otro', mensaje: 'el tipo de cáncer' },
+      { campo: 'tuberculosis_familiar', valor: 'OTRO', campoOtro: 'tuberculosis_familiar_otro', mensaje: 'el familiar con tuberculosis' },
+      { campo: 'enfermedad_mental_familiar', valor: 'OTRO', campoOtro: 'enfermedad_mental_familiar_otro', mensaje: 'el tipo de enfermedad mental' },
+      { campo: 'enfermedad_infecciosa_familiar', valor: 'OTRO', campoOtro: 'enfermedad_infecciosa_familiar_otro', mensaje: 'el tipo de enfermedad infecciosa' },
+      { campo: 'malformacion_familiar', valor: 'OTRO', campoOtro: 'malformacion_familiar_otro', mensaje: 'el tipo de malformación' },
+    ];
 
-    if (formData.alergia_anestesia === 'OTRO' && !formData.alergia_anestesia_otro.trim()) {
-      errors.push('Debe especificar la anestesia cuando selecciona "Otro"');
-    }
-
-    if (formData.vih_sida === 'OTRO' && !formData.vih_sida_otro.trim()) {
-      errors.push('Debe especificar el estado VIH/SIDA cuando selecciona "Otro"');
-    }
-
-    if (formData.tuberculosis === 'OTRO' && !formData.tuberculosis_otro.trim()) {
-      errors.push('Debe especificar el estado de tuberculosis cuando selecciona "Otro"');
-    }
-
-    if (formData.asma === 'OTRO' && !formData.asma_otro.trim()) {
-      errors.push('Debe especificar el tipo de asma cuando selecciona "Otro"');
-    }
-
-    if (formData.diabetes === 'OTRO' && !formData.diabetes_otro.trim()) {
-      errors.push('Debe especificar el tipo de diabetes cuando selecciona "Otro"');
-    }
-
-    if (formData.hipertension === 'OTRO' && !formData.hipertension_otro.trim()) {
-      errors.push('Debe especificar el tipo de hipertensión cuando selecciona "Otro"');
-    }
-
-    if (formData.enfermedad_cardiaca === 'OTRA' && !formData.enfermedad_cardiaca_otra.trim()) {
-      errors.push('Debe especificar la enfermedad cardíaca cuando selecciona "Otra"');
-    }
-
-    if (formData.cardiopatia_familiar === 'OTRO' && !formData.cardiopatia_familiar_otro.trim()) {
-      errors.push('Debe especificar el familiar con cardiopatía cuando selecciona "Otro familiar"');
-    }
-
-    if (formData.hipertension_familiar === 'OTRO' && !formData.hipertension_familiar_otro.trim()) {
-      errors.push('Debe especificar el familiar con hipertensión cuando selecciona "Otro familiar"');
-    }
-
-    if (formData.diabetes_familiar === 'OTRO' && !formData.diabetes_familiar_otro.trim()) {
-      errors.push('Debe especificar el familiar con diabetes cuando selecciona "Otro familiar"');
-    }
-
-    if (formData.cancer_familiar === 'OTRO' && !formData.cancer_familiar_otro.trim()) {
-      errors.push('Debe especificar el familiar con cáncer cuando selecciona "Otro familiar"');
-    }
-
-    if (formData.enfermedad_mental_familiar === 'OTRO' && !formData.enfermedad_mental_familiar_otro.trim()) {
-      errors.push('Debe especificar el familiar con enfermedad mental cuando selecciona "Otro familiar"');
+    for (const { campo, valor, campoOtro, mensaje } of camposOtroValidacion) {
+      const campoValue = formData[campo as keyof AnamnesisFormData];
+      const campoOtroValue = formData[campoOtro as keyof AnamnesisFormData];
+      
+      // ✅ CORREGIDO: Verificar que el campo sea un string
+      if (typeof campoValue === 'string' && campoValue === valor) {
+        // ✅ CORREGIDO: Verificar que campoOtroValue sea un string
+        if (typeof campoOtroValue === 'string' && !campoOtroValue.trim()) {
+          errors.push(`Debe especificar ${mensaje} cuando selecciona "Otro"`);
+        }
+      }
     }
 
     return errors;
@@ -230,12 +236,14 @@ export default function AnamnesisForm({
   const resetForm = () => {
     setFormData({
       paciente: pacienteId,
+      
+      // ========== ANTECEDENTES PERSONALES ==========
       alergia_antibiotico: 'NO',
       alergia_antibiotico_otro: '',
       alergia_anestesia: 'NO',
       alergia_anestesia_otro: '',
-      tiene_alergias: false,
-      problemas_coagulacion: 'NO',
+      hemorragias: 'NO',
+      hemorragias_detalle: '',
       vih_sida: 'NEGATIVO',
       vih_sida_otro: '',
       tuberculosis: 'NO',
@@ -244,23 +252,38 @@ export default function AnamnesisForm({
       asma_otro: '',
       diabetes: 'NO',
       diabetes_otro: '',
-      hipertension: 'NO',
-      hipertension_otro: '',
+      hipertension_arterial: 'NO',
+      hipertension_arterial_otro: '',
       enfermedad_cardiaca: 'NO',
-      enfermedad_cardiaca_otra: '',
-      problemas_anestesicos: false,
+      enfermedad_cardiaca_otro: '',
+      otro_antecedente_personal: '',
+      
+      // ========== ANTECEDENTES FAMILIARES ==========
       cardiopatia_familiar: 'NO',
       cardiopatia_familiar_otro: '',
       hipertension_familiar: 'NO',
       hipertension_familiar_otro: '',
-      diabetes_familiar: 'NO',
-      diabetes_familiar_otro: '',
+      enfermedad_cerebrovascular_familiar: 'NO',
+      enfermedad_cerebrovascular_familiar_otro: '',
+      endocrino_metabolico_familiar: 'NO',
+      endocrino_metabolico_familiar_otro: '',
       cancer_familiar: 'NO',
       cancer_familiar_otro: '',
+      tuberculosis_familiar: 'NO',
+      tuberculosis_familiar_otro: '',
       enfermedad_mental_familiar: 'NO',
       enfermedad_mental_familiar_otro: '',
+      enfermedad_infecciosa_familiar: 'NO',
+      enfermedad_infecciosa_familiar_otro: '',
+      malformacion_familiar: 'NO',
+      malformacion_familiar_otro: '',
+      otro_antecedente_familiar: '',
+      
+      // ========== HÁBITOS Y OBSERVACIONES ==========
       habitos: '',
       observaciones: '',
+      
+      // ========== ESTADO ==========
       activo: true,
     });
   };
@@ -280,17 +303,13 @@ export default function AnamnesisForm({
       const anamnesisData: IAnamnesisCreate = {
         paciente: formData.paciente,
         
-        // Alergias específicas
+        // ========== ANTECEDENTES PERSONALES ==========
         alergia_antibiotico: formData.alergia_antibiotico,
         alergia_antibiotico_otro: formData.alergia_antibiotico === 'OTRO' ? formData.alergia_antibiotico_otro.trim() : undefined,
         alergia_anestesia: formData.alergia_anestesia,
         alergia_anestesia_otro: formData.alergia_anestesia === 'OTRO' ? formData.alergia_anestesia_otro.trim() : undefined,
-        tiene_alergias: formData.tiene_alergias,
-        
-        // Problemas de coagulación
-        problemas_coagulacion: formData.problemas_coagulacion,
-        
-        // Enfermedades y condiciones
+        hemorragias: formData.hemorragias,
+        hemorragias_detalle: formData.hemorragias === 'SI' ? formData.hemorragias_detalle.trim() : undefined,
         vih_sida: formData.vih_sida,
         vih_sida_otro: formData.vih_sida === 'OTRO' ? formData.vih_sida_otro.trim() : undefined,
         tuberculosis: formData.tuberculosis,
@@ -299,25 +318,34 @@ export default function AnamnesisForm({
         asma_otro: formData.asma === 'OTRO' ? formData.asma_otro.trim() : undefined,
         diabetes: formData.diabetes,
         diabetes_otro: formData.diabetes === 'OTRO' ? formData.diabetes_otro.trim() : undefined,
-        hipertension: formData.hipertension,
-        hipertension_otro: formData.hipertension === 'OTRO' ? formData.hipertension_otro.trim() : undefined,
+        hipertension_arterial: formData.hipertension_arterial,
+        hipertension_arterial_otro: formData.hipertension_arterial === 'OTRO' ? formData.hipertension_arterial_otro.trim() : undefined,
         enfermedad_cardiaca: formData.enfermedad_cardiaca,
-        enfermedad_cardiaca_otra: formData.enfermedad_cardiaca === 'OTRA' ? formData.enfermedad_cardiaca_otra.trim() : undefined,
-        problemas_anestesicos: formData.problemas_anestesicos,
+        enfermedad_cardiaca_otro: formData.enfermedad_cardiaca === 'OTRO' ? formData.enfermedad_cardiaca_otro.trim() : undefined,
+        otro_antecedente_personal: formData.otro_antecedente_personal.trim() || undefined,
         
-        // Antecedentes familiares
+        // ========== ANTECEDENTES FAMILIARES ==========
         cardiopatia_familiar: formData.cardiopatia_familiar,
         cardiopatia_familiar_otro: formData.cardiopatia_familiar === 'OTRO' ? formData.cardiopatia_familiar_otro.trim() : undefined,
         hipertension_familiar: formData.hipertension_familiar,
         hipertension_familiar_otro: formData.hipertension_familiar === 'OTRO' ? formData.hipertension_familiar_otro.trim() : undefined,
-        diabetes_familiar: formData.diabetes_familiar,
-        diabetes_familiar_otro: formData.diabetes_familiar === 'OTRO' ? formData.diabetes_familiar_otro.trim() : undefined,
+        enfermedad_cerebrovascular_familiar: formData.enfermedad_cerebrovascular_familiar,
+        enfermedad_cerebrovascular_familiar_otro: formData.enfermedad_cerebrovascular_familiar === 'OTRO' ? formData.enfermedad_cerebrovascular_familiar_otro.trim() : undefined,
+        endocrino_metabolico_familiar: formData.endocrino_metabolico_familiar,
+        endocrino_metabolico_familiar_otro: formData.endocrino_metabolico_familiar === 'OTRO' ? formData.endocrino_metabolico_familiar_otro.trim() : undefined,
         cancer_familiar: formData.cancer_familiar,
         cancer_familiar_otro: formData.cancer_familiar === 'OTRO' ? formData.cancer_familiar_otro.trim() : undefined,
+        tuberculosis_familiar: formData.tuberculosis_familiar,
+        tuberculosis_familiar_otro: formData.tuberculosis_familiar === 'OTRO' ? formData.tuberculosis_familiar_otro.trim() : undefined,
         enfermedad_mental_familiar: formData.enfermedad_mental_familiar,
         enfermedad_mental_familiar_otro: formData.enfermedad_mental_familiar === 'OTRO' ? formData.enfermedad_mental_familiar_otro.trim() : undefined,
+        enfermedad_infecciosa_familiar: formData.enfermedad_infecciosa_familiar,
+        enfermedad_infecciosa_familiar_otro: formData.enfermedad_infecciosa_familiar === 'OTRO' ? formData.enfermedad_infecciosa_familiar_otro.trim() : undefined,
+        malformacion_familiar: formData.malformacion_familiar,
+        malformacion_familiar_otro: formData.malformacion_familiar === 'OTRO' ? formData.malformacion_familiar_otro.trim() : undefined,
+        otro_antecedente_familiar: formData.otro_antecedente_familiar.trim() || undefined,
         
-        // Hábitos y observaciones
+        // ========== HÁBITOS Y OBSERVACIONES ==========
         habitos: formData.habitos.trim() || undefined,
         observaciones: formData.observaciones.trim() || undefined,
       };
@@ -364,17 +392,15 @@ export default function AnamnesisForm({
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <AnamnesisFormFields
-          formData={formData}
-          onInputChange={handleInputChange}
-          onReset={resetForm}
-          submitLoading={submitLoading}
-          mode={mode}
-          pacienteNombre={pacienteNombre}
-        />
-      </form>
-    </>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <AnamnesisFormFields
+        formData={formData}
+        onInputChange={handleInputChange}
+        onReset={resetForm}
+        submitLoading={submitLoading}
+        mode={mode}
+        pacienteNombre={pacienteNombre}
+      />
+    </form>
   );
 }

@@ -1,6 +1,6 @@
 // src/components/patients/anamnesis/table/AnamnesisTable.tsx
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { IPaciente } from '../../../../types/patient/IPatient';
 import { getPacienteById } from '../../../../services/patient/patientService';
 import type { IAnamnesis } from '../../../../types/anamnesis/IAnamnesis';
@@ -56,51 +56,45 @@ const getAlergiaAnestesiaLabel = (value: string, otro?: string): string => {
   return labels[value] || value;
 };
 
-// Función para obtener resumen de condiciones de riesgo
+// Función para obtener resumen de condiciones de riesgo - MEJORADA
 const getCondicionesRiesgo = (anamnesis: IAnamnesis): string[] => {
   const condiciones: string[] = [];
   
   if (anamnesis.alergia_antibiotico !== 'NO') {
-    condiciones.push('Abx');
+    condiciones.push('Alergia Antibióticos');
   }
   
   if (anamnesis.alergia_anestesia !== 'NO') {
-    condiciones.push('Anest');
+    condiciones.push('Alergia Anestesia');
   }
   
-  if (anamnesis.problemas_coagulacion === 'SI') {
-    condiciones.push('Coag');
-  }
-  
-  if (anamnesis.problemas_anestesicos) {
-    condiciones.push('Prob Anest');
+  if (anamnesis.hemorragias === 'SI') {
+    condiciones.push('Problemas Coagulación');
   }
   
   if (anamnesis.diabetes !== 'NO') {
-    condiciones.push('Diab');
+    condiciones.push('Diabetes');
   }
   
-  if (anamnesis.hipertension !== 'NO') {
-    condiciones.push('HTA');
+  if (anamnesis.hipertension_arterial !== 'NO') {
+    condiciones.push('Hipertensión');
   }
   
   if (anamnesis.enfermedad_cardiaca !== 'NO') {
-    condiciones.push('Cardio');
+    condiciones.push('Cardiopatía');
   }
   
   if (anamnesis.vih_sida !== 'NEGATIVO' && anamnesis.vih_sida !== 'NO_SABE') {
-    condiciones.push('VIH');
+    condiciones.push('VIH/SIDA');
   }
   
   if (anamnesis.tuberculosis !== 'NO' && anamnesis.tuberculosis !== 'VACUNA_BCG') {
-    condiciones.push('TBC');
+    condiciones.push('Tuberculosis');
   }
   
   if (anamnesis.asma !== 'NO') {
     condiciones.push('Asma');
   }
-  
-
   
   return condiciones;
 };
@@ -125,8 +119,8 @@ export function AnamnesisTable({
 }: AnamnesisTableProps) {
   const [pacienteCache, setPacienteCache] = useState<PacienteCache>({});
 
-  // ✅ Función para cargar paciente en cache
-  const ensurePatientInCache = async (id: string) => {
+  // ✅ Función para cargar paciente en cache - USAR useCallback
+  const ensurePatientInCache = useCallback(async (id: string) => {
     if (pacienteCache[id]) return;
     try {
       const paciente = await getPacienteById(id);
@@ -134,7 +128,7 @@ export function AnamnesisTable({
     } catch (e) {
       console.error("Error fetching patient:", e);
     }
-  };
+  }, [pacienteCache]); // ✅ Añadir pacienteCache como dependencia
 
   // ✅ Cargar pacientes en caché cuando cambia la data
   useEffect(() => {
@@ -143,7 +137,7 @@ export function AnamnesisTable({
         void ensurePatientInCache(anamnesis.paciente);
       }
     });
-  }, [anamnesisData]);
+  }, [anamnesisData, ensurePatientInCache]); // ✅ Añadir ensurePatientInCache como dependencia
 
   // ✅ Función helper para obtener objeto paciente
   const getPacienteObject = (anamnesis: IAnamnesis): IPaciente | null => {
@@ -425,14 +419,13 @@ export function AnamnesisTable({
                             </span>
                           </div>
                         )}
-                 
-                        
-                        {/* Problemas con anestésicos */}
-                        {anamnesis.problemas_anestesicos && (
+
+                        {/* ✅ Añadido: Problemas de coagulación */}
+                        {anamnesis.hemorragias === 'SI' && (
                           <div className="flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full bg-purple-500"></span>
                             <span className="text-xs font-medium text-purple-700 dark:text-purple-400">
-                              Problemas anestésicos
+                              Problemas coagulación
                             </span>
                           </div>
                         )}
@@ -440,7 +433,7 @@ export function AnamnesisTable({
                         {/* Si no hay alergias críticas */}
                         {anamnesis.alergia_antibiotico === 'NO' && 
                          anamnesis.alergia_anestesia === 'NO' && 
-                         !anamnesis.problemas_anestesicos && (
+                         anamnesis.hemorragias === 'NO' && (
                           <span className="text-xs text-gray-400">Sin alergias críticas</span>
                         )}
                       </div>
@@ -480,7 +473,6 @@ export function AnamnesisTable({
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       <div>
                         <div>{new Date(anamnesis.fecha_modificacion).toLocaleDateString('es-ES')}</div>
-          
                       </div>
                     </td>
 

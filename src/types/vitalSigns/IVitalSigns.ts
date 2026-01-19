@@ -14,15 +14,24 @@ export interface IPacienteBasico {
 }
 
 /**
- * Interfaz base para constantes vitales (lectura desde API)
+ * Interfaz base para constantes vitales (lectura desde API) - Ahora incluye datos de consulta
  */
 export interface IVitalSigns {
   id: string;
   paciente: string | IPacienteBasico;
+  
+  // Campos de consulta (agregados)
+  fecha_consulta: string;
+  motivo_consulta: string;
+  enfermedad_actual: string;
+  observaciones: string;
+  
+  // Campos originales de constantes vitales
   temperatura: number | null;
   pulso: number | null;
   frecuencia_respiratoria: number | null;
   presion_arterial: string;
+  
   activo: boolean;
   fecha_creacion: string;
   fecha_modificacion: string | null;
@@ -31,10 +40,18 @@ export interface IVitalSigns {
 }
 
 /**
- * Interfaz para crear nuevas constantes vitales
+ * Interfaz para crear nuevas constantes vitales (ahora incluye consulta)
  */
 export interface IVitalSignsCreate {
   paciente: string;
+  
+  // Campos de consulta
+  fecha_consulta?: string;
+  motivo_consulta?: string;
+  enfermedad_actual?: string;
+  observaciones?: string;
+  
+  // Campos originales
   temperatura?: number | null;
   pulso?: number | null;
   frecuencia_respiratoria?: number | null;
@@ -42,9 +59,16 @@ export interface IVitalSignsCreate {
 }
 
 /**
- * Interfaz para actualizar constantes vitales
+ * Interfaz para actualizar constantes vitales (ahora incluye consulta)
  */
 export interface IVitalSignsUpdate {
+  // Campos de consulta
+  fecha_consulta?: string;
+  motivo_consulta?: string;
+  enfermedad_actual?: string;
+  observaciones?: string;
+  
+  // Campos originales
   temperatura?: number | null;
   pulso?: number | null;
   frecuencia_respiratoria?: number | null;
@@ -73,7 +97,6 @@ export interface IVitalSignsFilters {
   page_size?: number;
 }
 
-
 export interface IVitalSignsListResponse {
   success: boolean;
   data: {
@@ -91,4 +114,3 @@ export interface IVitalSignsSingleResponse {
   success: boolean;
   data: IVitalSigns;
 }
-

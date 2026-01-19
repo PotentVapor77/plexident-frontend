@@ -15,7 +15,6 @@ interface StomatognathicExamFormFieldsProps {
   mode: 'create' | 'edit';
   activo?: boolean;
   onActivoChange?: (checked: boolean) => void;
-  // ✅ AGREGAR: Prop para paciente activo
   pacienteActivo?: IPaciente | null;
 }
 
@@ -26,9 +25,7 @@ interface RegionConfig {
 }
 
 const REGIONS: RegionConfig[] = [
-  // ✅ ATM como primera región (sin estilo especial)
   { label: 'ATM (Articulación Temporomandibular)', baseField: 'atm', isATM: true },
-  // ✅ Todas las demás regiones
   { label: 'Mejillas', baseField: 'mejillas' },
   { label: 'Maxilar Inferior', baseField: 'maxilar_inferior' },
   { label: 'Maxilar Superior', baseField: 'maxilar_superior' },
@@ -90,7 +87,6 @@ function RegionSection({
     }
   };
 
-  // ✅ ESTILOS UNIFICADOS: Ya no hay estilo especial para ATM
   const borderClass = "border border-gray-200 dark:border-gray-700";
   const titleClass = "text-sm font-semibold text-gray-900 dark:text-white";
 
@@ -204,54 +200,47 @@ function RegionSection({
 export function StomatognathicExamFormFields({
   formData,
   onChange,
-  errors,
   mode,
   activo = true,
   onActivoChange,
-  // ✅ RECIBIR: paciente activo
   pacienteActivo,
 }: StomatognathicExamFormFieldsProps) {
-  const [searchTerm] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<IPaciente | null>(null);
 
-  // ✅ MODIFICADO: Solo cargar pacientes en modo edit
   const { data: patientsResponse, isLoading: patientsLoading } = useQuery({
-    queryKey: ['patients', searchTerm],
+    queryKey: ['patients-stomatognathic'],
     queryFn: async () => {
       try {
-        const response = await getPacientes({ 
-          search: searchTerm || undefined, 
-          page_size: 50, 
-          activo: true 
+        const response = await getPacientes({
+          page_size: 50,
+          activo: true,
         });
         return response.data;
       } catch (error) {
-        console.error('Error cargando pacientes', error);
-        return { count: 0, results: [] };
+        console.error('Error cargando pacientes:', error);
+        return { count: 0, results: [] as IPaciente[] };
       }
     },
     staleTime: 5 * 60 * 1000,
-    // ✅ SOLO habilitar en modo edit
     enabled: mode === 'edit',
   });
 
-  const patients = useMemo(() => patientsResponse?.results || [], [patientsResponse]);
+  const patients: IPaciente[] = useMemo(
+    () => patientsResponse?.results || [],
+    [patientsResponse]
+  );
 
   useEffect(() => {
-    // ✅ EN MODO EDIT: Cargar paciente desde datos
     if (mode === 'edit' && formData.paciente && patients.length > 0) {
-      const found = patients.find((p: IPaciente) => p.id === formData.paciente);
+      const found = patients.find((p) => p.id === formData.paciente);
       setSelectedPatient(found || null);
-    }
-    // ✅ EN MODO CREATE: Establecer paciente activo si existe
-    else if (mode === 'create' && pacienteActivo) {
+    } else if (mode === 'create' && pacienteActivo) {
       setSelectedPatient(pacienteActivo);
     }
   }, [formData.paciente, patients, mode, pacienteActivo]);
 
-  const getPatientFullName = (patient: IPaciente) => {
-    return `${patient.nombres} ${patient.apellidos}`.trim();
-  };
+  const getPatientFullName = (patient: IPaciente): string =>
+    `${patient.nombres} ${patient.apellidos}`.trim();
 
   const sinPatologia = formData.examen_sin_patologia ?? false;
   const tienePatologias = !sinPatologia;
@@ -259,7 +248,7 @@ export function StomatognathicExamFormFields({
 
   return (
     <div className="space-y-8">
-      {/* Identificación del paciente */}
+      {/* Identificación del paciente - AHORA IDÉNTICO AL DE SIGNOS VITALES */}
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
         <div className="mb-6 flex items-center gap-2">
           <div className="h-8 w-2 rounded-full bg-gradient-to-b from-blue-500 to-blue-600" />
@@ -267,8 +256,9 @@ export function StomatognathicExamFormFields({
             Identificación del paciente
           </h3>
         </div>
+
         <div className="grid grid-cols-1 gap-6">
-          {/* ✅ MODO CREATE CON PACIENTE ACTIVO - DISEÑO MEJORADO */}
+          {/* MODO CREATE CON PACIENTE ACTIVO */}
           {mode === 'create' && pacienteActivo && (
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -276,12 +266,12 @@ export function StomatognathicExamFormFields({
               </label>
               <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-xl shadow-md">
+                  <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-xl shadow-lg shadow-blue-500/30">
                     {(pacienteActivo.nombres?.charAt(0) || 'P').toUpperCase()}
                     {(pacienteActivo.apellidos?.charAt(0) || '').toUpperCase()}
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-base text-gray-900 dark:text-white">
+                    <p className="font-semibold text-lg text-gray-900 dark:text-white">
                       {pacienteActivo.nombres} {pacienteActivo.apellidos}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -291,8 +281,8 @@ export function StomatognathicExamFormFields({
                 </div>
 
                 {/* Badge de paciente fijado */}
-                <div className="mt-3 flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                <div className="mt-4 flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-800 dark:from-blue-900 dark:to-blue-800 dark:text-blue-200 shadow-sm">
                     <svg
                       className="w-3.5 h-3.5"
                       fill="currentColor"
@@ -309,8 +299,8 @@ export function StomatognathicExamFormFields({
                 </div>
 
                 {/* Nota informativa */}
-                <div className="mt-4 flex gap-2 rounded-md bg-blue-100 p-3 dark:bg-blue-900/30">
-                  <span className="text-base flex-shrink-0">📌</span>
+                <div className="mt-4 flex gap-3 rounded-lg bg-gradient-to-r from-blue-100/80 to-blue-50 p-3 dark:from-blue-900/30 dark:to-blue-900/20">
+                  <span className="text-base flex-shrink-0 mt-0.5">📌</span>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-blue-900 dark:text-blue-200">
                       <span className="font-semibold">Nota:</span> Este registro
@@ -324,7 +314,7 @@ export function StomatognathicExamFormFields({
             </div>
           )}
 
-          {/* ✅ MODO CREATE SIN PACIENTE ACTIVO - SOLO MENSAJE */}
+          {/* MODO CREATE SIN PACIENTE ACTIVO */}
           {mode === 'create' && !pacienteActivo && (
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
               <div className="flex items-start gap-3">
@@ -353,41 +343,83 @@ export function StomatognathicExamFormFields({
             </div>
           )}
 
-          {/* ✅ MODO EDIT - MOSTRAR PACIENTE PERO NO PERMITIR CAMBIAR */}
+          {/* MODO EDIT - AHORA CON EL MISMO DISEÑO QUE CREATE */}
           {mode === 'edit' && (
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Paciente
               </label>
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                 {selectedPatient ? (
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white font-medium shadow-md">
-                      {(selectedPatient.nombres?.charAt(0) || 'P').toUpperCase()}
-                      {(selectedPatient.apellidos?.charAt(0) || '').toUpperCase()}
+                  <>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-xl shadow-lg shadow-blue-500/30">
+                        {(selectedPatient.nombres?.charAt(0) || 'P').toUpperCase()}
+                        {(selectedPatient.apellidos?.charAt(0) || '').toUpperCase()}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-lg text-gray-900 dark:text-white">
+                          {getPatientFullName(selectedPatient)}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          CI {selectedPatient.cedula_pasaporte}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {selectedPatient.sexo === 'M'
+                            ? '👨 Masculino'
+                            : '👩 Femenino'}{' '}
+                          • Edad: {selectedPatient.edad}{' '}
+                          {selectedPatient.condicion_edad}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium">{getPatientFullName(selectedPatient)}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        CI: {selectedPatient.cedula_pasaporte} • {selectedPatient.sexo === 'M' ? '👨 Masculino' : '👩 Femenino'} • Edad: {selectedPatient.edad} {selectedPatient.condicion_edad}
-                      </p>
+
+                    {/* Badge de paciente (en modo edit) */}
+                    <div className="mt-4 flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-800 dark:from-blue-900 dark:to-blue-800 dark:text-blue-200 shadow-sm">
+                        <svg
+                          className="w-3.5 h-3.5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Paciente fijado activamente
+                      </span>
                     </div>
-                  </div>
+
+                    {/* Nota informativa para modo edit */}
+                    <div className="mt-4 flex gap-3 rounded-lg bg-gradient-to-r from-blue-100/80 to-blue-50 p-3 dark:from-blue-900/30 dark:to-blue-900/20">
+                      <span className="text-base flex-shrink-0 mt-0.5">📌</span>
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-blue-900 dark:text-blue-200">
+                          <span className="font-semibold">Nota:</span>  Este registro se asociará automáticamente al paciente fijado. Para cambiar de paciente, regrese a la pestaña "Gestión de Pacientes" y fije otro paciente.
+                        </p>
+                      </div>
+                    </div>
+                  </>
                 ) : (
-                  <p className="italic text-gray-500 dark:text-gray-400">
-                    {patientsLoading
-                      ? 'Cargando datos del paciente...'
-                      : 'No se encontraron datos del paciente'}
-                  </p>
+                  <div className="flex flex-col items-center justify-center py-6">
+                    <div className="h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mb-3">
+                      <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+                      {patientsLoading
+                        ? 'Cargando datos del paciente...'
+                        : 'No se encontraron datos del paciente'}
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
           )}
         </div>
-        {/* Mostrar error de paciente si existe */}
-        {errors.paciente && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.paciente}</p>
-        )}
       </div>
 
       {/* Checkbox principal sin patología */}
@@ -430,7 +462,7 @@ export function StomatognathicExamFormFields({
         </div>
       )}
 
-      {/* ✅ TODAS LAS REGIONES INCLUYENDO ATM EN UNA MISMA SECCIÓN */}
+      {/* TODAS LAS REGIONES INCLUYENDO ATM EN UNA MISMA SECCIÓN */}
       {tienePatologias && (
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div className="mb-6 flex items-center gap-2">

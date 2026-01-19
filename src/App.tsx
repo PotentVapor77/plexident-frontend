@@ -170,6 +170,7 @@ function App() {
               }
             />
 
+         
 
             {/* Rutas de antecedentes */}
             {/* <Route

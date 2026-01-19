@@ -80,6 +80,7 @@ export const ENDPOINTS = {
     resumenPatologias: (id: string) => `/patients/examen-estomatognatico/${id}/resumen_patologias/`,
   },
 
+
     // ✅ CONSULTAS
   consultations: {
     base: '/patients/consultas/',

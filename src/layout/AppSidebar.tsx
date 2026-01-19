@@ -76,6 +76,7 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "Pacientes", path: "/pacientes", pro: false },
       { name: "Detalles de paciente", path: "/pacientes/constantes-vitales", pro: false },
+
     ],
   },
   {

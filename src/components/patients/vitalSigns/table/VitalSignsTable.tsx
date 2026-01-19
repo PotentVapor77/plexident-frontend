@@ -38,14 +38,12 @@ export function VitalSignsTable({
 
   const vitalList = vitalSigns ?? [];
 
-  // Este patrón de cache simplificado replica la idea de PersonalBackgroundTable
   const ensurePatientInCache = async (id: string) => {
     if (pacienteCache[id]) return;
     try {
       const paciente = await getPacienteById(id);
       setPacienteCache(prev => ({ ...prev, [id]: paciente }));
     } catch {
-      // ✅ CORREGIDO: Sin variable 'e'
       // noop
     }
   };
@@ -98,7 +96,6 @@ export function VitalSignsTable({
     return "N/A";
   };
 
-  // Función para formatear la fecha en formato DD/MM/YYYY
   const formatDate = (dateString: string): string => {
     try {
       const date = new Date(dateString);
@@ -112,13 +109,19 @@ export function VitalSignsTable({
     }
   };
 
+  const truncateText = (text: string, maxLength: number): string => {
+    if (!text) return "";
+    if (text.length <= maxLength) return text;
+    return `${text.substring(0, maxLength)}...`;
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="flex flex-col items-center gap-2">
           <div className="h-8 w-8 rounded-full border-4 border-blue-600 border-t-transparent animate-spin" />
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Cargando signos vitales y datos del paciente...
+            Cargando registros médicos y datos del paciente...
           </p>
         </div>
       </div>
@@ -144,7 +147,7 @@ export function VitalSignsTable({
           </div>
           <div className="ml-3">
             <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
-              Error al cargar signos vitales
+              Error al cargar registros médicos
             </h3>
             <p className="mt-2 text-sm text-red-700 dark:text-red-300">
               {error || "Error desconocido"}
@@ -157,12 +160,11 @@ export function VitalSignsTable({
 
   return (
     <div className="space-y-4">
-      {/* Header con buscador */}
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div className="w-full sm:flex-1">
           <input
             type="text"
-            placeholder="Buscar por nombre de paciente, cédula..."
+            placeholder="Buscar por nombre de paciente, cédula, motivo de consulta..."
             value={search}
             onChange={e => handleSearch(e.target.value)}
             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 shadow-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
@@ -188,7 +190,6 @@ export function VitalSignsTable({
         </div>
       </div>
 
-      {/* Tabla */}
       <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-800">
@@ -197,10 +198,13 @@ export function VitalSignsTable({
                 Paciente
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                Consulta
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                 Signos vitales
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                Fecha registro
+                Fecha consulta
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                 Estado
@@ -214,7 +218,7 @@ export function VitalSignsTable({
             {vitalList.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
                 >
                   <div className="flex flex-col items-center gap-2">
@@ -231,7 +235,7 @@ export function VitalSignsTable({
                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z"
                       />
                     </svg>
-                    <p className="text-sm">No se encontraron signos vitales</p>
+                    <p className="text-sm">No se encontraron registros médicos</p>
                     {search && (
                       <button
                         onClick={() => setSearch("")}
@@ -254,12 +258,13 @@ export function VitalSignsTable({
                 const patientInitials = getPatientInitials(v);
                 const patientId = getPatientId(v);
 
+                const tieneConsulta = v.motivo_consulta || v.enfermedad_actual;
+
                 return (
                   <tr
                     key={v.id}
                     className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
-                    {/* Paciente */}
                     <td className="whitespace-nowrap px-6 py-4">
                       <div className="flex items-center">
                         <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white font-semibold shadow-md shadow-blue-500/30">
@@ -276,7 +281,29 @@ export function VitalSignsTable({
                       </div>
                     </td>
 
-                    {/* Signos */}
+                    <td className="px-6 py-4">
+                      <div className="max-w-xs">
+                        {tieneConsulta ? (
+                          <>
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              <span className="font-semibold">Motivo:</span>{" "}
+                              {truncateText(v.motivo_consulta || "No especificado", 50)}
+                            </div>
+                            {v.enfermedad_actual && (
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                <span className="font-medium">Enf. actual:</span>{" "}
+                                {truncateText(v.enfermedad_actual, 60)}
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-sm text-gray-400 italic">
+                            Sin datos de consulta
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-700 dark:text-gray-300">
                         <span className="font-semibold">
@@ -297,14 +324,12 @@ export function VitalSignsTable({
                       </div>
                     </td>
 
-                    {/* Fecha */}
                     <td className="whitespace-nowrap px-6 py-4">
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {formatDate(v.fecha_creacion)}
+                        {formatDate(v.fecha_consulta || v.fecha_creacion)}
                       </div>
                     </td>
 
-                    {/* Estado */}
                     <td className="whitespace-nowrap px-6 py-4">
                       <span
                         className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
@@ -317,7 +342,6 @@ export function VitalSignsTable({
                       </span>
                     </td>
 
-                    {/* Acciones */}
                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
                         {onView && (
@@ -410,7 +434,6 @@ export function VitalSignsTable({
         </table>
       </div>
 
-      {/* Paginación */}
       {pagination && pagination.totalPages > 1 && (
         <div className="flex flex-col items-center justify-between gap-4 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 sm:flex-row">
           <div>

@@ -1,8 +1,6 @@
 // src/components/vitalSigns/modals/VitalSignsViewModal.tsx
 
 import { Modal } from "../../../ui/modal";
-import Badge from "../../../ui/badge/Badge";
-import type { BadgeColor } from "../../../ui/badge/Badge";
 import type { IVitalSigns, IPacienteBasico } from "../../../../types/vitalSigns/IVitalSigns";
 import { usePaciente } from "../../../../hooks/patient/usePatients";
 
@@ -32,16 +30,29 @@ export function VitalSignsViewModal({
 
   const getStatusText = (status: boolean): string =>
     status ? "Activo" : "Inactivo";
-  const getStatusColor = (status: boolean): BadgeColor =>
-    status ? "success" : "error";
 
   const formatDate = (dateString?: string | null): string => {
     if (!dateString) return "No especificada";
     try {
       return new Date(dateString).toLocaleDateString("es-EC", {
-        day: "2-digit",
-        month: "2-digit",
         year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch {
+      return "Fecha inválida";
+    }
+  };
+
+  const formatDateTime = (dateString?: string | null): string => {
+    if (!dateString) return "No especificada";
+    try {
+      return new Date(dateString).toLocaleString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
       });
     } catch {
       return "Fecha inválida";
@@ -58,35 +69,50 @@ export function VitalSignsViewModal({
       const firstInitial = nombres.charAt(0)?.toUpperCase() || "P";
       const lastInitial = apellidos.charAt(0)?.toUpperCase() || "";
       const iniciales = `${firstInitial}${lastInitial}` || "P";
+      
+      const getCondicionEdadLabel = (): string => {
+        switch (pacienteData.condicion_edad) {
+          case "H":
+            return "horas";
+          case "D":
+            return "días";
+          case "M":
+            return "meses";
+          case "A":
+            return "años";
+          default:
+            return "";
+        }
+      };
+      
+      const getSexoLabel = (): string =>
+        pacienteData.sexo === "M" ? "Masculino" : "Femenino";
+      
       return {
         nombre: nombreCompleto,
         cedula: cedula || "No especificado",
         iniciales,
+        sexo: getSexoLabel(),
+        edad: `${pacienteData.edad || "N/A"} ${getCondicionEdadLabel()}`,
+        fechaNacimiento: pacienteData.fecha_nacimiento,
+        direccion: pacienteData.direccion || "No registrada",
+        telefono: pacienteData.telefono || "No registrado",
+        correo: pacienteData.correo || "No registrado",
       };
     }
 
-    if (typeof vital.paciente === "object" && vital.paciente !== null) {
-      const pacienteObj = vital.paciente as IPacienteBasico;
-      const nombres = pacienteObj.nombres || "";
-      const apellidos = pacienteObj.apellidos || "";
-      const cedula = pacienteObj.cedula_pasaporte || "";
-      const nombreCompleto =
-        [nombres, apellidos].filter(Boolean).join(" ").trim() || "Paciente";
-      const firstInitial = nombres.charAt(0)?.toUpperCase() || "P";
-      const lastInitial = apellidos.charAt(0)?.toUpperCase() || "";
-      const iniciales = `${firstInitial}${lastInitial}` || "P";
-      return {
-        nombre: nombreCompleto,
-        cedula: cedula || "No especificado",
-        iniciales,
-      };
-    }
 
     if (isLoadingPaciente) {
       return {
         nombre: "Cargando...",
         cedula: patientId || "No especificado",
         iniciales: "C",
+        sexo: "Cargando...",
+        edad: "Cargando...",
+        fechaNacimiento: undefined,
+        direccion: "Cargando...",
+        telefono: "Cargando...",
+        correo: "Cargando...",
       };
     }
 
@@ -94,6 +120,12 @@ export function VitalSignsViewModal({
       nombre: "Paciente no especificado",
       cedula: patientId || "No especificado",
       iniciales: "P",
+      sexo: "No especificado",
+      edad: "No especificada",
+      fechaNacimiento: undefined,
+      direccion: "No registrada",
+      telefono: "No registrado",
+      correo: "No registrado",
     };
   };
 
@@ -103,186 +135,249 @@ export function VitalSignsViewModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      className="max-w-4xl overflow-hidden rounded-2xl bg-white p-0 shadow-xl dark:bg-gray-900"
+      className="max-w-4xl p-6 lg:p-8 max-h-[90vh] overflow-y-auto"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-200 bg-gradient-to-r from-white to-gray-50 px-6 py-5 dark:border-gray-700 dark:from-gray-900 dark:to-gray-800">
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30">
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3 12h3l3 8 4-16 3 8h5"
-              />
-            </svg>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              Detalle de signos vitales
-            </h2>
-            <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+      <>
+        {/* Encabezado del Modal */}
+        <div className="mb-6">
+          <h5 className="font-semibold text-gray-800 text-xl dark:text-white/90 lg:text-2xl mb-2">
+            Detalle de Signos Vitales
+          </h5>
+          <div className="flex items-center gap-3">
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
               Registro clínico de constantes vitales
             </p>
+            <div className={`px-3 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
+              vital.activo 
+                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+            }`}>
+              {getStatusText(vital.activo)}
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Badge size="sm" color={getStatusColor(vital.activo)}>
-            {getStatusText(vital.activo)}
-          </Badge>
+
+        <div className="space-y-6">
+          {/* Información del Paciente */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
+            <div className="flex items-start gap-4">
+              <div className="w-20 h-20 rounded-2xl bg-blue-600 dark:bg-blue-700 text-white flex items-center justify-center text-2xl font-semibold shadow-lg flex-shrink-0">
+                {pacienteInfo.iniciales || "P"}
+              </div>
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Paciente</p>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {pacienteInfo.nombre}
+                    {isLoadingPaciente && (
+                      <span className="ml-2 text-sm font-normal text-gray-500">(cargando...)</span>
+                    )}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                    CI/Pasaporte: <span className="font-medium text-gray-900 dark:text-white">{pacienteInfo.cedula}</span>
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Fecha de consulta</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {formatDate(vital.fecha_consulta)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Fecha de registro</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {formatDate(vital.fecha_creacion)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Badge de paciente fijado */}
+            <div className="mt-4 flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-800 dark:from-blue-900 dark:to-blue-800 dark:text-blue-200 shadow-sm">
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Paciente fijado activamente
+              </span>
+            </div>
+          </div>
+          {/* Signos Vitales */}
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-rose-200 dark:border-rose-800">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-8 bg-gradient-to-b from-rose-500 to-rose-600 rounded-full" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                🩺 Signos Vitales
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+                    Temperatura
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-blue-600 dark:bg-blue-700 rounded-lg flex items-center justify-center text-white text-xl font-bold">
+                      T
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {vital.temperatura !== null && vital.temperatura !== undefined
+                          ? `${vital.temperatura}`
+                          : "N/A"}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">°C</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                  <p className="text-sm font-medium text-green-800 dark:text-green-300 mb-2">
+                    Pulso
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-green-600 dark:bg-green-700 rounded-lg flex items-center justify-center text-white text-xl font-bold">
+                      P
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {vital.pulso !== null && vital.pulso !== undefined
+                          ? `${vital.pulso}`
+                          : "N/A"}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">lpm</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+                  <p className="text-sm font-medium text-purple-800 dark:text-purple-300 mb-2">
+                    Frecuencia respiratoria
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-purple-600 dark:bg-purple-700 rounded-lg flex items-center justify-center text-white text-xl font-bold">
+                      F
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {vital.frecuencia_respiratoria !== null && vital.frecuencia_respiratoria !== undefined
+                          ? `${vital.frecuencia_respiratoria}`
+                          : "N/A"}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">rpm</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
+                  <p className="text-sm font-medium text-red-800 dark:text-red-300 mb-2">
+                    Presión arterial
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-red-600 dark:bg-red-700 rounded-lg flex items-center justify-center text-white text-xl font-bold">
+                      PA
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {vital.presion_arterial || "N/A"}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">mmHg</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Información de la Consulta */}
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-emerald-200 dark:border-emerald-800">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-8 bg-gradient-to-b from-emerald-500 to-emerald-600 rounded-full" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                📋 Información de la Consulta
+              </h3>
+            </div>
+            <div className="space-y-4">
+              {vital.motivo_consulta && (
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Motivo de Consulta
+                  </p>
+                  <p className="text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+                    {vital.motivo_consulta}
+                  </p>
+                </div>
+              )}
+
+              {vital.enfermedad_actual && (
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Enfermedad Actual
+                  </p>
+                  <p className="text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+                    {vital.enfermedad_actual}
+                  </p>
+                </div>
+              )}
+
+              {vital.observaciones && (
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Observaciones
+                  </p>
+                  <p className="text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+                    {vital.observaciones}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Metadata */}
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-xs text-gray-600 dark:text-gray-400">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="font-medium">Fecha de creación:</p>
+                <p>{formatDateTime(vital.fecha_creacion)}</p>
+              </div>
+              <div>
+                <p className="font-medium">Última modificación:</p>
+                <p>{formatDateTime(vital.fecha_modificacion || vital.fecha_creacion)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Botones de acción */}
+        <div className="flex justify-end gap-3 pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-gray-400 transition-all duration-200 hover:rotate-90 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+            className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor">
-              <path
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            Cerrar
           </button>
+          {onEdit && (
+            <button
+              onClick={onEdit}
+              className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Editar Signos Vitales
+            </button>
+          )}
         </div>
-      </div>
-
-      {/* Paciente info */}
-      <div className="border-b border-gray-200 bg-gradient-to-br from-blue-50 via-white to-blue-50 px-6 py-6 dark:border-gray-700 dark:from-gray-800 dark:via-gray-800 dark:to-gray-700">
-        <div className="flex items-center gap-5">
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-2xl font-bold text-white shadow-lg shadow-blue-500/30 ring-4 ring-blue-100 dark:ring-blue-900/50">
-            {pacienteInfo.iniciales}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-              Paciente
-            </p>
-            <h3 className="truncate text-xl font-bold text-gray-900 dark:text-white">
-              {pacienteInfo.nombre}
-              {isLoadingPaciente && (
-                <span className="ml-2 text-sm text-gray-500">(cargando...)</span>
-              )}
-            </h3>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              CI/Pasaporte:{" "}
-              <span className="font-semibold">{pacienteInfo.cedula}</span>
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
-            <div>
-              <span className="mb-1 block text-xs text-gray-500 dark:text-gray-400">
-                Fecha de registro
-              </span>
-              <p className="font-semibold text-gray-900 dark:text-white">
-                {formatDate(vital.fecha_creacion)}
-              </p>
-            </div>
-            <div>
-              <span className="mb-1 block text-xs text-gray-500 dark:text-gray-400">
-                Última modificación
-              </span>
-              <p className="font-semibold text-gray-900 dark:text-white">
-                {formatDate(vital.fecha_modificacion || vital.fecha_creacion)}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Body - 2 columnas: 2 izquierda, 2 derecha */}
-      <div className="max-h-[60vh] space-y-6 overflow-y-auto bg-gradient-to-b from-gray-50 to-white p-6 dark:from-gray-900 dark:to-gray-900">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Izquierda: Temperatura + Pulso */}
-          <InfoSection title="Valores principales" icon="🩺">
-            <InfoField
-              label="Temperatura"
-              value={
-                vital.temperatura !== null && vital.temperatura !== undefined
-                  ? `${vital.temperatura} °C`
-                  : "No registrada"
-              }
-            />
-            <InfoField
-              label="Pulso"
-              value={
-                vital.pulso !== null && vital.pulso !== undefined
-                  ? `${vital.pulso} lpm`
-                  : "No registrado"
-              }
-            />
-          </InfoSection>
-
-          {/* Derecha: FR + PA */}
-          <InfoSection title="Valores respiratorios" icon="🫁">
-            <InfoField
-              label="Frecuencia respiratoria"
-              value={
-                vital.frecuencia_respiratoria !== null &&
-                vital.frecuencia_respiratoria !== undefined
-                  ? `${vital.frecuencia_respiratoria} rpm`
-                  : "No registrada"
-              }
-            />
-            <InfoField
-              label="Presión arterial"
-              value={vital.presion_arterial || "No registrada"}
-            />
-          </InfoSection>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="flex items-center justify-between border-t border-gray-200 bg-gradient-to-r from-white to-gray-50 px-6 py-4 dark:border-gray-700 dark:from-gray-900 dark:to-gray-800">
-        <button
-          onClick={onClose}
-          className="rounded-xl border-2 border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 hover:shadow dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-500 dark:hover:bg-gray-700"
-        >
-          Cerrar
-        </button>
-        {onEdit && (
-          <button
-            onClick={onEdit}
-            className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:from-blue-700 hover:to-blue-800 hover:shadow-lg hover:scale-[1.02] active:scale-95"
-          >
-            Editar signos vitales
-          </button>
-        )}
-      </div>
+      </>
     </Modal>
   );
 }
-
-interface InfoSectionProps {
-  title: string;
-  children: React.ReactNode;
-  icon?: string;
-}
-
-const InfoSection: React.FC<InfoSectionProps> = ({ title, children, icon }) => (
-  <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:border-blue-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600">
-    <h3 className="mb-5 flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
-      {icon && <span className="text-lg">{icon}</span>}
-      <span>{title}</span>
-    </h3>
-    <div className="space-y-4">{children}</div>
-  </div>
-);
-
-const InfoField: React.FC<{ label: string; value: string }> = ({
-  label,
-  value,
-}) => (
-  <div className="group">
-    <dt className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-      {label}
-    </dt>
-    <dd className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-900 transition-colors duration-200 group-hover:border-blue-200 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:group-hover:border-gray-600">
-      {value}
-    </dd>
-  </div>
-);

@@ -32,7 +32,7 @@ export const filterByPaciente = (
 };
 
 /**
- * Ordena historiales por fecha de atención (más recientes primero)
+ * Ordena historiales por fecha de atención
  */
 export const sortByFechaAtencion = (
   historiales: ClinicalRecordListResponse[]

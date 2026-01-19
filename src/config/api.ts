@@ -81,6 +81,23 @@ export const ENDPOINTS = {
   },
 
 
+    // ✅ CONSULTAS
+  consultations: {
+    base: '/patients/consultas/',
+    byId: (id: string) => `/patients/consultas/${id}/`,
+    byPaciente: (pacienteId: string) => `/patients/consultas/by-paciente/${pacienteId}/`,
+  },
+
+clinicalRecords: {
+    base: '/clinical-records/',
+    byId: (id: string) => `/clinical-records/${id}/`,
+    byPaciente: (pacienteId: string) => `/clinical-records/by-paciente/?paciente_id=${pacienteId}`,
+    cargarDatosIniciales: (pacienteId: string) => `/clinical-records/cargar-datos-iniciales/?paciente_id=${pacienteId}`,
+    cerrar: (id: string) => `/clinical-records/${id}/cerrar/`,
+    reabrir: (id: string) => `/clinical-records/${id}/reabrir/`,
+  },
+
+
    // ============================================================================
   // CITAS / APPOINTMENTS
   // ============================================================================

@@ -2,7 +2,7 @@
 
 import type { DiagnosticoEntry } from "./odontograma.types";
 
-export type HistoryViewMode = 'compact' | 'detailed' | 'hidden';
+export type HistoryViewMode = 'compact' | 'detailed' | 'hidden' | 'files';
 export interface DiagnosticoEntryWithContext extends DiagnosticoEntry {
   dienteId: string;
   superficieIdContext: string;
@@ -33,4 +33,10 @@ export const VIEW_CONFIGS: Record<HistoryViewMode, HistoryViewConfig> = {
     showSurfacesSVG: false,
     showDiagnosticsList: false,
   },
+    files: {
+        mode: 'files',
+        showModel3D: false,
+        showSurfacesSVG: false,
+        showDiagnosticsList: false,
+    },
 };

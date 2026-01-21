@@ -1,6 +1,8 @@
 export interface OdontogramaSnapshot {
     id: string;
+    version_id: string;
     fecha: Date;
+    snapshotId: string; 
     descripcion: string;
     odontogramaData: any; 
     profesionalId: string;

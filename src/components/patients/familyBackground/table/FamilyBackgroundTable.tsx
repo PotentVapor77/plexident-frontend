@@ -107,7 +107,6 @@ export function FamilyBackgroundTable({
     onDelete?.(background);
   };
 
-  // ✅ Función para obtener el objeto paciente (si es string, busca en cache)
   const getPacienteObject = (
     background: IFamilyBackground
   ): IPacienteBasico | null => {
@@ -124,7 +123,6 @@ export function FamilyBackgroundTable({
     return null;
   };
 
-  // ✅ Función para obtener nombre del paciente
   const getPatientName = (background: IFamilyBackground): string => {
     const pacienteObj = getPacienteObject(background);
     if (pacienteObj) {
@@ -136,7 +134,6 @@ export function FamilyBackgroundTable({
     return "Paciente";
   };
 
-  // ✅ Función para obtener iniciales del paciente
   const getPatientInitials = (background: IFamilyBackground): string => {
     const pacienteObj = getPacienteObject(background);
     if (pacienteObj) {
@@ -149,7 +146,6 @@ export function FamilyBackgroundTable({
     return "P";
   };
 
-  // ✅ Función para obtener ID del paciente
   const getPatientId = (background: IFamilyBackground): string => {
     const pacienteObj = getPacienteObject(background);
     if (pacienteObj) {
@@ -495,7 +491,7 @@ export function FamilyBackgroundTable({
                         {onDelete && (
                           <button
                             onClick={() => handleDeleteClick(background)}
-                            disabled={!background.activo} // ✅ BLOQUEADO si inactivo
+                            disabled={!background.activo} 
                             className={`transition-colors ${
                               background.activo
                                 ? "text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"

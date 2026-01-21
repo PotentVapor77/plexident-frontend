@@ -358,9 +358,10 @@ export const OdontogramaViewer = ({
 
         {pacienteActivo && onOpenFileUpload && (
             <button
-              onClick={onOpenFileUpload}
-              className="absolute bottom-4 left-4 bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 group"
-              title="Adjuntar archivos clínicos"
+              id="clinical-files-toggle-btn"
+  onClick={onOpenFileUpload}
+  className="absolute bottom-4 left-4 bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 group"
+  title="Adjuntar archivos clínicos"
             >
               <Upload className="w-5 h-5" />
               {pendingFilesCount > 0 && (
@@ -371,7 +372,7 @@ export const OdontogramaViewer = ({
               <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                 {pendingFilesCount > 0
                   ? `${pendingFilesCount} archivo(s) pendiente(s)`
-                  : "Adjuntar archivos"}
+                  : "Adjuntar "}
               </span>
             </button>
           )}

@@ -118,7 +118,7 @@ const highlightedTooth = hoveredToothInList || selectedTooth;
           <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10 pointer-events-none">
             <div className="pointer-events-auto bg-blue-600/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-xs font-bold shadow-xl flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
-              HISTORIAL: SOLO LECTURA
+              SOLO LECTURA
             </div>
 
             <div className="pointer-events-auto">

@@ -31,10 +31,10 @@ function transformHistorialData(datosNuevos: Record<string, any>): OdontogramaDa
                 // Transformar cada diagnóstico asegurando campos requeridos
                 data[codigoFdi][surfaceId] = diagnosticos.map((diag: any) => {
                     //console.log('[MAPPER][DEBUG] Diagnóstico individual:', {
-                       // tiene_colorHex: !!diag.colorHex,
-                       // colorHex: diag.colorHex,
-                      //  todas_propiedades: Object.keys(diag)
-                   // });
+                    // tiene_colorHex: !!diag.colorHex,
+                    // colorHex: diag.colorHex,
+                    //  todas_propiedades: Object.keys(diag)
+                    // });
                     const entry: DiagnosticoEntry = {
                         id: diag.id,
                         key: diag.key || diag.procedimientoId,
@@ -64,21 +64,21 @@ export function mapHistorialToSnapshots(
 ): OdontogramaSnapshot[] {
     if (!Array.isArray(historial)) {
         ///console.warn(
-            //"[MAPPER][Historial] mapHistorialToSnapshots → historial no es array",
-          //  historial,
+        //"[MAPPER][Historial] mapHistorialToSnapshots → historial no es array",
+        //  historial,
         //);
         return [];
     }
 
     const soloVersiones = historial.filter(
-  (h) => !!h.version_id && 
-  (h.tipo_cambio === 'snapshot_completo' || h.tipo_cambio === 'SNAPSHOT_COMPLETO')
-);
+        (h) => !!h.version_id &&
+            (h.tipo_cambio === 'snapshot_completo' || h.tipo_cambio === 'SNAPSHOT_COMPLETO')
+    );
 
     //console.log("[MAPPER][Historial] soloVersiones", {
-      //  rawCount: historial.length,
-      //  versionedCount: soloVersiones.length,
-   // });
+    //  rawCount: historial.length,
+    //  versionedCount: soloVersiones.length,
+    // });
 
     const grupos: Record<string, HistorialOdontogramaBackend[]> = {};
 
@@ -91,10 +91,10 @@ export function mapHistorialToSnapshots(
     const snapshots: OdontogramaSnapshot[] = Object.values(grupos).map(
         (grupo) => {
             const snapshotCompleto = grupo.find(
-                (h) => h.tipo_cambio === 'snapshot_completo' || 
-                       h.tipo_cambio === 'SNAPSHOT_COMPLETO'
+                (h) => h.tipo_cambio === 'snapshot_completo' ||
+                    h.tipo_cambio === 'SNAPSHOT_COMPLETO'
             );
-            
+
             const first = snapshotCompleto || grupo[0];
 
             let datosNuevosCombinados: Record<string, any> = {};
@@ -102,17 +102,17 @@ export function mapHistorialToSnapshots(
             if (snapshotCompleto && snapshotCompleto.datos_nuevos) {
                 // Usar el snapshot completo directamente
                 datosNuevosCombinados = snapshotCompleto.datos_nuevos;
-               // console.log("[MAPPER][Historial] Usando snapshot completo:", {
-                  //  version_id: first.version_id,
-                  //  dientes: Object.keys(datosNuevosCombinados).length,
-               // });
+                // console.log("[MAPPER][Historial] Usando snapshot completo:", {
+                //  version_id: first.version_id,
+                //  dientes: Object.keys(datosNuevosCombinados).length,
+                // });
             } else {
                 // Fallback: Combinar todos los datos_nuevos del grupo (comportamiento anterior)
-               // console.log("[MAPPER][Historial] Combinando cambios individuales:", {
+                // console.log("[MAPPER][Historial] Combinando cambios individuales:", {
                 //   version_id: first.version_id,
-                 //   cambios: grupo.length,
-               // });
-                
+                //   cambios: grupo.length,
+                // });
+
                 grupo.forEach((h) => {
                     const datosNuevos = h.datos_nuevos || {};
                     Object.entries(datosNuevos).forEach(([codigoFdi, superficies]) => {
@@ -124,7 +124,7 @@ export function mapHistorialToSnapshots(
                                 if (!datosNuevosCombinados[codigoFdi][surfaceId]) {
                                     datosNuevosCombinados[codigoFdi][surfaceId] = [];
                                 }
-                                
+
                                 if (Array.isArray(lista)) {
                                     datosNuevosCombinados[codigoFdi][surfaceId] = [
                                         ...datosNuevosCombinados[codigoFdi][surfaceId],
@@ -145,27 +145,27 @@ export function mapHistorialToSnapshots(
                 (acc, superficies) => {
                     const superficiesObj = superficies as Record<string, any[]>;
                     return acc + Object.values(superficiesObj).reduce<number>(
-                        (sum: number, diags: any) => 
-                            sum + (Array.isArray(diags) ? diags.length : 0), 
+                        (sum: number, diags: any) =>
+                            sum + (Array.isArray(diags) ? diags.length : 0),
                         0
                     );
-                }, 
+                },
                 0
             );
 
             //console.log("[MAPPER][Historial] Snapshot procesado:", {
-             //   version_id: first.version_id,
-              //  esSnapshotCompleto: !!snapshotCompleto,
-              //  dientes: Object.keys(odontogramaData).length,
-              //  primerDiente: Object.keys(odontogramaData)[0],
-               // totalDiagnosticos,
-             //   sample: odontogramaData[Object.keys(odontogramaData)[0]]?.[
-              //      Object.keys(odontogramaData[Object.keys(odontogramaData)[0]])[0]
-                //]?.[0],
-           // });
+            //   version_id: first.version_id,
+            //  esSnapshotCompleto: !!snapshotCompleto,
+            //  dientes: Object.keys(odontogramaData).length,
+            //  primerDiente: Object.keys(odontogramaData)[0],
+            // totalDiagnosticos,
+            //   sample: odontogramaData[Object.keys(odontogramaData)[0]]?.[
+            //      Object.keys(odontogramaData[Object.keys(odontogramaData)[0]])[0]
+            //]?.[0],
+            // });
 
             let descripcion = first.descripcion || first.tipo_cambio_display || "Odontograma guardado";
-            
+
             // Si es snapshot completo y no tiene descripción clara, generar una
             if (snapshotCompleto && !first.descripcion?.includes("guardado")) {
                 const totalDientes = Object.keys(odontogramaData).length;
@@ -173,7 +173,8 @@ export function mapHistorialToSnapshots(
             }
 
             return {
-                id: first.version_id!,
+                id: first.id!,
+                version_id: first.version_id!,
                 fecha: new Date(first.fecha),
                 descripcion,
                 odontogramaData,

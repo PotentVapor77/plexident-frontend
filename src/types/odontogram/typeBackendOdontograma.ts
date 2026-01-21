@@ -191,6 +191,7 @@ export interface SuperficieConDiagnosticos extends SuperficieDentalBackend {
 
 export interface HistorialOdontogramaBackend {
   id: string;
+  version_id: string;  
   diente: string;
   tipo_cambio: string;
   tipo_cambio_display: string;
@@ -219,7 +220,6 @@ export interface HistorialOdontogramaBackend {
       }[];
     };
   };
-  version_id: string;
 }
 export interface PaginatedResponse<T> {
   count: number;

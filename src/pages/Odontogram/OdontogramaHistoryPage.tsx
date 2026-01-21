@@ -54,22 +54,48 @@ const OdontogramaHistoryPageInner = () => {
     const el = document.getElementById("layout-content");
     if (!el) return;
 
-    const prev = {
-      padding: el.style.padding,
-      maxWidth: el.style.maxWidth,
-      overflow: el.style.overflow,
-    };
+     const prev = {
+    padding: el.style.padding,
+    maxWidth: el.style.maxWidth,
+    overflow: el.style.overflow,
+    height: el.style.height,
+    display: el.style.display,
+  };
 
-    el.style.padding = "0";
-    el.style.maxWidth = "100%";
-    el.style.overflow = "hidden";
+  // Guardar estilos de html/body
+  const html = document.documentElement;
+  const body = document.body;
+  const prevHtmlOverflow = html.style.overflow;
+  const prevBodyOverflow = body.style.overflow;
+  const prevHtmlHeight = html.style.height;
+  const prevBodyHeight = body.style.height;
 
-    return () => {
-      el.style.padding = prev.padding;
-      el.style.maxWidth = prev.maxWidth;
-      el.style.overflow = prev.overflow;
-    };
-  }, []);
+  // Layout content a pantalla completa
+  el.style.padding = "0";
+  el.style.maxWidth = "100%";
+  el.style.overflow = "hidden";
+  el.style.height = "100vh";
+  el.style.display = "flex";
+
+  // Evitar scroll global
+  html.style.height = "100%";
+  body.style.height = "100%";
+  html.style.overflow = "hidden";
+  body.style.overflow = "hidden";
+
+  return () => {
+    el.style.padding = prev.padding;
+    el.style.maxWidth = prev.maxWidth;
+    el.style.overflow = prev.overflow;
+    el.style.height = prev.height;
+    el.style.display = prev.display;
+
+    html.style.overflow = prevHtmlOverflow;
+    body.style.overflow = prevBodyOverflow;
+    html.style.height = prevHtmlHeight;
+    body.style.height = prevBodyHeight;
+  };
+}, []);
 
   // Loading / error global
   if (isLoading) {
@@ -100,7 +126,7 @@ const OdontogramaHistoryPageInner = () => {
   }
   const handleSelectSnapshot = (id: string) => {
     console.log('[HISTORY_PAGE] Snapshot seleccionado:', id);
-    
+
     if (comparisonMode) {
       if (selectedSnapshotId !== id) {
         selectCompareSnapshot(id);
@@ -121,7 +147,7 @@ const OdontogramaHistoryPageInner = () => {
         // - Seleccionar el más reciente como "después"
         const currentId = selectedSnapshotId ?? effectiveSnapshots[0].id;
         const mostRecentId = effectiveSnapshots[0].id;
-        
+
         selectSnapshot(currentId);
         selectCompareSnapshot(mostRecentId !== currentId ? mostRecentId : effectiveSnapshots[1]?.id ?? currentId);
       } else if (!next) {
@@ -140,12 +166,12 @@ const OdontogramaHistoryPageInner = () => {
   return (
     <div className="flex h-full w-full bg-gray-50 dark:bg-gray-900">
       {/* Sidebar timeline */}
-      <div className="w-80 flex-shrink-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-dark flex flex-col h-full overflow-hidden">
+      <div className=" w-85 h-full flex-shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-dark flex flex-col">
         <HistoryHeader
           totalSnapshots={effectiveSnapshots.length}
           comparisonMode={comparisonMode}
           onToggleComparisonMode={toggleComparisonMode}
-          patient={pacienteActivo} 
+          patient={pacienteActivo}
         />
 
         <div className="flex-1 overflow-y-auto no-scrollbar">
@@ -155,14 +181,11 @@ const OdontogramaHistoryPageInner = () => {
             selectedSnapshotId={
               selectedSnapshotId ?? effectiveSnapshots[0]?.id
             }
-            // OPCIONAL: Si tu timeline soporta mostrar el compare seleccionado
-            //compareSnapshotId={comparisonMode ? activeCompareSnapshot?.id : undefined}
           />
         </div>
       </div>
-
       {/* Área de visualización */}
-      <div className="flex-1 flex flex-col h-full min-w-0">
+      <div className="flex-1 overflow-y-auto no-scrollbar">
         {comparisonMode && activeCompareSnapshot && baseSnapshot.id !== activeCompareSnapshot.id ? (
           <HistoryCompareView
             beforeSnapshot={baseSnapshot}

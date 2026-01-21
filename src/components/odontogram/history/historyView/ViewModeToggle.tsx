@@ -1,18 +1,20 @@
 // src/components/odontogram/history/historyView/ViewModeToggle.tsx
 
-import { LayoutGrid, List, GitCompare } from 'lucide-react';
+import { LayoutGrid, List, GitCompare, FileText } from 'lucide-react';
 import type { HistoryViewMode } from '../../../../core/types/historyView.types';
 
 interface ViewModeToggleProps {
   currentMode: HistoryViewMode;
   onModeChange: (mode: HistoryViewMode) => void;
   disabled?: boolean;
+  filesCount?: number;
 }
 
 export const ViewModeToggle = ({
   currentMode,
   onModeChange,
   disabled = false,
+  filesCount = 0,
 }: ViewModeToggleProps) => {
   const buttonBase = `
     flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
@@ -65,6 +67,24 @@ export const ViewModeToggle = ({
         <GitCompare size={16} />
         <span>Oculta</span>
       </button>
+
+      {/* Vista Archivos Clínicos */}
+ <button
+        type="button"
+        onClick={() => onModeChange('files')}
+        disabled={disabled}
+        className={getButtonClass('files')}
+        title="Archivos clínicos del snapshot"
+      >
+        <FileText className="h-4 w-4" />
+        <span>Archivos</span>
+        {filesCount > 0 && (
+          <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-white/20">
+            {filesCount}
+          </span>
+        )}
+      </button>
+
     </div>
   );
 };

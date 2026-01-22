@@ -1,5 +1,5 @@
 // src/pages/odontogram/OdontogramaHistoryPage.tsx
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { OdontogramaTimeline } from "../../components/odontogram/history/OdontogramaTimeline";
 import type { OdontogramaSnapshot } from "../../core/types/odontogramaHistory.types";
 import {
@@ -14,10 +14,14 @@ import { HistoryHeader } from "../../components/odontogram/history/historyView/H
 import { HistorySingleView } from "../../components/odontogram/history/historyView/HistorySingleView";
 import { HistoryCompareView } from "../../components/odontogram/history/historyView/HistoryCompareView";
 
+
+
+
 const OdontogramaHistoryPageInner = () => {
   const { pacienteActivo } = usePacienteActivo();
   const { user } = useAuth();
-
+  const containerRef = useRef<HTMLDivElement>(null);
+  
   const {
     snapshots,
     selectedSnapshot,
@@ -49,53 +53,67 @@ const OdontogramaHistoryPageInner = () => {
     if (compareSnapshot) return compareSnapshot;
     return effectiveSnapshots[1] ?? effectiveSnapshots[0];
   }, [comparisonMode, compareSnapshot, effectiveSnapshots]);
-  // Ajuste de layout (full screen)
+
+  // Ajuste de layout (respetando header y menús)
   useEffect(() => {
-    const el = document.getElementById("layout-content");
-    if (!el) return;
+    const layoutContent = document.getElementById("layout-content");
+    const header = document.querySelector('header');
+    if (!layoutContent || !header) return;
+    header.style.zIndex = '40';
+    const prevStyles = {
+      padding: layoutContent.style.padding,
+      maxWidth: layoutContent.style.maxWidth,
+      overflow: layoutContent.style.overflow,
+      height: layoutContent.style.height,
+      minHeight: layoutContent.style.minHeight,
+    };
 
-     const prev = {
-    padding: el.style.padding,
-    maxWidth: el.style.maxWidth,
-    overflow: el.style.overflow,
-    height: el.style.height,
-    display: el.style.display,
-  };
+    // Configurar el layout-content para pantalla completa
+    layoutContent.style.padding = "0";
+    layoutContent.style.maxWidth = "100%";
+    layoutContent.style.overflow = "hidden";
+    layoutContent.style.minHeight = "calc(100vh - var(--header-height, 5.3rem))";
+    layoutContent.style.height = "auto";
 
-  // Guardar estilos de html/body
-  const html = document.documentElement;
-  const body = document.body;
-  const prevHtmlOverflow = html.style.overflow;
-  const prevBodyOverflow = body.style.overflow;
-  const prevHtmlHeight = html.style.height;
-  const prevBodyHeight = body.style.height;
+    // Calcular dinámicamente el espacio disponible
+    const updateHeight = () => {
+      if (containerRef.current) {
+        const header = document.querySelector('header');
+        const headerHeight = header ? header.offsetHeight : 84; // 5.3rem ≈ 84px
+        
+        // Establecer variable CSS para uso en Tailwind
+        document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
+        
+        const availableHeight = `calc(100vh - ${headerHeight}px)`;
+        containerRef.current.style.height = availableHeight;
+        containerRef.current.style.maxHeight = availableHeight;
+      }
+    };
 
-  // Layout content a pantalla completa
-  el.style.padding = "0";
-  el.style.maxWidth = "100%";
-  el.style.overflow = "hidden";
-  el.style.height = "100vh";
-  el.style.display = "flex";
+    // Actualizar inicialmente y en resize
+    updateHeight();
+    const resizeObserver = new ResizeObserver(updateHeight);
+    if (containerRef.current) {
+      resizeObserver.observe(document.documentElement);
+    }
 
-  // Evitar scroll global
-  html.style.height = "100%";
-  body.style.height = "100%";
-  html.style.overflow = "hidden";
-  body.style.overflow = "hidden";
+    window.addEventListener('resize', updateHeight);
 
-  return () => {
-    el.style.padding = prev.padding;
-    el.style.maxWidth = prev.maxWidth;
-    el.style.overflow = prev.overflow;
-    el.style.height = prev.height;
-    el.style.display = prev.display;
-
-    html.style.overflow = prevHtmlOverflow;
-    body.style.overflow = prevBodyOverflow;
-    html.style.height = prevHtmlHeight;
-    body.style.height = prevBodyHeight;
-  };
-}, []);
+    return () => {
+      // Restaurar estilos
+      layoutContent.style.padding = prevStyles.padding;
+      layoutContent.style.maxWidth = prevStyles.maxWidth;
+      layoutContent.style.overflow = prevStyles.overflow;
+      layoutContent.style.height = prevStyles.height;
+      layoutContent.style.minHeight = prevStyles.minHeight;
+      
+      // Limpiar
+      window.removeEventListener('resize', updateHeight);
+      resizeObserver.disconnect();
+      document.documentElement.style.removeProperty('--header-height');
+      
+    };
+  }, []);
 
   // Loading / error global
   if (isLoading) {
@@ -124,6 +142,7 @@ const OdontogramaHistoryPageInner = () => {
       />
     );
   }
+
   const handleSelectSnapshot = (id: string) => {
     console.log('[HISTORY_PAGE] Snapshot seleccionado:', id);
 
@@ -161,12 +180,14 @@ const OdontogramaHistoryPageInner = () => {
     });
   };
 
-
-
   return (
-    <div className="flex h-full w-full bg-gray-50 dark:bg-gray-900">
+    <div 
+      ref={containerRef}
+      className="w-full flex flex-col md:flex-row bg-gray-50 dark:bg-gray-900"
+      style={{ height: 'calc(100vh - var(--header-height, 5.3rem))' }}
+    >
       {/* Sidebar timeline */}
-      <div className=" w-85 h-full flex-shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-dark flex flex-col">
+      <div className="w-full md:w-85 flex-shrink-0 bg-white dark:bg-gray-800 border-b md:border-r border-gray-200 dark:border-gray-700 flex flex-col">
         <HistoryHeader
           totalSnapshots={effectiveSnapshots.length}
           comparisonMode={comparisonMode}
@@ -174,7 +195,7 @@ const OdontogramaHistoryPageInner = () => {
           patient={pacienteActivo}
         />
 
-        <div className="flex-1 overflow-y-auto no-scrollbar">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
           <OdontogramaTimeline
             snapshots={effectiveSnapshots}
             onSelectSnapshot={handleSelectSnapshot}
@@ -184,8 +205,9 @@ const OdontogramaHistoryPageInner = () => {
           />
         </div>
       </div>
+      
       {/* Área de visualización */}
-      <div className="flex-1 overflow-y-auto no-scrollbar">
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
         {comparisonMode && activeCompareSnapshot && baseSnapshot.id !== activeCompareSnapshot.id ? (
           <HistoryCompareView
             beforeSnapshot={baseSnapshot}

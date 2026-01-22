@@ -27,7 +27,7 @@ export const HistorySingleView = ({
   const [showFiles, setShowFiles] = useState(false);
   const { pacienteActivo } = usePacienteActivo();
 
-  console.log('🔍 Snapshot object:', snapshot);
+  console.log('Snapshot object:', snapshot);
   console.log('  - snapshot.id:', snapshot.id);
   console.log('  - snapshot.version_id:', (snapshot as any).version_id);
   const snapshotIdForFiles = (snapshot as any).snapshot_id || snapshot.id;
@@ -129,15 +129,6 @@ export const HistorySingleView = ({
             </div>
           )}
 
-          {/* Botón Archivos clínicos */}
-          <button
-            type="button"
-            onClick={() => setShowFiles((v) => !v)}
-            className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
-          >
-            <span>Archivos clínicos</span>
-            <span>{showFiles ? '▾' : '▸'}</span>
-          </button>
         </div>
 
         {/* Toggle de vistas */}

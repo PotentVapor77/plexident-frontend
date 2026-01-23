@@ -361,63 +361,95 @@ export const useDiagnosticoPanelManager = ({
   // ============================================================================
 
   const handleGuardarCompleto = useCallback(async () => {
-    if (!odontogramaDataHook || !hasPacienteActivo) {
+  if (!odontogramaDataHook || !hasPacienteActivo) {
+    addNotification({
+      type: 'error',
+      title: 'Error de guardado',
+      message: 'No hay paciente activo o datos de odontograma disponibles',
+    });
+    return;
+  }
+
+  try {
+    // Exportar datos del odontograma
+    const rawData = odontogramaDataHook.exportData
+      ? odontogramaDataHook.exportData()
+      : odontogramaData;
+
+    console.log('[SAVE] Guardando odontograma completo...', rawData);
+
+    // El hook maneja: mapeo, guardado, recarga de datos, sincronización
+    const resultado = await guardarCompleto(rawData);
+
+    console.log('[SAVE] Resultado del guardado:', resultado);
+
+    // VERIFICAR SI HUBO CAMBIOS REALES
+    if (resultado.diagnosticos_guardados === 0) {
+      // Mostrar notificación informativa cuando NO hay cambios
       addNotification({
-        type: 'error',
-        title: 'Error de guardado',
-        message: 'No hay paciente activo o datos de odontograma disponibles',
+        type: 'info',
+        title: 'Sin cambios',
+        message: 'El odontograma ya está actualizado. No se detectaron cambios nuevos.',
+        duration: 3000,
       });
-      return;
-    }
-
-    try {
-      // Exportar datos del odontograma
-      const rawData = odontogramaDataHook.exportData
-        ? odontogramaDataHook.exportData()
-        : odontogramaData;
-
-      //console.log('[SAVE] Guardando odontograma completo...', rawData);
-
-      // El hook maneja: mapeo, guardado, recarga de datos, sincronización
-      const resultado = await guardarCompleto(rawData);
-
-      console.log('[SAVE] Guardado exitoso:', resultado);
-
-      // Notificar éxito
-      addNotification({
-        type: 'success',
-        title: 'Guardado exitoso',
-        message: `${resultado.diagnosticos_guardados} diagnósticos guardados en ${resultado.dientes_procesados.length} dientes`,
-        duration: 7000,
-      });
-      const snapshotId = resultado.snapshot_id;
-
-      if (snapshotId && onCompleteSave) {
-        await onCompleteSave(snapshotId);
-      }
-      // Advertencias si existen
+      
+      // Solo notificar si hay errores
       if (resultado.errores && resultado.errores.length > 0) {
         resultado.errores.forEach((error) => {
           addNotification({
             type: 'warning',
             title: 'Advertencia',
             message: error,
-            duration: 8000,
+            duration: 3000,
           });
         });
       }
+      
+      // IMPORTANTE: Retornar para no mostrar notificación de éxito
+      return resultado;
+    }
 
-    } catch (error) {
-      console.error('[SAVE] Error al guardar:', error);
+    // Si hubo cambios reales, mostrar notificación de éxito
+    addNotification({
+      type: 'success',
+      title: 'Guardado exitoso',
+      message: `${resultado.diagnosticos_guardados} diagnósticos guardados en ${resultado.dientes_procesados.length} dientes`,
+      duration: 3000,
+    });
 
-      addNotification({
-        type: 'error',
-        title: 'Error al guardar',
-        message: error instanceof Error ? error.message : 'Error desconocido',
-        duration: 10000,
+    const snapshotId = resultado.snapshot_id;
+
+    if (snapshotId && onCompleteSave) {
+      await onCompleteSave(snapshotId);
+    }
+    
+    // Advertencias si existen
+    if (resultado.errores && resultado.errores.length > 0) {
+      resultado.errores.forEach((error) => {
+        addNotification({
+          type: 'warning',
+          title: 'Advertencia',
+          message: error,
+          duration: 3000,
+        });
       });
     }
-  }, [odontogramaDataHook, guardarCompleto, hasPacienteActivo, addNotification, onCompleteSave, odontogramaData]);
+
+    return resultado;
+    
+  } catch (error) {
+    console.error('[SAVE] Error al guardar:', error);
+
+    addNotification({
+      type: 'error',
+      title: 'Error al guardar',
+      message: error instanceof Error ? error.message : 'Error desconocido',
+      duration: 3000,
+    });
+    
+    throw error; 
+  }
+}, [odontogramaDataHook, guardarCompleto, hasPacienteActivo, addNotification, onCompleteSave, odontogramaData]);
 
   const handleClearAll = useCallback(() => {
     if (!selectedTooth) {
@@ -519,3 +551,5 @@ export const useDiagnosticoPanelManager = ({
     removeNotification,
   };
 };
+
+

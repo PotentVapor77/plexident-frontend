@@ -145,9 +145,7 @@ export const HistorySingleView = ({
 
       {viewMode !== 'files' && (
         <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
-          {allDiagnosticos.length} diagnóstico
-          {allDiagnosticos.length !== 1 ? 's' : ''} registrados •{' '}
-          {Object.keys(diagnosticosPorDiente).length} dientes afectados
+          
         </p>
       )}
       {/* Layout principal con visor 3D y panel lateral */}

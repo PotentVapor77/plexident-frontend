@@ -9,15 +9,9 @@ import { ClinicalFilesProvider } from "../../context/ClinicalFilesContext";
 const OdontogramaInner = () => {
     const [selectedTooth, setSelectedTooth] = useState<string | null>(null);
     const [isFilePanelOpen, setIsFilePanelOpen] = useState(false);
-    const [snapshotId, setSnapshotId] = useState<string | null>(null);
 
     const {
         pendingFiles,
-        addPendingFile,
-        removePendingFile,
-        uploadAllPendingFiles,
-        isUploading,
-        hasPendingFiles,
     } = useClinicalFiles();
 
     useEffect(() => {

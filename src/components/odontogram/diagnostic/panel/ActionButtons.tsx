@@ -1,8 +1,9 @@
 // src/components/odontograma/DiagnosticoPanel/components/ActionButtons.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { type GroupedDiagnostic } from '../../../../core/utils/groupDiagnostics';
 import type { NotificationOptions } from '../../../../core/types/diagnostic.types';
-
+import { SaveSuccessOverlay } from '../../3d/SaveSuccessOverlay';
+import type { ResultadoGuardado } from '../../../../services/odontogram/odontogramaService';
 
 // ============================================================================
 // INTERFACES
@@ -52,22 +53,26 @@ interface ActionButtonsProps {
   /**
    * Callback para guardar todo el odontograma
    */
-  onSaveAll: () => void;
+  onSaveAll: () => Promise<ResultadoGuardado | undefined> | undefined;
 
   /**
    * Callback para limpiar todos los diagnósticos del diente
    */
   onClearAll: () => void;
-
+  refreshOdontograma: () => void;
   diagnosticosAplicados: GroupedDiagnostic[];
   addNotification: (options: NotificationOptions) => void;
+  
+  /**
+   * Nueva prop: Callback para refrescar índices CPO
+   */
+  refreshCPOIndices?: () => Promise<void> | void;
 
 }
 
 // ============================================================================
 // COMPONENTE: ActionButtons
 // ============================================================================
-
 
 export const ActionButtons: React.FC<ActionButtonsProps> = ({
   selectedTooth,
@@ -81,9 +86,68 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   onSaveAll,
   onClearAll,
   addNotification,
+  refreshOdontograma,
+  refreshCPOIndices,
 }) => {
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [isRefreshingCPO, setIsRefreshingCPO] = useState(false);
 
+  const handleSaveAll = async () => {
+  if (!canSave) return;
 
+  try {
+    setIsRefreshingCPO(true);
+    
+    // 1. Capturamos la respuesta del servicio
+    const response = await onSaveAll(); 
+
+    // Verificar si hubo cambios
+    if (response && response.diagnosticos_guardados === 0) {
+      // Ya no necesitamos la notificación aquí porque useDiagnosticoPanelManager
+      // ya no la muestra. Solo debemos evitar mostrar SaveSuccessOverlay
+      console.log('[ActionButtons] Sin cambios detectados, no se muestra overlay');
+      setIsRefreshingCPO(false);
+      return; // Salimos sin mostrar el SaveSuccessOverlay
+    }
+
+    // Solo mostrar el overlay si hubo cambios reales
+    if (response && response.diagnosticos_guardados > 0) {
+      setShowSaveSuccess(true);
+    }
+    
+    if (refreshCPOIndices) {
+      try {
+        await refreshCPOIndices();
+        // Solo mostrar notificación de CPO si hubo cambios
+        if (response && response.diagnosticos_guardados > 0) {
+          addNotification({
+            type: 'success',
+            title: 'CPO actualizado',
+            message: 'Índices CPO recalculados correctamente.',
+          });
+        }
+      } catch (cpoError) {
+        console.warn('[ActionButtons] Error al refrescar CPO:', cpoError);
+      }
+    }
+  } catch (error) {
+    console.error('[ActionButtons] Error al guardar:', error);
+    addNotification({
+      type: 'error',
+      title: 'Error al guardar',
+      message: error instanceof Error 
+        ? error.message 
+        : 'No se pudo guardar el odontograma.',
+    });
+  } finally {
+    setIsRefreshingCPO(false);
+  }
+};
+
+  const handleSuccessComplete = () => {
+    setShowSaveSuccess(false);
+    refreshOdontograma();
+  };
 
   // ===========================================================================
   // Eliminar diagnóstico
@@ -120,18 +184,13 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
     }
   };
 
-
-
-
-
   // ============================================================================
   // VALIDACIONES DE ESTADO
   // ============================================================================
 
-
   const canAddDiagnostico = selectedTooth && !isBlocked;
   const canClearDiagnosticos = selectedTooth && diagnosticosCount > 0 && !showDiagnosticoForm;
-  const canSave = !isSaving;
+  const canSave = !isSaving && !isRefreshingCPO;
 
   // ============================================================================
   // RENDER
@@ -141,7 +200,6 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
     <div className="sticky bottom-0 z-10 border-t border-gray-200 bg-gray-50 p-4 shadow-lg">
       {/* Botones principales */}
       <div className="flex gap-3 mb-3">
-
         {/* BOTÓN 1: Añadir Diagnóstico / Cancelar */}
         {showDiagnosticoForm ? (
           <button
@@ -182,13 +240,17 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 
         {/* BOTÓN 2: Guardar Todo */}
         <button
-          onClick={onSaveAll}
+          onClick={handleSaveAll}
           disabled={!canSave}
           className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all shadow-theme-sm ${canSave
               ? 'bg-success-600 text-white hover:bg-success-700 active:bg-success-800 hover:shadow-focus-ring'
               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}
-          title={isSaving ? 'Guardando...' : 'Guardar todos los cambios al servidor'}
+          title={
+            isSaving ? 'Guardando...' : 
+            isRefreshingCPO ? 'Actualizando CPO...' : 
+            'Guardar todos los cambios al servidor y actualizar índices CPO'
+          }
         >
           <span className="flex items-center justify-center gap-2">
             {isSaving ? (
@@ -198,6 +260,14 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
                 Guardando...
+              </>
+            ) : isRefreshingCPO ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Actualizando CPO...
               </>
             ) : (
               <>
@@ -237,10 +307,25 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
           </span>
         </div>
       )}
+      
+      {/* Estado de CPO si está refrescando */}
+      {isRefreshingCPO && (
+        <div className="mt-2 flex items-center justify-center gap-2 text-xs text-brand-600">
+          <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>Actualizando índices CPO...</span>
+        </div>
+      )}
+      
+      <SaveSuccessOverlay
+        isVisible={showSaveSuccess}
+        onComplete={handleSuccessComplete}
+      />
     </div>
   );
 };
-
 
 // ============================================================================
 // HELPERS

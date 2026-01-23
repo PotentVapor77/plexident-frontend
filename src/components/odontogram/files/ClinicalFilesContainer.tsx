@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { X, File as FileIcon, FileText, Image as ImageIcon, Eye, AlertCircle } from "lucide-react";
 import { FileUploadButton } from "./FileUploadButton";
+import { CameraCaptureButton } from "./CameraCaptureButton";
 import { usePacienteActivo } from "../../../context/PacienteContext";
 import { useClinicalFilesContext } from "../../../context/ClinicalFilesContext";
 
@@ -118,7 +119,7 @@ export const ClinicalFilesContainer: React.FC<ClinicalFilesContainerProps> = ({
       role="dialog"
       aria-label="Archivos clínicos"
     >
-      {/* “Flechita” hacia el botón */}
+      {/* "Flechita" hacia el botón */}
       <div
         className="
           absolute left-[-6px] bottom-5
@@ -143,30 +144,30 @@ export const ClinicalFilesContainer: React.FC<ClinicalFilesContainerProps> = ({
           <X className="h-4 w-4" />
         </button>
       </div>
+      
       {error && (
-          <div className="mx-4 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-            <button
-              onClick={clearError}
-              className="p-1 rounded text-red-600 hover:text-red-800"
-            >
-              <X className="w-4 h-4" />
-            </button>
+        <div className="mx-4 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm text-red-800">{error}</p>
           </div>
-        )}
+          <button
+            onClick={clearError}
+            className="p-1 rounded text-red-600 hover:text-red-800"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
-        {pendingFiles.length > 0 && (
-          <div className="mx-4 mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-xs text-blue-800">
-              {pendingFiles.length} / 10 archivos
-              {remainingSlots > 0 && ` (puedes agregar ${remainingSlots} más)`}
-            </p>
-          </div>
-        )}
-
+      {pendingFiles.length > 0 && (
+        <div className="mx-4 mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-xs text-blue-800">
+            {pendingFiles.length} / 10 archivos
+            {remainingSlots > 0 && ` (puedes agregar ${remainingSlots} más)`}
+          </p>
+        </div>
+      )}
 
       {/* Body */}
       <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-2 custom-scrollbar">
@@ -230,25 +231,39 @@ export const ClinicalFilesContainer: React.FC<ClinicalFilesContainerProps> = ({
 
         {hasPendingFiles && (
           <p className="text-[11px] text-gray-500">
-            Los archivos se subirán al presionar “Guardar todo”.
+            Los archivos se subirán al presionar "Guardar todo".
           </p>
         )}
       </div>
 
       {/* Footer */}
       <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
-        <FileUploadButton
+        <div className="grid grid-cols-2 gap-2">
+          <FileUploadButton
             pendingFiles={pendingFiles}
             onAddFile={(file) => addPendingFile(file, "OTHER")}
             onRemoveFile={removePendingFile}
             disabled={!pacienteActivo || isUploading || !canAddMore}
+            label="Subir archivos"
           />
+          
+          <CameraCaptureButton
+            onCapture={(file) => addPendingFile(file, "PHOTO")}
+            disabled={!pacienteActivo || isUploading || !canAddMore}
+          />
+        </div>
+        
         {!canAddMore && (
-            <p className="text-xs text-orange-600 mt-2 text-center">
-              Límite de 10 archivos alcanzado
-            </p>
-          )}
-
+          <p className="text-xs text-orange-600 mt-2 text-center">
+            Límite de 10 archivos alcanzado
+          </p>
+        )}
+        
+        {hasPendingFiles && (
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            Usa la cámara para capturar imágenes en tiempo real
+          </p>
+        )}
       </div>
     </div>
   );

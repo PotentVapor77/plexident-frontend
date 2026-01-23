@@ -22,7 +22,7 @@ const formatFileSize = (bytes: number): string => {
 };
 
 const getFileIcon = (mimetype: string) => {
-  if (mimetype.startsWith('image/')) return '🖼️';
+  if (mimetype.startsWith('image/')) return '📸';
   if (mimetype === 'application/pdf') return '📄';
   if (mimetype.includes('video')) return '🎥';
   if (mimetype.includes('zip') || mimetype.includes('compressed')) return '📦';

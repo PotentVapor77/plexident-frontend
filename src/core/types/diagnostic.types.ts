@@ -1,5 +1,6 @@
 // src/core/types/diagnostic.types.ts
 
+import type { ResultadoGuardado } from "../../services/odontogram/odontogramaService";
 import type { IPaciente } from "../../types/patient/IPatient";
 import type { GroupedSurface } from "../utils/groupDentalSurfaces";
 import type { GroupedDiagnostic } from "../utils/groupDiagnostics";
@@ -108,7 +109,7 @@ export interface UseDiagnosticoPanelManagerReturn {
   handleRootGroupChange: (group: string | null) => void;
 
   // Handlers de guardado
-  handleGuardarCompleto: () => Promise<void>;
+  handleGuardarCompleto: () => Promise<ResultadoGuardado | undefined>;
   handleClearAll: () => void;
 
   // Utilidades

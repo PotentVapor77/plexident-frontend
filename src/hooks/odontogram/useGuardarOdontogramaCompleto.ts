@@ -4,6 +4,7 @@ import { usePacienteActivo } from '../../context/PacienteContext'
 import type { OdontogramaData } from '../../core/types/odontograma.types'
 import { guardarOdontogramaCompleto, obtenerOdontogramaCompletoFrontend } from '../../services/odontogram/odontogramaService'
 import { useOdontogramaData } from './useOdontogramaData'
+import { CPOService } from '../../services/odontogram/cpoService'
 
 export const useGuardarOdontogramaCompleto = () => {
     const [isSavingComplete, setIsSavingComplete] = useState(false)
@@ -56,11 +57,25 @@ export const useGuardarOdontogramaCompleto = () => {
         [pacienteActivo?.id, loadFromBackend]
     )
 
+const updateCPOIndices = useCallback(async () => {
+  if (!pacienteActivo?.id) return;
+  
+  try {
+    const indices = await CPOService.getIndices(pacienteActivo.id);
+    return indices;
+  } catch (error) {
+    console.error('Error actualizando índices CPO:', error);
+  }
+  
+  return null;
+}, [pacienteActivo?.id]);
+
     return {
         guardarCompleto,
         isSavingComplete,
         lastCompleteSave,
         saveResult,
         hasPacienteActivo: !!pacienteActivo?.id,
+        updateCPOIndices
     }
 }

@@ -1,6 +1,6 @@
 // src/components/odontogram/OdontogramaViewer.tsx
 
-import { useMemo, useRef, useEffect } from "react";
+import { useMemo, useRef, useEffect} from "react";
 import { Canvas } from "@react-three/fiber";
 import { OdontogramaModel } from "./3d/OdontogramaModel";
 import {
@@ -27,6 +27,8 @@ import { useCatalogoDiagnosticos } from "../../hooks/odontogram/useCatalogoDiagn
 import { getProcConfigFromCategories } from "../../core/domain/diagnostic/procConfig";
 import { Upload } from "lucide-react";
 import type { PendingFile } from "../../services/clinicalFiles/clinicalFilesService";
+import { CPOIndicesTable } from "./indiceCPO/CPOIndicesTable";
+import { useCPOIndicesManager } from "../../hooks/odontogram/indiceCPO/useCPOIndicesManager";
 
 type FilePanelProps = {
   pendingFiles: PendingFile[];
@@ -57,7 +59,7 @@ export const OdontogramaViewer = ({
 }: OdontogramaViewerProps) => {
   // Estado de paciente
   const { pacienteActivo, setPacienteActivo } = usePacienteActivo();
-
+  
 
   const [isPacientePanelCollapsed, setIsPacientePanelCollapsed] = React.useState(true);
   // Hooks odontograma
@@ -76,8 +78,21 @@ export const OdontogramaViewer = ({
   const [isJawOpen, setIsJawOpen] = React.useState(false);
   const { cargarOdontograma } = useCargarOdontogramaCompleto();
   const canvasContainerRef = useRef<HTMLDivElement | null>(null);
+  const {
+    fetchSavedIndices,
+  } = useCPOIndicesManager(pacienteActivo?.id || null, odontogramaData);
+
+  useEffect(() => {
+    if (pacienteActivo?.id) {
+      fetchSavedIndices();
+    }
+  }, [pacienteActivo?.id, fetchSavedIndices]);
 
 
+
+
+
+  // Efecto: Cargar odontograma al cambiar pacienteActivo
   useEffect(() => {
     if (!pacienteActivo) {
       console.log('[VIEWER] No hay pacienteActivo, no cargo odontograma');
@@ -352,7 +367,26 @@ export const OdontogramaViewer = ({
               </div>
             </div>
           )}
+
+
+          
         </div>
+
+        {pacienteActivo && (
+  <div className="absolute bottom-4 right-4 z-40 pointer-events-none">
+    <div className="pointer-events-auto">
+      <CPOIndicesTable
+            pacienteId={pacienteActivo.id}
+            odontogramaData={odontogramaData}
+            savedIndices={null} 
+            isSaving={false}
+            compact={true}
+            onRefresh={() => {
+        }}
+          />
+    </div>
+  </div>
+)}
 
         {/* BOTÓN FLOTANTE: Carga de archivos */}
 

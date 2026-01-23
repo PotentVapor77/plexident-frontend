@@ -8,9 +8,13 @@ import {
     Calendar,
     ChevronDown,
     FileArchive,
-    FileVideo
+    FileVideo,
+    Maximize2,
+    Minimize2,
+    X
 } from 'lucide-react';
 import type { ClinicalFile } from '../../../../../services/clinicalFiles/clinicalFilesService';
+import { isImageFile, useFilePreview } from '../../../../../hooks/clinicalFiles/useFilePreview';
 
 interface FilesCompareTableProps {
     beforeFiles: ClinicalFile[];
@@ -27,9 +31,12 @@ const formatFileSize = (bytes: number): string => {
 };
 
 const getFileIcon = (file: ClinicalFile) => {
-    if (file.mime_type.startsWith('image/')) {
+    // Primero verificar si es imagen usando nuestra función mejorada
+    if (isImageFile(file.file_url || '', file.mime_type)) {
         return <ImageIcon className="h-5 w-5 text-blue-500" />;
     }
+    
+    // Luego verificar el MIME type
     if (file.mime_type === 'application/pdf') {
         return <FileText className="h-5 w-5 text-red-500" />;
     }
@@ -71,6 +78,16 @@ export const FilesCompareTable = ({
         }
         setExpandedFiles(newExpanded);
     };
+    const {
+        imagePreview,
+        openFilePreview,
+        closeFilePreview,
+        toggleFullscreen,
+        openInNewTab,
+        isFileViewable,
+        getFileType
+    } = useFilePreview();
+    
 
     const renderFileRow = (
         file: ClinicalFile, 
@@ -79,6 +96,8 @@ export const FilesCompareTable = ({
     ) => {
         const isExpanded = expandedFiles.has(file.id);
         const isImage = file.mime_type.startsWith('image/');
+        const isPDF = file.mime_type === 'application/pdf';
+        const isViewable = isImage || isPDF;
         
         return (
             <div
@@ -135,20 +154,33 @@ export const FilesCompareTable = ({
                     </div>
                     
                     <div className="flex items-center gap-2">
+                        {isViewable && file.file_url && (
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    openFilePreview(file.file_url!, file.original_filename);
+                                }}
+                                className="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
+                                title={isImage ? "Ver imagen completa" : "Ver archivo"}
+                            >
+                                <Eye className="h-4 w-4" />
+                            </button>
+                        )}
                         {file.file_url && (
                             <button
                                 type="button"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    window.open(file.file_url, '_blank', 'noopener,noreferrer');
+                                    openInNewTab(file.file_url!);
                                 }}
                                 className="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
-                                title="Ver archivo"
+                                title="Abrir en nueva pestaña"
                             >
-                                <Eye className="h-4 w-4" />
+                                <Maximize2 className="h-4 w-4" />
                             </button>
                         )}
-                        
+
                         {file.download_url && (
                             <a
                                 href={file.download_url}
@@ -174,6 +206,7 @@ export const FilesCompareTable = ({
                 </div>
                 
                 {/* Detalles expandidos */}
+                {/* Detalles expandidos */}
                 {isExpanded && (
                     <div className="border-t border-gray-200 dark:border-gray-800 px-3 py-3 bg-white dark:bg-gray-900">
                         <div className="grid grid-cols-2 gap-4">
@@ -181,12 +214,26 @@ export const FilesCompareTable = ({
                             {isImage && file.file_url && (
                                 <div className="col-span-2">
                                     <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
-                                        <img
-                                            src={file.file_url}
-                                            alt={file.original_filename}
-                                            className="max-h-48 w-full object-contain rounded"
-                                            loading="lazy"
-                                        />
+                                        <div 
+                                            className="relative w-full h-48 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden cursor-pointer group/image-preview"
+                                            onClick={() => openFilePreview(file.file_url!, file.original_filename)}
+                                        >
+                                            <img
+                                                src={file.file_url}
+                                                alt={file.original_filename}
+                                                className="w-full h-full object-contain transition-transform duration-300 group-hover/image-preview:scale-105"
+                                                loading="lazy"
+                                            />
+                                            {/* Overlay para ver imagen completa */}
+                                            <div className="absolute inset-0 bg-black/0 group-hover/image-preview:bg-black/20 transition-colors flex items-center justify-center">
+                                                <div className="opacity-0 group-hover/image-preview:opacity-100 transition-opacity bg-white/90 dark:bg-gray-900/90 rounded-full p-2">
+                                                    <Eye className="h-4 w-4" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">
+                                            Haz clic para ver en tamaño completo
+                                        </p>
                                     </div>
                                 </div>
                             )}
@@ -216,18 +263,32 @@ export const FilesCompareTable = ({
                                     Acciones disponibles
                                 </div>
                                 <div className="flex flex-wrap gap-2">
+                                    {/* Botón Ver imagen/archivo */}
+                                    {isViewable && file.file_url && (
+                                        <button
+                                            type="button"
+                                            onClick={() => openFilePreview(file.file_url!, file.original_filename)}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-md transition-colors"
+                                        >
+                                            <Eye className="h-3.5 w-3.5" />
+                                            {isImage ? 'Ver imagen completa' : 'Ver archivo'}
+                                        </button>
+                                    )}
                                     {file.file_url && (
                                         <a
                                             href={file.file_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-md transition-colors"
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-xs rounded-md transition-colors"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                openInNewTab(file.file_url!);
+                                            }}
                                         >
-                                            <Eye className="h-3.5 w-3.5" />
+                                            <Maximize2 className="h-3.5 w-3.5" />
                                             Abrir en nueva pestaña
                                         </a>
                                     )}
-                                    
                                     {file.download_url && (
                                         <a
                                             href={file.download_url}
@@ -367,14 +428,148 @@ export const FilesCompareTable = ({
         );
     };
 
-    switch (activeTab) {
-        case 'comparison':
-            return renderComparisonView();
-        case 'before':
-            return renderSingleView(beforeFiles, 'before');
-        case 'after':
-            return renderSingleView(afterFiles, 'after');
-        default:
-            return renderComparisonView();
-    }
+    const renderPreviewModal = () => {
+        if (!imagePreview.isOpen) return null;
+
+        const fileType = getFileType(imagePreview.url);
+        
+        return (
+            <>
+                {/* Backdrop con blur */}
+                <div 
+                    className="fixed inset-0 z-50 backdrop-blur-sm bg-black/50 transition-all duration-300"
+                    onClick={closeFilePreview}
+                />
+
+                {/* Modal flotante */}
+                <div 
+                    className={`fixed z-[51] bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-300 dark:border-gray-700 
+                               transition-all duration-300 overflow-hidden ${
+                        imagePreview.isFullscreen 
+                            ? 'inset-4' 
+                            : 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[85vh] max-w-[1200px]'
+                    }`}
+                >
+                    {/* Header del modal */}
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                            {imagePreview.title}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                            {/* Botón pantalla completa */}
+                            <button
+                                type="button"
+                                onClick={toggleFullscreen}
+                                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                title={imagePreview.isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+                            >
+                                {imagePreview.isFullscreen ? (
+                                    <Minimize2 className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                                ) : (
+                                    <Maximize2 className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                                )}
+                            </button>
+                            
+                            {/* Botón cerrar */}
+                            <button
+                                type="button"
+                                onClick={closeFilePreview}
+                                className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                                title="Cerrar"
+                            >
+                                <X className="h-5 w-5 text-red-600 dark:text-red-400" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Contenido de la imagen/archivo */}
+                    <div className="flex-1 h-[calc(100%-80px)] overflow-auto bg-gray-100 dark:bg-gray-800 p-4">
+                        <div className="w-full h-full flex items-center justify-center">
+                            {fileType === 'image' ? (
+                                <img
+                                    src={imagePreview.url}
+                                    alt={imagePreview.title}
+                                    className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                                    loading="lazy"
+                                    onError={(e) => {
+                                        // Si falla la carga de la imagen, mostrar un mensaje
+                                        console.error('Error loading image:', imagePreview.url);
+                                        e.currentTarget.style.display = 'none';
+                                        // Podrías agregar un estado para mostrar un mensaje de error
+                                    }}
+                                />
+                            ) : fileType === 'pdf' ? (
+                                <iframe
+                                    src={imagePreview.url}
+                                    className="w-full h-full border-0 rounded-lg shadow-lg"
+                                    title={imagePreview.title}
+                                />
+                            ) : (
+                                <div className="text-center p-8">
+                                    <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                                    <p className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                        {imagePreview.title}
+                                    </p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                        Este tipo de archivo no puede ser visualizado en esta vista previa.
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => openInNewTab(imagePreview.url)}
+                                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                                    >
+                                        Abrir en nueva pestaña
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Footer con información */}
+                    <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900 text-xs text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center justify-between">
+                            <p>
+                                {fileType === 'image' 
+                                    ? "Usa la rueda del mouse para hacer zoom, o haz clic y arrastra para mover la imagen"
+                                    : fileType === 'pdf'
+                                    ? "Vista previa del documento PDF"
+                                    : "Archivo no visualizable en vista previa"
+                                }
+                            </p>
+                            <div className="flex items-center gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => openInNewTab(imagePreview.url)}
+                                    className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium"
+                                >
+                                    Abrir en nueva pestaña
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </>
+        );
+    };
+
+    return (
+        <>
+            {/* Contenido principal según activeTab */}
+            {(() => {
+                switch (activeTab) {
+                    case 'comparison':
+                        return renderComparisonView();
+                    case 'before':
+                        return renderSingleView(beforeFiles, 'before');
+                    case 'after':
+                        return renderSingleView(afterFiles, 'after');
+                    default:
+                        return renderComparisonView();
+                }
+            })()}
+            
+            {/* Modal de vista previa */}
+            {renderPreviewModal()}
+        </>
+    );
 };

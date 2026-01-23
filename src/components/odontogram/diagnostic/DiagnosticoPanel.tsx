@@ -1,6 +1,6 @@
 // src/components/odontogram/diagnostic/DiagnosticoPanel.tsx
 
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { usePacienteActivo } from '../../../context/PacienteContext';
 import { useDiagnosticoPanelManager } from '../../../hooks/odontogram/diagnosticoHooks/useDiagnosticoPanelManager';
@@ -18,8 +18,8 @@ import { DiagnosticoSelectUI } from '../selection/DiagnosticoSelectUI';
 import { groupDentalSurfaces } from '../../../core/utils/groupDentalSurfaces';
 import { SurfaceLabels } from './panel/SurfaceLabels';
 import type { PendingFile } from '../../../services/clinicalFiles/clinicalFilesService';
-import { useClinicalFiles } from '../../../hooks/clinicalFiles/useClinicalFiles';
 import { useClinicalFilesContext } from '../../../context/ClinicalFilesContext';
+import { SaveSuccessOverlay } from '../3d/SaveSuccessOverlay';
 // ============================================================================
 // INTERFACES
 // ============================================================================
@@ -42,6 +42,8 @@ interface DiagnosticoPanelProps {
   onRootGroupChange?: (group: string | null) => void;
   onOpenFileUpload?: () => void;
   filePanelProps?: FilePanelProps;
+  onIndicesRefresh?: () => Promise<void> | void;
+
 }
 
 // ============================================================================
@@ -55,6 +57,8 @@ export const DiagnosticoPanel: React.FC<DiagnosticoPanelProps> = ({
 }) => {
   const { pacienteActivo } = usePacienteActivo();
   const { uploadAllPendingFiles, hasPendingFiles } = useClinicalFilesContext();
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // ============================================================================
   // VALIDACIÓN INICIAL
@@ -137,6 +141,20 @@ export const DiagnosticoPanel: React.FC<DiagnosticoPanelProps> = ({
   // ============================================================================
   // EFECTOS
   // ============================================================================
+const refreshOdontograma = () => {
+    // Incrementa la key para forzar re-render
+    setRefreshKey(prev => prev + 1);
+    
+    // También puedes recargar datos del odontograma si es necesario
+    if (odontogramaDataHook?.refetch) {
+      odontogramaDataHook.refetch();
+    }
+  };
+
+  const handleSuccessComplete = () => {
+    setShowSaveSuccess(false);
+    refreshOdontograma();
+  };
 
   useEffect(() => {
     handleToothChange(selectedTooth);
@@ -191,6 +209,7 @@ export const DiagnosticoPanel: React.FC<DiagnosticoPanelProps> = ({
   // ============================================================================
 
   return (
+    <>
     <div className="h-full w-full flex flex-col bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700">
       {/* ===== NOTIFICACIONES ===== */}
       <NotificationManager
@@ -310,9 +329,16 @@ export const DiagnosticoPanel: React.FC<DiagnosticoPanelProps> = ({
           onClearAll={handleClearAll}
           diagnosticosAplicados={state.diagnosticosAplicados}
           addNotification={addNotification}
+          refreshOdontograma={refreshOdontograma}
+          
         />
 
       </div>
     </div>
+<SaveSuccessOverlay
+        isVisible={showSaveSuccess}
+        onComplete={handleSuccessComplete}
+      />
+    </>
   );
 };

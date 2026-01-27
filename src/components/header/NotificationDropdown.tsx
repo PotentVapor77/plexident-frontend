@@ -1,6 +1,6 @@
 // frontend/src/components/layout/NotificationDropdown.tsx
 
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Bell, Clock, Calendar, User, AlertCircle } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -16,7 +16,13 @@ interface CitasProximasResponse {
   tiene_alertas_criticas: boolean;
 }
 
-const NotificationDropdown: React.FC = () => {
+// ✅ Definir el tipo ApiResponse
+interface ApiResponse {
+  data?: CitasProximasResponse;
+  citas_proximas?: IAlertaCita[];
+}
+
+const NotificationDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [citasProximas, setCitasProximas] = useState<IAlertaCita[]>([]);
   const [loading, setLoading] = useState(false);
@@ -52,17 +58,8 @@ const NotificationDropdown: React.FC = () => {
     };
   }, [isOpen]);
 
+  // ✅ CORREGIDO: Función completa sin duplicados
   const cargarCitasProximas = async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    const response = await appointmentService.getCitasProximas();
-    //console.log('📦 Respuesta citas próximas:', response);
-    
-    if (Array.isArray(response)) {
-      setCitasProximas(response);
-    } else if (response && typeof response === 'object') {
-      const data = response as ApiResponse;
     setLoading(true);
     setError(null);
     try {
@@ -70,10 +67,12 @@ const NotificationDropdown: React.FC = () => {
       console.log('📦 Respuesta citas próximas:', response);
       
       if (response && typeof response === 'object') {
+        // Caso 1: Respuesta con estructura { data: { citas_proximas: [] } }
         if ('data' in response && response.data) {
-          const data = response.data as CitasProximasResponse;
+          const apiResponse = response as ApiResponse;
+          const data = apiResponse.data;
           
-          if (data.citas_proximas && Array.isArray(data.citas_proximas)) {
+          if (data && data.citas_proximas && Array.isArray(data.citas_proximas)) {
             setCitasProximas(data.citas_proximas);
             console.log(`✅ ${data.citas_proximas.length} citas próximas cargadas`);
           } else {
@@ -81,11 +80,16 @@ const NotificationDropdown: React.FC = () => {
             setCitasProximas([]);
           }
         } 
+        // Caso 2: Respuesta directa { citas_proximas: [] }
         else if ('citas_proximas' in response && Array.isArray(response.citas_proximas)) {
-          setCitasProximas(response.citas_proximas);
+          const apiResponse = response as ApiResponse;
+          setCitasProximas(apiResponse.citas_proximas || []);
+          console.log(`✅ ${apiResponse.citas_proximas?.length || 0} citas próximas cargadas`);
         }
+        // Caso 3: Respuesta como array directo
         else if (Array.isArray(response)) {
-          setCitasProximas(response);
+          setCitasProximas(response as IAlertaCita[]);
+          console.log(`✅ ${response.length} citas próximas cargadas`);
         } else {
           console.error('❌ Estructura de respuesta no reconocida:', response);
           setCitasProximas([]);
@@ -219,7 +223,6 @@ const NotificationDropdown: React.FC = () => {
                     className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 
                               transition-colors duration-150 border-l-4 ${getUrgenciaColor(cita.minutos_faltantes)}`}
                   >
-                    {/* ✅ CORREGIDO: estado en lugar de EstadoCita */}
                     <div className="flex items-center justify-between mb-2">
                       <span className={`text-xs font-bold px-2 py-1 rounded-full ${
                         cita.minutos_faltantes <= 15

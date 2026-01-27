@@ -99,6 +99,42 @@ const getCondicionesRiesgo = (anamnesis: IAnamnesis): string[] => {
   return condiciones;
 };
 
+// ✅ NUEVA: Función para obtener estado de exámenes
+const getEstadoExamenes = (anamnesis: IAnamnesis): {
+  icon: string;
+  text: string;
+  color: string;
+  bgColor: string;
+} => {
+  // Caso 1: Exámenes completados (tiene informe)
+  if (anamnesis.informe_examenes !== 'NINGUNO' && anamnesis.informe_examenes_detalle) {
+    return {
+      icon: '✓',
+      text: 'Completado',
+      color: 'text-green-700 dark:text-green-400',
+      bgColor: 'bg-green-100 dark:bg-green-900/30'
+    };
+  }
+  
+  // Caso 2: Exámenes pendientes (solicitados pero sin informe)
+  if (anamnesis.pedido_examenes_complementarios === 'SI') {
+    return {
+      icon: '⏳',
+      text: 'Pendiente',
+      color: 'text-yellow-700 dark:text-yellow-400',
+      bgColor: 'bg-yellow-100 dark:bg-yellow-900/30'
+    };
+  }
+  
+  // Caso 3: Sin exámenes
+  return {
+    icon: '—',
+    text: 'Sin exámenes',
+    color: 'text-gray-500 dark:text-gray-400',
+    bgColor: 'bg-gray-100 dark:bg-gray-800'
+  };
+};
+
 export function AnamnesisTable({
   anamnesisData,
   isLoading,
@@ -128,7 +164,7 @@ export function AnamnesisTable({
     } catch (e) {
       console.error("Error fetching patient:", e);
     }
-  }, [pacienteCache]); // ✅ Añadir pacienteCache como dependencia
+  }, [pacienteCache]);
 
   // ✅ Cargar pacientes en caché cuando cambia la data
   useEffect(() => {
@@ -137,7 +173,7 @@ export function AnamnesisTable({
         void ensurePatientInCache(anamnesis.paciente);
       }
     });
-  }, [anamnesisData, ensurePatientInCache]); // ✅ Añadir ensurePatientInCache como dependencia
+  }, [anamnesisData, ensurePatientInCache]);
 
   // ✅ Función helper para obtener objeto paciente
   const getPacienteObject = (anamnesis: IAnamnesis): IPaciente | null => {
@@ -153,7 +189,6 @@ export function AnamnesisTable({
     if (paciente) {
       return `${paciente.nombres} ${paciente.apellidos}`.trim();
     }
-    // Si no tenemos el paciente en cache, usar paciente_nombre si está disponible
     return anamnesis.paciente_nombre || "Paciente";
   };
 
@@ -301,6 +336,10 @@ export function AnamnesisTable({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Riesgo
               </th>
+              {/* ✅ NUEVA COLUMNA: Exámenes */}
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Exámenes
+              </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Última modificación
               </th>
@@ -315,7 +354,7 @@ export function AnamnesisTable({
           <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
             {isLoading ? (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center">
+                <td colSpan={8} className="px-6 py-12 text-center">
                   <div className="flex justify-center">
                     <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -327,7 +366,7 @@ export function AnamnesisTable({
             ) : anamnesisData.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
                 >
                   <div className="flex flex-col items-center gap-2">
@@ -371,6 +410,7 @@ export function AnamnesisTable({
                 const patientId = getPatientId(anamnesis);
                 const riesgo = getRiskColor(anamnesis);
                 const condiciones = getCondicionesRiesgo(anamnesis);
+                const estadoExamenes = getEstadoExamenes(anamnesis); // ✅ NUEVO
 
                 return (
                   <tr
@@ -380,16 +420,13 @@ export function AnamnesisTable({
                     {/* ✅ Celda del paciente */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        {/* Avatar con iniciales */}
                         <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white font-semibold shadow-md shadow-blue-500/30">
                           {patientInitials}
                         </div>
                         <div className="ml-4">
-                          {/* Nombre */}
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
                             {patientName}
                           </div>
-                          {/* Cédula */}
                           <div className="text-xs text-gray-500 dark:text-gray-400">
                             CI {patientId}
                           </div>
@@ -400,7 +437,6 @@ export function AnamnesisTable({
                     {/* ✅ Alergias Críticas */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="space-y-1">
-                        {/* Alergia a antibióticos */}
                         {anamnesis.alergia_antibiotico !== 'NO' && (
                           <div className="flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full bg-red-500"></span>
@@ -410,7 +446,6 @@ export function AnamnesisTable({
                           </div>
                         )}
                         
-                        {/* Alergia a anestesia */}
                         {anamnesis.alergia_anestesia !== 'NO' && (
                           <div className="flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full bg-orange-500"></span>
@@ -420,7 +455,6 @@ export function AnamnesisTable({
                           </div>
                         )}
 
-                        {/* ✅ Añadido: Problemas de coagulación */}
                         {anamnesis.hemorragias === 'SI' && (
                           <div className="flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full bg-purple-500"></span>
@@ -430,7 +464,6 @@ export function AnamnesisTable({
                           </div>
                         )}
 
-                        {/* Si no hay alergias críticas */}
                         {anamnesis.alergia_antibiotico === 'NO' && 
                          anamnesis.alergia_anestesia === 'NO' && 
                          anamnesis.hemorragias === 'NO' && (
@@ -469,6 +502,14 @@ export function AnamnesisTable({
                       </span>
                     </td>
 
+                    {/* ✅ NUEVA CELDA: Estado de exámenes */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${estadoExamenes.bgColor} ${estadoExamenes.color}`}>
+                        <span>{estadoExamenes.icon}</span>
+                        <span>{estadoExamenes.text}</span>
+                      </span>
+                    </td>
+
                     {/* ✅ Última modificación */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       <div>
@@ -491,7 +532,6 @@ export function AnamnesisTable({
                     {/* ✅ Acciones */}
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
-                        {/* Botón Ver */}
                         <button
                           onClick={() => onView(anamnesis)}
                           className="p-1.5 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20"
@@ -503,7 +543,6 @@ export function AnamnesisTable({
                           </svg>
                         </button>
                         
-                        {/* Botón Editar */}
                         <button
                           onClick={() => onEdit(anamnesis)}
                           className="p-1.5 text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
@@ -514,7 +553,6 @@ export function AnamnesisTable({
                           </svg>
                         </button>
                         
-                        {/* Botón Eliminar */}
                         <button
                           onClick={() => onDelete(anamnesis)}
                           disabled={!anamnesis.activo}

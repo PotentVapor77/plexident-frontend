@@ -45,6 +45,18 @@ const formatDateTime = (dateString?: string): string => {
   }
 };
 
+// ✅ Helper para obtener etiqueta de informe de exámenes
+const getInformeExamenesLabel = (value: string): string => {
+  const labels: Record<string, string> = {
+    'NINGUNO': 'Ninguno',
+    'BIOMETRIA': 'Biometría hemática',
+    'QUIMICA_SANGUINEA': 'Química sanguínea',
+    'RAYOS_X': 'Rayos X',
+    'OTROS': 'Otros',
+  };
+  return labels[value] || formatLabel(value);
+};
+
 export function AnamnesisViewModal({
   isOpen,
   onClose,
@@ -134,7 +146,7 @@ export function AnamnesisViewModal({
             
             <div className="space-y-4">
               {/* Alergia a antibióticos */}
-              <div className={anamnesis.alergia_antibiotico !== 'NO' ? ' dark:bg-red-900/20 rounded-lg p-4' : ''}>
+              <div className={anamnesis.alergia_antibiotico !== 'NO' ? 'bg-red-50 dark:bg-red-900/20 rounded-lg p-4' : ''}>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Alergia a antibióticos:
                 </p>
@@ -148,7 +160,7 @@ export function AnamnesisViewModal({
               </div>
 
               {/* Alergia a anestesia */}
-              <div className={anamnesis.alergia_anestesia !== 'NO' ? ' dark:bg-red-900/20 rounded-lg p-4' : ''}>
+              <div className={anamnesis.alergia_anestesia !== 'NO' ? 'bg-red-50 dark:bg-red-900/20 rounded-lg p-4' : ''}>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Alergia a anestesia:
                 </p>
@@ -446,6 +458,69 @@ export function AnamnesisViewModal({
                   </p>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* ✅ NUEVA SECCIÓN: Exámenes Complementarios */}
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-teal-200 dark:border-teal-800">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-8 bg-gradient-to-b from-teal-500 to-teal-600 rounded-full" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                🔬 Exámenes Complementarios
+              </h3>
+            </div>
+            
+            <div className="space-y-6">
+              {/* Pedido de exámenes */}
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                    anamnesis.pedido_examenes_complementarios === 'SI'
+                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
+                  }`}>
+                    {anamnesis.pedido_examenes_complementarios === 'SI' ? '✓ Exámenes solicitados' : 'Sin solicitud de exámenes'}
+                  </span>
+                </div>
+                
+                {anamnesis.pedido_examenes_complementarios === 'SI' && anamnesis.pedido_examenes_complementarios_detalle && (
+                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Detalle de exámenes solicitados:
+                    </p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line bg-white dark:bg-gray-900 rounded-lg p-3">
+                      {anamnesis.pedido_examenes_complementarios_detalle}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Informe de exámenes */}
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <div className="mb-3">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Informe de exámenes realizados:
+                  </p>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                    anamnesis.informe_examenes !== 'NINGUNO'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
+                  }`}>
+                    {getInformeExamenesLabel(anamnesis.informe_examenes)}
+                  </span>
+                </div>
+                
+                {anamnesis.informe_examenes !== 'NINGUNO' && anamnesis.informe_examenes_detalle && (
+                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Resultados:
+                    </p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line bg-white dark:bg-gray-900 rounded-lg p-3">
+                      {anamnesis.informe_examenes_detalle}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

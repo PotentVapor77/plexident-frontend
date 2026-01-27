@@ -5,6 +5,9 @@ import type {
   ICita,
   ICitaCreate,
   EstadoCita,
+  ICitasProximas,
+  ICitasDelDia,
+  IHistorialResponse,
 } from '../../types/appointments/IAppointment';
 import api from '../api/axiosInstance';
 
@@ -36,7 +39,7 @@ const appointmentService = {
         });
       }
 
-      const url = `${ENDPOINTS.appointments.citas.base}${
+      const url = `${ENDPOINTS.appointment.citas.base}${
         queryParams.toString() ? `?${queryParams.toString()}` : ''
       }`;
       console.log('📡 getAllCitas - URL:', url);
@@ -60,7 +63,7 @@ const appointmentService = {
         queryParams.append('odontologo', odontologoId);
       }
 
-      const url = `${ENDPOINTS.appointments.citas.porSemana}?${queryParams.toString()}`;
+      const url = `${ENDPOINTS.appointment.citas.porSemana}?${queryParams.toString()}`;
       console.log('📡 getCitasBySemana - URL:', url);
       const response = await api.get(url);
       console.log('📦 getCitasBySemana - Respuesta completa:', response.data);
@@ -81,7 +84,7 @@ const appointmentService = {
   // Obtener citas por odontólogo y fecha
   getCitasByOdontologo: async (odontologoId: string, fecha: string): Promise<unknown> => {
     try {
-      const url = `${ENDPOINTS.appointments.citas.porOdontologo(odontologoId)}?fecha=${fecha}&activo=true`;
+      const url = `${ENDPOINTS.appointment.citas.porOdontologo(odontologoId)}?fecha=${fecha}&activo=true`;
       console.log('📡 getCitasByOdontologo - URL:', url);
       const response = await api.get(url);
       console.log('📦 getCitasByOdontologo - Respuesta:', response.data);
@@ -96,7 +99,7 @@ const appointmentService = {
   createCita: async (data: ICitaCreate): Promise<ICita> => {
     try {
       console.log('📝 createCita - Datos:', data);
-      const response = await api.post(ENDPOINTS.appointments.citas.base, data);
+      const response = await api.post(ENDPOINTS.appointment.citas.base, data);
       console.log('✅ createCita - Respuesta:', response.data);
       return response.data;
     } catch (error) {
@@ -124,7 +127,7 @@ const appointmentService = {
       };
 
       console.log('📡 getHorariosDisponibles - Datos:', data);
-      const response = await api.post(ENDPOINTS.appointments.citas.horariosDisponibles, data);
+      const response = await api.post(ENDPOINTS.appointment.citas.horariosDisponibles, data);
       console.log('📦 getHorariosDisponibles - Respuesta:', response.data);
       return response.data;
     } catch (error) {
@@ -137,7 +140,7 @@ const appointmentService = {
   updateCita: async (id: string, data: Partial<ICita>): Promise<ICita> => {
     try {
       console.log('📝 updateCita - ID:', id, 'Data:', data);
-      const response = await api.patch(ENDPOINTS.appointments.citas.byId(id), data);
+      const response = await api.patch(ENDPOINTS.appointment.citas.byId(id), data);
       console.log('✅ updateCita - Respuesta:', response.data);
       return response.data;
     } catch (error) {
@@ -155,7 +158,7 @@ reprogramarCita: async (
   try {
     
     const response = await api.post(
-      ENDPOINTS.appointments.citas.reprogramar(id),
+      ENDPOINTS.appointment.citas.reprogramar(id),
       {
         nueva_fecha,
         nueva_hora_inicio
@@ -176,7 +179,7 @@ reprogramarCita: async (
   deleteCita: async (id: string): Promise<void> => {
     try {
       console.log('🗑️ deleteCita - ID:', id);
-      await api.delete(ENDPOINTS.appointments.citas.byId(id));
+      await api.delete(ENDPOINTS.appointment.citas.byId(id));
       console.log('✅ deleteCita - Cita eliminada');
     } catch (error) {
       console.error('❌ deleteCita - Error:', error);
@@ -189,7 +192,7 @@ reprogramarCita: async (
     try {
       console.log('❌ cancelCita - ID:', id, 'Motivo:', motivo);
       const data = motivo ? { motivo_cancelacion: motivo } : {};
-      const response = await api.post(ENDPOINTS.appointments.citas.cancelar(id), data);
+      const response = await api.post(ENDPOINTS.appointment.citas.cancelar(id), data);
       console.log('✅ cancelCita - Respuesta:', response.data);
       return response.data;
     } catch (error) {
@@ -202,7 +205,7 @@ reprogramarCita: async (
   cambiarEstadoCita: async (id: string, estado: EstadoCita): Promise<ICita> => {
     try {
       console.log('🔄 cambiarEstadoCita - ID:', id, 'Estado:', estado);
-      const response = await api.patch(ENDPOINTS.appointments.citas.cambiarEstado(id), { estado });
+      const response = await api.patch(ENDPOINTS.appointment.citas.cambiarEstado(id), { estado });
       console.log('✅ cambiarEstadoCita - Respuesta:', response.data);
       return response.data;
     } catch (error) {
@@ -224,7 +227,7 @@ enviarRecordatorio: async (
   try {
     console.log('📤 enviarRecordatorio - Cita ID:', citaId, 'Datos:', data);
     const response = await api.post(
-      ENDPOINTS.appointments.citas.enviarRecordatorio(citaId),
+      ENDPOINTS.appointment.citas.enviarRecordatorio(citaId),
       data
     );
     console.log('✅ enviarRecordatorio - Respuesta:', response.data);
@@ -239,7 +242,7 @@ enviarRecordatorio: async (
 getEstadisticasRecordatorios: async (): Promise<unknown> => {
   try {
     console.log('📊 getEstadisticasRecordatorios - Solicitando...');
-    const response = await api.get(ENDPOINTS.appointments.citas.estadisticasRecordatorios);
+    const response = await api.get(ENDPOINTS.appointment.citas.estadisticasRecordatorios);
     console.log('✅ getEstadisticasRecordatorios - Respuesta:', response.data);
     return response.data;
   } catch (error) {
@@ -250,11 +253,13 @@ getEstadisticasRecordatorios: async (): Promise<unknown> => {
 
 
 
-  // Obtener citas próximas (en las próximas 2 horas)
- getCitasProximas: async (): Promise<ICita[]> => {
+  /**
+   * RF-05.17: Obtener alertas de citas próximas
+   */
+  getCitasProximas: async (minutos: number = 30): Promise<ICitasProximas> => {
     try {
       //console.log('📡 getCitasProximas - Solicitando...');
-      const response = await api.get(ENDPOINTS.appointments.citas.proximas);
+      const response = await api.get(ENDPOINTS.appointment.citas.proximas);
       //console.log('📦 getCitasProximas - Respuesta:', response.data);
       
       // ✅ CORRECCIÓN: Extraer el array de response.data.data
@@ -270,14 +275,61 @@ getEstadisticasRecordatorios: async (): Promise<unknown> => {
       // Si no encuentra datos, devolver array vacío
       console.warn('⚠️ Formato de respuesta inesperado:', response.data);
       return [];
+      const url = `${ENDPOINTS.appointment.citas.proximas}?minutos=${minutos}`;
+      console.log('getCitasProximas - URL:', url);
+      const response = await api.get(url);
+      console.log('getCitasProximas - Respuesta:', response.data);
+      return response.data;
     } catch (error) {
-      console.error('❌ getCitasProximas - Error:', error);
+      console.error('getCitasProximas - Error:', error);
+      throw error;
+    }
+  },
+  /**
+   * RF-05.11: Obtener historial de cambios de una cita
+   */
+    getHistorialCita: async (citaId: string): Promise<IHistorialResponse> => {
+  try {
+    console.log('getHistorialCita - Cita ID:', citaId);
+    const response = await api.get(ENDPOINTS.appointment.citas.historial(citaId));
+    console.log('getHistorialCita - Respuesta completa:', response.data);
+    
+    // ✅ EXTRAER: El backend responde { success, data: { cita_id, historial, ... } }
+    // Entonces retornamos response.data.data (el segundo .data es el objeto real)
+    const historialData = response.data.data || response.data;
+    console.log('getHistorialCita - Datos extraídos:', historialData);
+    
+    return historialData;
+  } catch (error) {
+    console.error('getHistorialCita - Error:', error);
+    throw error;
+  }
+},
+
+  /**
+   * RF-05.16: Obtener citas del día actual
+   */
+  getCitasDelDia: async (odontologoId?: string): Promise<ICitasDelDia> => {
+    try {
+      const params = new URLSearchParams();
+      if (odontologoId) {
+        params.append('odontologo', odontologoId);
+      }
+      const url = `${ENDPOINTS.appointment.citas.delDia}${params.toString() ? `?${params.toString()}` : ''}`;
+      console.log('getCitasDelDia - URL:', url);
+      const response = await api.get(url);
+      console.log('getCitasDelDia - Respuesta:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('getCitasDelDia - Error:', error);
       throw error;
     }
   },
 
 
 
+
+  
   
 };
 

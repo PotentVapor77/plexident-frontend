@@ -17,7 +17,7 @@ const scheduleService = {
   }): Promise<IHorarioAtencion[]> => {
     try {
       console.log('🔄 Fetching horarios con params:', params);
-      const response = await api.get(ENDPOINTS.appointments.horarios.base, { params });
+      const response = await api.get(ENDPOINTS.appointment.horarios.base, { params });
       console.log('✅ Response data:', response.data);
 
       // ✅ CORRECCIÓN: Manejar correctamente la estructura anidada
@@ -58,7 +58,7 @@ const scheduleService = {
   getByOdontologo: async (odontologoId: string): Promise<IHorarioAtencion[]> => {
     try {
       const response = await api.get(
-        ENDPOINTS.appointments.horarios.porOdontologo(odontologoId)
+        ENDPOINTS.appointment.horarios.porOdontologo(odontologoId)
       );
       
       // Aplicar la misma lógica
@@ -76,7 +76,7 @@ const scheduleService = {
   // ✅ OBTENER UN HORARIO POR ID
   getById: async (id: string): Promise<IHorarioAtencion> => {
     try {
-      const response = await api.get(ENDPOINTS.appointments.horarios.byId(id));
+      const response = await api.get(ENDPOINTS.appointment.horarios.byId(id));
       
       // Para un solo elemento, puede estar en data.data o directamente en data
       if (response.data?.data && !Array.isArray(response.data.data)) {
@@ -94,7 +94,7 @@ const scheduleService = {
   create: async (data: IHorarioAtencionCreate): Promise<IHorarioAtencion> => {
     try {
       console.log('📝 Creando horario:', data);
-      const response = await api.post(ENDPOINTS.appointments.horarios.base, data);
+      const response = await api.post(ENDPOINTS.appointment.horarios.base, data);
       console.log('✅ Horario creado:', response.data);
       
       // Extraer el horario creado
@@ -117,7 +117,7 @@ const scheduleService = {
     try {
       console.log('📝 Actualizando horario:', id, data);
       const response = await api.patch(
-        ENDPOINTS.appointments.horarios.byId(id),
+        ENDPOINTS.appointment.horarios.byId(id),
         data
       );
       console.log('✅ Horario actualizado:', response.data);
@@ -138,7 +138,7 @@ const scheduleService = {
   delete: async (id: string): Promise<void> => {
     try {
       console.log('🗑️ Eliminando horario:', id);
-      await api.delete(ENDPOINTS.appointments.horarios.byId(id));
+      await api.delete(ENDPOINTS.appointment.horarios.byId(id));
       console.log('✅ Horario eliminado');
     } catch (error) {
       console.error('❌ Error deleting horario:', error);
@@ -150,7 +150,7 @@ const scheduleService = {
   toggleActive: async (id: string, activo: boolean): Promise<IHorarioAtencion> => {
     try {
       const response = await api.patch(
-        ENDPOINTS.appointments.horarios.byId(id),
+        ENDPOINTS.appointment.horarios.byId(id),
         { activo }
       );
       
@@ -172,7 +172,7 @@ const scheduleService = {
     diaSemana: number
   ): Promise<IHorarioAtencion[]> => {
     try {
-      const response = await api.get(ENDPOINTS.appointments.horarios.base, {
+      const response = await api.get(ENDPOINTS.appointment.horarios.base, {
         params: {
           odontologo: odontologoId,
           dia_semana: diaSemana,

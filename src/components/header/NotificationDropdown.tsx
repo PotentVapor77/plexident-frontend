@@ -5,23 +5,25 @@ import { Bell, Clock, Calendar, User, AlertCircle } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import appointmentService from '../../services/appointments/appointmentService';
-import type { ICita } from '../../types/appointments/IAppointment';
+import type { IAlertaCita } from '../../types/appointments/IAppointment';
 
-interface ApiResponse {
-  results?: ICita[];
-  data?: ICita[];
+interface CitasProximasResponse {
+  total_alertas: number;
+  hora_actual: string;
+  fecha_actual: string;
+  ventana_minutos: number;
+  citas_proximas: IAlertaCita[];
+  tiene_alertas_criticas: boolean;
 }
 
 const NotificationDropdown: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [citasProximas, setCitasProximas] = useState<ICita[]>([]);
+  const [citasProximas, setCitasProximas] = useState<IAlertaCita[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  
-
-  // ✅ NUEVO: Cargar citas al montar el componente
+  // Cargar citas al montar el componente
   useEffect(() => {
     cargarCitasProximas();
     
@@ -31,7 +33,7 @@ const NotificationDropdown: React.FC = () => {
     }, 120000); // 2 minutos
 
     return () => clearInterval(interval);
-  }, []); // ← Array vacío = solo al montar
+  }, []);
 
   // Cerrar dropdown al hacer clic fuera
   useEffect(() => {
@@ -50,7 +52,6 @@ const NotificationDropdown: React.FC = () => {
     };
   }, [isOpen]);
 
-
   const cargarCitasProximas = async () => {
   setLoading(true);
   setError(null);
@@ -62,29 +63,47 @@ const NotificationDropdown: React.FC = () => {
       setCitasProximas(response);
     } else if (response && typeof response === 'object') {
       const data = response as ApiResponse;
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await appointmentService.getCitasProximas();
+      console.log('📦 Respuesta citas próximas:', response);
       
-      if (data.results && Array.isArray(data.results)) {
-        setCitasProximas(data.results);
-      } else if (data.data && Array.isArray(data.data)) {
-        setCitasProximas(data.data);
+      if (response && typeof response === 'object') {
+        if ('data' in response && response.data) {
+          const data = response.data as CitasProximasResponse;
+          
+          if (data.citas_proximas && Array.isArray(data.citas_proximas)) {
+            setCitasProximas(data.citas_proximas);
+            console.log(`✅ ${data.citas_proximas.length} citas próximas cargadas`);
+          } else {
+            console.warn('⚠️ No se encontró citas_proximas en data:', data);
+            setCitasProximas([]);
+          }
+        } 
+        else if ('citas_proximas' in response && Array.isArray(response.citas_proximas)) {
+          setCitasProximas(response.citas_proximas);
+        }
+        else if (Array.isArray(response)) {
+          setCitasProximas(response);
+        } else {
+          console.error('❌ Estructura de respuesta no reconocida:', response);
+          setCitasProximas([]);
+          setError('Formato de respuesta inválido');
+        }
       } else {
-        console.error('Respuesta no es un array:', response);
+        console.error('❌ Respuesta no válida:', response);
         setCitasProximas([]);
         setError('Formato de respuesta inválido');
       }
-    } else {
-      console.error('Respuesta no válida:', response);
+    } catch (err) {
+      console.error('❌ Error cargando citas próximas:', err);
+      setError('Error al cargar las citas');
       setCitasProximas([]);
-      setError('Formato de respuesta inválido');
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error('Error cargando citas próximas:', err);
-    setError('Error al cargar las citas');
-    setCitasProximas([]);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -96,7 +115,6 @@ const NotificationDropdown: React.FC = () => {
     const horas = Math.floor(minutos / 60);
     const mins = minutos % 60;
     
-    // Si es más de 12 horas, mostrar en días
     if (horas >= 12) {
       const dias = Math.floor(horas / 24);
       const horasRestantes = horas % 24;
@@ -126,7 +144,6 @@ const NotificationDropdown: React.FC = () => {
       >
         <Bell size={20} />
         
-        {/* Badge con número de notificaciones */}
         {citasProximas.length > 0 && (
           <span className="absolute top-0 right-0 flex items-center justify-center 
                          w-5 h-5 text-xs font-bold text-white bg-red-500 
@@ -136,7 +153,7 @@ const NotificationDropdown: React.FC = () => {
         )}
       </button>
 
-      {/* Dropdown - resto del código sin cambios */}
+      {/* Dropdown */}
       {isOpen && (
         <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 
                         rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 
@@ -159,7 +176,7 @@ const NotificationDropdown: React.FC = () => {
               </button>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Próximas citas programadas
+              Próximas citas en los siguientes 30 minutos
             </p>
           </div>
 
@@ -191,7 +208,7 @@ const NotificationDropdown: React.FC = () => {
                   No hay citas próximas
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                  Las próximas citas aparecerán aquí
+                  No hay citas programadas en los próximos 30 minutos
                 </p>
               </div>
             ) : (
@@ -200,18 +217,18 @@ const NotificationDropdown: React.FC = () => {
                   <div
                     key={cita.id}
                     className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 
-                              transition-colors duration-150 border-l-4 ${getUrgenciaColor(cita.minutos_faltantes || 0)}`}
+                              transition-colors duration-150 border-l-4 ${getUrgenciaColor(cita.minutos_faltantes)}`}
                   >
-                    {/* Resto del contenido de la cita sin cambios */}
+                    {/* ✅ CORREGIDO: estado en lugar de EstadoCita */}
                     <div className="flex items-center justify-between mb-2">
                       <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                        (cita.minutos_faltantes || 0) <= 15
+                        cita.minutos_faltantes <= 15
                           ? 'bg-red-200 dark:bg-red-900/50 text-red-800 dark:text-red-200'
-                          : (cita.minutos_faltantes || 0) <= 30
+                          : cita.minutos_faltantes <= 30
                           ? 'bg-orange-200 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200'
                           : 'bg-blue-200 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200'
                       }`}>
-                        {formatearMinutosFaltantes(cita.minutos_faltantes || 0)}
+                        {formatearMinutosFaltantes(cita.minutos_faltantes)}
                       </span>
                       <span className={`text-xs px-2 py-1 rounded-full ${
                         cita.estado === 'CONFIRMADA'
@@ -226,10 +243,10 @@ const NotificationDropdown: React.FC = () => {
                       <User size={16} className="text-gray-500 dark:text-gray-400 mt-0.5 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                          {cita.paciente_detalle?.nombre_completo || 'Sin nombre'}
+                          {cita.paciente.nombre_completo}
                         </p>
                         <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                          {cita.paciente_detalle?.cedula_pasaporte}
+                          {cita.paciente.telefono}
                         </p>
                       </div>
                     </div>
@@ -251,7 +268,7 @@ const NotificationDropdown: React.FC = () => {
                     <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         <span className="font-medium">Odontólogo:</span>{' '}
-                        Dr. {cita.odontologo_detalle?.nombre_completo?.split(' ')[0] || 'N/A'}
+                        Dr. {cita.odontologo.nombre_completo.split(' ')[0]}
                       </p>
                     </div>
 

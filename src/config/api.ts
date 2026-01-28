@@ -95,6 +95,26 @@ clinicalRecords: {
     cargarDatosIniciales: (pacienteId: string) => `/clinical-records/cargar-datos-iniciales/?paciente_id=${pacienteId}`,
     cerrar: (id: string) => `/clinical-records/${id}/cerrar/`,
     reabrir: (id: string) => `/clinical-records/${id}/reabrir/`,
+    antecedentesPersonales: {
+    base: '/clinical-records/antecedentes-personales/',
+    latestByPaciente: (pacienteId: string) => `/clinical-records/antecedentes-personales/${pacienteId}/latest/`,
+  },
+  antecedentesFamiliares: {
+    base: '/clinical-records/antecedentes-familiares/',
+    latestByPaciente: (pacienteId: string) => `/clinical-records/antecedentes-familiares/${pacienteId}/latest/`,
+  },
+  constantesVitales: {
+    base: '/clinical-records/constantes-vitales/',
+    latestByPaciente: (pacienteId: string) => `/clinical-records/constantes-vitales/${pacienteId}/latest/`,
+  },
+  examenEstomatognatico: {
+    base: '/clinical-records/examen-estomatognatico/',
+    latestByPaciente: (pacienteId: string) => `/clinical-records/examen-estomatognatico/${pacienteId}/latest/`,
+  },
+  odontograma2D: {
+    base: '/clinical-records/odontograma-2d/',
+    latestByPaciente: (pacienteId: string) => `/clinical-records/odontograma-2d/${pacienteId}/latest/`,
+  },
   },
 
 
@@ -140,16 +160,11 @@ clinicalRecords: {
     stats: '/dashboard/stats/',
     overview: '/dashboard/overview/',
     kpis: '/dashboard/kpis/',
-    // ✅ RF-06.2: Estadísticas de citas
     citasStats: '/dashboard/citas-stats/',
-    // ✅ RF-06.3: Diagnósticos frecuentes
     diagnosticosFrecuentes: '/dashboard/diagnosticos-frecuentes/',
-     // ✅ RF-06.5: Índice Caries
     estadisticasIndiceCaries: '/dashboard/estadisticas-indice-caries/',
     evolucionIndiceCaries: '/dashboard/evolucion-indice-caries/',
-    // ✅ RF-06.3 + RF-06.4: Estadísticas avanzadas
     estadisticasAvanzadas: '/dashboard/estadisticas-avanzadas/',
-    // ✅ RF-06.6: Periodos disponibles
     periodosDisponibles: '/dashboard/periodos-disponibles/',
 
     },
@@ -172,6 +187,37 @@ clinicalRecords: {
       pdfDownload: (pacienteId: string) => `/odontogram/export/form033/${pacienteId}/pdf/`,
       pdfSave: (pacienteId: string) => `/odontogram/export/form033/${pacienteId}/guardar-pdf/`,
   },
+
+  clinicalRecords: {
+  base: '/clinical-records/',
+  byId: (id: string) => `/clinical-records/${id}/`,
+  byPaciente: (pacienteId: string) => `/clinical-records/by-paciente/?paciente_id=${pacienteId}`,
+  cargarDatosIniciales: (pacienteId: string) => `/clinical-records/cargar-datos-iniciales/?paciente_id=${pacienteId}`,
+  cerrar: (id: string) => `/clinical-records/${id}/cerrar/`,
+  reabrir: (id: string) => `/clinical-records/${id}/reabrir/`,
+  
+  // AGREGAR ESTOS NUEVOS ENDPOINTS:
+  antecedentesPersonales: {
+    base: '/clinical-records/antecedentes-personales/',
+    latestByPaciente: (pacienteId: string) => `/clinical-records/antecedentes-personales/${pacienteId}/latest/`,
+  },
+  antecedentesFamiliares: {
+    base: '/clinical-records/antecedentes-familiares/',
+    latestByPaciente: (pacienteId: string) => `/clinical-records/antecedentes-familiares/${pacienteId}/latest/`,
+  },
+  constantesVitales: {
+    base: '/clinical-records/constantes-vitales/',
+    latestByPaciente: (pacienteId: string) => `/clinical-records/constantes-vitales/${pacienteId}/latest/`,
+  },
+  examenEstomatognatico: {
+    base: '/clinical-records/examen-estomatognatico/',
+    latestByPaciente: (pacienteId: string) => `/clinical-records/examen-estomatognatico/${pacienteId}/latest/`,
+  },
+  odontograma2D: {
+    base: '/clinical-records/odontograma-2d/',
+    latestByPaciente: (pacienteId: string) => `/clinical-records/odontograma-2d/${pacienteId}/latest/`,
+  },
+},
 },
 
 

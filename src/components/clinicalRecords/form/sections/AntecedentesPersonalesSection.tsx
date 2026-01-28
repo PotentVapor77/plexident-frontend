@@ -1,33 +1,76 @@
 // src/components/clinicalRecord/form/sections/AntecedentesPersonalesSection.tsx
 import React from "react";
-import { User } from "lucide-react";
+import { RefreshCw, User } from "lucide-react";
 import type { ClinicalRecordFormData } from "../../../../core/types/clinicalRecord.types";
 import SectionHeader from "../ClinicalRecordSectionHeader";
 import { getAntecedentesPersonalesDisplay } from "../../../../core/utils/clinicalRecordUtils";
 
 interface AntecedentesPersonalesSectionProps {
   formData: ClinicalRecordFormData;
-  lastUpdated?: string | null;
+  lastUpdated: string | null;
+  mode: "create" | "edit";
+  refreshSection: () => Promise<void>;
+  isRefreshing?: boolean
+
 }
 
 const AntecedentesPersonalesSection: React.FC<AntecedentesPersonalesSectionProps> = ({
   formData,
   lastUpdated,
+  refreshSection,
+  isRefreshing = false
+  
 }) => {
   const antecedentes = getAntecedentesPersonalesDisplay(formData.antecedentes_personales_data);
 
   return (
-    <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-      <SectionHeader
-        icon={<User className="text-blue-500" />}
-        title="E. Antecedentes Personales"
-        subtitle={
-          lastUpdated ? `Cargado del: ${lastUpdated}` : "No existen registros previos"
-        }
-      />
+    <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+      {/* Barra de progreso sutil superior cuando está cargando */}
+      {isRefreshing && (
+        <div className="absolute top-0 left-0 w-full h-1 bg-blue-100 overflow-hidden">
+          <div className="w-full h-full bg-blue-500 animate-progress-buffer origin-left"></div>
+        </div>
+      )}
+
+      <div className="flex justify-between items-start">
+        <SectionHeader
+          icon={<User className="text-blue-500" />}
+          title="E. Antecedentes Personales"
+          subtitle={
+            lastUpdated ? `Cargado del: ${lastUpdated}` : "No existen registros previos"
+          }
+        />
+        
+        {/* Botón de Refresh */}
+        <button
+          type="button"
+          onClick={refreshSection}
+          disabled={isRefreshing}
+          className={`p-2 rounded-lg transition-all ${
+            isRefreshing 
+              ? "bg-slate-100 cursor-not-allowed" 
+              : "hover:bg-blue-50 text-slate-400 hover:text-blue-600 active:scale-95 border border-transparent hover:border-blue-100"
+          }`}
+          title="Actualizar antecedentes personales"
+        >
+          <RefreshCw 
+            className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`} 
+          />
+        </button>
+      </div>
 
       <div className="mt-4">
-        {!formData.antecedentes_personales_data ? (
+        {isRefreshing && !formData.antecedentes_personales_data ? (
+          <div className="animate-pulse flex space-x-4 p-4 bg-slate-50 rounded-lg">
+            <div className="flex-1 space-y-4 py-1">
+              <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="h-10 bg-slate-200 rounded"></div>
+                <div className="h-10 bg-slate-200 rounded"></div>
+              </div>
+            </div>
+          </div>
+        ) : !formData.antecedentes_personales_data ? (
           <div className="text-center py-4 bg-slate-50 rounded-lg border border-dashed border-slate-300">
             <p className="text-sm text-slate-500 italic">
               No se encontraron antecedentes personales registrados para este paciente.
@@ -41,7 +84,7 @@ const AntecedentesPersonalesSection: React.FC<AntecedentesPersonalesSectionProps
             </span>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className={`space-y-4 transition-opacity ${isRefreshing ? 'opacity-50' : 'opacity-100'}`}>
             {/* Alergias */}
             {antecedentes.alergias.length > 0 && (
               <div className="mb-4">

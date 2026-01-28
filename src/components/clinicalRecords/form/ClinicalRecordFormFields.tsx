@@ -101,6 +101,7 @@ const ClinicalRecordFormFields: React.FC<ClinicalRecordFormFieldsProps> = ({
         formData={formData}
         updateField={updateField}
         lastUpdated={initialDates.enfermedad_actual}
+        
       />
 
       {/* ====================================================================
@@ -111,6 +112,8 @@ const ClinicalRecordFormFields: React.FC<ClinicalRecordFormFieldsProps> = ({
         updateSectionData={updateSectionData}
         selectedPaciente={selectedPaciente}
         lastUpdated={initialDates.constantes_vitales}
+        refreshSection={() => refreshSections("constantes_vitales")}
+        mode={mode}
       />
 
       {/* ====================================================================
@@ -119,8 +122,8 @@ const ClinicalRecordFormFields: React.FC<ClinicalRecordFormFieldsProps> = ({
       <AntecedentesPersonalesSection
         formData={formData}
         lastUpdated={initialDates.antecedentes_personales}
-       // refreshSection={refreshSection} 
-        //mode={mode} 
+        refreshSection={() => refreshSections("antecedentes_personales")}
+        mode={mode} 
       />
 
       {/* ====================================================================
@@ -129,8 +132,8 @@ const ClinicalRecordFormFields: React.FC<ClinicalRecordFormFieldsProps> = ({
       <AntecedentesFamiliaresSection
         formData={formData}
         lastUpdated={initialDates.antecedentes_familiares}
-        //refreshSection={refreshSection}
-       // mode={mode}
+        refreshSection={() => refreshSections("antecedentes_familiares")}
+        mode={mode}
       />
 
       {/* ====================================================================
@@ -139,8 +142,8 @@ const ClinicalRecordFormFields: React.FC<ClinicalRecordFormFieldsProps> = ({
       <ExamenEstomatognaticoSection
         formData={formData}
         lastUpdated={initialDates.examen_estomatognatico}
-        //refreshSection={refreshSection}
-        //mode={mode}
+        refreshSection={() => refreshSections("examen_estomatognatico")}
+        mode={mode}
       />
 
       {/* ====================================================================
@@ -151,7 +154,7 @@ const ClinicalRecordFormFields: React.FC<ClinicalRecordFormFieldsProps> = ({
         selectedPaciente={selectedPaciente}
         lastUpdated={initialDates.odontograma_2d}
         validationErrors={validationErrors}
-        //refreshSection={refreshSection}
+        refreshSection={() => refreshSections("odontograma_2d")}
         mode={mode}
         historialId={historialId}
       />

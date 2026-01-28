@@ -5,7 +5,6 @@ import { Download, Eye, Printer, AlertCircle, Loader2, FileText, CheckCircle, Re
 import type { ClinicalRecordFormData } from "../../../../core/types/clinicalRecord.types";
 import type { IPaciente } from "../../../../types/patient/IPatient";
 import Button from "../../../ui/button/Button";
-import api from "../../../../services/api/axiosInstance";
 import { API_BASE_URL, ENDPOINTS } from "../../../../config/api";
 import { ToothCrownReadOnly } from "./odonto2d/ToothCrownReadOnly";
 import { adaptForm033ToSurfaceColors, shouldShowOverlayIcon } from "../../../../core/utils/form033Adapter";
@@ -22,8 +21,10 @@ interface Odontograma2DSectionProps {
   selectedPaciente: IPaciente | null;
   lastUpdated?: string | null;
   validationErrors: Record<string, string>;
+  refreshSection: () => Promise<void>;
   mode?: "create" | "edit"; 
   historialId?: string; 
+  isRefreshing?: boolean;
 }
 
 interface ApiResponseWrapper<T> {
@@ -325,6 +326,7 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
 
    return (
     <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+      
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-3">

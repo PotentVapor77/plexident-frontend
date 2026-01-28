@@ -17,6 +17,9 @@ import { useNotification } from "../../../context/notifications/NotificationCont
 import type { IPaciente } from "../../../types/patient/IPatient";
 import clinicalRecordService from "../../../services/clinicalRecord/clinicalRecordService";
 import axiosInstance from "../../../services/api/axiosInstance"; // ← AGREGAR ESTE IMPORT
+import api from "../../../services/api/axiosInstance";
+import { useRefreshSection } from "../../../hooks/clinicalRecord/useRefreshSection";
+import { ENDPOINTS } from "../../../config/api";
 
 /**
  * ============================================================================
@@ -48,6 +51,7 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
   const { notify } = useNotification();
   const { user } = useAuth();
 
+
   // ========================================================================
   // FORM HOOK
   // ========================================================================
@@ -67,6 +71,95 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
     setInitialDates,
     
   } = useClinicalRecordForm();
+
+  
+const refreshSection = async (section: string) => {
+    if (!selectedPaciente?.id || mode !== "edit") return;
+    
+    try {
+    const endpointMap: Record<string, string> = {
+      antecedentes_personales: ENDPOINTS.clinicalRecords.antecedentesPersonales.latestByPaciente(selectedPaciente.id),
+      antecedentes_familiares: ENDPOINTS.clinicalRecords.antecedentesFamiliares.latestByPaciente(selectedPaciente.id),
+      constantes_vitales: ENDPOINTS.clinicalRecords.constantesVitales.latestByPaciente(selectedPaciente.id),
+      examen_estomatognatico: ENDPOINTS.clinicalRecords.examenEstomatognatico.latestByPaciente(selectedPaciente.id),
+      odontograma_2d: ENDPOINTS.clinicalRecords.odontograma2D.latestByPaciente(selectedPaciente.id),
+    };
+
+      const endpoint = endpointMap[section];
+      if (!endpoint) {
+        notify({
+          type: "warning",
+          title: "Sección no soportada",
+          message: `La sección ${section} no tiene datos actualizables automáticamente.`,
+        });
+        return;
+      }
+
+      const response = await api.get(endpoint);
+      
+      if (response.data.success && response.data.data) {
+        const data = response.data.data;
+        
+        // Actualizar el estado correspondiente
+        switch (section) {
+          case 'antecedentes_personales':
+            updateSectionData('antecedentes_personales_data', data);
+            setInitialDates(prev => ({
+              ...prev,
+              antecedentes_personales: data.fecha_creacion || new Date().toISOString(),
+            }));
+            break;
+            
+          case 'antecedentes_familiares':
+            updateSectionData('antecedentes_familiares_data', data);
+            setInitialDates(prev => ({
+              ...prev,
+              antecedentes_familiares: data.fecha_creacion || new Date().toISOString(),
+            }));
+            break;
+            
+          case 'constantes_vitales':
+            updateSectionData('constantes_vitales_data', data);
+            setInitialDates(prev => ({
+              ...prev,
+              constantes_vitales: data.fecha_creacion || new Date().toISOString(),
+            }));
+            break;
+            
+          case 'examen_estomatognatico':
+            updateSectionData('examen_estomatognatico_data', data);
+            setInitialDates(prev => ({
+              ...prev,
+              examen_estomatognatico: data.fecha_creacion || new Date().toISOString(),
+            }));
+            break;
+        }
+        
+        notify({
+          type: "success",
+          title: "Datos actualizados",
+          message: `Se actualizaron los datos de ${getSectionName(section)}`,
+        });
+      }
+    } catch (error) {
+      console.error(`Error al refrescar ${section}:`, error);
+      notify({
+        type: "error",
+        title: "Error al actualizar",
+        message: `No se pudo actualizar la sección ${getSectionName(section)}`,
+      });
+    }
+  };
+
+  const getSectionName = (section: string): string => {
+    const names: Record<string, string> = {
+      antecedentes_personales: "Antecedentes Personales",
+      antecedentes_familiares: "Antecedentes Familiares",
+      constantes_vitales: "Constantes Vitales",
+      examen_estomatognatico: "Examen Estomatognático",
+    };
+    return names[section] || section;
+  };
 
   // ========================================================================
   // MUTATIONS 
@@ -351,10 +444,7 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
         validationErrors={validationErrors}
         initialDates={initialDates}
         mode={mode}
-        refreshSections={async (_section: string) => {
-          // Implementar si es necesario
-          console.log("Refresh sections not implemented");
-        }}
+        refreshSections={refreshSection}
         historialId={recordId}
       />
 

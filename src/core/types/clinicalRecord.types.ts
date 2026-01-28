@@ -35,6 +35,7 @@ export interface ClinicalRecordFormData {
     antecedentes_familiares_data?: AntecedentesFamiliaresData | null;
     constantes_vitales_data?: ConstantesVitalesData | null;
     examen_estomatognatico_data?: ExamenEstomatognaticoData | null;
+    
 }
 /**
  * Filtros para la tabla de historiales

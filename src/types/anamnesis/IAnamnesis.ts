@@ -1,11 +1,11 @@
-// src/types/patient/IAnamnesis.ts
+// src/types/anamnesis/IAnamnesis.ts
 
 export interface IAnamnesis {
   id: string;
   paciente: string;
   paciente_nombre: string;
-  paciente_cedula?: string; // ✅ NUEVO
-
+  paciente_cedula?: string; 
+  
   // ========== ANTECEDENTES PERSONALES ==========
   
   // Alergias específicas
@@ -14,9 +14,9 @@ export interface IAnamnesis {
   alergia_anestesia: string;
   alergia_anestesia_otro: string;
   
-  // Hemorragias / Problemas de coagulación (✅ CAMBIADO)
-  hemorragias: string; // 'SI' o 'NO'
-  hemorragias_detalle: string; // ✅ NUEVO: detalle de hemorragias
+  // Hemorragias / Problemas de coagulación 
+  hemorragias: string; 
+  hemorragias_detalle: string; 
   
   // Enfermedades y condiciones
   vih_sida: string;
@@ -27,34 +27,39 @@ export interface IAnamnesis {
   asma_otro: string;
   diabetes: string;
   diabetes_otro: string;
-  hipertension_arterial: string; // ✅ CAMBIADO
-  hipertension_arterial_otro: string; // ✅ CAMBIADO
+  hipertension_arterial: string; 
+  hipertension_arterial_otro: string; 
   enfermedad_cardiaca: string;
-  enfermedad_cardiaca_otro: string; // ✅ CAMBIADO
-  otro_antecedente_personal: string; // ✅ NUEVO
+  enfermedad_cardiaca_otro: string; 
+  otro_antecedente_personal: string; 
   
   // ========== ANTECEDENTES FAMILIARES ==========
   
-  // Antecedentes familiares completos
   cardiopatia_familiar: string;
   cardiopatia_familiar_otro: string;
   hipertension_familiar: string;
   hipertension_familiar_otro: string;
-  enfermedad_cerebrovascular_familiar: string; // ✅ NUEVO
-  enfermedad_cerebrovascular_familiar_otro: string; // ✅ NUEVO
-  endocrino_metabolico_familiar: string; // ✅ NUEVO
-  endocrino_metabolico_familiar_otro: string; // ✅ NUEVO
+  enfermedad_cerebrovascular_familiar: string;
+  enfermedad_cerebrovascular_familiar_otro: string; 
+  endocrino_metabolico_familiar: string;
+  endocrino_metabolico_familiar_otro: string; 
   cancer_familiar: string;
   cancer_familiar_otro: string;
-  tuberculosis_familiar: string; // ✅ NUEVO
-  tuberculosis_familiar_otro: string; // ✅ NUEVO
+  tuberculosis_familiar: string; 
+  tuberculosis_familiar_otro: string; 
   enfermedad_mental_familiar: string;
   enfermedad_mental_familiar_otro: string;
-  enfermedad_infecciosa_familiar: string; // ✅ NUEVO
-  enfermedad_infecciosa_familiar_otro: string; // ✅ NUEVO
-  malformacion_familiar: string; // ✅ NUEVO
-  malformacion_familiar_otro: string; // ✅ NUEVO
-  otro_antecedente_familiar: string; // ✅ NUEVO
+  enfermedad_infecciosa_familiar: string; 
+  enfermedad_infecciosa_familiar_otro: string; 
+  malformacion_familiar: string;
+  malformacion_familiar_otro: string; 
+  otro_antecedente_familiar: string; 
+
+  // ========== EXÁMENES COMPLEMENTARIOS ==========
+  pedido_examenes_complementarios: string;
+  pedido_examenes_complementarios_detalle: string;
+  informe_examenes: string;
+  informe_examenes_detalle: string;
   
   // ========== HÁBITOS Y OBSERVACIONES ==========
   habitos: string;
@@ -77,8 +82,8 @@ export interface IAnamnesisCreate {
   alergia_anestesia: string;
   alergia_anestesia_otro?: string;
   
-  hemorragias: string; // ✅ CAMBIADO
-  hemorragias_detalle?: string; // ✅ NUEVO
+  hemorragias: string;
+  hemorragias_detalle?: string; 
   
   vih_sida: string;
   vih_sida_otro?: string;
@@ -88,32 +93,38 @@ export interface IAnamnesisCreate {
   asma_otro?: string;
   diabetes: string;
   diabetes_otro?: string;
-  hipertension_arterial: string; // ✅ CAMBIADO
-  hipertension_arterial_otro?: string; // ✅ CAMBIADO
+  hipertension_arterial: string; 
+  hipertension_arterial_otro?: string; 
   enfermedad_cardiaca: string;
-  enfermedad_cardiaca_otro?: string; // ✅ CAMBIADO
-  otro_antecedente_personal?: string; // ✅ NUEVO
+  enfermedad_cardiaca_otro?: string; 
+  otro_antecedente_personal?: string; 
   
   // ========== ANTECEDENTES FAMILIARES ==========
   cardiopatia_familiar: string;
   cardiopatia_familiar_otro?: string;
   hipertension_familiar: string;
   hipertension_familiar_otro?: string;
-  enfermedad_cerebrovascular_familiar: string; // ✅ NUEVO
-  enfermedad_cerebrovascular_familiar_otro?: string; // ✅ NUEVO
-  endocrino_metabolico_familiar: string; // ✅ NUEVO
-  endocrino_metabolico_familiar_otro?: string; // ✅ NUEVO
+  enfermedad_cerebrovascular_familiar: string; 
+  enfermedad_cerebrovascular_familiar_otro?: string; 
+  endocrino_metabolico_familiar: string;
+  endocrino_metabolico_familiar_otro?: string; 
   cancer_familiar: string;
   cancer_familiar_otro?: string;
-  tuberculosis_familiar: string; // ✅ NUEVO
-  tuberculosis_familiar_otro?: string; // ✅ NUEVO
+  tuberculosis_familiar: string; 
+  tuberculosis_familiar_otro?: string; 
   enfermedad_mental_familiar: string;
   enfermedad_mental_familiar_otro?: string;
-  enfermedad_infecciosa_familiar: string; // ✅ NUEVO
-  enfermedad_infecciosa_familiar_otro?: string; // ✅ NUEVO
-  malformacion_familiar: string; // ✅ NUEVO
-  malformacion_familiar_otro?: string; // ✅ NUEVO
-  otro_antecedente_familiar?: string; // ✅ NUEVO
+  enfermedad_infecciosa_familiar: string; 
+  enfermedad_infecciosa_familiar_otro?: string; 
+  malformacion_familiar: string; 
+  malformacion_familiar_otro?: string; 
+  otro_antecedente_familiar?: string; 
+  
+  // ========== EXÁMENES COMPLEMENTARIOS ==========
+  pedido_examenes_complementarios: string;
+  pedido_examenes_complementarios_detalle?: string;
+  informe_examenes: string;
+  informe_examenes_detalle?: string;
   
   // ========== HÁBITOS Y OBSERVACIONES ==========
   habitos?: string;
@@ -148,7 +159,7 @@ export type AlergiaAnestesia =
   | 'PRILOCAINA' 
   | 'OTRO';
 
-export type Hemorragias = 'SI' | 'NO'; // ✅ CAMBIADO
+export type Hemorragias = 'SI' | 'NO';
 
 export type VihSida = 
   | 'NEGATIVO'
@@ -168,35 +179,56 @@ export type FamiliarBase =
   | 'TIO'
   | 'OTRO';
 
-// ✅ NUEVOS TIPOS
-export type EnfermedadCerebrovascular = 
+export type InformeExamenes = 
+  | 'NINGUNO'
+  | 'BIOMETRIA'
+  | 'QUIMICA_SANGUINEA'
+  | 'RAYOS_X'
+  | 'OTROS';
+
+export type PedidoExamenes = 'SI' | 'NO';
+
+export type TuberculosisPersonal = 
   | 'NO'
-  | 'ACCIDENTE_CEREBROVASCULAR'
-  | 'ICTUS'
-  | 'ANEURISMA'
-  | 'DEMENCIA_VASCULAR'
+  | 'TRATADA_CURADA'
+  | 'ACTIVA_TRATAMIENTO'
+  | 'ACTIVA_NO_TRATAMIENTO'
+  | 'CONTACTO'
+  | 'VACUNA_BCG'
   | 'OTRO';
 
-export type EndocrinoMetabolico = 
+export type Asma = 
   | 'NO'
-  | 'TIROIDES'
-  | 'OBESIDAD'
-  | 'DISLIPIDEMIA'
-  | 'SINDROME_METABOLICO'
+  | 'LEVE_INTERMITENTE'
+  | 'LEVE_PERSISTENTE'
+  | 'MODERADA_PERSISTENTE'
+  | 'GRAVE_PERSISTENTE'
+  | 'INDUCIDA_EJERCICIO'
   | 'OTRO';
 
-export type EnfermedadInfecciosa = 
+export type Diabetes = 
   | 'NO'
-  | 'HEPATITIS'
-  | 'COVID'
-  | 'NEUMONIA'
-  | 'INFECCION_URINARIA'
+  | 'TIPO_1'
+  | 'TIPO_2'
+  | 'GESTACIONAL'
+  | 'PREDIABETES'
+  | 'LADA'
   | 'OTRO';
 
-export type Malformacion = 
+export type HipertensionArterial = 
   | 'NO'
-  | 'CARDIACA'
-  | 'NEURAL'
-  | 'ESQUELETICA'
-  | 'FACIAL'
+  | 'CONTROLADA'
+  | 'LIMITROFE'
+  | 'NO_CONTROLADA'
+  | 'RESISTENTE'
+  | 'MALIGNA'
+  | 'OTRO';
+
+export type EnfermedadCardiaca = 
+  | 'NO'
+  | 'CARDIOPATIA_ISQUEMICA'
+  | 'INSUFICIENCIA_CARDIACA'
+  | 'ARRITMIA'
+  | 'VALVULOPATIA'
+  | 'CARDIOMIOPATIA'
   | 'OTRO';

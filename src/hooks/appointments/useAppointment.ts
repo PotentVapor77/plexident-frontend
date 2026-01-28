@@ -7,11 +7,15 @@ import type {
   ICitaCreate,
   IHorarioDisponible,
   EstadoCita,
+  ICitasDelDia,
+  ICitasProximas,
+  IHistorialResponse,
 } from '../../types/appointments/IAppointment';
 import appointmentService from '../../services/appointments/appointmentService';
 
 // Helper function para extraer datos de diferentes estructuras de respuesta
 const extractDataFromResponse = <T,>(response: unknown): T[] => {
+  
   if (Array.isArray(response)) {
     return response;
   }
@@ -51,6 +55,10 @@ export const useAppointment = () => {
   const [horariosDisponibles, setHorariosDisponibles] = useState<IHorarioDisponible[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchingHorarios, setFetchingHorarios] = useState(false);
+
+  const [citasDelDia, setCitasDelDia] = useState<ICitasDelDia | null>(null);
+  const [citasProximas, setCitasProximas] = useState<ICitasProximas | null>(null);
+  const [historialCita, setHistorialCita] = useState<IHistorialResponse | null>(null);
 
   const fetchCitas = async (params?: {
     search?: string;
@@ -291,6 +299,57 @@ const reprogramarCita = async (
     },
     []
   );
+
+    /**
+   * RF-05.11: Obtener historial de una cita
+   */
+  const fetchHistorialCita = async (citaId: string) => {
+    try {
+      setLoading(true);
+      const historial = await appointmentService.getHistorialCita(citaId);
+      setHistorialCita(historial);
+      return historial;
+    } catch (error) {
+      console.error('useAppointment.fetchHistorialCita - Error:', error);
+      toast.error('Error al cargar el historial de la cita');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * RF-05.16: Obtener citas del día
+   */
+  const fetchCitasDelDia = async (odontologoId?: string) => {
+    try {
+      setLoading(true);
+      const citas = await appointmentService.getCitasDelDia(odontologoId);
+      setCitasDelDia(citas);
+      return citas;
+    } catch (error) {
+      console.error('useAppointment.fetchCitasDelDia - Error:', error);
+      toast.error('Error al cargar las citas del día');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    /**
+   * RF-05.17: Obtener alertas de citas próximas
+   */
+  const fetchCitasProximas = async (minutos: number = 30) => {
+    try {
+      const citas = await appointmentService.getCitasProximas(minutos);
+      setCitasProximas(citas);
+      return citas;
+    } catch (error) {
+      console.error('useAppointment.fetchCitasProximas - Error:', error);
+      toast.error('Error al cargar las citas próximas');
+      return null;
+    }
+  };
   
   
 
@@ -309,5 +368,13 @@ const reprogramarCita = async (
     cancelarCita,
     cambiarEstadoCita,
     fetchHorariosDisponibles,
+    fetchHistorialCita,
+    fetchCitasDelDia,
+    fetchCitasProximas,
+     citasDelDia,
+    citasProximas,
+    historialCita,
+
+
   };
 };

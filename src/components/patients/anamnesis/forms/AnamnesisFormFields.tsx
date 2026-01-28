@@ -14,9 +14,9 @@ export interface AnamnesisFormData {
   alergia_anestesia: string;
   alergia_anestesia_otro: string;
   
-  // Hemorragias / Problemas de coagulación (✅ CAMBIADO)
+  // Hemorragias / Problemas de coagulación
   hemorragias: string;
-  hemorragias_detalle: string; // ✅ NUEVO
+  hemorragias_detalle: string;
   
   // Enfermedades y condiciones
   vih_sida: string;
@@ -27,11 +27,11 @@ export interface AnamnesisFormData {
   asma_otro: string;
   diabetes: string;
   diabetes_otro: string;
-  hipertension_arterial: string; // ✅ CAMBIADO
-  hipertension_arterial_otro: string; // ✅ CAMBIADO
+  hipertension_arterial: string;
+  hipertension_arterial_otro: string;
   enfermedad_cardiaca: string;
-  enfermedad_cardiaca_otro: string; // ✅ CAMBIADO
-  otro_antecedente_personal: string; // ✅ NUEVO
+  enfermedad_cardiaca_otro: string;
+  otro_antecedente_personal: string;
   
   // ========== ANTECEDENTES FAMILIARES ==========
   
@@ -40,21 +40,27 @@ export interface AnamnesisFormData {
   cardiopatia_familiar_otro: string;
   hipertension_familiar: string;
   hipertension_familiar_otro: string;
-  enfermedad_cerebrovascular_familiar: string; // ✅ NUEVO
-  enfermedad_cerebrovascular_familiar_otro: string; // ✅ NUEVO
-  endocrino_metabolico_familiar: string; // ✅ NUEVO
-  endocrino_metabolico_familiar_otro: string; // ✅ NUEVO
+  enfermedad_cerebrovascular_familiar: string;
+  enfermedad_cerebrovascular_familiar_otro: string;
+  endocrino_metabolico_familiar: string;
+  endocrino_metabolico_familiar_otro: string;
   cancer_familiar: string;
   cancer_familiar_otro: string;
-  tuberculosis_familiar: string; // ✅ NUEVO
-  tuberculosis_familiar_otro: string; // ✅ NUEVO
+  tuberculosis_familiar: string;
+  tuberculosis_familiar_otro: string;
   enfermedad_mental_familiar: string;
   enfermedad_mental_familiar_otro: string;
-  enfermedad_infecciosa_familiar: string; // ✅ NUEVO
-  enfermedad_infecciosa_familiar_otro: string; // ✅ NUEVO
-  malformacion_familiar: string; // ✅ NUEVO
-  malformacion_familiar_otro: string; // ✅ NUEVO
-  otro_antecedente_familiar: string; // ✅ NUEVO
+  enfermedad_infecciosa_familiar: string;
+  enfermedad_infecciosa_familiar_otro: string;
+  malformacion_familiar: string;
+  malformacion_familiar_otro: string;
+  otro_antecedente_familiar: string;
+  
+  // ========== EXÁMENES COMPLEMENTARIOS ==========
+  pedido_examenes_complementarios: string;
+  pedido_examenes_complementarios_detalle: string; // ✅ AÑADIDO
+  informe_examenes: string;
+  informe_examenes_detalle: string;
   
   // ========== HÁBITOS Y OBSERVACIONES ==========
   habitos: string;
@@ -161,63 +167,6 @@ const enfermedadCardiacaOptions = [
   { value: 'OTRO', label: 'Otro' },
 ];
 
-// ✅ NUEVAS OPCIONES
-const enfermedadCerebrovascularOptions = [
-  { value: 'NO', label: 'No' },
-  { value: 'ACCIDENTE_CEREBROVASCULAR', label: 'Accidente cerebrovascular' },
-  { value: 'ICTUS', label: 'Ictus' },
-  { value: 'ANEURISMA', label: 'Aneurisma cerebral' },
-  { value: 'DEMENCIA_VASCULAR', label: 'Demencia vascular' },
-  { value: 'OTRO', label: 'Otro' },
-];
-
-const endocrinoMetabolicoOptions = [
-  { value: 'NO', label: 'No' },
-  { value: 'TIROIDES', label: 'Enfermedad tiroidea' },
-  { value: 'OBESIDAD', label: 'Obesidad' },
-  { value: 'DISLIPIDEMIA', label: 'Dislipidemia' },
-  { value: 'SINDROME_METABOLICO', label: 'Síndrome metabólico' },
-  { value: 'OTRO', label: 'Otro' },
-];
-
-const cancerOptions = [
-  { value: 'NO', label: 'No' },
-  { value: 'PULMON', label: 'Cáncer de pulmón' },
-  { value: 'MAMA', label: 'Cáncer de mama' },
-  { value: 'COLON', label: 'Cáncer de colon' },
-  { value: 'PROSTATA', label: 'Cáncer de próstata' },
-  { value: 'LEUCEMIA', label: 'Leucemia' },
-  { value: 'OTRO', label: 'Otro' },
-];
-
-const enfermedadMentalOptions = [
-  { value: 'NO', label: 'No' },
-  { value: 'DEPRESION', label: 'Depresión' },
-  { value: 'ESQUIZOFRENIA', label: 'Esquizofrenia' },
-  { value: 'TRASTORNO_BIPOLAR', label: 'Trastorno bipolar' },
-  { value: 'ANSIEDAD', label: 'Trastorno de ansiedad' },
-  { value: 'DEMENCIA', label: 'Demencia' },
-  { value: 'OTRO', label: 'Otro' },
-];
-
-const enfermedadInfecciosaOptions = [
-  { value: 'NO', label: 'No' },
-  { value: 'HEPATITIS', label: 'Hepatitis' },
-  { value: 'COVID', label: 'COVID-19 grave' },
-  { value: 'NEUMONIA', label: 'Neumonía recurrente' },
-  { value: 'INFECCION_URINARIA', label: 'Infección urinaria recurrente' },
-  { value: 'OTRO', label: 'Otro' },
-];
-
-const malformacionOptions = [
-  { value: 'NO', label: 'No' },
-  { value: 'CARDIACA', label: 'Malformación cardíaca' },
-  { value: 'NEURAL', label: 'Malformación del tubo neural' },
-  { value: 'ESQUELETICA', label: 'Malformación esquelética' },
-  { value: 'FACIAL', label: 'Malformación facial' },
-  { value: 'OTRO', label: 'Otro' },
-];
-
 const familiarOptions = [
   { value: 'NO', label: 'Ninguno' },
   { value: 'PADRE', label: 'Padre' },
@@ -226,6 +175,20 @@ const familiarOptions = [
   { value: 'HERMANOS', label: 'Hermanos' },
   { value: 'TIO', label: 'Tíos' },
   { value: 'OTRO', label: 'Otro familiar' },
+];
+
+// ✅ OPCIONES PARA EXÁMENES COMPLEMENTARIOS
+const pedidoExamenesOptions = [
+  { value: 'SI', label: 'Sí' },
+  { value: 'NO', label: 'No' },
+];
+
+const informeExamenesOptions = [
+  { value: 'NINGUNO', label: 'Ninguno' },
+  { value: 'BIOMETRIA', label: 'Biometría hemática' },
+  { value: 'QUIMICA_SANGUINEA', label: 'Química sanguínea' },
+  { value: 'RAYOS_X', label: 'Rayos X' },
+  { value: 'OTROS', label: 'Otros' },
 ];
 
 export default function AnamnesisFormFields({
@@ -280,7 +243,7 @@ export default function AnamnesisFormFields({
         </div>
       )}
 
-            {/* Sección principal: Antecedentes Personales */}
+      {/* Sección principal: Antecedentes Personales */}
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-blue-200 dark:border-blue-800">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-2 h-8 bg-gradient-to-b from-blue-600 to-blue-700 rounded-full" />
@@ -638,9 +601,7 @@ export default function AnamnesisFormFields({
         </div>
       </div>
 
-      
-
-      {/* Sección 4: Antecedentes familiares */}
+      {/* Sección: Antecedentes familiares */}
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-purple-200 dark:border-purple-800">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-2 h-8 bg-gradient-to-b from-purple-500 to-purple-600 rounded-full" />
@@ -725,7 +686,7 @@ export default function AnamnesisFormFields({
               onChange={onInputChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
-              {enfermedadCerebrovascularOptions.map(option => (
+              {familiarOptions.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -739,7 +700,7 @@ export default function AnamnesisFormFields({
                   value={formData.enfermedad_cerebrovascular_familiar_otro}
                   onChange={onInputChange}
                   required
-                  placeholder="Especificar tipo"
+                  placeholder="Especificar familiar"
                   className="w-full p-3 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:border-purple-600 dark:text-white"
                 />
               </div>
@@ -757,7 +718,7 @@ export default function AnamnesisFormFields({
               onChange={onInputChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
-              {endocrinoMetabolicoOptions.map(option => (
+              {familiarOptions.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -771,7 +732,7 @@ export default function AnamnesisFormFields({
                   value={formData.endocrino_metabolico_familiar_otro}
                   onChange={onInputChange}
                   required
-                  placeholder="Especificar tipo"
+                  placeholder="Especificar familiar"
                   className="w-full p-3 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:border-purple-600 dark:text-white"
                 />
               </div>
@@ -789,7 +750,7 @@ export default function AnamnesisFormFields({
               onChange={onInputChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
-              {cancerOptions.map(option => (
+              {familiarOptions.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -853,7 +814,7 @@ export default function AnamnesisFormFields({
               onChange={onInputChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
-              {enfermedadMentalOptions.map(option => (
+              {familiarOptions.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -885,7 +846,7 @@ export default function AnamnesisFormFields({
               onChange={onInputChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
-              {enfermedadInfecciosaOptions.map(option => (
+              {familiarOptions.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -917,7 +878,7 @@ export default function AnamnesisFormFields({
               onChange={onInputChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
-              {malformacionOptions.map(option => (
+              {familiarOptions.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -956,7 +917,124 @@ export default function AnamnesisFormFields({
         </div>
       </div>
 
-      {/* Sección 5: Hábitos */}
+      {/* ✅ SECCIÓN: Exámenes complementarios - COMPLETAMENTE CORREGIDA */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-green-200 dark:border-green-800">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-2 h-8 bg-gradient-to-b from-green-500 to-green-600 rounded-full" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Exámenes complementarios
+          </h3>
+        </div>
+
+        <div className="space-y-6">
+          {/* Pedido de exámenes complementarios */}
+          <div className=" dark:bg-green-900/10 rounded-lg p-4 border border-green-200 dark:border-green-800">
+            <div className="flex items-center gap-2 mb-4">
+              <h4 className="text-md font-semibold text-gray-900 dark:text-white">
+                📋 Pedido de exámenes complementarios
+              </h4>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  ¿Se solicitaron exámenes complementarios?
+                </label>
+                <select
+                  name="pedido_examenes_complementarios"
+                  value={formData.pedido_examenes_complementarios}
+                  onChange={onInputChange}
+                  className="w-full p-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:border-green-600 dark:text-white"
+                >
+                  {pedidoExamenesOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {formData.pedido_examenes_complementarios === 'SI' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Detalle de exámenes solicitados *
+                  </label>
+                  <textarea
+                    name="pedido_examenes_complementarios_detalle"
+                    value={formData.pedido_examenes_complementarios_detalle}
+                    onChange={onInputChange}
+                    rows={3}
+                    required
+                    placeholder="Especificar qué exámenes se solicitan y por qué (ej: radiografía panorámica, hemograma, coagulación, etc.)"
+                    className="w-full p-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:border-green-600 dark:text-white resize-none"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Informe de exámenes */}
+          <div className=" dark:bg-green-900/10 rounded-lg p-4 border border-green-200 dark:border-green-800">
+            <div className="flex items-center gap-2 mb-4">
+              <h4 className="text-md font-semibold text-gray-900 dark:text-white">
+                📄 Informe de exámenes
+              </h4>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Tipo de examen realizado
+                </label>
+                <select
+                  name="informe_examenes"
+                  value={formData.informe_examenes}
+                  onChange={onInputChange}
+                  className="w-full p-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:border-green-600 dark:text-white"
+                >
+                  {informeExamenesOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {formData.informe_examenes !== 'NINGUNO' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {formData.informe_examenes === 'OTROS' 
+                      ? 'Especificar tipo de examen *' 
+                      : 'Observaciones del examen'}
+                  </label>
+                  {formData.informe_examenes === 'OTROS' ? (
+                    <input
+                      type="text"
+                      name="informe_examenes_detalle"
+                      value={formData.informe_examenes_detalle}
+                      onChange={onInputChange}
+                      required
+                      placeholder="Ej: Tomografía, Resonancia magnética, Ecografía, etc."
+                      className="w-full p-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:border-green-600 dark:text-white"
+                    />
+                  ) : (
+                    <textarea
+                      name="informe_examenes_detalle"
+                      value={formData.informe_examenes_detalle}
+                      onChange={onInputChange}
+                      rows={3}
+                      placeholder="Resultados, hallazgos relevantes, observaciones del especialista"
+                      className="w-full p-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:border-green-600 dark:text-white resize-none"
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sección: Hábitos */}
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-orange-200 dark:border-orange-800">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-2 h-8 bg-gradient-to-b from-orange-500 to-orange-600 rounded-full" />
@@ -983,7 +1061,7 @@ export default function AnamnesisFormFields({
         </div>
       </div>
 
-      {/* Sección 6: Observaciones generales */}
+      {/* Sección: Observaciones generales */}
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-blue-200 dark:border-blue-800">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full" />
@@ -1010,7 +1088,7 @@ export default function AnamnesisFormFields({
         </div>
       </div>
 
-      {/* Sección 7: Estado (solo en edición) */}
+      {/* Sección: Estado (solo en edición) */}
       {mode === 'edit' && (
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2 mb-4">

@@ -170,3 +170,74 @@ export interface IRecordatorioEstadisticas {
   };
   ultimos_recordatorios: IRecordatorioCita[];
 }
+
+// ==================== HISTORIAL ====================
+export interface IHistorialCita {
+  id: string;
+  cita: string;
+  fecha_cambio: string;
+  usuario: string;
+  usuario_nombre: string;
+  accion: 'CREACION' | 'MODIFICACION' | 'REPROGRAMACION' | 'CANCELACION' | 'CAMBIO_ESTADO';
+  accion_display: string;
+  datos_anteriores: Record<string, undefined> | null;
+  datos_nuevos: Record<string, undefined> | null;
+  descripcion: string;
+}
+
+export interface IHistorialResponse {
+  cita_id: string;
+  paciente: string;
+  total_cambios: number;
+  historial: IHistorialCita[];
+}
+
+// ==================== DASHBOARD ====================
+export interface ICitasDelDia {
+  fecha: string;
+  fecha_display: string;
+  total_citas: number;
+  citas: ICita[];
+  estadisticas: {
+    total: number;
+    completadas: number;
+    pendientes: number;
+    en_proceso: number;
+    no_asistieron: number;
+    tasa_asistencia: number;
+  };
+  siguiente_cita: ICita | null;
+}
+
+export interface IAlertaCita {
+  id: string;
+  fecha: string;
+  hora_inicio: string;
+  estado?: EstadoCita;
+  estado_display: string;
+  hora_fin: string;
+  minutos_faltantes: number;
+  nivel_alerta: 'CRITICA' | 'ALTA' | 'MEDIA';
+  color_alerta: string;
+  paciente: {
+    id: string;
+    nombre_completo: string;
+    telefono: string;
+  };
+  odontologo: {
+    id: string;
+    nombre_completo: string;
+  };
+  tipo_consulta_display: string;
+  motivo_consulta: string;
+  duracion: number;
+}
+
+export interface ICitasProximas {
+  total_alertas: number;
+  hora_actual: string;
+  fecha_actual: string;
+  ventana_minutos: number;
+  citas_proximas: IAlertaCita[];
+  tiene_alertas_criticas: boolean;
+}

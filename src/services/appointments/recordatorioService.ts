@@ -49,7 +49,7 @@ const recordatorioService = {
       };
     }
 
-    const endpoint = ENDPOINTS.appointments.citas.enviarRecordatorio(citaId);
+    const endpoint = ENDPOINTS.appointment.citas.enviarRecordatorio(citaId);
 
     const response = await api.post(endpoint, data);
 
@@ -130,7 +130,7 @@ const recordatorioService = {
       console.log('📊 obtenerEstadisticas - Solicitando estadísticas...');
       
       const response = await api.get<IRecordatorioEstadisticas>(
-        ENDPOINTS.appointments.citas.estadisticasRecordatorios
+        ENDPOINTS.appointment.citas.estadisticasRecordatorios
       );
       
       console.log('✅ obtenerEstadisticas - Respuesta:', response.data);
@@ -169,7 +169,7 @@ const recordatorioService = {
         });
       }
 
-      const url = `${ENDPOINTS.appointments.recordatorios.base}${
+      const url = `${ENDPOINTS.appointment.recordatorios.base}${
         queryParams.toString() ? `?${queryParams.toString()}` : ''
       }`;
       
@@ -225,7 +225,7 @@ const recordatorioService = {
       const params = new URLSearchParams();
       params.append('cita', citaId);
       
-      const url = `${ENDPOINTS.appointments.recordatorios.base}?${params.toString()}`;
+      const url = `${ENDPOINTS.appointment.recordatorios.base}?${params.toString()}`;
       console.log('🌐 URL construida:', url);
       
       const response = await api.get(url);

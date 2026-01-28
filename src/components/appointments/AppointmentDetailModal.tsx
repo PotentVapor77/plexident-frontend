@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import {
-  XMarkIcon,
   CalendarIcon,
   ClockIcon,
   UserIcon,
@@ -23,6 +22,8 @@ import { useAppointment } from '../../hooks/appointments/useAppointment';
 import AppointmentRescheduleModal from './AppointmentRescheduleModal';
 import { useNotification } from '../../context/notifications/NotificationContext';
 import RecordatorioSendModal from './RecordatorioSendModal';
+import HistorialModal from './HistorialModal';
+import { DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 interface AppointmentDetailModalProps {
   isOpen: boolean;
@@ -44,7 +45,9 @@ const AppointmentDetailModal = ({
   const [motivoCancelacion, setMotivoCancelacion] = useState('');
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [showRecordatorioModal, setShowRecordatorioModal] = useState(false);
-
+  const { fetchHistorialCita, historialCita } = useAppointment();
+  const [showHistorial, setShowHistorial] = useState(false);
+  const [loadingHistorial] = useState(false); 
   const getEstadoBadgeColor = (estado: string) => {
     const colors: Record<string, string> = {
       PROGRAMADA: 'bg-blue-100 text-blue-800',
@@ -128,6 +131,12 @@ const AppointmentDetailModal = ({
         message: 'Error al confirmar la cita'
       });
     }
+  };
+
+  // Agregar función para cargar historial
+  const handleVerHistorial = async () => {
+    await fetchHistorialCita(cita.id);
+    setShowHistorial(true);
   };
 
   const handleMarcarAsistida = async () => {
@@ -580,13 +589,23 @@ const AppointmentDetailModal = ({
                   ID: #{cita.id}
                 </p>
               </div>
+              
               <button
-                onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Cerrar"
+                onClick={handleVerHistorial}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-indigo-700 bg-white border-2 border-indigo-300 rounded-lg hover:bg-indigo-50 transition-all"
               >
-                <XMarkIcon className="h-5 w-5 text-gray-500" />
+                <DocumentMagnifyingGlassIcon className="h-5 w-5 mr-2" />
+                Ver Historial
               </button>
+
+              {showHistorial && historialCita && (
+                <HistorialModal
+                  isOpen={showHistorial}
+                  onClose={() => setShowHistorial(false)}
+                  historialCita={historialCita}
+                  loading={loadingHistorial} 
+                />
+              )}
             </div>
 
             {/* Estado */}

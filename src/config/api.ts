@@ -101,14 +101,18 @@ clinicalRecords: {
    // ============================================================================
   // CITAS / APPOINTMENTS
   // ============================================================================
-    appointments: {
+    appointment: {
     citas: {
       base: '/appointment/citas/',
       byId: (id: string) => `/appointment/citas/${id}/`,
       porOdontologo: (odontologoId: string) => `/appointment/citas/por-odontologo/${odontologoId}/`,
       porSemana: '/appointment/citas/por-semana/',
-      proximas: '/appointment/citas/proximas/',
+      
       hoy: '/appointment/citas/hoy/',
+
+      historial: (id: string) => `/appointment/citas/${id}/historial/`,
+      delDia: '/appointment/citas/del-dia/',
+      proximas: '/appointment/citas/proximas/',
       
 
 
@@ -121,10 +125,6 @@ clinicalRecords: {
       enviarRecordatorio: (id: string) => `/appointment/citas/${id}/recordatorio/`,
       estadisticasRecordatorios: '/appointment/citas/estadisticas-recordatorios/',
 
-
-
-
-
     },
     horarios: {
       base: '/appointment/horarios/',
@@ -136,6 +136,23 @@ clinicalRecords: {
       byId: (id: string) => `/appointment/recordatorio/${id}/`,
     },
   },
+    dashboard: {
+    stats: '/dashboard/stats/',
+    overview: '/dashboard/overview/',
+    kpis: '/dashboard/kpis/',
+    // ✅ RF-06.2: Estadísticas de citas
+    citasStats: '/dashboard/citas-stats/',
+    // ✅ RF-06.3: Diagnósticos frecuentes
+    diagnosticosFrecuentes: '/dashboard/diagnosticos-frecuentes/',
+     // ✅ RF-06.5: Índice Caries
+    estadisticasIndiceCaries: '/dashboard/estadisticas-indice-caries/',
+    evolucionIndiceCaries: '/dashboard/evolucion-indice-caries/',
+    // ✅ RF-06.3 + RF-06.4: Estadísticas avanzadas
+    estadisticasAvanzadas: '/dashboard/estadisticas-avanzadas/',
+    // ✅ RF-06.6: Periodos disponibles
+    periodosDisponibles: '/dashboard/periodos-disponibles/',
+
+    },
 
   odontograma: {
   base: '/patients/odontograma/',

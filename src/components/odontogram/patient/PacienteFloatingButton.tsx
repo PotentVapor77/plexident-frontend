@@ -11,9 +11,8 @@ interface Props {
 export const PacienteFloatingButton: React.FC<Props> = ({ onSelectPaciente }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // ✅ Desestructurar con alias
-  const { pacientes, loading: isLoading } = usePacientes({ page_size: 100 });
+
+  const { pacientes, isLoading: isLoading } = usePacientes({ page_size: 100 });
 
   const filteredPacientes = pacientes.filter((p: IPaciente) => {
     const searchLower = searchTerm.toLowerCase();
@@ -34,7 +33,7 @@ export const PacienteFloatingButton: React.FC<Props> = ({ onSelectPaciente }) =>
       {/* Botón Flotante */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 right-8 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-blue-300"
+        className="fixed bottom-8 right-8 z-[100] bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-blue-300"
         aria-label="Seleccionar Paciente"
       >
         <Users className="w-6 h-6" />
@@ -42,7 +41,7 @@ export const PacienteFloatingButton: React.FC<Props> = ({ onSelectPaciente }) =>
 
       {/* Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">

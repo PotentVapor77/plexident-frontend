@@ -39,6 +39,8 @@ export interface AntecedentesPersonalesData {
   hipertension_arterial: string | null;
   enfermedad_cardiaca: string | null;
   enfermedad_cardiaca_otro: string;
+
+  
   
   // Metadata
   creado_por: string;
@@ -315,10 +317,10 @@ export interface ClinicalRecordDetailResponse {
   observaciones: string;
   
   // Datos administrativos
-  institucion_sistema: string;
-  unicodigo: string;
-  establecimiento_salud: string;
-  numero_hoja: number;
+  //institucion_sistema: string;
+  //unicodigo: string;
+  //establecimiento_salud: string;
+  //numero_hoja: number;
   
   // Auditoría
   creado_por: string;
@@ -333,26 +335,42 @@ export interface ClinicalRecordDetailResponse {
   puede_editar: boolean;
   esta_completo: boolean;
 }
-
+export interface CamposFormulario {
+  institucion_sistema: string;
+  unicodigo: string;
+  establecimiento_salud: string;
+  numero_historia_clinica_unica: string;
+  numero_archivo: string;
+  numero_hoja: number;
+}
 /**
  * Datos iniciales pre-cargados del paciente
  */
 export interface ClinicalRecordInitialData {
+  
   paciente: {
     id: string;
     nombre_completo: string;
     cedula_pasaporte: string;
     sexo: Sexo;
     edad: number;
-  };
-  motivo_consulta: string;
+  } | null; 
+  motivo_consulta: string | null;
   motivo_consulta_fecha: string | null;
   embarazada: EmbarazoEstado | null;
-  enfermedad_actual: string;
+  enfermedad_actual: string | null;
   enfermedad_actual_fecha: string | null;
+  campos_formulario: {
+    institucion_sistema: string;
+    unicodigo: string;
+    establecimiento_salud: string;
+    numero_historia_clinica_unica: string;
+    numero_archivo: string;
+    numero_hoja: number;
+  } ;
   
-  // Estructura mejorada: {id, fecha, data}
   antecedentes_personales: {
+
     id: string | null;
     fecha: string | null;
     data: AntecedentesPersonalesData | null;
@@ -398,6 +416,11 @@ export interface ClinicalRecordCreatePayload {
   observaciones?: string;
   unicodigo?: string;
   establecimiento_salud?: string;
+
+  temperatura?: string | null;
+  pulso?: number | null;
+  frecuencia_respiratoria?: number | null;
+  presion_arterial?: string | null;
 }
 
 /**
@@ -413,6 +436,11 @@ export interface ClinicalRecordUpdatePayload {
   examen_estomatognatico?: string;
   estado?: EstadoHistorial;
   observaciones?: string;
+
+  temperatura?: string | null;
+  pulso?: number | null;
+  frecuencia_respiratoria?: number | null;
+  presion_arterial?: string | null;
 }
 
 /**

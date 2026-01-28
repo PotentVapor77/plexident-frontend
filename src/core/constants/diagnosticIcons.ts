@@ -104,8 +104,17 @@ export const DIAGNOSTIC_ICONS: Record<string, DiagnosticIcon> = {
     Icon: ArrowLeftRight,
     color: '#EAB308',
     priority: 3,
-    form033: '1,2,3',
+    form033: 'M Rojo',
     tooltip: 'Movilidad dental',
+    categoria: 'patologia_activa'
+  },
+  recesion_gingival: {
+    key: 'recesion_gingival',
+    Icon: AlertCircle,
+    color: '#EAB308',
+    priority: 3,
+    form033: 'R Rojo',
+    tooltip: 'Recesión gingival',
     categoria: 'patologia_activa'
   },
 

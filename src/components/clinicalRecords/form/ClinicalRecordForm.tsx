@@ -3,15 +3,20 @@
 import React, { useEffect } from "react";
 import { Save, X, AlertCircle } from "lucide-react";
 import Button from "../../ui/button/Button";
-import { 
-  useCreateClinicalRecord, 
-  useUpdateClinicalRecord 
+import {
+  useCreateClinicalRecord,
+  useUpdateClinicalRecord
 } from "../../../hooks/clinicalRecord/useClinicalRecords";
 import { useAuth } from "../../../hooks/auth/useAuth";
 import { useClinicalRecordForm } from "../../../hooks/clinicalRecord/useClinicalRecordForm";
 import ClinicalRecordFormFields from "./ClinicalRecordFormFields";
-import type { ClinicalRecordInitialData } from "../../../types/clinicalRecords/typeBackendClinicalRecord";
+import type { 
+  ClinicalRecordInitialData 
+} from "../../../types/clinicalRecords/typeBackendClinicalRecord";
 import { useNotification } from "../../../context/notifications/NotificationContext";
+import type { IPaciente } from "../../../types/patient/IPatient";
+import clinicalRecordService from "../../../services/clinicalRecord/clinicalRecordService";
+import axiosInstance from "../../../services/api/axiosInstance"; // ← AGREGAR ESTE IMPORT
 
 /**
  * ============================================================================
@@ -60,10 +65,11 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
     validationErrors,
     initialDates,
     setInitialDates,
+    
   } = useClinicalRecordForm();
 
   // ========================================================================
-  // MUTATIONS - ✅ PASAR ARGUMENTOS REQUERIDOS
+  // MUTATIONS 
   // ========================================================================
   const createMutation = useCreateClinicalRecord(pacienteId ?? null);
   const updateMutation = useUpdateClinicalRecord(
@@ -80,14 +86,37 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
 
     // Configurar paciente
     if (initialData.paciente) {
-      setSelectedPaciente({
+      const pacienteCompatible: IPaciente = {
         id: initialData.paciente.id,
-        nombreCompleto: initialData.paciente.nombre_completo,
-        cedulaPasaporte: initialData.paciente.cedula_pasaporte,
+        nombres: initialData.paciente.nombre_completo.split(' ')[0] || '',
+        apellidos: initialData.paciente.nombre_completo.split(' ').slice(1).join(' ') || '',
+        cedula_pasaporte: initialData.paciente.cedula_pasaporte,
         sexo: initialData.paciente.sexo,
         edad: initialData.paciente.edad,
-      } as any);
+        fecha_nacimiento: '',
+        direccion: '',
+        telefono: '',
+        correo: '',
+        contacto_emergencia_nombre: '',
+        contacto_emergencia_telefono: '',
+        fecha_ingreso: '',
+        activo: true,
+        fecha_creacion: '',
+        condicion_edad: 'A',
+      } as IPaciente;
+
+      setSelectedPaciente(pacienteCompatible);
       updateField("paciente", initialData.paciente.id);
+    }
+
+    if (initialData.campos_formulario) {
+      const campos = initialData.campos_formulario;
+      updateField("institucion_sistema", campos.institucion_sistema);
+      updateField("unicodigo", campos.unicodigo);
+      updateField("establecimiento_salud", campos.establecimiento_salud);
+      updateField("numero_historia_clinica_unica", campos.numero_historia_clinica_unica);
+      updateField("numero_archivo", campos.numero_archivo);
+      updateField("numero_hoja", campos.numero_hoja);
     }
 
     // Configurar odontólogo responsable
@@ -166,29 +195,106 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
     }
 
     try {
-      // ✅ PAYLOAD SIN 'id' - el id se maneja en el hook de mutation
+      // Preparar payload base
       const payload = {
         paciente: formData.paciente,
         odontologo_responsable: formData.odontologo_responsable,
-        motivo_consulta: formData.motivo_consulta,
+        motivo_consulta: formData.motivo_consulta || undefined,
         embarazada: formData.embarazada || undefined,
         enfermedad_actual: formData.enfermedad_actual || undefined,
         observaciones: formData.observaciones || undefined,
         estado: formData.estado || "BORRADOR",
+        institucion_sistema: formData.institucion_sistema || 'SISTEMA NACIONAL DE SALUD',
         unicodigo: formData.unicodigo || undefined,
         establecimiento_salud: formData.establecimiento_salud || undefined,
+        numero_hoja: formData.numero_hoja || 1,
       };
 
+      // Agregar constantes vitales al payload si existen
+      if (formData.constantes_vitales_data) {
+        const constantesVitales = formData.constantes_vitales_data as any;
+        Object.assign(payload, {
+          temperatura: constantesVitales.temperatura || undefined,
+          pulso: constantesVitales.pulso || undefined,
+          frecuencia_respiratoria: constantesVitales.frecuencia_respiratoria || undefined,
+          presion_arterial: constantesVitales.presion_arterial || undefined,
+        });
+      }
+
       if (mode === "create") {
-        await createMutation.mutateAsync(payload);
+        // ============================================
+        // CREAR HISTORIAL
+        // ============================================
+        const historialCreado = await createMutation.mutateAsync(payload);
+        
+        console.log("Historial creado:", historialCreado.id);
+
+        // ============================================
+        // GUARDAR FORM033 (ODONTOGRAMA)
+        // ============================================
+        if (selectedPaciente?.id) {
+          try {
+            console.log("Obteniendo datos del Form033...");
+            
+            // Obtener datos del Form033
+            const form033Response = await axiosInstance.get<any>(
+              `/odontogram/export/form033/${selectedPaciente.id}/json/`
+            );
+
+            if (form033Response.data.success && form033Response.data.data) {
+              console.log(" Guardando Form033 en el historial...");
+              
+              // Guardar el Form033 en el historial
+              await clinicalRecordService.addForm033(
+                historialCreado.id,
+                form033Response.data.data.form033,
+                "Odontograma guardado automáticamente al crear el historial clínico"
+              );
+
+              console.log("Form033 guardado exitosamente");
+            } else {
+              console.warn(" No se pudo obtener Form033, continuando sin odontograma");
+            }
+          } catch (form033Error) {
+            console.warn(
+              " Error guardando Form033 (historial creado correctamente):",
+              form033Error
+            );
+            // No bloqueamos el flujo si falla el Form033
+          }
+        }
+
         notify({
           type: "success",
           title: "Historial creado",
           message: "El historial clínico se ha creado exitosamente.",
         });
+        
       } else if (mode === "edit") {
-        // ✅ En modo EDIT, el hook ya tiene el id, solo pasamos el payload
-        await updateMutation.mutateAsync(payload);
+        // ============================================
+        // ACTUALIZAR HISTORIAL
+        // ============================================
+        const updatePayload = {
+          motivo_consulta: formData.motivo_consulta,
+          embarazada: formData.embarazada || undefined,
+          enfermedad_actual: formData.enfermedad_actual || undefined,
+          observaciones: formData.observaciones || undefined,
+          estado: formData.estado || undefined,
+        };
+
+        // Añadir constantes vitales para update también
+        if (formData.constantes_vitales_data) {
+          const constantesVitales = formData.constantes_vitales_data as any;
+          Object.assign(updatePayload, {
+            temperatura: constantesVitales.temperatura || undefined,
+            pulso: constantesVitales.pulso || undefined,
+            frecuencia_respiratoria: constantesVitales.frecuencia_respiratoria || undefined,
+            presion_arterial: constantesVitales.presion_arterial || undefined,
+          });
+        }
+
+        await updateMutation.mutateAsync(updatePayload);
+        
         notify({
           type: "success",
           title: "Historial actualizado",
@@ -198,7 +304,10 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
 
       resetForm();
       onSuccess();
+      
     } catch (error) {
+      console.error("Error al guardar historial:", error);
+      
       notify({
         type: "error",
         title: "Error",
@@ -207,7 +316,6 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
             ? "No se pudo crear el historial clínico."
             : "No se pudo actualizar el historial clínico.",
       });
-      console.error("Error al guardar historial:", error);
     }
   };
 
@@ -243,6 +351,11 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
         validationErrors={validationErrors}
         initialDates={initialDates}
         mode={mode}
+        refreshSections={async (_section: string) => {
+          // Implementar si es necesario
+          console.log("Refresh sections not implemented");
+        }}
+        historialId={recordId}
       />
 
       {/* ACCIONES */}

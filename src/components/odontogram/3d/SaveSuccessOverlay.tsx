@@ -24,7 +24,7 @@ export const SaveSuccessOverlay: React.FC<SaveSuccessOverlayProps> = ({
     if (!isVisible) return null;
 
     return (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80">
             <div className="animate-scale-up text-center">
                 {/* Checkmark animado */}
                 <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-success-100">

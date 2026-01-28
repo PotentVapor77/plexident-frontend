@@ -2,6 +2,11 @@
 
 import { z } from "zod";
 
+// Schema para validación de presión arterial
+const presionArterialSchema = z.string().regex(
+  /^\d{2,3}\/\d{2,3}$/,
+  { message: "Formato inválido. Use: 120/80" }
+).optional().nullable();
 
 export const clinicalRecordCreateSchema = z.object({
   paciente: z.string().uuid({ message: "Debe seleccionar un paciente válido" }),
@@ -27,10 +32,55 @@ export const clinicalRecordCreateSchema = z.object({
   establecimiento_salud: z.string().max(200).optional(),
   estado: z.enum(["BORRADOR", "ABIERTO", "CERRADO"]).optional(),
   usar_ultimos_datos: z.boolean().default(true),
+  
+  // ========================================================================
+  // NUEVOS CAMPOS: CONSTANTES VITALES EDITABLES
+  // ========================================================================
+  
+  temperatura: z
+    .union([
+      z.string()
+        .transform(val => parseFloat(val))
+        .refine(val => !isNaN(val), { message: "Debe ser un número válido" }),
+      z.number()
+    ])
+    .refine(val => val >= 35 && val <= 42, {
+      message: "La temperatura debe estar entre 35°C y 42°C"
+    })
+    .optional()
+    .nullable(),
+  
+  pulso: z
+    .union([
+      z.string()
+        .transform(val => parseInt(val))
+        .refine(val => !isNaN(val), { message: "Debe ser un número válido" }),
+      z.number()
+    ])
+    .refine(val => val >= 40 && val <= 200, {
+      message: "El pulso debe estar entre 40 y 200 latidos por minuto"
+    })
+    .optional()
+    .nullable(),
+  
+  frecuencia_respiratoria: z
+    .union([
+      z.string()
+        .transform(val => parseInt(val))
+        .refine(val => !isNaN(val), { message: "Debe ser un número válido" }),
+      z.number()
+    ])
+    .refine(val => val >= 10 && val <= 50, {
+      message: "La frecuencia respiratoria debe estar entre 10 y 50 respiraciones por minuto"
+    })
+    .optional()
+    .nullable(),
+  
+  presion_arterial: presionArterialSchema,
 });
 
 /**
- * Schema para actualizar un historial clínico
+ * Schema para actualizar un historial clínico - ACTUALIZADO
  */
 export const clinicalRecordUpdateSchema = z.object({
   motivo_consulta: z
@@ -43,6 +93,51 @@ export const clinicalRecordUpdateSchema = z.object({
   enfermedad_actual: z.string().max(1000).optional(),
   observaciones: z.string().max(2000).optional(),
   estado: z.enum(["BORRADOR", "ABIERTO"]).optional(),
+  
+  // ========================================================================
+  // NUEVOS CAMPOS: CONSTANTES VITALES EDITABLES
+  // ========================================================================
+  
+  temperatura: z
+    .union([
+      z.string()
+        .transform(val => parseFloat(val))
+        .refine(val => !isNaN(val), { message: "Debe ser un número válido" }),
+      z.number()
+    ])
+    .refine(val => val >= 35 && val <= 42, {
+      message: "La temperatura debe estar entre 35°C y 42°C"
+    })
+    .optional()
+    .nullable(),
+  
+  pulso: z
+    .union([
+      z.string()
+        .transform(val => parseInt(val))
+        .refine(val => !isNaN(val), { message: "Debe ser un número válido" }),
+      z.number()
+    ])
+    .refine(val => val >= 40 && val <= 200, {
+      message: "El pulso debe estar entre 40 y 200 latidos por minuto"
+    })
+    .optional()
+    .nullable(),
+  
+  frecuencia_respiratoria: z
+    .union([
+      z.string()
+        .transform(val => parseInt(val))
+        .refine(val => !isNaN(val), { message: "Debe ser un número válido" }),
+      z.number()
+    ])
+    .refine(val => val >= 10 && val <= 50, {
+      message: "La frecuencia respiratoria debe estar entre 10 y 50 respiraciones por minuto"
+    })
+    .optional()
+    .nullable(),
+  
+  presion_arterial: presionArterialSchema,
 });
 
 /**

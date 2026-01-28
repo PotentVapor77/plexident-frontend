@@ -149,6 +149,42 @@ export const clinicalRecordService = {
 
     return response.data.data;
   },
+  addForm033: async (
+    historialId: string,
+    form033Data: any,
+    observaciones?: string
+  ): Promise<any> => {
+    const response = await axiosInstance.post<ApiListWrapper<any>>(
+      `${BASE_URL}/${historialId}/agregar-form033/`,
+      {
+        form033_data: form033Data,
+        observaciones: observaciones || ''
+      }
+    );
+    
+    return response.data.data;
+  },
+
+  /**
+   * Obtener snapshot del Form033 de un historial
+   */
+  getForm033: async (historialId: string): Promise<any> => {
+    const response = await axiosInstance.get<ApiListWrapper<any>>(
+      `${BASE_URL}/${historialId}/obtener-form033/`
+    );
+    
+    return response.data.data;
+  },
+
+  /**
+   * Eliminar snapshot del Form033 de un historial
+   */
+  deleteForm033: async (historialId: string): Promise<void> => {
+    await axiosInstance.delete(
+      `${BASE_URL}/${historialId}/eliminar-form033/`
+    );
+  },
+
 };
 
 export default clinicalRecordService;

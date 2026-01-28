@@ -373,7 +373,7 @@ export const OdontogramaViewer = ({
         </div>
 
         {pacienteActivo && (
-  <div className="absolute bottom-4 right-4 z-40 pointer-events-none">
+  <div className="absolute bottom-4 right-4 z-30 pointer-events-none">
     <div className="pointer-events-auto">
       <CPOIndicesTable
             pacienteId={pacienteActivo.id}
@@ -394,7 +394,7 @@ export const OdontogramaViewer = ({
             <button
               id="clinical-files-toggle-btn"
   onClick={onOpenFileUpload}
-  className="absolute bottom-4 left-4 bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 group"
+  className="absolute bottom-4 left-4 z-30 bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 group"
   title="Adjuntar archivos clínicos"
             >
               <Upload className="w-5 h-5" />

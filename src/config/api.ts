@@ -137,6 +137,27 @@ clinicalRecords: {
     },
   },
 
+  odontograma: {
+  base: '/patients/odontograma/',
+  byId: (id: string) => `/patients/odontograma/${id}/`,
+  form033: {
+    base: '/patients/form-033/',
+    byId: (id: string) => `/patients/form-033/${id}/`,
+    byPaciente: (pacienteId: string) => `/patients/form-033/by-paciente/${pacienteId}/`,
+  },
+  diagnosticos: {
+    base: '/patients/diagnosticos-odontograma/',
+    byId: (id: string) => `/patients/diagnosticos-odontograma/${id}/`,
+  },
+  export: {
+    jsonExport: (pacienteId: string) => `/odontogram/export/form033/${pacienteId}/json/`,
+      htmlPreview: (pacienteId: string) => `/odontogram/export/form033/${pacienteId}/html/`,
+      pdfDownload: (pacienteId: string) => `/odontogram/export/form033/${pacienteId}/pdf/`,
+      pdfSave: (pacienteId: string) => `/odontogram/export/form033/${pacienteId}/guardar-pdf/`,
+  },
+},
+
+
 
   
 } as const;
@@ -147,7 +168,6 @@ export const PAGINATION = {
   pageSizeOptions: [10, 20, 50, 100],
 } as const;
 
-// ✅ CORREGIDO: Timeouts razonables
 export const TIMEOUTS = {
   api: 10000,        // 10 segundos
   fileUpload: 30000, // 30 segundos

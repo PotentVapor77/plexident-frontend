@@ -13,8 +13,15 @@ export interface ClinicalRecordFormData {
     enfermedad_actual: string;
     estado: EstadoHistorial;
     observaciones: string;
+    
+    // Estos campos pueden venir de la cabecera
     unicodigo: string;
     establecimiento_salud: string;
+    numero_archivo: string;
+    numero_historia_clinica_unica?: string;
+    institucion_sistema: string;
+    numero_hoja: number;
+    
     usar_ultimos_datos: boolean;
 
     // Mantener IDs para el payload

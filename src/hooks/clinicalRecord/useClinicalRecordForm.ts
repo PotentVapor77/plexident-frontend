@@ -23,11 +23,15 @@ export function useClinicalRecordForm(
     observaciones: "",
     unicodigo: "",
     establecimiento_salud: "",
+    numero_archivo: "", 
+    institucion_sistema: "SISTEMA NACIONAL DE SALUD", 
+    numero_hoja: 1, 
     usar_ultimos_datos: true,
     antecedentes_personales_data: null,
     antecedentes_familiares_data: null,
     constantes_vitales_data: null,
     examen_estomatognatico_data: null,
+    
   };
 
   const mergeData = (

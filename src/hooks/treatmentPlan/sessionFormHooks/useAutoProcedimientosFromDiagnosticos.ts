@@ -1,3 +1,5 @@
+// src/hooks/treatmentPlan/sessionFormHooks/useAutoProcedimientosFromDiagnosticos.ts
+
 import { useEffect } from "react";
 import type {
     Procedimiento,
@@ -28,6 +30,7 @@ interface UseAutoProcedimientosParams {
 
 /**
  * Genera procedimientos sugeridos en tiempo real, con texto más descriptivo.
+ * SOLUCIÓN: Evita duplicados eliminando todos los autogenerados previos.
  */
 export function useAutoProcedimientosFromDiagnosticos({
     autocompletar,
@@ -36,22 +39,22 @@ export function useAutoProcedimientosFromDiagnosticos({
     setProcedimientos,
 }: UseAutoProcedimientosParams) {
     useEffect(() => {
-        if (!autocompletar) return;
+        if (!autocompletar) {
+            return;
+        }
 
+        // 1. Separar procedimientos manuales de los autogenerados
         const manuales = procedimientos.filter((p) => !p.autogenerado);
-
+        
         if (selectedDiagnosticos.length === 0) {
-            const soloManuales = manuales;
-            const mismoEstado =
-                soloManuales.length === procedimientos.length &&
-                soloManuales.every((p, i) => p === procedimientos[i]);
-
-            if (!mismoEstado) {
-                setProcedimientos(soloManuales);
+            // Cuando no hay diagnósticos seleccionados, solo mostramos manuales
+            if (manuales.length !== procedimientos.length) {
+                setProcedimientos(manuales);
             }
             return;
         }
 
+        // 2. Generar nuevos procedimientos autogenerados basados en diagnósticos
         type GrupoKey = string;
 
         const grupos = new Map<
@@ -99,7 +102,8 @@ export function useAutoProcedimientosFromDiagnosticos({
             }
         }
 
-        const autoProcedimientos: Procedimiento[] = [];
+        // 3. Crear nuevos procedimientos autogenerados
+        const nuevosAutoProcedimientos: Procedimiento[] = [];
 
         for (const grupo of grupos.values()) {
             const {
@@ -111,13 +115,13 @@ export function useAutoProcedimientosFromDiagnosticos({
                 atributos,
             } = grupo;
 
-            // 1) Texto de superficies (nombres completos para la descripción)
+            // Texto de superficies
             const superficiesTexto =
                 superficies.length > 0
                     ? ` en las superficies ${superficies.join(", ")}`
                     : "";
 
-            // 2) Texto de motivo / atributos clínicos relevantes (ejemplo simple)
+            // Texto de motivo / atributos clínicos
             let motivoTexto = "";
             if (atributos.motivo_extraccion) {
                 motivoTexto = ` debido a ${atributos.motivo_extraccion.replace(
@@ -128,23 +132,26 @@ export function useAutoProcedimientosFromDiagnosticos({
                 motivoTexto = ` de severidad ${atributos.severidad}`;
             }
 
-            // 3) Notas libres
+            // Notas libres
             const notasTexto = notas ? ` Observaciones: ${notas}.` : "";
 
-            // 4) Construcción más clínica
-            // Puedes ajustar verbos por categoría si quieres aún más detalle
+            // Construcción clínica
             const verboBase = categoria.toLowerCase().includes("patología")
                 ? "Realizar tratamiento para"
                 : "Realizar procedimiento por";
 
             const descripcion = `${verboBase} ${diagnosticoNombre} en diente ${diente}${superficiesTexto}${motivoTexto}.${notasTexto}`.trim();
 
-            // 5) Siglas solo para el campo "superficie"
+            // Siglas para el campo "superficie"
             const superficiesSiglas = superficies
                 .map((s) => SUPERFICIE_TO_SIGLA[s] || s)
                 .join(",");
 
-            autoProcedimientos.push({
+            // Generar un ID único basado en el contenido para evitar duplicados
+            const uniqueId = `auto-${categoria}-${grupo.diagnosticoKey}-${diente}-${superficies.sort().join(',')}`;
+
+            nuevosAutoProcedimientos.push({
+                id: uniqueId,
                 descripcion,
                 diente,
                 superficie: superficiesSiglas,
@@ -152,15 +159,33 @@ export function useAutoProcedimientosFromDiagnosticos({
             });
         }
 
-        const nuevosProcedimientos = [...manuales, ...autoProcedimientos];
+        // 4. Combinar manuales con nuevos autogenerados
+        // Primero filtramos duplicados por ID
+        const idsManuales = new Set(manuales.map(p => p.id || ""));
+        const autoSinDuplicados = nuevosAutoProcedimientos.filter(p => 
+            !idsManuales.has(p.id || "")
+        );
+        
+        // También filtramos duplicados dentro de los autogenerados
+        const idsAuto = new Set<string>();
+        const autoUnicos = autoSinDuplicados.filter(p => {
+            const id = p.id || "";
+            if (idsAuto.has(id)) {
+                return false;
+            }
+            idsAuto.add(id);
+            return true;
+        });
+        
+        const nuevosProcedimientos = [...manuales, ...autoUnicos];
 
-        const mismaLongitud =
-            nuevosProcedimientos.length === procedimientos.length;
-        const mismoContenido =
-            mismaLongitud &&
+        // 5. Solo actualizar si hay cambios reales
+        const mismoContenido = 
+            nuevosProcedimientos.length === procedimientos.length &&
             nuevosProcedimientos.every((p, i) => {
                 const q = procedimientos[i];
                 return (
+                    p.id === q?.id &&
                     p.descripcion === q?.descripcion &&
                     p.diente === q?.diente &&
                     p.superficie === q?.superficie &&
@@ -171,5 +196,6 @@ export function useAutoProcedimientosFromDiagnosticos({
         if (!mismoContenido) {
             setProcedimientos(nuevosProcedimientos);
         }
-    }, [autocompletar, selectedDiagnosticos]);
+
+    }, [autocompletar, selectedDiagnosticos, procedimientos, setProcedimientos]);
 }

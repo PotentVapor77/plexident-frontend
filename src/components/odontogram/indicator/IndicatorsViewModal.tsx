@@ -130,7 +130,7 @@ export const IndicatorsViewModal: React.FC<IndicatorsViewModalProps> = ({
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               <div className="rounded-lg bg-emerald-50/80 dark:bg-emerald-900/30 px-3 py-2">
                 <p className="text-xs uppercase tracking-wide text-emerald-700 dark:text-emerald-200">
                   OHI Placa promedio
@@ -147,8 +147,18 @@ export const IndicatorsViewModal: React.FC<IndicatorsViewModalProps> = ({
                   {formatValue(registro.ohi_promedio_calculo)}
                 </p>
               </div>
+              
+              <div className="rounded-lg bg-emerald-50/80 dark:bg-emerald-900/30 px-3 py-2">
+                <p className="text-xs uppercase tracking-wide text-emerald-700 dark:text-emerald-200">
+                  GI Gingivitis promedio
+                </p>
+                <p className="mt-1 text-sm font-semibold text-emerald-900 dark:text-emerald-100">
+                  {formatValue(registro.gi_promedio_gingivitis)}
+                </p>
+              </div>
             </div>
           </section>
+
 
           {/* Evaluación clínica */}
           <section className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-indigo-200/70 dark:border-indigo-900/60 p-4">

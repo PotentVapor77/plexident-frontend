@@ -321,6 +321,11 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
                   OHI Cálculo
                 </th>
+                
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
+                  OHI Gingivitis
+                </th>
+
                 <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
                   Acciones
                 </th>
@@ -380,6 +385,10 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
 
                   <td className="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">
                     {formatValue(registro.ohi_promedio_calculo)}
+                  </td>
+
+                  <td className="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">
+                    {formatValue(registro.gi_promedio_gingivitis)}
                   </td>
 
                   <td className="px-6 py-3">

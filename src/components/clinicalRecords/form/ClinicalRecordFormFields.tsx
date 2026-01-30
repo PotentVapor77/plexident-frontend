@@ -15,6 +15,7 @@ import ExamenEstomatognaticoSection from "./sections/ExamenEstomatognaticoSectio
 import ObservacionesSection from "./sections/ObservacionesSection";
 import InfoSection from "./sections/InfoSection";
 import Odontograma2DSection from "./sections/Odontograma2DSection";
+import IndicadoresSaludBucalSection from "./sections/IndicadoresSaludBucalSection";
 
 /**
  * ============================================================================
@@ -113,7 +114,6 @@ const ClinicalRecordFormFields: React.FC<ClinicalRecordFormFieldsProps> = ({
         selectedPaciente={selectedPaciente}
         lastUpdated={initialDates.constantes_vitales}
         refreshSection={() => refreshSections("constantes_vitales")}
-        mode={mode}
       />
 
       {/* ====================================================================
@@ -157,6 +157,13 @@ const ClinicalRecordFormFields: React.FC<ClinicalRecordFormFieldsProps> = ({
         refreshSection={() => refreshSections("odontograma_2d")}
         mode={mode}
         historialId={historialId}
+      />
+
+      <IndicadoresSaludBucalSection
+        formData={formData}
+        lastUpdated={initialDates.indicadores_salud_bucal}
+        refreshSection={() => refreshSections("indicadores_salud_bucal")}
+        mode={mode}
       />
 
       {/* ====================================================================

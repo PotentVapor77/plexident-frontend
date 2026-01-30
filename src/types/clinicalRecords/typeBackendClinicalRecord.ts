@@ -1,3 +1,4 @@
+
 // src/types/clinicalRecord/typeBackendClinicalRecord.ts
 
 // ============================================================================
@@ -265,6 +266,8 @@ export interface ClinicalRecordListResponse {
   activo: boolean;
   puede_editar: boolean;
   esta_completo: boolean;
+  indicadores_salud?: any; 
+  indicadores_salud_bucal?: IndicadoresSaludBucalData;
 }
 
 /**
@@ -308,6 +311,8 @@ export interface ClinicalRecordDetailResponse {
   constantes_vitales_data?: ConstantesVitalesData;
   examen_estomatognatico: string | null;
   examen_estomatognatico_data?: ExamenEstomatognaticoData;
+  indicadores_salud_bucal: string | null;
+  indicadores_salud_bucal_data?: IndicadoresSaludBucalData;
   
   // Metadata
   estado: EstadoHistorial;
@@ -316,11 +321,12 @@ export interface ClinicalRecordDetailResponse {
   fecha_cierre: string | null;
   observaciones: string;
   
-  // Datos administrativos
-  //institucion_sistema: string;
-  //unicodigo: string;
-  //establecimiento_salud: string;
-  //numero_hoja: number;
+  institucion_sistema: string;
+  unicodigo: string;
+  establecimiento_salud: string;
+  numero_hoja: number;
+  numero_historia_clinica_unica: string;
+  numero_archivo: string;
   
   // Auditoría
   creado_por: string;
@@ -368,6 +374,8 @@ export interface ClinicalRecordInitialData {
     numero_archivo: string;
     numero_hoja: number;
   } ;
+
+  
   
   antecedentes_personales: {
 
@@ -393,6 +401,79 @@ export interface ClinicalRecordInitialData {
     fecha: string | null;
     data: ExamenEstomatognaticoData | null;
   } | null;
+  IndicadoresSaludBucal: {
+    id: string | null;
+  }
+  indicadores_salud_bucal: {
+    id: string | null;
+    fecha: string | null;
+    data: IndicadoresSaludBucalData | null;
+  } | null;
+
+
+}
+
+
+export interface IndicadoresSaludBucalData {
+  id: string;
+  fecha: string;
+  fecha_formateada: string;
+  paciente_nombre: string;
+  creado_por_nombre: string;
+  
+  // Indicadores principales
+  enfermedad_periodontal: string | null;
+  enfermedad_periodontal_display: string | null;
+  tipo_oclusion: string | null;
+  tipo_oclusion_display: string | null;
+  nivel_fluorosis: string | null;
+  nivel_fluorosis_display: string | null;
+  gi_promedio_gingivitis: number;
+  nivel_gingivitis_display: string;
+  observaciones: string | null;
+  informacion_calculo_json: any | null;
+  
+  // Datos por pieza
+  valores_por_pieza: Array<{
+    pieza: string;
+    placa: {
+      valor: number | null;
+      descripcion: string | null;
+      escala: string;
+    };
+    calculo: {
+      valor: number | null;
+      descripcion: string | null;
+      escala: string;
+    };
+    gingivitis: {
+      valor: number | null;
+      descripcion: string | null;
+      escala: string;
+    };
+    completo: boolean;
+  }>;
+  
+  // Resúmenes calculados
+  ohi_promedio_placa: number;
+  ohi_promedio_calculo: number;
+  resumen_higiene: {
+    nivel: string;
+    valor: number;
+    rango: string;
+    recomendacion: string;
+  };
+  resumen_gingival: {
+    nivel: string;
+    valor: number;
+    rango: string;
+    recomendacion: string;
+  };
+  
+  // Metadata
+  activo: boolean;
+  paciente: string;
+  creado_por: string;
 }
 
 // ============================================================================
@@ -412,6 +493,7 @@ export interface ClinicalRecordCreatePayload {
   antecedentes_familiares?: string;
   constantes_vitales?: string;
   examen_estomatognatico?: string;
+  indicadores_salud_bucal?: string;
   estado?: EstadoHistorial;
   observaciones?: string;
   unicodigo?: string;
@@ -442,6 +524,11 @@ export interface ClinicalRecordUpdatePayload {
   frecuencia_respiratoria?: number | null;
   presion_arterial?: string | null;
 }
+
+
+
+
+
 
 /**
  * Payload para cerrar un historial
@@ -477,3 +564,5 @@ export interface ApiListWrapper<T> {
   data: T;
   errors: unknown;
 }
+
+

@@ -221,6 +221,110 @@ export interface HistorialOdontogramaBackend {
     };
   };
 }
+
+export interface PiezaInfo {
+  codigo_usado: string | null;
+  es_alternativa: boolean;
+  disponible: boolean;
+  codigo_original?: string;
+  diente_id?: string | null;
+  ausente?: boolean;
+}
+export interface InformacionPiezasResponse {
+  denticion: 'permanente' | 'temporal';
+  piezas: Record<string, PiezaInfo>;
+  estadisticas: EstadisticasPiezas;
+}
+
+export interface VerificarDisponibilidadResponse {
+  puede_crear_indicadores: boolean;
+  piezas_disponibles: number;
+  mensaje: string;
+}
+export interface EstadisticasPiezas {
+  total_piezas: number;
+  piezas_originales: number;
+  piezas_alternativas: number;
+  piezas_no_disponibles: number;
+  porcentaje_disponible: number;
+}
+
+export interface CalculosIndicadores {
+  ohi_s: {
+    indice_placa: number | null;
+    indice_calculo: number | null;
+    ohi_s: number | null;
+    interpretacion: string;
+    detalle_piezas: Array<{
+      pieza: string;
+      placa: number;
+      calculo: number;
+      placa_descripcion: string;
+      calculo_descripcion: string;
+      subtotal: number;
+    }>;
+    totales: {
+      placa: number;
+      calculo: number;
+      superficies_evaluadas: number;
+    };
+  };
+  indice_gingival: {
+    promedio: number | null;
+    interpretacion: string;
+    detalle_piezas: Array<{
+      pieza: string;
+      valor: number;
+      descripcion: string;
+    }>;
+    totales: {
+      gingivitis: number;
+      superficies_evaluadas: number;
+    };
+  };
+  recomendaciones: string[];
+  resumen: {
+    higiene_oral: string;
+    salud_gingival: string;
+    riesgo_periodontal: string;
+  };
+}
+
+export interface InformacionCalculo {
+  denticion: 'permanente' | 'temporal';
+  piezas_usadas: Record<string, string>;
+  estadisticas: EstadisticasPiezas;
+  calculos: CalculosIndicadores;
+}
+
+export interface PiezaInfo {
+  codigo_usado: string | null;
+  es_alternativa: boolean;
+  disponible: boolean;
+  codigo_original?: string;
+  diente_id?: string | null;
+  ausente?: boolean;
+}
+
+export interface EstadisticasPiezas {
+  total_piezas: number;
+  piezas_originales: number;
+  piezas_alternativas: number;
+  piezas_no_disponibles: number;
+  porcentaje_disponible: number;
+}
+
+export interface InformacionPiezasResponse {
+  denticion: 'permanente' | 'temporal';
+  piezas: Record<string, PiezaInfo>;
+  estadisticas: EstadisticasPiezas;
+}
+
+export interface VerificarDisponibilidadResponse {
+  puede_crear_indicadores: boolean;
+  piezas_disponibles: number;
+  mensaje: string;
+}
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;
@@ -231,13 +335,14 @@ export type BackendIndicadoresSaludBucal = {
   id: string;
   paciente: string;         
   fecha: string;   
+  
   // ===== CAMPOS DE AUDITORÍA =====
   creado_por?: string | null;
   actualizado_por?: string | null;
   eliminado_por?: string | null;
   fecha_modificacion?: string | null;
   fecha_eliminacion?: string | null;
-  
+  informacion_calculo?: InformacionCalculo;
   // ===== BORRADO LÓGICO =====
   activo: boolean; 
   // ================================
@@ -246,27 +351,74 @@ export type BackendIndicadoresSaludBucal = {
   paciente_apellido?: string;
   paciente_cedula?: string;
 
-  pieza_16_placa: number | null;
-  pieza_16_calculo: number | null;
-  pieza_11_placa: number | null;
-  pieza_11_calculo: number | null;
-  pieza_26_placa: number | null;
-  pieza_26_calculo: number | null;
-  pieza_36_placa: number | null;
-  pieza_36_calculo: number | null;
-  pieza_31_placa: number | null;
-  pieza_31_calculo: number | null;
-  pieza_46_placa: number | null;
-  pieza_46_calculo: number | null;
+  pieza_16_placa?: number;
+  pieza_16_calculo?: number;
+  pieza_16_gingivitis?: number;
+  pieza_11_placa?: number;
+  pieza_11_calculo?: number;
+  pieza_11_gingivitis?: number;
+  pieza_26_placa?: number;
+  pieza_26_calculo?: number;
+  pieza_26_gingivitis?: number;
+  pieza_36_placa?: number;
+  pieza_36_calculo?: number;
+  pieza_36_gingivitis?: number;
+  pieza_31_placa?: number;
+  pieza_31_calculo?: number;
+  pieza_31_gingivitis?: number;
+  pieza_46_placa?: number;
+  pieza_46_calculo?: number;
+  pieza_46_gingivitis?: number;
 
   ohi_promedio_placa: number | null;
   ohi_promedio_calculo: number | null;
-
+  gi_promedio_gingivitis: number | null;
   enfermedad_periodontal: "LEVE" | "MODERADA" | "SEVERA" | null;
   tipo_oclusion: "ANGLE_I" | "ANGLE_II" | "ANGLE_III" | null;
   nivel_fluorosis: "NINGUNA" | "LEVE" | "MODERADA" | "SEVERA" | null;
 
   observaciones: string | null;
-};
 
+};
+export interface CrearIndicadoresSaludBucalPayload {
+  paciente_id: string;
+  creado_por?: string;
+
+}
+
+export interface OralHealthIndicatorPiece {
+  pieza: string;
+  placa: number;    // 0, 1, 2, 3
+  calculo: number;  // 0, 1, 2, 3
+  gingivitis: number; // 0, 1
+}
+
+export interface OralHealthIndicatorsData {
+  id: string;
+  fecha_formateada: string;
+  enfermedad_periodontal_display: string;
+  tipo_oclusion_display: string;
+  nivel_fluorosis_display: string;
+  nivel_gingivitis_display: string;
+  
+  // Promedios y Totales
+  ohi_promedio_placa: number;
+  ohi_promedio_calculo: number;
+  gi_promedio_gingivitis: number;
+  
+  // Resúmenes estructurados del backend
+  resumen_higiene: {
+    nivel: string;
+    valor: number;
+    recomendacion: string;
+  };
+  resumen_gingival: {
+    nivel: string;
+    valor: number;
+    recomendacion: string;
+  };
+  
+  valores_por_pieza: OralHealthIndicatorPiece[];
+  observaciones: string;
+}
 

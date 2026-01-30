@@ -1,10 +1,15 @@
 // src/mappers/clinicalRecordMapper.ts
 import type { ClinicalRecordFormData } from "../core/types/clinicalRecord.types";
 import type { 
+  AntecedentesFamiliaresData,
+  AntecedentesPersonalesData,
   CamposFormulario,
   ClinicalRecordCreatePayload, 
   ClinicalRecordDetailResponse,
-  ClinicalRecordInitialData
+  ClinicalRecordInitialData,
+  ConstantesVitalesData,
+  ExamenEstomatognaticoData,
+  IndicadoresSaludBucalData
 } from "../types/clinicalRecords/typeBackendClinicalRecord";
 
 /**
@@ -48,7 +53,9 @@ export const mapInitialDataToFormData = (
   const antecedentesFamiliares = initialData.antecedentes_familiares || null;
   const constantesVitales = initialData.constantes_vitales || null;
   const examenEstomatognatico = initialData.examen_estomatognatico || null;
-  
+
+  const indicadoresSaludBucal = initialData.indicadores_salud_bucal || null;
+
   console.log('Datos iniciales recibidos en mapeador:', initialData);
   console.log('campos_formulario:', initialData.campos_formulario);
 
@@ -82,7 +89,10 @@ export const mapInitialDataToFormData = (
     antecedentes_familiares_id: antecedentesFamiliares?.id || null,
     constantes_vitales_id: constantesVitales?.id || null,
     examen_estomatognatico_id: examenEstomatognatico?.id || null,
-    
+
+    indicadores_salud_bucal_id: indicadoresSaludBucal?.id || null,
+    indicadores_salud_bucal_data: indicadoresSaludBucal?.data || null,
+
     antecedentes_personales_data: antecedentesPersonales?.data || null,
     antecedentes_familiares_data: antecedentesFamiliares?.data || null,
     constantes_vitales_data: constantesVitales?.data || null,
@@ -96,6 +106,7 @@ export const mapInitialDataToFormData = (
       antecedentes_familiares: antecedentesFamiliares?.fecha || null,
       constantes_vitales: constantesVitales?.fecha || null,
       examen_estomatognatico: examenEstomatognatico?.fecha || null,
+      indicadores_salud_bucal: indicadoresSaludBucal?.fecha || null
 
     }
   };
@@ -116,13 +127,13 @@ export const mapFormDataToPayload = (
             : undefined,
         enfermedad_actual: formData.enfermedad_actual || undefined,
         
-        
-        // ⚠️ IMPORTANTE: Enviar solo IDs, no los datos completos
         antecedentes_personales: formData.antecedentes_personales_id || undefined,
         antecedentes_familiares: formData.antecedentes_familiares_id || undefined,
         constantes_vitales: formData.constantes_vitales_id || undefined,
         examen_estomatognatico: formData.examen_estomatognatico_id || undefined,
-        
+
+        indicadores_salud_bucal: formData.indicadores_salud_bucal_id || undefined,
+
         estado: formData.estado || "BORRADOR",
         observaciones: formData.observaciones || undefined,
         unicodigo: formData.unicodigo || undefined,
@@ -136,7 +147,6 @@ export const mapFormDataToPayload = (
 export const mapResponseToFormData = (
   response: ClinicalRecordDetailResponse
 ): Partial<ClinicalRecordFormData> => {
-  // Crear un objeto seguro para acceder a propiedades que podrían no existir
   const safeResponse = response as ClinicalRecordDetailResponse & {
     unicodigo?: string;
     establecimiento_salud?: string;
@@ -144,6 +154,11 @@ export const mapResponseToFormData = (
     numero_hoja?: number;
     numero_historia_clinica_unica?: string;
     numero_archivo?: string;
+    indicadores_salud_bucal_data?: IndicadoresSaludBucalData;
+    constantes_vitales_data?: ConstantesVitalesData;
+    antecedentes_personales_data?: AntecedentesPersonalesData;
+    antecedentes_familiares_data?: AntecedentesFamiliaresData;
+    examen_estomatognatico_data?: ExamenEstomatognaticoData;
   };
 
   return {
@@ -160,12 +175,16 @@ export const mapResponseToFormData = (
     numero_historia_clinica_unica: safeResponse.numero_historia_clinica_unica || "",
     numero_archivo: safeResponse.numero_archivo || "",
 
-
+    indicadores_salud_bucal_id: response.indicadores_salud_bucal,
     antecedentes_personales_id: response.antecedentes_personales,
     antecedentes_familiares_id: response.antecedentes_familiares,
     constantes_vitales_id: response.constantes_vitales,
     examen_estomatognatico_id: response.examen_estomatognatico,
-
+    indicadores_salud_bucal_data: safeResponse.indicadores_salud_bucal_data || null,
+    antecedentes_personales_data: safeResponse.antecedentes_personales_data || null,
+    antecedentes_familiares_data: safeResponse.antecedentes_familiares_data || null,
+    constantes_vitales_data: safeResponse.constantes_vitales_data || null,
+    examen_estomatognatico_data: safeResponse.examen_estomatognatico_data || null,
     estado: response.estado,
     observaciones: response.observaciones,
   };
@@ -194,3 +213,4 @@ export const getEstadoColor = (estado: string): string => {
   };
   return colores[estado] || colores.BORRADOR;
 };
+

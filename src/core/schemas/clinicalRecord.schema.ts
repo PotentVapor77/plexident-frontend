@@ -77,6 +77,7 @@ export const clinicalRecordCreateSchema = z.object({
     .nullable(),
   
   presion_arterial: presionArterialSchema,
+  indicadores_salud_bucal: z.string().uuid().optional().nullable(),
 });
 
 /**
@@ -138,6 +139,7 @@ export const clinicalRecordUpdateSchema = z.object({
     .nullable(),
   
   presion_arterial: presionArterialSchema,
+  indicadores_salud_bucal: z.string().uuid().optional().nullable(),
 });
 
 /**
@@ -172,6 +174,8 @@ export const clinicalRecordFiltersSchema = z.object({
   fecha_hasta: z.string().datetime().optional(),
   activo: z.boolean().optional(),
 });
+
+
 
 // Tipos inferidos de los schemas
 export type ClinicalRecordCreateInput = z.infer<typeof clinicalRecordCreateSchema>;

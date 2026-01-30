@@ -4,6 +4,8 @@
  * ============================================================================
  */
 
+import { indicadoresSaludBucalService } from "../services/clinicalRecord/indicadoresService";
+
 // Base URL desde variables de entorno
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
@@ -115,6 +117,16 @@ clinicalRecords: {
     base: '/clinical-records/odontograma-2d/',
     latestByPaciente: (pacienteId: string) => `/clinical-records/odontograma-2d/${pacienteId}/latest/`,
   },
+  indicadoresSaludBucal: {
+      latestByPaciente: (pacienteId: string) => 
+        `/clinical-records/indicadores-salud-bucal/${pacienteId}/latest/`,
+      recargarByPaciente: (pacienteId: string) =>
+        `/clinical-records/indicadores-salud-bucal/${pacienteId}/recargar/`,
+      byHistorial: (historialId: string) =>
+        `/clinical-records/indicadores-salud-bucal/historial/${historialId}/`,
+      indicadoresPorHistorial: (historialId: string) =>
+        `/clinical-records/${historialId}/indicadores-salud-bucal/`,
+    },
   },
 
 
@@ -217,6 +229,14 @@ clinicalRecords: {
     base: '/clinical-records/odontograma-2d/',
     latestByPaciente: (pacienteId: string) => `/clinical-records/odontograma-2d/${pacienteId}/latest/`,
   },
+  indicadoresSaludBucal: {
+      latestByPaciente: (pacienteId: string) => 
+        `/api/clinical-records/indicadores-salud-bucal/${pacienteId}/latest/`,
+      recargarByPaciente: (pacienteId: string) =>
+        `/api/clinical-records/indicadores-salud-bucal/${pacienteId}/recargar/`,
+      byHistorial: (historialId: string) =>
+        `/api/clinical-records/indicadores-salud-bucal/historial/${historialId}/`,
+    },
 },
 },
 

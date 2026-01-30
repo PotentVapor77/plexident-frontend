@@ -185,6 +185,31 @@ export const clinicalRecordService = {
     );
   },
 
+  /**
+   * Obtener anamnesis de un historial clínico
+   */
+  getAnamnesis: async (historialId: string): Promise<any> => {
+    const response = await axiosInstance.get<ApiListWrapper<any>>(
+      `${BASE_URL}/${historialId}/obtener-anamnesis/`
+    );
+    
+    return response.data.data;
+  },
+  getIndicadoresByHistorial: async (historialId: string): Promise<any> => {
+    const response = await axiosInstance.get<ApiListWrapper<any>>(
+      `${BASE_URL}/${historialId}/indicadores-salud-bucal/`
+    );
+    return response.data.data;
+  },
+
+  saveIndicadores: async (historialId: string, data: any): Promise<any> => {
+    const response = await axiosInstance.post<ApiListWrapper<any>>(
+      `${BASE_URL}/${historialId}/guardar-indicadores-salud-bucal/`,
+      data
+    );
+    return response.data.data;
+  },
+
 };
 
 export default clinicalRecordService;

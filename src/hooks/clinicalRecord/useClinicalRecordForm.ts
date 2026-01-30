@@ -31,6 +31,7 @@ export function useClinicalRecordForm(
     antecedentes_familiares_data: null,
     constantes_vitales_data: null,
     examen_estomatognatico_data: null,
+    indicadores_salud_bucal_data: null,
     
   };
 
@@ -150,6 +151,7 @@ export function useClinicalRecordForm(
       | "antecedentes_familiares_data"
       | "constantes_vitales_data"
       | "examen_estomatognatico_data"
+      | "indicadores_salud_bucal_data"
   >(
     section: T,
     data: ClinicalRecordFormData[T]

@@ -7,3 +7,4 @@ export { default as AntecedentesPersonalesSection } from "./AntecedentesPersonal
 export { default as AntecedentesFamiliaresSection } from "./AntecedentesFamiliaresSection";
 export { default as ExamenEstomatognaticoSection } from "./ExamenEstomatognaticoSection";
 export { default as ObservacionesSection } from "./ObservacionesSection";
+export { default as IndicadoresSaludBucalSection } from "./IndicadoresSaludBucalSection";

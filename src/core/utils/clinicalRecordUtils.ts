@@ -1,7 +1,7 @@
 // src/core/utils/clinicalRecordUtils.ts
 
 import { formatDateOnly } from "../../mappers/clinicalRecordMapper";
-import type { AntecedentesFamiliaresData, AntecedentesPersonalesData, ClinicalRecordDetailResponse, ClinicalRecordListResponse, ExamenEstomatognaticoData } from "../../types/clinicalRecords/typeBackendClinicalRecord";
+import type { AntecedentesFamiliaresData, AntecedentesPersonalesData, ClinicalRecordDetailResponse, ClinicalRecordListResponse, ExamenEstomatognaticoData, IndicadoresSaludBucalData } from "../../types/clinicalRecords/typeBackendClinicalRecord";
 
 
 /**
@@ -262,4 +262,40 @@ export const getExamenHallazgos = (data: ExamenEstomatognaticoData | null | unde
       region: r.nombre,
       detalle: r.desc || "Patología detectada (sin descripción detallada)"
     }));
+};
+
+
+export const getIndicadoresResumen = (indicadores: IndicadoresSaludBucalData) => {
+  const ohis = indicadores.ohi_promedio_placa + indicadores.ohi_promedio_calculo;
+  
+  // Determinar nivel de higiene oral
+  let higieneNivel = "";
+  if (ohis <= 0.6) higieneNivel = "Excelente";
+  else if (ohis <= 1.2) higieneNivel = "Bueno";
+  else if (ohis <= 1.8) higieneNivel = "Regular";
+  else if (ohis <= 3.0) higieneNivel = "Deficiente";
+  else higieneNivel = "Pésimo";
+
+  // Determinar nivel de gingivitis
+  let gingivitisNivel = "";
+  const gi = indicadores.gi_promedio_gingivitis;
+  if (gi <= 0.1) gingivitisNivel = "Ausente";
+  else if (gi <= 1.0) gingivitisNivel = "Leve";
+  else if (gi <= 2.0) gingivitisNivel = "Moderada";
+  else gingivitisNivel = "Severa";
+
+  // Calcular porcentaje de piezas completas
+  const piezasCompletas = indicadores.valores_por_pieza.filter(p => p.completo).length;
+  const totalPiezas = indicadores.valores_por_pieza.length;
+  const completitud = totalPiezas > 0 ? (piezasCompletas / totalPiezas) * 100 : 0;
+
+  return {
+    higieneNivel,
+    gingivitisNivel,
+    ohisTotal: ohis,
+    completitud,
+    piezasCompletas,
+    totalPiezas,
+    fecha: indicadores.fecha_formateada,
+  };
 };

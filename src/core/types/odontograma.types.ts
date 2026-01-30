@@ -161,6 +161,15 @@ export type IndicadoresSaludBucal = {
     31: number | null;
     46: number | null;
   };
+  gingivitis: {
+    16: number | null;
+    11: number | null;
+    26: number | null;
+    36: number | null;
+    31: number | null;
+    46: number | null;
+  };
+  giPromedioGingivitis: number | null;
 
   ohiPromedioPlaca: number | null;
   ohiPromedioCalculo: number | null;
@@ -175,6 +184,7 @@ export type IndicadoresSaludBucal = {
 export type IndicadoresSaludBucalCreatePayload = Omit<
   BackendIndicadoresSaludBucal,
   "id" | "fecha"
+  
 >;
 
 export type IndicadoresSaludBucalUpdatePayload = Partial<

@@ -10,6 +10,9 @@ import type {
   DienteBackend,
   HistorialOdontogramaBackend,
   BackendIndicadoresSaludBucal,
+  PiezaInfo,
+  EstadisticasPiezas,
+  VerificarDisponibilidadResponse,
 } from '../../types/odontogram/typeBackendOdontograma';
 import { createApiError, type PaginatedResponse } from '../../types/api';
 import api from '../api/axiosInstance';
@@ -51,12 +54,56 @@ const ODONTOGRAM_ENDPOINTS = {
   historialPorDiente: (dienteId: string) => `/odontogram/historial/?diente_id=${dienteId}`,
   historialPorPaciente: (pacienteId: string) => `/odontogram/historial/?paciente_id=${pacienteId}`,
   historialPorOdontologo: (odontologoId: number | string) =>`/odontogram/historial/?odontologo_id=${odontologoId}`,
-
+  infoPiezasIndice: (pacienteId: string) => 
+    `/odontogram/indicadores/piezas-indice/${pacienteId}/`,
+  verificarDisponibilidadPiezas: (pacienteId: string) => 
+    `/odontogram/indicadores/verificar-piezas/${pacienteId}/`,
 } as const;
 
 // ============================================================================
 // ODONTOGRAMA COMPLETO (USO GENERAL)
 // ============================================================================
+export interface InformacionPiezasResponse {
+  denticion: 'permanente' | 'temporal';
+  piezas: Record<string, PiezaInfo>;
+  estadisticas: EstadisticasPiezas;
+}
+export const PiezasIndiceService = {
+  /**
+   * Obtiene información sobre qué piezas usar para los indicadores
+   */
+  async obtenerInformacionPiezas(
+    pacienteId: string
+  ): Promise<InformacionPiezasResponse> {
+    console.log('[PiezasIndiceService] Obteniendo info piezas:', pacienteId);
+    
+    const { data: response } = await api.get<{
+      success: boolean;
+      status_code: number;
+      message: string;
+      data: InformacionPiezasResponse;
+    }>(ODONTOGRAM_ENDPOINTS.infoPiezasIndice(pacienteId));
+    
+    console.log('[PiezasIndiceService] Respuesta:', response.data);
+    
+    if (!response.success) {
+      throw new Error(response.message || 'Error al obtener información de piezas');
+    }
+    
+    return response.data;
+  },
+
+  async verificarDisponibilidad(
+    pacienteId: string
+  ): Promise<VerificarDisponibilidadResponse> {
+    const { data: response } = await api.get<{
+      success: boolean;
+      data: VerificarDisponibilidadResponse;
+    }>(ODONTOGRAM_ENDPOINTS.verificarDisponibilidadPiezas(pacienteId));
+    
+    return response.data;
+  }
+};
 export async function obtenerOdontogramaCompletoFrontend(
   pacienteId: string,
 ): Promise<OdontogramaData> {
@@ -614,4 +661,7 @@ export const IndicadoresSaludBucalService = {
     });
     return response.data;
   },
+
+  
 };
+

@@ -2,6 +2,7 @@
 import React from "react";
 import { Helmet } from "react-helmet-async";
 import TreatmentPlanManagement from "../../components/treatment-plan/TreatmentPlanManagement";
+import { FullScreenLayout } from "../../layout/FullScreenLayout";
 
 /**
  * Página principal del módulo Plan de Tratamiento
@@ -16,7 +17,8 @@ import TreatmentPlanManagement from "../../components/treatment-plan/TreatmentPl
  */
 const TreatmentPlanPage: React.FC = () => {
   return (
-    <>
+<FullScreenLayout className="relative bg-white rounded-xl shadow-sm">
+<>
       {/* SEO Meta Tags */}
       <Helmet>
         <title>Planes de Tratamiento | Plexident</title>
@@ -31,6 +33,10 @@ const TreatmentPlanPage: React.FC = () => {
         <TreatmentPlanManagement />
       </div>
     </>
+  
+</FullScreenLayout>
+    
+
   );
 };
 

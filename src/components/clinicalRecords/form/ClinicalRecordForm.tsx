@@ -10,9 +10,9 @@ import {
 import { useAuth } from "../../../hooks/auth/useAuth";
 import { useClinicalRecordForm } from "../../../hooks/clinicalRecord/useClinicalRecordForm";
 import ClinicalRecordFormFields from "./ClinicalRecordFormFields";
-import type { 
+import type {
   ClinicalRecordDetailResponse,
-  ClinicalRecordInitialData 
+  ClinicalRecordInitialData
 } from "../../../types/clinicalRecords/typeBackendClinicalRecord";
 import { useNotification } from "../../../context/notifications/NotificationContext";
 import type { IPaciente } from "../../../types/patient/IPatient";
@@ -69,22 +69,23 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
     validationErrors,
     initialDates,
     setInitialDates,
-    
+
   } = useClinicalRecordForm();
 
-  
-const refreshSection = async (section: string) => {
+
+  const refreshSection = async (section: string) => {
     if (!selectedPaciente?.id || mode !== "edit") return;
-    
+
     try {
-    const endpointMap: Record<string, string> = {
-      antecedentes_personales: ENDPOINTS.clinicalRecords.antecedentesPersonales.latestByPaciente(selectedPaciente.id),
-      antecedentes_familiares: ENDPOINTS.clinicalRecords.antecedentesFamiliares.latestByPaciente(selectedPaciente.id),
-      constantes_vitales: ENDPOINTS.clinicalRecords.constantesVitales.latestByPaciente(selectedPaciente.id),
-      examen_estomatognatico: ENDPOINTS.clinicalRecords.examenEstomatognatico.latestByPaciente(selectedPaciente.id),
-      odontograma_2d: ENDPOINTS.clinicalRecords.odontograma2D.latestByPaciente(selectedPaciente.id),
-      indicadores_salud_bucal: ENDPOINTS.clinicalRecords.indicadoresSaludBucal.latestByPaciente(selectedPaciente.id),
-    };
+      const endpointMap: Record<string, string> = {
+        antecedentes_personales: ENDPOINTS.clinicalRecords.antecedentesPersonales.latestByPaciente(selectedPaciente.id),
+        antecedentes_familiares: ENDPOINTS.clinicalRecords.antecedentesFamiliares.latestByPaciente(selectedPaciente.id),
+        constantes_vitales: ENDPOINTS.clinicalRecords.constantesVitales.latestByPaciente(selectedPaciente.id),
+        examen_estomatognatico: ENDPOINTS.clinicalRecords.examenEstomatognatico.latestByPaciente(selectedPaciente.id),
+        odontograma_2d: ENDPOINTS.clinicalRecords.odontograma2D.latestByPaciente(selectedPaciente.id),
+        indicadores_salud_bucal: ENDPOINTS.clinicalRecords.indicadoresSaludBucal.latestByPaciente(selectedPaciente.id),
+        indices_caries: ENDPOINTS.clinicalRecords.indicesCaries.latestByPaciente(selectedPaciente.id),
+      };
 
       const endpoint = endpointMap[section];
       if (!endpoint) {
@@ -97,10 +98,10 @@ const refreshSection = async (section: string) => {
       }
 
       const response = await api.get(endpoint);
-      
+
       if (response.data.success && response.data.data) {
         const data = response.data.data;
-        
+
         // Actualizar el estado correspondiente
         switch (section) {
           case 'antecedentes_personales':
@@ -110,7 +111,7 @@ const refreshSection = async (section: string) => {
               antecedentes_personales: data.fecha_creacion || new Date().toISOString(),
             }));
             break;
-            
+
           case 'antecedentes_familiares':
             updateSectionData('antecedentes_familiares_data', data);
             setInitialDates(prev => ({
@@ -118,7 +119,7 @@ const refreshSection = async (section: string) => {
               antecedentes_familiares: data.fecha_creacion || new Date().toISOString(),
             }));
             break;
-            
+
           case 'constantes_vitales':
             updateSectionData('constantes_vitales_data', data);
             setInitialDates(prev => ({
@@ -126,7 +127,7 @@ const refreshSection = async (section: string) => {
               constantes_vitales: data.fecha_creacion || new Date().toISOString(),
             }));
             break;
-            
+
           case 'examen_estomatognatico':
             updateSectionData('examen_estomatognatico_data', data);
             setInitialDates(prev => ({
@@ -134,16 +135,23 @@ const refreshSection = async (section: string) => {
               examen_estomatognatico: data.fecha_creacion || new Date().toISOString(),
             }));
             break;
-            case 'indicadores_salud_bucal':
-  console.log('Actualizando indicadores de salud bucal:', data);
-  updateSectionData('indicadores_salud_bucal_data', data);
-  setInitialDates(prev => ({
-    ...prev,
-    indicadores_salud_bucal: data.fecha || data.fecha_creacion || new Date().toISOString(),
-  }));
-  break;
+          case 'indicadores_salud_bucal':
+            console.log('Actualizando indicadores de salud bucal:', data);
+            updateSectionData('indicadores_salud_bucal_data', data);
+            setInitialDates(prev => ({
+              ...prev,
+              indicadores_salud_bucal: data.fecha || data.fecha_creacion || new Date().toISOString(),
+            }));
+            break;
+             case 'indices_caries': 
+          updateSectionData('indices_caries_data', data);
+          setInitialDates(prev => ({
+            ...prev,
+            indices_caries: data.fecha_evaluacion || data.fecha_creacion || new Date().toISOString(),
+          }));
+          break;
         }
-        
+
         notify({
           type: "success",
           title: "Datos actualizados",
@@ -167,6 +175,7 @@ const refreshSection = async (section: string) => {
       constantes_vitales: "Constantes Vitales",
       examen_estomatognatico: "Examen Estomatognático",
       indicadores_salud_bucal: "Indicadores de Salud Bucal",
+      indices_caries: "Índices de Caries",
     };
     return names[section] || section;
   };
@@ -182,173 +191,190 @@ const refreshSection = async (section: string) => {
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   // ========================================================================
-  // CARGAR DATOS INICIALES
+  // CARGAR DATOS INICIALES EDIT
   // ========================================================================
   useEffect(() => {
-  // CAMBIO: Remover la condición !initialData para que siempre cargue en edit
-  if (mode === "edit" && recordId) {
-    setIsLoadingEdit(true);
-    
-    const fetchRecordData = async () => {
-      try {
-        console.log('=== CARGANDO DATOS PARA EDICIÓN ===');
-        console.log('RecordId:', recordId);
-        
-        const response = await clinicalRecordService.getById(recordId);
-        const detailData: ClinicalRecordDetailResponse = response;
-        
-        console.log('✅ Detail data recibida:', detailData);
-        
-        // Configurar paciente desde paciente_info
-        if (detailData.paciente_info) {
-          console.log('📌 Configurando paciente:', detailData.paciente_info);
-          
-          const pacienteCompatible: IPaciente = {
-            id: detailData.paciente,
-            nombres: detailData.paciente_info.nombres,
-            apellidos: detailData.paciente_info.apellidos,
-            cedula_pasaporte: detailData.paciente_info.cedula_pasaporte,
-            sexo: detailData.paciente_info.sexo,
-            edad: detailData.paciente_info.edad,
-            fecha_nacimiento: detailData.paciente_info.fecha_nacimiento || '',
-            direccion: '',
-            telefono: '',
-            correo: '',
-            contacto_emergencia_nombre: '',
-            contacto_emergencia_telefono: '',
-            fecha_ingreso: '',
-            activo: true,
-            fecha_creacion: '',
-            condicion_edad: 'A',
-          } as IPaciente;
+    if (mode === "edit" && recordId) {
+      setIsLoadingEdit(true);
 
-          setSelectedPaciente(pacienteCompatible);
-          updateField("paciente", detailData.paciente);
-        }
+      const fetchRecordData = async () => {
+        try {
+          console.log('=== CARGANDO DATOS PARA EDICIÓN ===');
+          console.log('RecordId:', recordId);
 
-        // Configurar odontólogo
-        if (detailData.odontologo_responsable) {
-          console.log('📌 Configurando odontólogo:', detailData.odontologo_info);
-          
-          updateField("odontologo_responsable", detailData.odontologo_responsable);
-          
-          if (detailData.odontologo_info) {
-            const odontologoUser = {
-              id: detailData.odontologo_responsable,
-              nombres: detailData.odontologo_info.nombres,
-              apellidos: detailData.odontologo_info.apellidos,
-              rol: detailData.odontologo_info.rol,
-            } as any;
-            setSelectedOdontologo(odontologoUser);
+          const response = await clinicalRecordService.getById(recordId);
+          const detailData: ClinicalRecordDetailResponse = response;
+
+          console.log('Detail data recibida:', detailData);
+
+          // Configurar paciente desde paciente_info
+          if (detailData.paciente_info) {
+            console.log('Configurando paciente:', detailData.paciente_info);
+
+            const pacienteCompatible: IPaciente = {
+              id: detailData.paciente,
+              nombres: detailData.paciente_info.nombres,
+              apellidos: detailData.paciente_info.apellidos,
+              cedula_pasaporte: detailData.paciente_info.cedula_pasaporte,
+              sexo: detailData.paciente_info.sexo,
+              edad: detailData.paciente_info.edad,
+              fecha_nacimiento: detailData.paciente_info.fecha_nacimiento || '',
+              direccion: '',
+              telefono: '',
+              correo: '',
+              contacto_emergencia_nombre: '',
+              contacto_emergencia_telefono: '',
+              fecha_ingreso: '',
+              activo: true,
+              fecha_creacion: '',
+              condicion_edad: 'A',
+            } as IPaciente;
+
+            setSelectedPaciente(pacienteCompatible);
+            updateField("paciente", detailData.paciente);
           }
-        }
 
-        // Campos de texto
-        console.log('📌 Cargando campos de texto');
-        if (detailData.motivo_consulta) {
-          updateField("motivo_consulta", detailData.motivo_consulta);
-        }
-        if (detailData.embarazada) {
-          updateField("embarazada", detailData.embarazada);
-        }
-        if (detailData.enfermedad_actual) {
-          updateField("enfermedad_actual", detailData.enfermedad_actual);
-        }
+          // Configurar odontólogo
+          if (detailData.odontologo_responsable) {
+            console.log('📌 Configurando odontólogo:', detailData.odontologo_info);
 
-        // CAMPOS INSTITUCIONALES
-        console.log('📌 Cargando campos institucionales:', {
-          institucion_sistema: detailData.institucion_sistema,
-          unicodigo: detailData.unicodigo,
-          establecimiento_salud: detailData.establecimiento_salud,
-          numero_hoja: detailData.numero_hoja,
-          numero_historia_clinica_unica: detailData.numero_historia_clinica_unica,
-          numero_archivo: detailData.numero_archivo,
-        });
+            updateField("odontologo_responsable", detailData.odontologo_responsable);
 
-        updateField("institucion_sistema", detailData.institucion_sistema || "SISTEMA NACIONAL DE SALUD");
-        updateField("unicodigo", detailData.unicodigo || "");
-        updateField("establecimiento_salud", detailData.establecimiento_salud || "");
-        updateField("numero_hoja", detailData.numero_hoja || 1);
-        updateField("numero_historia_clinica_unica", detailData.numero_historia_clinica_unica || "");
-        updateField("numero_archivo", detailData.numero_archivo || "");
+            if (detailData.odontologo_info) {
+              const odontologoUser = {
+                id: detailData.odontologo_responsable,
+                nombres: detailData.odontologo_info.nombres,
+                apellidos: detailData.odontologo_info.apellidos,
+                rol: detailData.odontologo_info.rol,
+              } as any;
+              setSelectedOdontologo(odontologoUser);
+            }
+          }
 
-        // Cargar datos de constantes vitales
-        if (detailData.constantes_vitales_data) {
-          console.log('📌 Cargando constantes vitales:', detailData.constantes_vitales_data);
-          updateSectionData("constantes_vitales_data", detailData.constantes_vitales_data);
-          
+          // Campos de texto
+          console.log('📌 Cargando campos de texto');
+          if (detailData.motivo_consulta) {
+            updateField("motivo_consulta", detailData.motivo_consulta);
+          }
+          if (detailData.embarazada) {
+            updateField("embarazada", detailData.embarazada);
+          }
+          if (detailData.enfermedad_actual) {
+            updateField("enfermedad_actual", detailData.enfermedad_actual);
+          }
+
+          // CAMPOS INSTITUCIONALES
+          console.log('Cargando campos institucionales:', {
+            institucion_sistema: detailData.institucion_sistema,
+            unicodigo: detailData.unicodigo,
+            establecimiento_salud: detailData.establecimiento_salud,
+            numero_hoja: detailData.numero_hoja,
+            numero_historia_clinica_unica: detailData.numero_historia_clinica_unica,
+            numero_archivo: detailData.numero_archivo,
+          });
+
+          updateField("institucion_sistema", detailData.institucion_sistema || "SISTEMA NACIONAL DE SALUD");
+          updateField("unicodigo", detailData.unicodigo || "");
+          updateField("establecimiento_salud", detailData.establecimiento_salud || "");
+          updateField("numero_hoja", detailData.numero_hoja || 1);
+          updateField("numero_historia_clinica_unica", detailData.numero_historia_clinica_unica || "");
+          updateField("numero_archivo", detailData.numero_archivo || "");
+
+          // Cargar datos de constantes vitales
+          if (detailData.constantes_vitales_data) {
+            console.log('Cargando constantes vitales:', detailData.constantes_vitales_data);
+            updateSectionData("constantes_vitales_data", detailData.constantes_vitales_data);
+
+            setInitialDates(prev => ({
+              ...prev,
+              constantes_vitales: detailData.constantes_vitales_data?.fecha_creacion || null,
+            }));
+          }
+
+          // CARGAR INDICADORES DE SALUD BUCAL
+          if (detailData.indicadores_salud_bucal_data) {
+            console.log('Cargando indicadores de salud bucal:', detailData.indicadores_salud_bucal_data);
+            updateSectionData("indicadores_salud_bucal_data", detailData.indicadores_salud_bucal_data);
+
+            setInitialDates(prev => ({
+              ...prev,
+              indicadores_salud_bucal: detailData.indicadores_salud_bucal_data?.fecha || null,
+            }));
+          }
+
+          if (detailData.indices_caries_data) {
+  console.log(' Cargando índices de caries:', detailData.indices_caries_data);
+  updateSectionData("indices_caries_data", detailData.indices_caries_data);
+  
+  setInitialDates(prev => ({
+    ...prev,
+    indices_caries: detailData.indices_caries_data?.fecha || null,
+  }));
+}
+
+          // Cargar otras secciones
+          if (detailData.antecedentes_personales_data) {
+            console.log('📌 Cargando antecedentes personales');
+            updateSectionData("antecedentes_personales_data", detailData.antecedentes_personales_data);
+
+            setInitialDates(prev => ({
+              ...prev,
+              antecedentes_personales: detailData.antecedentes_personales_data?.fecha_creacion || null,
+            }));
+          }
+
+          if (detailData.antecedentes_familiares_data) {
+            console.log(' Cargando antecedentes familiares')
+            updateSectionData("antecedentes_familiares_data", detailData.antecedentes_familiares_data);
+
+            setInitialDates(prev => ({
+              ...prev,
+              antecedentes_familiares: detailData.antecedentes_familiares_data?.fecha_creacion || null,
+            }));
+          }
+
+          if (detailData.examen_estomatognatico_data) {
+            console.log(' Cargando examen estomatognático');
+            updateSectionData("examen_estomatognatico_data", detailData.examen_estomatognatico_data);
+
+            setInitialDates(prev => ({
+              ...prev,
+              examen_estomatognatico: detailData.examen_estomatognatico_data?.fecha_creacion || null,
+            }));
+          }
+          console.log(' Cargando estado y observaciones:', {
+            estado: detailData.estado,
+            observaciones: detailData.observaciones
+          });
+          updateField("estado", detailData.estado);
+          if (detailData.observaciones) {
+            updateField("observaciones", detailData.observaciones);
+          }
+
+          // Guardar fechas principales
           setInitialDates(prev => ({
             ...prev,
-            constantes_vitales: detailData.constantes_vitales_data?.fecha_creacion || null,
+            motivo_consulta: detailData.fecha_atencion || null,
+            enfermedad_actual: detailData.fecha_atencion || null,
           }));
-        }
 
-        // CARGAR INDICADORES DE SALUD BUCAL
-        if (detailData.indicadores_salud_bucal_data) {
-          console.log('📌 Cargando indicadores de salud bucal:', detailData.indicadores_salud_bucal_data);
-          updateSectionData("indicadores_salud_bucal_data", detailData.indicadores_salud_bucal_data);
-          
-          setInitialDates(prev => ({
-            ...prev,
-            indicadores_salud_bucal: detailData.indicadores_salud_bucal_data?.fecha || null,
-          }));
-        }
+          console.log(' === DATOS CARGADOS EXITOSAMENTE ===');
 
-        // Cargar otras secciones
-        if (detailData.antecedentes_personales_data) {
-          console.log('📌 Cargando antecedentes personales');
-          updateSectionData("antecedentes_personales_data", detailData.antecedentes_personales_data);
-          
-          setInitialDates(prev => ({
-            ...prev,
-            antecedentes_personales: detailData.antecedentes_personales_data?.fecha_creacion || null,
-          }));
+        } catch (error) {
+          console.error(' Error cargando historial para edición:', error);
+          notify({
+            type: "error",
+            title: "Error",
+            message: "No se pudieron cargar los datos del historial",
+          });
+        } finally {
+          setIsLoadingEdit(false);
         }
-        
-        if (detailData.antecedentes_familiares_data) {
-          console.log('📌 Cargando antecedentes familiares');
-          updateSectionData("antecedentes_familiares_data", detailData.antecedentes_familiares_data);
-          
-          setInitialDates(prev => ({
-            ...prev,
-            antecedentes_familiares: detailData.antecedentes_familiares_data?.fecha_creacion || null,
-          }));
-        }
-        
-        if (detailData.examen_estomatognatico_data) {
-          console.log('📌 Cargando examen estomatognático');
-          updateSectionData("examen_estomatognatico_data", detailData.examen_estomatognatico_data);
-          
-          setInitialDates(prev => ({
-            ...prev,
-            examen_estomatognatico: detailData.examen_estomatognatico_data?.fecha_creacion || null,
-          }));
-        }
+      };
 
-        // Guardar fechas principales
-        setInitialDates(prev => ({
-          ...prev,
-          motivo_consulta: detailData.fecha_atencion || null,
-          enfermedad_actual: detailData.fecha_atencion || null,
-        }));
-
-        console.log('✅ === DATOS CARGADOS EXITOSAMENTE ===');
-        
-      } catch (error) {
-        console.error('❌ Error cargando historial para edición:', error);
-        notify({
-          type: "error",
-          title: "Error",
-          message: "No se pudieron cargar los datos del historial",
-        });
-      } finally {
-        setIsLoadingEdit(false);
-      }
-    };
-
-    fetchRecordData();
-  }
-}, [mode, recordId]);
+      fetchRecordData();
+    }
+  }, [mode, recordId]);
 
   // ========================================================================
   // CARGAR DATOS INICIALES PARA MODO CREATE
@@ -510,7 +536,7 @@ const refreshSection = async (section: string) => {
         // CREAR HISTORIAL
         // ============================================
         const historialCreado = await createMutation.mutateAsync(payload);
-        
+
         console.log("Historial creado:", historialCreado.id);
 
         // ============================================
@@ -519,7 +545,7 @@ const refreshSection = async (section: string) => {
         if (selectedPaciente?.id) {
           try {
             console.log("Obteniendo datos del Form033...");
-            
+
             // Obtener datos del Form033
             const form033Response = await axiosInstance.get<any>(
               `/odontogram/export/form033/${selectedPaciente.id}/json/`
@@ -527,7 +553,7 @@ const refreshSection = async (section: string) => {
 
             if (form033Response.data.success && form033Response.data.data) {
               console.log(" Guardando Form033 en el historial...");
-              
+
               // Guardar el Form033 en el historial
               await clinicalRecordService.addForm033(
                 historialCreado.id,
@@ -553,7 +579,7 @@ const refreshSection = async (section: string) => {
           title: "Historial creado",
           message: "El historial clínico se ha creado exitosamente.",
         });
-        
+
       } else if (mode === "edit") {
         // ============================================
         // ACTUALIZAR HISTORIAL
@@ -578,7 +604,7 @@ const refreshSection = async (section: string) => {
         }
 
         await updateMutation.mutateAsync(updatePayload);
-        
+
         notify({
           type: "success",
           title: "Historial actualizado",
@@ -588,10 +614,10 @@ const refreshSection = async (section: string) => {
 
       resetForm();
       onSuccess();
-      
+
     } catch (error) {
       console.error("Error al guardar historial:", error);
-      
+
       notify({
         type: "error",
         title: "Error",

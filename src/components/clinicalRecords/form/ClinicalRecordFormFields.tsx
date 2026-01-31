@@ -16,6 +16,7 @@ import ObservacionesSection from "./sections/ObservacionesSection";
 import InfoSection from "./sections/InfoSection";
 import Odontograma2DSection from "./sections/Odontograma2DSection";
 import IndicadoresSaludBucalSection from "./sections/IndicadoresSaludBucalSection";
+import { IndicesCariesSection } from "./sections";
 
 /**
  * ============================================================================
@@ -164,6 +165,15 @@ const ClinicalRecordFormFields: React.FC<ClinicalRecordFormFieldsProps> = ({
         lastUpdated={initialDates.indicadores_salud_bucal}
         refreshSection={() => refreshSections("indicadores_salud_bucal")}
         mode={mode}
+      />
+
+      <IndicesCariesSection
+        formData={formData}
+        selectedPaciente={selectedPaciente}
+        lastUpdated={initialDates.indices_caries}
+        mode={mode}
+        refreshSection={() => refreshSections("indices_caries")}
+        historialId={historialId}
       />
 
       {/* ====================================================================

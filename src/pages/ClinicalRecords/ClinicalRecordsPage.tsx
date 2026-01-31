@@ -3,24 +3,13 @@
 import React from "react";
 import { Helmet } from "react-helmet-async";
 import ClinicalRecordManagement from "../../components/clinicalRecords/ClinicalRecordManagement";
+import { FullScreenLayout } from "../../layout/FullScreenLayout";
 
-/**
- * Página principal del módulo Historiales Clínicos (Formulario 033)
- * 
- * Features:
- * - Listado de historiales clínicos con paginación
- * - Filtrado por paciente activo desde contexto
- * - Búsqueda por nombre, cédula o motivo de consulta
- * - Filtros por estado (Borrador, Abierto, Cerrado)
- * - Modales para crear, editar, visualizar, cerrar y eliminar historiales
- * - Tabla responsive con indicadores de estado y acciones contextuales
- * - Integración completa con Form 033 del MSP Ecuador
- * 
- * @returns {JSX.Element} Página con gestión de historiales clínicos
- */
+
 const ClinicalRecordsPage: React.FC = () => {
   return (
-    <>
+<FullScreenLayout className="relative bg-white rounded-xl shadow-sm">
+<>
       {/* SEO Meta Tags */}
       <Helmet>
         <title>Historiales Clínicos | Plexident</title>
@@ -30,9 +19,11 @@ const ClinicalRecordsPage: React.FC = () => {
         />
       </Helmet>
 
-      {/* Componente principal de gestión */}
       <ClinicalRecordManagement />
     </>
+
+</FullScreenLayout>
+    
   );
 };
 

@@ -152,6 +152,7 @@ export function useClinicalRecordForm(
       | "constantes_vitales_data"
       | "examen_estomatognatico_data"
       | "indicadores_salud_bucal_data"
+      | "indices_caries_data"
   >(
     section: T,
     data: ClinicalRecordFormData[T]

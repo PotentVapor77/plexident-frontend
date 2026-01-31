@@ -340,6 +340,9 @@ export interface ClinicalRecordDetailResponse {
   activo: boolean;
   puede_editar: boolean;
   esta_completo: boolean;
+
+  indices_caries?: string | null;
+  indices_caries_data?: IndicesCariesData | null;
 }
 export interface CamposFormulario {
   institucion_sistema: string;
@@ -409,7 +412,11 @@ export interface ClinicalRecordInitialData {
     fecha: string | null;
     data: IndicadoresSaludBucalData | null;
   } | null;
-
+  indices_caries?: {
+    id: string | null;
+    fecha: string | null;
+    data: IndicesCariesData | null;
+  } | null;
 
 }
 
@@ -543,6 +550,41 @@ export interface ClinicalRecordClosePayload {
 export interface ClinicalRecordReopenPayload {
   motivo_reapertura: string;
 }
+export interface IndicesCariesData {
+    id: string;
+    paciente: string;          
+    version_id: string | null;
+    fecha: string;              
+    // Índices CPO (Adultos)
+    cpo_c: number;
+    cpo_p: number;
+    cpo_o: number;
+    cpo_total: number;
+    
+    // Índices ceo (Niños)
+    ceo_c: number;
+    ceo_e: number;
+    ceo_o: number;
+    ceo_total: number;
+}
+
+// Para respuestas que pueden tener campos null
+export interface LatestIndicesCariesResponse {
+    id: string | null;
+    paciente: string | null;
+    version_id: string | null;
+    fecha: string | null;
+    cpo_c: number | null;
+    cpo_p: number | null;
+    cpo_o: number | null;
+    cpo_total: number | null;
+    ceo_c: number | null;
+    ceo_e: number | null;
+    ceo_o: number | null;
+    ceo_total: number | null;
+    disponible?: boolean;        
+    origen?: string; 
+}
 
 // ============================================================================
 // PAGINACIÓN Y WRAPPERS
@@ -564,5 +606,7 @@ export interface ApiListWrapper<T> {
   data: T;
   errors: unknown;
 }
+
+
 
 

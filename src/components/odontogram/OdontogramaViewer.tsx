@@ -411,8 +411,14 @@ export const OdontogramaViewer = ({
             </button>
           )}
 
-        {/* BOTÓN FLOTANTE: Selector de paciente */}
-        <PacienteFloatingButton onSelectPaciente={handleSelectPaciente} />
+        {/* BOTÓN FLOTANTE: Selector de paciente
+        
+        */}
+        {!pacienteActivo && (
+  <PacienteFloatingButton onSelectPaciente={handleSelectPaciente} />
+)}
+
+
       </div>
 
       {/* COLUMNA DERECHA: Panel de diagnóstico fijo, sin flotante */}

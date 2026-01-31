@@ -1,10 +1,9 @@
 /**
  * ============================================================================
- * API CONFIGURATION - ✅ CORREGIDO
+ * API CONFIGURATION -
  * ============================================================================
  */
 
-import { indicadoresSaludBucalService } from "../services/clinicalRecord/indicadoresService";
 
 // Base URL desde variables de entorno
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
@@ -127,6 +126,10 @@ clinicalRecords: {
       indicadoresPorHistorial: (historialId: string) =>
         `/clinical-records/${historialId}/indicadores-salud-bucal/`,
     },
+    indicesCaries: {
+      latestByPaciente: (pacienteId: string) =>
+        `/clinical-records/indices-caries/${pacienteId}/latest/`,
+    },
   },
 
 
@@ -237,6 +240,15 @@ clinicalRecords: {
       byHistorial: (historialId: string) =>
         `/api/clinical-records/indicadores-salud-bucal/historial/${historialId}/`,
     },
+  indicesCaries: {
+    base: '/clinical-records/indices-caries/',
+    latestByPaciente: (pacienteId: string) => 
+      `/clinical-records/indices-caries/${pacienteId}/latest/`,
+    saveToHistorial: (historialId: string) =>
+      `/clinical-records/${historialId}/guardar-indices-caries/`,
+    updateInHistorial: (historialId: string) =>
+      `/clinical-records/${historialId}/actualizar-indices-caries/`,
+  },
 },
 },
 

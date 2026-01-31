@@ -8,3 +8,4 @@ export { default as AntecedentesFamiliaresSection } from "./AntecedentesFamiliar
 export { default as ExamenEstomatognaticoSection } from "./ExamenEstomatognaticoSection";
 export { default as ObservacionesSection } from "./ObservacionesSection";
 export { default as IndicadoresSaludBucalSection } from "./IndicadoresSaludBucalSection";
+export { default as IndicesCariesSection } from "./IndicesCariesSection";

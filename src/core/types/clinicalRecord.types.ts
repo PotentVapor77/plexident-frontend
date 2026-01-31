@@ -1,6 +1,6 @@
 // src/core/types/clinicalRecord.types.ts
 
-import type { AntecedentesFamiliaresData, AntecedentesPersonalesData, ConstantesVitalesData, EmbarazoEstado, EstadoHistorial, ExamenEstomatognaticoData, IndicadoresSaludBucalData } from "../../types/clinicalRecords/typeBackendClinicalRecord";
+import type { AntecedentesFamiliaresData, AntecedentesPersonalesData, ConstantesVitalesData, EmbarazoEstado, EstadoHistorial, ExamenEstomatognaticoData, IndicadoresSaludBucalData, IndicesCariesData } from "../../types/clinicalRecords/typeBackendClinicalRecord";
 
 /**
  * Datos del formulario de historial clínico
@@ -29,7 +29,8 @@ export interface ClinicalRecordFormData {
     antecedentes_familiares_id?: string | null;
     constantes_vitales_id?: string | null;
     examen_estomatognatico_id?: string | null;
-indicadores_salud_bucal_id?: string | null;
+    indicadores_salud_bucal_id?: string | null;
+    
     // Datos editables de secciones
     antecedentes_personales_data?: AntecedentesPersonalesData | null;
     antecedentes_familiares_data?: AntecedentesFamiliaresData | null;
@@ -37,8 +38,11 @@ indicadores_salud_bucal_id?: string | null;
     examen_estomatognatico_data?: ExamenEstomatognaticoData | null;
 
     // Campos para indicadores de salud bucal
-  
-  indicadores_salud_bucal_data?: IndicadoresSaludBucalData | null;
+    indicadores_salud_bucal_data?: IndicadoresSaludBucalData | null;
+
+    // Campos para indicadores de caries
+    indices_caries_id?: string | null;
+    indices_caries_data?: IndicesCariesData | null;
     
 }
 /**

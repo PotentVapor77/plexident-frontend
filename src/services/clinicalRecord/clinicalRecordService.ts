@@ -12,6 +12,7 @@ import type {
   ClinicalRecordUpdatePayload,
 } from "../../types/clinicalRecords/typeBackendClinicalRecord";
 import axiosInstance from "../api/axiosInstance";
+import { indicesCariesService } from "./indicesCariesService";
 
 const BASE_URL = "clinical-records";
 
@@ -209,6 +210,11 @@ export const clinicalRecordService = {
     );
     return response.data.data;
   },
+
+  getLatestByPaciente: indicesCariesService.getLatestByPaciente,
+  getByHistorial: indicesCariesService.getByHistorial,
+  saveToHistorial: indicesCariesService.saveToHistorial,
+  updateInHistorial: indicesCariesService.updateInHistorial
 
 };
 

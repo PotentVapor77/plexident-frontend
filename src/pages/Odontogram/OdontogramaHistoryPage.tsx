@@ -13,6 +13,7 @@ import { HistoryEmptyState } from "../../components/odontogram/history/historyVi
 import { HistoryHeader } from "../../components/odontogram/history/historyView/HistoryHeader";
 import { HistorySingleView } from "../../components/odontogram/history/historyView/HistorySingleView";
 import { HistoryCompareView } from "../../components/odontogram/history/historyView/HistoryCompareView";
+import { FullScreenLayout } from "../../layout/FullScreenLayout";
 
 
 
@@ -181,7 +182,9 @@ const OdontogramaHistoryPageInner = () => {
   };
 
   return (
-    <div 
+<FullScreenLayout className="relative bg-white rounded-xl shadow-sm">
+
+<div 
       ref={containerRef}
       className="w-full flex flex-col md:flex-row bg-gray-50 dark:bg-gray-900"
       style={{ height: 'calc(100vh - var(--header-height, 5.3rem))' }}
@@ -218,6 +221,9 @@ const OdontogramaHistoryPageInner = () => {
         )}
       </div>
     </div>
+  
+</FullScreenLayout>
+    
   );
 };
 

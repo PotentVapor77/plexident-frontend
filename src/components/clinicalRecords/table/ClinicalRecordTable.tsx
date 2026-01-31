@@ -25,7 +25,6 @@ import { getEstadoColor } from "../../../mappers/clinicalRecordMapper";
  * ============================================================================
  */
 interface ClinicalRecordTableProps {
-  // Aceptamos ambos tipos para manejar respuestas planas y detalladas
   historiales: (ClinicalRecordListResponse | ClinicalRecordDetailResponse)[];
   onViewClick?: (record: any) => void;
   onEditClick?: (record: any) => void;
@@ -260,17 +259,17 @@ const ClinicalRecordTable: React.FC<ClinicalRecordTableProps> = ({
   // TABLE RENDER
   // ==========================================================================
   return (
-    <div className="relative overflow-hidden rounded-lg border border-gray-200 shadow-sm dark:border-gray-700">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-          <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400">
+    <div className="relative overflow-hidden rounded-lg border border-gray-200 shadow-sm dark:border-gray-700 w-full">
+      <div className="overflow-x-auto custom-scrollbar max-h-[calc(100vh-20rem)]">
+        <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400 min-w-[800px]">
+          <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400 sticky top-0 z-10">
             <tr>
-              <th scope="col" className="px-6 py-3 font-medium">Paciente</th>
-              <th scope="col" className="px-6 py-3 font-medium">Motivo de consulta</th>
-              <th scope="col" className="px-6 py-3 font-medium">Fecha atención</th>
-              <th scope="col" className="px-6 py-3 font-medium">Odontólogo</th>
-              <th scope="col" className="px-6 py-3 font-medium">Estado</th>
-              <th scope="col" className="px-6 py-3 text-right font-medium">Acciones</th>
+              <th scope="col" className="px-6 py-3 font-medium min-w-[200px]">Paciente</th>
+              <th scope="col" className="px-6 py-3 font-medium min-w-[250px]">Motivo de consulta</th>
+              <th scope="col" className="px-6 py-3 font-medium min-w-[150px]">Fecha atención</th>
+              <th scope="col" className="px-6 py-3 font-medium min-w-[180px]">Odontólogo</th>
+              <th scope="col" className="px-6 py-3 font-medium min-w-[150px]">Estado</th>
+              <th scope="col" className="px-6 py-3 text-right font-medium min-w-[180px]">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
@@ -278,7 +277,7 @@ const ClinicalRecordTable: React.FC<ClinicalRecordTableProps> = ({
           </tbody>
         </table>
       </div>
-      <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 text-xs font-medium text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+      <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 text-xs font-medium text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 sticky bottom-0">
         Total de registros: {historiales.length}
       </div>
     </div>

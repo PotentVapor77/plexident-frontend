@@ -5,6 +5,7 @@ import { PacienteProvider } from "../../context/PacienteContext";
 import { useClinicalFiles } from "../../hooks/clinicalFiles/useClinicalFiles";
 import { ClinicalFilesContainer } from "../../components/odontogram/files/ClinicalFilesContainer";
 import { ClinicalFilesProvider } from "../../context/ClinicalFilesContext";
+import { FullScreenLayout } from "../../layout/FullScreenLayout";
 
 const OdontogramaInner = () => {
     const [selectedTooth, setSelectedTooth] = useState<string | null>(null);
@@ -36,11 +37,7 @@ const OdontogramaInner = () => {
     }, []);
 
     return (
-        <div
-            id="odontograma-root"
-            className="relative w-full h-[calc(100vh-5.3rem)] overflow-hidden rounded-xl bg-white shadow-sm"
-
-        >
+        <FullScreenLayout className="relative bg-white rounded-xl shadow-sm">
             <OdontogramaViewer
                 onSelectTooth={setSelectedTooth}
                 freezeResize={false}
@@ -52,7 +49,7 @@ const OdontogramaInner = () => {
                 isOpen={isFilePanelOpen}
                 onClose={() => setIsFilePanelOpen(false)}
             />
-        </div>
+        </FullScreenLayout>
     );
 };
 

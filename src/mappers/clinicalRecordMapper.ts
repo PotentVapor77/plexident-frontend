@@ -9,7 +9,8 @@ import type {
   ClinicalRecordInitialData,
   ConstantesVitalesData,
   ExamenEstomatognaticoData,
-  IndicadoresSaludBucalData
+  IndicadoresSaludBucalData,
+  IndicesCariesData
 } from "../types/clinicalRecords/typeBackendClinicalRecord";
 
 /**
@@ -53,11 +54,9 @@ export const mapInitialDataToFormData = (
   const antecedentesFamiliares = initialData.antecedentes_familiares || null;
   const constantesVitales = initialData.constantes_vitales || null;
   const examenEstomatognatico = initialData.examen_estomatognatico || null;
-
   const indicadoresSaludBucal = initialData.indicadores_salud_bucal || null;
+  const indicesCaries = initialData.indices_caries || null;
 
-  console.log('Datos iniciales recibidos en mapeador:', initialData);
-  console.log('campos_formulario:', initialData.campos_formulario);
 
   // Usar los datos del backend o valores por defecto
   const camposBackend = initialData.campos_formulario || {};
@@ -97,7 +96,9 @@ export const mapInitialDataToFormData = (
     antecedentes_familiares_data: antecedentesFamiliares?.data || null,
     constantes_vitales_data: constantesVitales?.data || null,
     examen_estomatognatico_data: examenEstomatognatico?.data || null,
-    
+    indices_caries_id: indicesCaries?.id || null,
+    indices_caries_data: indicesCaries?.data || null,
+
     // Metadata de fechas (para mostrar en headers)
     _dates: {
       motivo_consulta: initialData.motivo_consulta_fecha || null,
@@ -106,7 +107,8 @@ export const mapInitialDataToFormData = (
       antecedentes_familiares: antecedentesFamiliares?.fecha || null,
       constantes_vitales: constantesVitales?.fecha || null,
       examen_estomatognatico: examenEstomatognatico?.fecha || null,
-      indicadores_salud_bucal: indicadoresSaludBucal?.fecha || null
+      indicadores_salud_bucal: indicadoresSaludBucal?.fecha || null,
+      indices_caries: indicesCaries?.fecha || null,
 
     }
   };
@@ -159,6 +161,7 @@ export const mapResponseToFormData = (
     antecedentes_personales_data?: AntecedentesPersonalesData;
     antecedentes_familiares_data?: AntecedentesFamiliaresData;
     examen_estomatognatico_data?: ExamenEstomatognaticoData;
+    indices_caries_data?: IndicesCariesData | null;
   };
 
   return {
@@ -187,6 +190,8 @@ export const mapResponseToFormData = (
     examen_estomatognatico_data: safeResponse.examen_estomatognatico_data || null,
     estado: response.estado,
     observaciones: response.observaciones,
+    indices_caries_id: response.indices_caries,
+    indices_caries_data: safeResponse.indices_caries_data || null,
   };
 };
 

@@ -28,9 +28,7 @@ import ForgotPasswordForm from "./pages/AuthPages/ForgotPasswordForm";
 import ResetPassword from "./pages/AuthPages/ResetPassword";
 import { NotificationProvider } from "./context/notifications/NotificationContext";
 import { NotificationContainer } from "./context/notifications/NotificationContainer";
-import PersonalBackgroundPage from "./pages/PersonalBackground/personalBackgroundPage";
 import OdontogramaHistoryPage from "./pages/Odontogram/OdontogramaHistoryPage";
-import FamilyBackgroundPage from "./pages/FamilyBackground/familyBackgroundPage";
 import ConstantesVitalesPage from "./pages/VitalSigns/ConstantesVitalesPage";
 import StomatognathicExamPage from "./pages/StomatognathicExam/StomatognathicExamPage";
 import { PacienteProvider } from "./context/PacienteContext";
@@ -38,6 +36,7 @@ import AppointmentsPage from "./pages/Appointments/AppointmentsPage";
 import IndicadoresSaludBucalPage from "./pages/Odontogram/IndicadoresSaludBucalPage";
 import TreatmentPlanPage from "./pages/TreatmentPlan/TreatmentPlanPage";
 import ClinicalRecordsPage from "./pages/ClinicalRecords/ClinicalRecordsPage";
+import ParametersPage from "./pages/Parameters/parametersPage";
 
 // ============================================================================
 // RUTAS PÚBLICAS
@@ -188,8 +187,6 @@ function App() {
 
             <Route path="/pacientes" element={<PatientsPage />} />
             <Route path="/pacientes/:id/editar" element={<PatientsPage />} />
-            <Route path="/pacientes/antecedentes-personales" element={<PersonalBackgroundPage />} />
-            <Route path="/pacientes/antecedentes-familiares" element={<FamilyBackgroundPage />} />
             <Route path="/pacientes/constantes-vitales" element={
               <PacienteProvider>
                 <ConstantesVitalesPage />
@@ -208,7 +205,7 @@ function App() {
 
 
             <Route path="/citas" element={<AppointmentsPage />} />
-
+            <Route path="/config-horarios" element={<ParametersPage/>} />
 
             <Route path="/odontogram" element={<OdontogramaPage />} />
             <Route path="/pacientes" element={<PatientsPage />} />

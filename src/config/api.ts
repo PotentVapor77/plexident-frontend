@@ -36,14 +36,7 @@ export const ENDPOINTS = {
     
   },
 
-    // ANAMNESIS GENERAL
-  anamnesis: {
-    base: '/patients/anamnesis-general/',
-    byId: (id: string) => `/patients/anamnesis-general/${id}/`,
-    byPaciente: (pacienteId: string) => `/patients/anamnesis-general/by-paciente/${pacienteId}/`,
-    resumenRiesgos: (id: string) => `/patients/anamnesis-general/${id}/resumen_riesgos/`,
-  },
-  
+
 
    // ============================================================================
   // ANTECEDENTES PERSONALES (Relacionado OneToOne con Patient)
@@ -81,6 +74,11 @@ export const ENDPOINTS = {
     resumenPatologias: (id: string) => `/patients/examen-estomatognatico/${id}/resumen_patologias/`,
   },
 
+  complementaryExams: {
+  base: '/patients/examenes-complementarios/',
+  byId: (id: string) => `/patients/examenes-complementarios/${id}/`,
+},
+
 
     // ✅ CONSULTAS
   consultations: {
@@ -88,6 +86,7 @@ export const ENDPOINTS = {
     byId: (id: string) => `/patients/consultas/${id}/`,
     byPaciente: (pacienteId: string) => `/patients/consultas/by-paciente/${pacienteId}/`,
   },
+
 
 clinicalRecords: {
     base: '/clinical-records/',
@@ -131,7 +130,6 @@ clinicalRecords: {
         `/clinical-records/indices-caries/${pacienteId}/latest/`,
     },
   },
-
 
    // ============================================================================
   // CITAS / APPOINTMENTS
@@ -183,6 +181,7 @@ clinicalRecords: {
     periodosDisponibles: '/dashboard/periodos-disponibles/',
 
     },
+
 
   odontograma: {
   base: '/patients/odontograma/',
@@ -251,6 +250,54 @@ clinicalRecords: {
   },
 },
 },
+
+
+      // ============================================================================
+  // ✅ NUEVO: MÓDULO DE PARÁMETROS (RF-07)
+  // ============================================================================
+  parameters: {
+    // RF-07.1: Horarios de atención
+    horarios: {
+      base: '/parameters/config-horarios/',
+      byId: (id: string) => `/parameters/config-horarios/${id}/`,
+      bulkUpdate: '/parameters/config-horarios/bulk-update/',
+      porDia: (diaSemana: number) => `/parameters/config-horarios/por-dia/${diaSemana}/`,
+    },
+    
+    // RF-07.2: Diagnósticos frecuentes
+    diagnosticos: {
+      base: '/parameters/diagnosticos/',
+      byId: (id: string) => `/parameters/diagnosticos/${id}/`,
+      porCategoria: (categoria: string) => `/parameters/diagnosticos/?categoria=${categoria}`,
+      search: (query: string) => `/parameters/diagnosticos/?search=${query}`,
+    },
+    
+    // RF-07.3: Medicamentos frecuentes
+    medicamentos: {
+      base: '/parameters/medicamentos/',
+      byId: (id: string) => `/parameters/medicamentos/${id}/`,
+      porCategoria: (categoria: string) => `/parameters/medicamentos/?categoria=${categoria}`,
+      porVia: (via: string) => `/parameters/medicamentos/?via_administracion=${via}`,
+      search: (query: string) => `/parameters/medicamentos/?search=${query}`,
+    },
+    
+    // RF-07.4 y RF-07.5: Configuración de seguridad
+    seguridad: '/parameters/seguridad/',
+    
+    // RF-07.7: Configuración de notificaciones
+    notificaciones: {
+      base: '/parameters/notificaciones/',
+      testEmail: '/parameters/notificaciones/test-email/',
+      testSms: '/parameters/notificaciones/test-sms/',
+    },
+    
+    // Parámetros generales del sistema
+    general: {
+      base: '/parameters/general/',
+      porClave: (clave: string) => `/parameters/general/${clave}/`,
+      porCategoria: (categoria: string) => `/parameters/general/?categoria=${categoria}`,
+    },
+  },
 
 
 

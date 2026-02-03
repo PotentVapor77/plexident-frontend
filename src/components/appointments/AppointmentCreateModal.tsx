@@ -103,10 +103,15 @@ const AppointmentCreateModal = ({
   const { user } = useAuth();
   const { createCita, loading, fetchHorariosDisponibles, horariosDisponibles, fetchingHorarios } = useAppointment();
   const { fetchHorarios } = useSchedule();
-  const { notify } = useNotification(); // Añadido
+  const { notify } = useNotification();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitAttemptRef = useRef(false);
+
+  // ✅ NUEVO: Estados para el calendario mejorado
+  const dateInputRef = useRef<HTMLInputElement>(null);
+  const [isDateValid, setIsDateValid] = useState(true);
+  const [dateValue, setDateValue] = useState(format(initialDate, 'yyyy-MM-dd'));
 
   const [pacientes, setPacientes] = useState<IPaciente[]>([]);
   const [filteredPacientes, setFilteredPacientes] = useState<IPaciente[]>([]);
@@ -122,11 +127,9 @@ const AppointmentCreateModal = ({
   const [selectedPaciente, setSelectedPaciente] = useState<IPaciente | null>(null);
   const [selectedOdontologo, setSelectedOdontologo] = useState<IUser | null>(null);
 
-  // Estados para el dropdown de pacientes
   const [patientSearchTerm, setPatientSearchTerm] = useState('');
   const [isPatientDropdownOpen, setIsPatientDropdownOpen] = useState(false);
 
-  // Estados para el dropdown de odontólogos
   const [odontologoSearchTerm, setOdontologoSearchTerm] = useState('');
   const [isOdontologoDropdownOpen, setIsOdontologoDropdownOpen] = useState(false);
 
@@ -147,6 +150,33 @@ const AppointmentCreateModal = ({
   const userCanViewAll = user ? canViewAllOdontologos(user) : false;
   const isOdontologoPreselected = Boolean(initialOdontologo);
 
+  // ✅ NUEVO: Fecha máxima (permite fechas futuras para citas - hasta 1 año)
+  const today = new Date();
+  const maxDate = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+  const maxDateString = format(maxDate, 'yyyy-MM-dd');
+
+  // ✅ NUEVO: Sincronizar el valor de fecha cuando cambia formData
+  useEffect(() => {
+    if (formData.fecha) {
+      if (formData.fecha.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        setDateValue(formData.fecha);
+      } else {
+        try {
+          const date = new Date(formData.fecha);
+          if (!isNaN(date.getTime())) {
+            setDateValue(format(date, 'yyyy-MM-dd'));
+          } else {
+            setDateValue('');
+          }
+        } catch {
+          setDateValue('');
+        }
+      }
+    } else {
+      setDateValue('');
+    }
+  }, [formData.fecha]);
+
   useEffect(() => {
     if (initialOdontologo && initialOdontologo !== formData.odontologo) {
       setFormData(prev => ({
@@ -156,7 +186,6 @@ const AppointmentCreateModal = ({
     }
   }, [initialOdontologo, formData.odontologo]);
 
-  // Encontrar paciente seleccionado
   useEffect(() => {
     if (formData.paciente) {
       const paciente = pacientes.find(p => p.id === formData.paciente);
@@ -166,7 +195,6 @@ const AppointmentCreateModal = ({
     }
   }, [formData.paciente, pacientes]);
 
-  // Encontrar odontólogo seleccionado
   useEffect(() => {
     if (formData.odontologo) {
       const odontologo = odontologos.find(o => o.id === formData.odontologo);
@@ -176,7 +204,6 @@ const AppointmentCreateModal = ({
     }
   }, [formData.odontologo, odontologos]);
 
-  // Filtrar pacientes según búsqueda
   useEffect(() => {
     if (patientSearchTerm.trim() === '') {
       setFilteredPacientes(pacientes.slice(0, 20));
@@ -191,7 +218,6 @@ const AppointmentCreateModal = ({
     }
   }, [patientSearchTerm, pacientes]);
 
-  // Filtrar odontólogos según búsqueda
   useEffect(() => {
     if (odontologoSearchTerm.trim() === '') {
       setFilteredOdontologos(odontologos.slice(0, 20));
@@ -206,13 +232,11 @@ const AppointmentCreateModal = ({
     }
   }, [odontologoSearchTerm, odontologos]);
 
-  // Función para cargar datos, memoizada para evitar dependencias cíclicas
   const loadData = useCallback(async () => {
     if (!isOpen || !user) return;
 
     setLoadingData(true);
     try {
-      // Cargar pacientes
       const pacientesData = await getPacientesActivos({ page_size: 1000 });
       const pacientesList = Array.isArray(pacientesData) ? pacientesData : [];
       setPacientes(pacientesList);
@@ -224,7 +248,6 @@ const AppointmentCreateModal = ({
       let odontologosList: IUser[] = [];
 
       if (isUserOdontologo && !userCanViewAll) {
-        // ODO logueado: solo se ve a sí mismo
         odontologosList = [user];
         
         if (!initialOdontologo && !formData.odontologo) {
@@ -234,7 +257,6 @@ const AppointmentCreateModal = ({
           }));
         }
       } else if (userCanViewAll) {
-        // Asistente/Admin: ve todos los odontólogos
         const usersResponse = await getUsers({ 
           is_active: true, 
           page_size: 1000 
@@ -251,7 +273,6 @@ const AppointmentCreateModal = ({
           }
         }
         
-        // Filtrar solo odontólogos
         odontologosList = usersList.filter((userItem: IUser) => {
           const rol = userItem.rol?.toLowerCase() || '';
           return rol.includes('odontologo') || rol.includes('odontólogo') || rol.includes('doctor');
@@ -265,7 +286,6 @@ const AppointmentCreateModal = ({
           });
         }
       } else {
-        // Otros roles no pueden crear citas
         notify({
           type: 'error',
           title: 'Permisos insuficientes',
@@ -301,17 +321,14 @@ const AppointmentCreateModal = ({
     loadData();
   }, [loadData]);
 
-  // Cerrar dropdowns al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       
-      // Cerrar dropdown de pacientes
       if (isPatientDropdownOpen && !target.closest('[data-patient-dropdown-container]')) {
         setIsPatientDropdownOpen(false);
       }
       
-      // Cerrar dropdown de odontólogos
       if (isOdontologoDropdownOpen && !target.closest('[data-odontologo-dropdown-container]')) {
         setIsOdontologoDropdownOpen(false);
       }
@@ -323,78 +340,71 @@ const AppointmentCreateModal = ({
     }
   }, [isPatientDropdownOpen, isOdontologoDropdownOpen]);
 
-  // Función para verificar horarios de atención, memoizada
- // Función para verificar horarios de atención, memoizada
-const checkHorariosAtencion = useCallback(async () => {
-  if (!formData.odontologo || !isOpen || !formData.fecha) {
-    setTieneHorariosAtencion(null);
-    setDuracionSugerida(null);
-    return;
-  }
+  const checkHorariosAtencion = useCallback(async () => {
+    if (!formData.odontologo || !isOpen || !formData.fecha) {
+      setTieneHorariosAtencion(null);
+      setDuracionSugerida(null);
+      return;
+    }
 
-  setCheckingHorariosAtencion(true);
-  try {
-    const horariosAtencion = await fetchHorarios({ 
-      odontologo: formData.odontologo,
-      activo: true 
-    });
-    
-    const tieneHorarios = Array.isArray(horariosAtencion) && horariosAtencion.length > 0;
-    setTieneHorariosAtencion(tieneHorarios);
+    setCheckingHorariosAtencion(true);
+    try {
+      const horariosAtencion = await fetchHorarios({ 
+        odontologo: formData.odontologo,
+        activo: true 
+      });
+      
+      const tieneHorarios = Array.isArray(horariosAtencion) && horariosAtencion.length > 0;
+      setTieneHorariosAtencion(tieneHorarios);
 
-    if (tieneHorarios) {
-      // Obtener el día de la semana de la fecha seleccionada
-      const fechaSeleccionada = new Date(formData.fecha);
-      const diaSemanaSeleccionado = fechaSeleccionada.getDay(); // 0 = Domingo, 6 = Sábado
-      
-      console.log(`📅 Fecha seleccionada: ${formData.fecha}, Día: ${diaSemanaSeleccionado}`);
-      
-      // Buscar horario específico para el día de la fecha seleccionada
-      const horarioDelDia = horariosAtencion.find(horario => 
-        horario.dia_semana === diaSemanaSeleccionado
-      );
-      
-      console.log(`🔍 Horario encontrado para el día:`, horarioDelDia);
-      
-      let duracion = null;
-      
-      if (horarioDelDia) {
-        // Usar duración del día específico
-        duracion = horarioDelDia.duracion_cita;
-        console.log(`✅ Usando duración del día específico: ${duracion} minutos`);
-      } else {
-        // Si no hay horario para ese día, usar el primero disponible
-        duracion = horariosAtencion[0]?.duracion_cita;
-        console.log(`⚠️ No hay horario para este día, usando duración general: ${duracion} minutos`);
-      }
-      
-      if (duracion && duracion >= 15 && duracion <= 120) {
-        setDuracionSugerida(duracion);
+      if (tieneHorarios) {
+        const fechaSeleccionada = new Date(formData.fecha);
+        const diaSemanaSeleccionado = fechaSeleccionada.getDay();
         
-        setFormData(prev => ({
-          ...prev,
-          duracion: duracion
-        }));
+        console.log(`📅 Fecha seleccionada: ${formData.fecha}, Día: ${diaSemanaSeleccionado}`);
+        
+        const horarioDelDia = horariosAtencion.find(horario => 
+          horario.dia_semana === diaSemanaSeleccionado
+        );
+        
+        console.log(`🔍 Horario encontrado para el día:`, horarioDelDia);
+        
+        let duracion = null;
+        
+        if (horarioDelDia) {
+          duracion = horarioDelDia.duracion_cita;
+          console.log(`✅ Usando duración del día específico: ${duracion} minutos`);
+        } else {
+          duracion = horariosAtencion[0]?.duracion_cita;
+          console.log(`⚠️ No hay horario para este día, usando duración general: ${duracion} minutos`);
+        }
+        
+        if (duracion && duracion >= 15 && duracion <= 120) {
+          setDuracionSugerida(duracion);
+          
+          setFormData(prev => ({
+            ...prev,
+            duracion: duracion
+          }));
+        } else {
+          setDuracionSugerida(null);
+        }
       } else {
         setDuracionSugerida(null);
       }
-    } else {
+    } catch (error) {
+      console.error('Error al verificar horarios de atención:', error);
+      setTieneHorariosAtencion(false);
       setDuracionSugerida(null);
+    } finally {
+      setCheckingHorariosAtencion(false);
     }
-  } catch (error) {
-    console.error('Error al verificar horarios de atención:', error);
-    setTieneHorariosAtencion(false);
-    setDuracionSugerida(null);
-  } finally {
-    setCheckingHorariosAtencion(false);
-  }
-}, [formData.odontologo, formData.fecha, isOpen, fetchHorarios]); // ← Añadir formData.fecha a las dependencias
+  }, [formData.odontologo, formData.fecha, isOpen, fetchHorarios]);
 
   useEffect(() => {
     checkHorariosAtencion();
   }, [checkHorariosAtencion]);
 
-  // Función para obtener horarios disponibles, memoizada
   const fetchHorariosDisponiblesDebounced = useCallback(async () => {
     if (formData.odontologo && formData.fecha && formData.duracion &&
         formData.duracion >= 15 && formData.duracion <= 120) {
@@ -441,7 +451,43 @@ const checkHorariosAtencion = useCallback(async () => {
     }
   };
 
-  // Handlers para pacientes
+  // ✅ NUEVO: Manejo personalizado del cambio de fecha
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
+    setDateValue(value);
+    
+    if (value > maxDateString) {
+      setIsDateValid(false);
+      return;
+    }
+    
+    setIsDateValid(true);
+    setFormData(prev => ({ ...prev, fecha: value }));
+    
+    if (errors.fecha) {
+      setErrors(prev => ({ ...prev, fecha: '' }));
+    }
+  };
+
+  // ✅ NUEVO: Abrir calendario al hacer clic en el ícono
+  const handleCalendarIconClick = () => {
+    if (dateInputRef.current) {
+      dateInputRef.current.showPicker();
+    }
+  };
+
+  // ✅ NUEVO: Limpiar fecha
+  const handleClearDate = () => {
+    setDateValue('');
+    setIsDateValid(true);
+    setFormData(prev => ({ ...prev, fecha: '' }));
+    
+    if (errors.fecha) {
+      setErrors(prev => ({ ...prev, fecha: '' }));
+    }
+  };
+
   const handlePatientSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPatientSearchTerm(e.target.value);
     if (!isPatientDropdownOpen) {
@@ -466,7 +512,6 @@ const checkHorariosAtencion = useCallback(async () => {
     }
   };
 
-  // Handlers para odontólogos (solo para admin/asistente)
   const handleOdontologoSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setOdontologoSearchTerm(e.target.value);
     if (!isOdontologoDropdownOpen) {
@@ -583,6 +628,9 @@ const checkHorariosAtencion = useCallback(async () => {
     setOdontologoSearchTerm('');
     setIsPatientDropdownOpen(false);
     setIsOdontologoDropdownOpen(false);
+    // ✅ NUEVO: Resetear estados del calendario
+    setDateValue(format(initialDate, 'yyyy-MM-dd'));
+    setIsDateValid(true);
     
     setIsSubmitting(false);
     submitAttemptRef.current = false;
@@ -1066,7 +1114,7 @@ const checkHorariosAtencion = useCallback(async () => {
               </div>
             </div>
 
-            {/* ✅ Sección: Fecha y Hora - PÚRPURA */}
+            {/* ✅ Sección: Fecha y Hora - PÚRPURA CON CALENDARIO MEJORADO */}
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-2 h-8 bg-gradient-to-b from-purple-500 to-purple-600 rounded-full" />
@@ -1076,21 +1124,70 @@ const checkHorariosAtencion = useCallback(async () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Fecha */}
+                {/* ✅ FECHA CON CALENDARIO MEJORADO */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">
                     Fecha <span className="text-red-500">*</span>
                   </label>
                   <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
                     <CalendarIcon className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                    <input
-                      type="date"
-                      name="fecha"
-                      value={formData.fecha}
-                      onChange={handleChange}
-                      className="w-full bg-transparent border-none focus:outline-none focus:ring-0 text-gray-900"
-                    />
+                    <div className="flex-1 relative">
+                      <input
+                        ref={dateInputRef}
+                        type="date"
+                        name="fecha"
+                        value={dateValue}
+                        onChange={handleDateChange}
+                        required
+                        max={maxDateString}
+                        className={`w-full bg-transparent border-none focus:outline-none focus:ring-0 pr-16 appearance-none ${
+                          !isDateValid || errors.fecha
+                            ? 'text-red-600'
+                            : 'text-gray-900'
+                        }`}
+                        style={{
+                          colorScheme: 'light',
+                          cursor: 'pointer',
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleCalendarIconClick}
+                        className="absolute right-8 top-1/2 transform -translate-y-1/2 text-purple-500 hover:text-purple-700 focus:outline-none"
+                        aria-label="Abrir selector de fecha"
+                      >
+                        <svg 
+                          className="w-4 h-4" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            strokeWidth={2} 
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                          />
+                        </svg>
+                      </button>
+                      
+                      {dateValue && (
+                        <button
+                          type="button"
+                          onClick={handleClearDate}
+                          className="absolute right-0 top-1/2 transform -translate-y-1/2 text-purple-400 hover:text-purple-600 focus:outline-none"
+                          aria-label="Limpiar fecha"
+                        >
+                          <XMarkIcon className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
+                  {!isDateValid && (
+                    <p className="mt-1 text-xs text-red-600">
+                      La fecha no puede ser superior a 1 año en el futuro
+                    </p>
+                  )}
                   {errors.fecha && (
                     <p className="text-sm text-red-600">{errors.fecha}</p>
                   )}
@@ -1293,6 +1390,7 @@ const checkHorariosAtencion = useCallback(async () => {
                   <li>La duración se establece automáticamente según la configuración del odontólogo</li>
                   <li>Verifique la disponibilidad antes de confirmar la cita</li>
                   <li>Las citas pueden ser canceladas hasta 24 horas antes</li>
+                  <li>Haga clic en el ícono 📅 para abrir el selector de fecha</li>
                 </ul>
                 <div className="mt-3 p-3 bg-white rounded-lg border border-blue-300">
                   <p className="text-sm font-medium text-blue-900 mb-1">⚡ Permisos actuales:</p>

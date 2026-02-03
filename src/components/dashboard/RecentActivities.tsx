@@ -1,10 +1,11 @@
 // src/components/dashboard/RecentActivities.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Badge from '../ui/badge/Badge';
 import { formatDate, formatTime } from '../../lib/dashboardUtils';
 import type { 
   DashboardResponse,
+  TablaCita,
 } from '../../types/dashboard/IDashboard';
 
 interface RecentActivitiesProps {
@@ -12,6 +13,11 @@ interface RecentActivitiesProps {
   listas?: DashboardResponse['listas'];
   rol?: string;
   loading?: boolean;
+}
+
+interface ProfesionalInfo {
+  rol: 'Odontólogo' | 'Asistente' | 'N/A';
+  nombre: string;
 }
 
 const RecentActivities: React.FC<RecentActivitiesProps> = ({ 
@@ -37,6 +43,57 @@ const RecentActivities: React.FC<RecentActivitiesProps> = ({
     return 'primary';
   };
 
+  // Función para obtener el rol y nombre del profesional
+  const getRolYNombre = (cita: TablaCita): ProfesionalInfo => {
+    // Verificar si odontologo es string o tiene propiedad nombre
+    let odontologoNombre: string | undefined;
+    
+    if (typeof cita.odontologo === 'string') {
+      odontologoNombre = cita.odontologo;
+    } else if (cita.odontologo && typeof cita.odontologo === 'object' && 'nombre' in cita.odontologo) {
+      odontologoNombre = (cita.odontologo as { nombre: string }).nombre;
+    }
+    
+    // Verificar si hay asistente (usando type assertion para campo opcional)
+    const asistente = (cita as TablaCita & { asistente?: string }).asistente;
+    
+    if (odontologoNombre) {
+      return { 
+        rol: 'Odontólogo', 
+        nombre: odontologoNombre 
+      };
+    }
+    
+    if (asistente) {
+      return { 
+        rol: 'Asistente', 
+        nombre: asistente 
+      };
+    }
+    
+    return { 
+      rol: 'N/A', 
+      nombre: 'Sin asignar' 
+    };
+  };
+
+  // Debug: Ver estructura de datos en consola
+  useEffect(() => {
+    const citas: TablaCita[] = tablas?.ultimas_citas || listas?.mis_citas || listas?.citas_del_dia || [];
+    if (citas.length > 0) {
+      console.log('📋 Primera cita:', citas[0]);
+      console.log('🔍 Campos disponibles:', Object.keys(citas[0]));
+      console.log('👨‍⚕️ Datos del profesional:', {
+        odontologo: citas[0].odontologo,
+      });
+    }
+  }, [tablas, listas]);
+
+  // Si el rol es asistente, no mostrar nada (después de los hooks)
+  if (rol === 'Asistente') {
+    return null;
+  }
+
   if (loading) {
     return (
       <div className="animate-pulse bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
@@ -50,8 +107,26 @@ const RecentActivities: React.FC<RecentActivitiesProps> = ({
     );
   }
 
-  const citas = tablas?.ultimas_citas || listas?.mis_citas || listas?.citas_del_dia || [];
-  const pacientes = tablas?.pacientes_recientes || listas?.pacientes_condiciones || listas?.pacientes_sin_anamnesis || [];
+  const citas: TablaCita[] = tablas?.ultimas_citas || listas?.mis_citas || listas?.citas_del_dia || [];
+  
+  // Si PacienteReciente no está definido en IDashboard.ts, usa un tipo temporal
+  interface PacienteBasico {
+    id?: string | number;
+    nombre?: string;
+    cedula?: string;
+    telefono?: string;
+    fecha_registro?: string;
+    ultima_visita?: string;
+  }
+  
+  const pacientes: PacienteBasico[] = tablas?.pacientes_recientes || 
+    (listas?.pacientes_condiciones && Array.isArray(listas.pacientes_condiciones) ? 
+      listas.pacientes_condiciones : []) || 
+    (listas?.pacientes_sin_anamnesis && Array.isArray(listas.pacientes_sin_anamnesis) ? 
+      listas.pacientes_sin_anamnesis : []);
+
+  // Determinar si mostrar columnas de rol y profesional
+  const showRolYProfesional = rol !== 'Odontologo'; // Mostrar solo para administradores, no para odontólogos
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
@@ -105,43 +180,85 @@ const RecentActivities: React.FC<RecentActivitiesProps> = ({
                   <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Hora
                   </th>
+                  {showRolYProfesional && (
+                    <>
+                      <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Rol
+                      </th>
+                      <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Profesional
+                      </th>
+                    </>
+                  )}
                   <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Estado
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {citas.slice(0, 5).map((cita, index) => (
-                  <tr key={cita.id || index} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                    <td className="py-3 px-4">
-                      <div>
-                        <div className="font-medium text-gray-900 dark:text-white">
-                          {cita.paciente || 'N/A'}
-                        </div>
-                        {cita.motivo && (
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {cita.motivo}
+                {citas.slice(0, 5).map((cita, index) => {
+                  const { rol: rolProfesional, nombre } = getRolYNombre(cita);
+                  
+                  return (
+                    <tr key={cita.id || `cita-${index}`} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                      <td className="py-3 px-4">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {cita.paciente || 'N/A'}
                           </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-gray-500 dark:text-gray-400">
-                      {cita.fecha ? formatDate(cita.fecha) : 'N/A'}
-                    </td>
-                    <td className="py-3 px-4 text-gray-500 dark:text-gray-400">
-                      {cita.hora ? formatTime(cita.hora) : 'N/A'}
-                    </td>
-                    <td className="py-3 px-4">
-                      <Badge 
-                        size="sm" 
-                        color={getStatusColor(cita.estado)} 
-                        variant="light"
-                      >
-                        {cita.estado || 'N/A'}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
+                          {cita.motivo && (
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              {cita.motivo}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-gray-500 dark:text-gray-400">
+                        {cita.fecha ? formatDate(cita.fecha) : 'N/A'}
+                      </td>
+                      <td className="py-3 px-4 text-gray-500 dark:text-gray-400">
+                        {cita.hora ? formatTime(cita.hora) : 'N/A'}
+                      </td>
+                      
+                      {showRolYProfesional ? (
+                        <>
+                          <td className="py-3 px-4">
+                            {rolProfesional !== 'N/A' ? (
+                              <Badge 
+                                size="sm" 
+                                color={rolProfesional === 'Odontólogo' ? 'primary' : 'warning'} 
+                                variant="light"
+                              >
+                                {rolProfesional}
+                              </Badge>
+                            ) : (
+                              <span className="text-gray-400 text-sm">-</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            {nombre !== 'Sin asignar' ? (
+                              <span className="text-gray-900 dark:text-white font-medium">
+                                {nombre}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 text-sm italic">Sin asignar</span>
+                            )}
+                          </td>
+                        </>
+                      ) : null}
+                      
+                      <td className="py-3 px-4">
+                        <Badge 
+                          size="sm" 
+                          color={getStatusColor(cita.estado)} 
+                          variant="light"
+                        >
+                          {cita.estado || 'N/A'}
+                        </Badge>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -166,7 +283,7 @@ const RecentActivities: React.FC<RecentActivitiesProps> = ({
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {pacientes.slice(0, 5).map((paciente, index) => (
-                  <tr key={paciente.id || index} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                  <tr key={paciente.id || `paciente-${index}`} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                     <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">
                       {paciente.nombre || 'N/A'}
                     </td>
@@ -178,7 +295,8 @@ const RecentActivities: React.FC<RecentActivitiesProps> = ({
                     </td>
                     <td className="py-3 px-4 text-gray-500 dark:text-gray-400">
                       {paciente.fecha_registro ? formatDate(paciente.fecha_registro) : 
-                       paciente.ultima_visita ? formatDate(paciente.ultima_visita) : 'N/A'}
+                       'ultima_visita' in paciente && paciente.ultima_visita ? 
+                       formatDate(paciente.ultima_visita) : 'N/A'}
                     </td>
                   </tr>
                 ))}

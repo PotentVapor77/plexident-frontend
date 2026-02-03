@@ -54,6 +54,7 @@ export interface IPaciente {
   fecha_modificacion?: string;
   creado_por?: string;
   actualizado_por?: string;
+  nombre_completo?: string;
 }
 
 // ============================================================================

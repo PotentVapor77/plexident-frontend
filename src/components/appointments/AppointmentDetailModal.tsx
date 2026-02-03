@@ -51,6 +51,7 @@ const AppointmentDetailModal = ({
   const getEstadoBadgeColor = (estado: string) => {
     const colors: Record<string, string> = {
       PROGRAMADA: 'bg-blue-100 text-blue-800',
+      
       CONFIRMADA: 'bg-green-100 text-green-800',
       ASISTIDA: 'bg-gray-100 text-gray-800',
       NO_ASISTIDA: 'bg-red-100 text-red-800',
@@ -575,46 +576,60 @@ const AppointmentDetailModal = ({
         className="max-w-3xl p-6 lg:p-8 max-h-[90vh] overflow-y-auto"
       >
         <div className="space-y-6">
+
           {/* Header */}
-          <div className="pb-4 border-b border-gray-200">
-            <div className="flex items-start justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                  <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-sm">
-                    <CalendarIcon className="h-6 w-6 text-white" />
-                  </div>
-                  Detalles de la Cita
-                </h2>
-                <p className="text-sm text-gray-500 mt-2 ml-13">
-                  ID: #{cita.id}
-                </p>
-              </div>
-              
-              <button
-                onClick={handleVerHistorial}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-indigo-700 bg-white border-2 border-indigo-300 rounded-lg hover:bg-indigo-50 transition-all"
-              >
-                <DocumentMagnifyingGlassIcon className="h-5 w-5 mr-2" />
-                Ver Historial
-              </button>
+<div className="pb-4 border-b border-gray-200">
+  <div className="flex items-start justify-between">
+    <div>
+      <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+        <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-sm">
+          <CalendarIcon className="h-6 w-6 text-white" />
+        </div>
+        Detalles de la Cita
+      </h2>
+      <p className="text-sm text-gray-500 mt-2 ml-13">
+        ID: #{cita.id}
+      </p>
+    </div>
+    
+    <div className="flex items-center gap-3">
+      <button
+        onClick={handleVerHistorial}
+        className="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all shadow hover:shadow-md"
+      >
+        <DocumentMagnifyingGlassIcon className="h-5 w-5 mr-2" />
+        Ver Historial
+      </button>
+      
+      <button
+        onClick={onClose}
+        className="inline-flex items-center justify-center p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+        aria-label="Cerrar modal"
+      >
+        <XCircleIcon className="h-5 w-5" />
+      </button>
+    </div>
+  </div>
 
-              {showHistorial && historialCita && (
-                <HistorialModal
-                  isOpen={showHistorial}
-                  onClose={() => setShowHistorial(false)}
-                  historialCita={historialCita}
-                  loading={loadingHistorial} 
-                />
-              )}
-            </div>
+  {showHistorial && historialCita && (
+    <HistorialModal
+      isOpen={showHistorial}
+      onClose={() => setShowHistorial(false)}
+      historialCita={historialCita}
+      loading={loadingHistorial} 
+    />
+  )}
 
-            {/* Estado */}
-            <div className="mt-4 ml-13">
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${getEstadoBadgeColor(cita.estado)}`}>
-                {cita.estado_display}
-              </span>
-            </div>
-          </div>
+  {/* Estado */}
+  <div className="mt-4 ml-13">
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${getEstadoBadgeColor(cita.estado)}`}>
+      {cita.estado_display}
+    </span>
+  </div>
+</div>
+
+
+          
 
           {/* Información de la cita */}
           <div className="space-y-6">

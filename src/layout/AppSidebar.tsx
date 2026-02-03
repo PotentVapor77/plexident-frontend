@@ -10,7 +10,6 @@ import {
   GridIcon,
   HorizontaLDots,
   PageIcon,
-  PieChartIcon,
   PlugInIcon,
   TableIcon,
   UserCircleIcon,
@@ -43,7 +42,7 @@ const canSeeMenu = (menuName: string, rol?: Rol | null): boolean => {
       "Plan Tratamiento",
       "Usuarios",
       "Reportes",
-      "Configuración",
+      "Parametros",
     ],
     Odontologo: [
       "Dashboard",
@@ -123,20 +122,11 @@ const othersItems: NavItem[] = [
       { name: "Gestión de Usuarios", path: "/usuarios", pro: false },
     ],
   },
-  {
-    icon: <PieChartIcon />,
-    name: "Reportes",
-    subItems: [
-      { name: "Reportes Clínicos", path: "/reportes-clinicos", pro: false },
-      { name: "Reportes Financieros", path: "/reportes-financieros", pro: false },
-      { name: "Estadísticas", path: "/estadisticas", pro: false },
-    ],
-  },
-  {
+    {
     icon: <PlugInIcon />,
-    name: "Configuración",
+    name: "Parametros",
     subItems: [
-      { name: "Permisos Usuario", path: "/permisos-usuario", pro: false },
+      { name: "Confi Horarios", path: "/config-horarios", pro: false },
     ],
   },
 ];

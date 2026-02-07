@@ -1,6 +1,6 @@
 // src/components/vitalSigns/forms/VitalSignsFormFields.tsx
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getPacientes } from "../../../../services/patient/patientService";
 import type { IVitalSignsCreate } from "../../../../types/vitalSigns/IVitalSigns";
@@ -19,6 +19,58 @@ interface VitalSignsFormFieldsProps {
   pacienteActivo?: IPaciente | null;
 }
 
+// Función para determinar el estado del valor vs. rango
+const getEstadoRango = (
+  valor: number | null | undefined,
+  minNormal: number,
+  maxNormal: number,
+  minAbsoluto?: number,
+  maxAbsoluto?: number
+): { texto: string; color: string; icono: string } => {
+  if (valor === null || valor === undefined) {
+    return { texto: "No ingresado", color: "text-gray-500", icono: "➖" };
+  }
+
+  // Verificar límites absolutos primero
+  if (minAbsoluto !== undefined && valor < minAbsoluto) {
+    return { texto: "Valor fuera de rango", color: "text-red-600", icono: "⚠️" };
+  }
+  
+  if (maxAbsoluto !== undefined && valor > maxAbsoluto) {
+    return { texto: "Valor fuera de rango", color: "text-red-600", icono: "⚠️" };
+  }
+
+  if (valor < minNormal) {
+    return { texto: "Por debajo (baja)", color: "text-blue-600", icono: "⬇️" };
+  } else if (valor > maxNormal) {
+    return { texto: "Por encima (alta)", color: "text-red-600", icono: "⬆️" };
+  } else {
+    return { texto: "Dentro del rango", color: "text-green-600", icono: "✅" };
+  }
+};
+
+// Función para presión arterial
+const getEstadoPresion = (
+  sistolica: number | null | undefined,
+  diastolica: number | null | undefined
+): { texto: string; color: string; icono: string } => {
+  if (sistolica === null || sistolica === undefined || diastolica === null || diastolica === undefined) {
+    return { texto: "No ingresada", color: "text-gray-500", icono: "➖" };
+  }
+
+  // Rangos normales: Sistólica 90-120, Diastólica 60-80
+  // Límites absolutos: Sistólica 60-250, Diastólica 40-150
+  if (sistolica < 60 || sistolica > 250 || diastolica < 40 || diastolica > 150) {
+    return { texto: "Valor fuera de rango", color: "text-red-600", icono: "⚠️" };
+  } else if (sistolica > 120 || diastolica > 80) {
+    return { texto: "Elevada", color: "text-orange-600", icono: "⬆️" };
+  } else if (sistolica < 90 || diastolica < 60) {
+    return { texto: "Baja", color: "text-blue-600", icono: "⬇️" };
+  } else {
+    return { texto: "Normal", color: "text-green-600", icono: "✅" };
+  }
+};
+
 export function VitalSignsFormFields({
   formData,
   onChange,
@@ -29,6 +81,11 @@ export function VitalSignsFormFields({
   pacienteActivo,
 }: VitalSignsFormFieldsProps) {
   const [selectedPatient, setSelectedPatient] = useState<IPaciente | null>(null);
+  
+  // ✅ Estados para el calendario
+  const dateInputRef = useRef<HTMLInputElement>(null);
+  const [isDateValid, setIsDateValid] = useState(true);
+  const [dateValue, setDateValue] = useState("");
 
   const { data: patientsResponse, isLoading: patientsLoading } = useQuery({
     queryKey: ["patients-vital"],
@@ -53,12 +110,71 @@ export function VitalSignsFormFields({
     [patientsResponse]
   );
 
+  // ✅ Fecha máxima (hoy)
+  const maxDate = new Date().toISOString().split('T')[0];
+
+  // Calcular estados de los signos vitales
+  const estadoTemperatura = getEstadoRango(
+    formData.temperatura ?? null,
+    36.0,
+    37.5,
+    35.0,
+    42.0
+  );
+  
+  const estadoPulso = getEstadoRango(
+    formData.pulso ?? null,
+    60,
+    100,
+    40,
+    200
+  );
+  
+  const estadoFR = getEstadoRango(
+    formData.frecuencia_respiratoria ?? null,
+    12,
+    20,
+    10,
+    50
+  );
+  
+  const presionArterial = formData.presion_arterial || "";
+  const partesPresion = presionArterial.split("/");
+  const sistolica = partesPresion[0] ? parseFloat(partesPresion[0]) : null;
+  const diastolica = partesPresion[1] ? parseFloat(partesPresion[1]) : null;
+  const estadoPresion = getEstadoPresion(sistolica, diastolica);
+
   useEffect(() => {
     if (mode === "edit" && formData.paciente && patients.length > 0) {
       const found = patients.find((p) => p.id === formData.paciente);
       setSelectedPatient(found || null);
     }
   }, [formData.paciente, patients, mode]);
+
+  // ✅ Sincronizar el valor de fecha cuando cambia formData
+  useEffect(() => {
+    if (formData.fecha_consulta) {
+      if (formData.fecha_consulta.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        setDateValue(formData.fecha_consulta);
+      } else {
+        try {
+          const date = new Date(formData.fecha_consulta);
+          if (!isNaN(date.getTime())) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            setDateValue(`${year}-${month}-${day}`);
+          } else {
+            setDateValue("");
+          }
+        } catch {
+          setDateValue("");
+        }
+      }
+    } else {
+      setDateValue("");
+    }
+  }, [formData.fecha_consulta]);
 
   useEffect(() => {
     if (mode === "create" && pacienteActivo?.id && !formData.fecha_consulta) {
@@ -77,11 +193,40 @@ export function VitalSignsFormFields({
     return Number.isNaN(num) ? null : num;
   };
 
+  // ✅ Manejo personalizado del cambio de fecha
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
+    setDateValue(value);
+    
+    if (value > maxDate) {
+      setIsDateValid(false);
+      return;
+    }
+    
+    setIsDateValid(true);
+    onChange('fecha_consulta', value);
+  };
+
+  // ✅ Abrir calendario al hacer clic en el ícono
+  const handleCalendarIconClick = () => {
+    if (dateInputRef.current) {
+      dateInputRef.current.showPicker();
+    }
+  };
+
+  // ✅ Limpiar fecha
+  const handleClearDate = () => {
+    setDateValue("");
+    setIsDateValid(true);
+    onChange('fecha_consulta', "");
+  };
+
   const mostrarSeccionEstado = Boolean(onActivoChange);
 
   return (
     <div className="space-y-8">
-      {/* Identificación del paciente - AHORA IGUAL PARA CREATE Y EDIT */}
+      {/* Identificación del paciente */}
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
         <div className="mb-6 flex items-center gap-2">
           <div className="h-8 w-2 rounded-full bg-gradient-to-b from-blue-500 to-blue-600" />
@@ -113,33 +258,20 @@ export function VitalSignsFormFields({
                   </div>
                 </div>
 
-                {/* Badge de paciente fijado */}
                 <div className="mt-4 flex items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-800 dark:from-blue-900 dark:to-blue-800 dark:text-blue-200 shadow-sm">
-                    <svg
-                      className="w-3.5 h-3.5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
+                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                     Paciente fijado activamente
                   </span>
                 </div>
 
-                {/* Nota informativa */}
                 <div className="mt-4 flex gap-3 rounded-lg bg-gradient-to-r from-blue-100/80 to-blue-50 p-3 dark:from-blue-900/30 dark:to-blue-900/20">
                   <span className="text-base flex-shrink-0 mt-0.5">📌</span>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-blue-900 dark:text-blue-200">
-                      <span className="font-semibold">Nota:</span> Este registro
-                      se asociará automáticamente al paciente fijado. Para
-                      cambiar de paciente, regrese a la pestaña "Gestión de
-                      Pacientes" y fije otro paciente.
+                      <span className="font-semibold">Nota:</span> Este registro se asociará automáticamente al paciente fijado.
                     </p>
                   </div>
                 </div>
@@ -151,32 +283,22 @@ export function VitalSignsFormFields({
           {mode === "create" && !pacienteActivo && (
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
               <div className="flex items-start gap-3">
-                <svg
-                  className="w-6 h-6 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                    clipRule="evenodd"
-                  />
+                <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300">
                     No hay paciente fijado
                   </p>
                   <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
-                    Para fijar un paciente, vaya a la pestaña "Gestión de
-                    Pacientes" y haga clic en el botón 📌 junto al paciente
-                    deseado.
+                    Para fijar un paciente, vaya a la pestaña "Gestión de Pacientes" y haga clic en el botón 📌.
                   </p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* MODO EDIT - AHORA CON EL MISMO DISEÑO QUE CREATE */}
+          {/* MODO EDIT */}
           {mode === "edit" && (
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -197,42 +319,16 @@ export function VitalSignsFormFields({
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           CI {selectedPatient.cedula_pasaporte}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          {selectedPatient.sexo === "M"
-                            ? "👨 Masculino"
-                            : "👩 Femenino"}{" "}
-                          • Edad: {selectedPatient.edad}{" "}
-                          {selectedPatient.condicion_edad}
-                        </p>
                       </div>
                     </div>
 
-                    {/* Badge de paciente (en modo edit) */}
                     <div className="mt-4 flex items-center gap-2">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-800 dark:from-blue-900 dark:to-blue-800 dark:text-blue-200 shadow-sm">
-                        <svg
-                          className="w-3.5 h-3.5"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clipRule="evenodd"
-                          />
+                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
                         Paciente fijado activamente
                       </span>
-                    </div>
-
-                    {/* Nota informativa para modo edit */}
-                    <div className="mt-4 flex gap-3 rounded-lg bg-gradient-to-r from-blue-100/80 to-blue-50 p-3 dark:from-blue-900/30 dark:to-blue-900/20">
-                      <span className="text-base flex-shrink-0 mt-0.5">📌</span>
-                      <div className="flex-1">
-                        <p className="text-xs font-medium text-blue-900 dark:text-blue-200">
-                          <span className="font-semibold">Nota:</span>  Este registro se asociará automáticamente al paciente fijado. Para cambiar de paciente, regrese a la pestaña "Gestión de Pacientes" y fije otro paciente.
-                        </p>
-                      </div>
                     </div>
                   </>
                 ) : (
@@ -243,9 +339,7 @@ export function VitalSignsFormFields({
                       </svg>
                     </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                      {patientsLoading
-                        ? "Cargando datos del paciente..."
-                        : "No se encontraron datos del paciente"}
+                      {patientsLoading ? "Cargando datos del paciente..." : "No se encontraron datos del paciente"}
                     </p>
                   </div>
                 )}
@@ -265,24 +359,78 @@ export function VitalSignsFormFields({
         </div>
 
         <div className="grid grid-cols-1 gap-6">
-          {/* Fecha de Consulta */}
+          {/* ✅ Fecha de Consulta CON CALENDARIO MEJORADO */}
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Fecha de Consulta
+              Fecha de Consulta *
             </label>
             <div className="relative">
               <input
+                ref={dateInputRef}
                 type="date"
-                value={formData.fecha_consulta || ''}
-                onChange={(e) => onChange('fecha_consulta', e.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 pl-10 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+                value={dateValue}
+                onChange={handleDateChange}
+                required
+                max={maxDate}
+                className={`w-full p-3 pr-20 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors appearance-none ${
+                  !isDateValid 
+                    ? 'border-red-300 dark:border-red-500' 
+                    : 'border-gray-300 dark:border-gray-600'
+                }`}
+                style={{
+                  colorScheme: 'dark light',
+                  cursor: 'pointer',
+                }}
               />
-              <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <button
+                type="button"
+                onClick={handleCalendarIconClick}
+                className="absolute right-12 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 focus:outline-none"
+                aria-label="Abrir selector de fecha"
+              >
+                <svg 
+                  className="w-5 h-5" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                  />
                 </svg>
-              </div>
+              </button>
+              
+              {dateValue && (
+                <button
+                  type="button"
+                  onClick={handleClearDate}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 focus:outline-none"
+                  aria-label="Limpiar fecha"
+                >
+                  <svg 
+                    className="w-4 h-4" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M6 18L18 6M6 6l12 12" 
+                    />
+                  </svg>
+                </button>
+              )}
             </div>
+            {!isDateValid && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                La fecha de consulta no puede ser futura
+              </p>
+            )}
             {errors.fecha_consulta && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                 {errors.fecha_consulta}
@@ -344,110 +492,164 @@ export function VitalSignsFormFields({
         </div>
       </div>
 
-    {/* Signos vitales */}
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
-      <div className="mb-6 flex items-center gap-2">
-        <div className="h-8 w-2 rounded-full bg-gradient-to-b from-rose-500 to-rose-600" />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Signos vitales
-        </h3>
+      {/* Signos vitales */}
+      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+        <div className="mb-6 flex items-center gap-2">
+          <div className="h-8 w-2 rounded-full bg-gradient-to-b from-rose-500 to-rose-600" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Signos vitales
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {/* Temperatura */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Temperatura (°C)
+            </label>
+            <input
+              type="number"
+              step="0.1"
+              value={formData.temperatura ?? ""}
+              onChange={(e) => onChange("temperatura", parseNumber(e.target.value))}
+              placeholder="Ej: 36.8"
+              min="35.0"
+              max="42.0"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+            />
+            <div className="mt-2 space-y-1">
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                <span className="font-bold">Rango Normal:</span> 36.0 – 37.5 °C
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="font-bold">Límites:</span> 35.0 – 42.0 °C
+              </p>
+              <p className={`text-xs font-medium ${estadoTemperatura.color}`}>
+                <span className="mr-1">{estadoTemperatura.icono}</span>
+                <span className="font-bold">Estado:</span> {estadoTemperatura.texto}
+              </p>
+            </div>
+            {errors.temperatura && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                {errors.temperatura}
+              </p>
+            )}
+          </div>
+
+          {/* Pulso */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Pulso (lpm)
+            </label>
+            <input
+              type="number"
+              value={formData.pulso ?? ""}
+              onChange={(e) => onChange("pulso", parseNumber(e.target.value))}
+              placeholder="Ej: 78"
+              min="40"
+              max="200"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+            />
+            <div className="mt-2 space-y-1">
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                <span className="font-bold">Rango Normal:</span> 60 – 100 lpm*
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="font-bold">Límites:</span> 40 – 200 lpm
+              </p>
+              <p className={`text-xs font-medium ${estadoPulso.color}`}>
+                <span className="mr-1">{estadoPulso.icono}</span>
+                <span className="font-bold">Estado:</span> {estadoPulso.texto}
+                {(formData.pulso ?? 0) < 60 && " (bradicardia)"}
+                {(formData.pulso ?? 0) > 100 && " (taquicardia)"}
+              </p>
+            </div>
+            {errors.pulso && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                {errors.pulso}
+              </p>
+            )}
+          </div>
+
+          {/* Frecuencia respiratoria */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Frecuencia respiratoria (rpm)
+            </label>
+            <input
+              type="number"
+              value={formData.frecuencia_respiratoria ?? ""}
+              onChange={(e) => onChange("frecuencia_respiratoria", parseNumber(e.target.value))}
+              placeholder="Ej: 16"
+              min="10"
+              max="50"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+            />
+            <div className="mt-2 space-y-1">
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                <span className="font-bold">Rango Normal:</span> 12 – 20 rpm
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="font-bold">Límites:</span> 10 – 50 rpm
+              </p>
+              <p className={`text-xs font-medium ${estadoFR.color}`}>
+                <span className="mr-1">{estadoFR.icono}</span>
+                <span className="font-bold">Estado:</span> {estadoFR.texto}
+                {(formData.frecuencia_respiratoria ?? 0) < 12 && " (bradipnea)"}
+                {(formData.frecuencia_respiratoria ?? 0) > 20 && " (taquipnea)"}
+              </p>
+            </div>
+            {errors.frecuencia_respiratoria && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                {errors.frecuencia_respiratoria}
+              </p>
+            )}
+          </div>
+
+          {/* Presión arterial */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Presión arterial (mmHg)
+            </label>
+            <input
+              type="text"
+              value={formData.presion_arterial ?? ""}
+              onChange={(e) => onChange("presion_arterial", e.target.value)}
+              placeholder="Ej: 118/76"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+            />
+            <div className="mt-2 space-y-1">
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                <span className="font-bold">Rango Normal:</span> 90–120 / 60–80 mmHg**
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="font-bold">Límites:</span> 60–250 / 40–150 mmHg
+              </p>
+              <p className={`text-xs font-medium ${estadoPresion.color}`}>
+                <span className="mr-1">{estadoPresion.icono}</span>
+                <span className="font-bold">Estado:</span> {estadoPresion.texto}
+              </p>
+              {sistolica && diastolica && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Sistólica: {sistolica} mmHg, Diastólica: {diastolica} mmHg
+                </p>
+              )}
+            </div>
+            {errors.presion_arterial && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                {errors.presion_arterial}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Nota de referencia */}
+        <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+          <p className="text-xs text-gray-600 dark:text-gray-400">
+            *Rangos para adultos. Los valores fuera de los límites indicados se consideran fuera de rango clínico.
+          </p>
+        </div>
       </div>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {/* Temperatura */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Temperatura (°C)
-          </label>
-          <input
-            type="number"
-            step="0.1"
-            value={formData.temperatura ?? ""}
-            onChange={(e) =>
-              onChange("temperatura", parseNumber(e.target.value))
-            }
-            placeholder="Ej: 36.5"
-            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
-          />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Normal: 36.1°C - 37.2°C | Fiebre: ≥37.5°C
-          </p>
-          {errors.temperatura && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-              {errors.temperatura}
-            </p>
-          )}
-        </div>
-
-        {/* Pulso */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Pulso (lpm)
-          </label>
-          <input
-            type="number"
-            value={formData.pulso ?? ""}
-            onChange={(e) => onChange("pulso", parseNumber(e.target.value))}
-            placeholder="Ej: 72"
-            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
-          />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Adulto normal: 60-100 lpm | Bradicardia: &lt;60 | Taquicardia: &gt;100
-          </p>
-          {errors.pulso && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-              {errors.pulso}
-            </p>
-          )}
-        </div>
-
-        {/* Frecuencia respiratoria */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Frecuencia respiratoria (rpm)
-          </label>
-          <input
-            type="number"
-            value={formData.frecuencia_respiratoria ?? ""}
-            onChange={(e) =>
-              onChange("frecuencia_respiratoria", parseNumber(e.target.value))
-            }
-            placeholder="Ej: 18"
-            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
-          />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Adulto normal: 12-20 rpm | Bradipnea: &lt;12 | Taquipnea: &gt;20
-          </p>
-          {errors.frecuencia_respiratoria && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-              {errors.frecuencia_respiratoria}
-            </p>
-          )}
-        </div>
-
-        {/* Presión arterial */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Presión arterial (mmHg)
-          </label>
-          <input
-            type="text"
-            value={formData.presion_arterial ?? ""}
-            onChange={(e) => onChange("presion_arterial", e.target.value)}
-            placeholder="Ej: 120/80"
-            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
-          />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Normal: &lt;120/80 mmHg | HTA: ≥140/90 mmHg
-          </p>
-          {errors.presion_arterial && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-              {errors.presion_arterial}
-            </p>
-          )}
-        </div>
-      </div>
-    </div>
 
       {/* Estado */}
       {mostrarSeccionEstado && (
@@ -467,28 +669,22 @@ export function VitalSignsFormFields({
                 onChange={(e) => onActivoChange?.(e.target.checked)}
                 className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-900"
               />
-              <label
-                htmlFor="activo"
-                className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
+              <label htmlFor="activo" className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Activo
               </label>
             </div>
             <div className="flex items-center gap-2">
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${
-                  activo
-                    ? "bg-gradient-to-r from-green-100 to-green-200 text-green-800 dark:from-green-900 dark:to-green-800 dark:text-green-200"
-                    : "bg-gradient-to-r from-red-100 to-red-200 text-red-800 dark:from-red-900 dark:to-red-800 dark:text-red-200"
-                }`}
-              >
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                activo
+                  ? "bg-gradient-to-r from-green-100 to-green-200 text-green-800 dark:from-green-900 dark:to-green-800 dark:text-green-200"
+                  : "bg-gradient-to-r from-red-100 to-red-200 text-red-800 dark:from-red-900 dark:to-red-800 dark:text-red-200"
+              }`}>
                 {activo ? "ACTIVO" : "INACTIVO"}
               </span>
             </div>
           </div>
           <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-            Los registros inactivos no aparecerán en las búsquedas ni en los
-            reportes.
+            Los registros inactivos no aparecerán en las búsquedas ni en los reportes.
           </p>
         </div>
       )}

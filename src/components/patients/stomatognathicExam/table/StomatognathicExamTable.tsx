@@ -5,6 +5,7 @@ import { useStomatognathicExams } from "../../../../hooks/stomatognathicExam/use
 import type { IStomatognathicExam, IPacienteBasico } from "../../../../types/stomatognathicExam/IStomatognathicExam";
 import { getPacienteById } from "../../../../services/patient/patientService";
 import type { IPaciente } from "../../../../types/patient/IPatient";
+import { useAuth } from "../../../../hooks/auth/useAuth"; // ✅ AGREGAR
 
 interface StomatognathicExamTableProps {
   onEdit?: (exam: IStomatognathicExam) => void;
@@ -27,6 +28,7 @@ export function StomatognathicExamTable({
   const [pageSize, setPageSize] = useState(5);
   const [search, setSearch] = useState("");
   const [pacienteCache, setPacienteCache] = useState<PacienteCache>({});
+  const { user } = useAuth(); // ✅ AGREGAR
 
   const { exams, pagination, isLoading, isError, error } = useStomatognathicExams({
     page,
@@ -35,7 +37,12 @@ export function StomatognathicExamTable({
     paciente: pacienteId, 
   });
 
-  const examList = exams ?? [];
+  const isAdmin = user?.rol === "Administrador"; // ✅ AGREGAR
+
+  // ✅ FILTRAR: Solo mostrar activos para no administradores
+  const examList = isAdmin 
+    ? (exams ?? [])
+    : (exams ?? []).filter(e => e.activo);
 
   // Calcular total de regiones anormales
   const calculateTotalRegionesAnormales = (exam: IStomatognathicExam): number => {
@@ -279,9 +286,12 @@ export function StomatognathicExamTable({
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                 Fecha registro
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                Estado
-              </th>
+              {/* ✅ Ocultar columna Estado para no administradores */}
+              {isAdmin && (
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                  Estado
+                </th>
+              )}
               <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                 Acciones
               </th>
@@ -291,7 +301,7 @@ export function StomatognathicExamTable({
             {examList.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={isAdmin ? 5 : 4} 
                   className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
                 >
                   <div className="flex flex-col items-center gap-2">
@@ -362,11 +372,6 @@ export function StomatognathicExamTable({
                           }`}>
                             {patologiasResumen}
                           </span>
-                          {!tienePatologias && !exam.examen_sin_patologia && (
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full dark:bg-green-900 dark:text-green-200">
-                              Sin patología
-                            </span>
-                          )}
                         </div>
                         {tienePatologias && (
                           <p className="text-xs text-red-600 dark:text-red-400 mt-1">
@@ -383,18 +388,20 @@ export function StomatognathicExamTable({
                       </div>
                     </td>
 
-                    {/* Estado - CORREGIDO */}
-                    <td className="whitespace-nowrap px-6 py-4">
-                      <span
-                        className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                          exam.activo
-                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                        }`}
-                      >
-                        {exam.activo ? "Activo" : "Inactivo"}
-                      </span>
-                    </td>
+                    {/* ✅ Estado - Solo para Administrador */}
+                    {isAdmin && (
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <span
+                          className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                            exam.activo
+                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                              : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                          }`}
+                        >
+                          {exam.activo ? "Activo" : "Inactivo"}
+                        </span>
+                      </td>
+                    )}
 
                     {/* Acciones */}
                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">

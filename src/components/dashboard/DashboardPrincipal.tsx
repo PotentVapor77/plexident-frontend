@@ -266,9 +266,6 @@ export const DashboardPrincipal: React.FC = () => {
         {/* Actividades Recientes */}
         {(tablas || listas) && (
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Actividad Reciente
-            </h2>
             <RecentActivities 
               tablas={tablas}
               listas={listas}

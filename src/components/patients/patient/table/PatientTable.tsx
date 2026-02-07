@@ -5,6 +5,8 @@ import { usePacientes } from "../../../../hooks/patient/usePatients";
 import type { IPaciente } from "../../../../types/patient/IPatient";
 import { useNavigate } from "react-router-dom";
 import { usePacienteActivo } from "../../../../context/PacienteContext";
+import { useAuth } from "../../../../hooks/auth/useAuth";
+
 interface PatientTableProps {
   onEdit?: (paciente: IPaciente) => void;
   onView?: (paciente: IPaciente) => void;
@@ -24,14 +26,20 @@ export function PatientTable({
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const { pacienteActivo } = usePacienteActivo();
+  const { user } = useAuth();
+  
   const { pacientes, pagination, isLoading, isError, error } = usePacientes({
     page,
     page_size: pageSize,
     search,
   });
 
-  // ✅ IMPORTANTE: Inicializar patientsList ANTES de los checks
-  const patientsList = pacientes ?? [];
+  const isAdmin = user?.rol === "Administrador";
+
+  // ✅ FILTRAR PACIENTES: Solo mostrar activos para Odontólogo/Asistente
+  const patientsList = isAdmin 
+    ? (pacientes ?? []) 
+    : (pacientes ?? []).filter(p => p.activo);
 
   const handleSearch = (value: string) => {
     setSearch(value);
@@ -51,6 +59,7 @@ export function PatientTable({
   const handleDeleteClick = (paciente: IPaciente) => {
     onDelete?.(paciente);
   };
+  
   const handleActivateClick = (paciente: IPaciente) => {
     onActivate(paciente);
   };
@@ -69,6 +78,7 @@ export function PatientTable({
         return "";
     }
   };
+  
   const isPacienteActivo = (paciente: IPaciente) => {
     return pacienteActivo?.id === paciente.id;
   };
@@ -170,9 +180,11 @@ export function PatientTable({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Teléfono
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Estado
-              </th>
+              {isAdmin && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Estado
+                </th>
+              )}
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Acciones
               </th>
@@ -182,7 +194,7 @@ export function PatientTable({
             {patientsList.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={isAdmin ? 6 : 5}
                   className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
                 >
                   <div className="flex flex-col items-center gap-2">
@@ -261,28 +273,31 @@ export function PatientTable({
                       </div>
                     </td>
 
-                    {/* Estado */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${paciente.activo
-                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                    {/* Estado - Solo para Administrador */}
+                    {isAdmin && (
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            paciente.activo
+                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                              : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                           }`}
-                      >
-                        {paciente.activo ? "Activo" : "Inactivo"}
-                      </span>
-                    </td>
+                        >
+                          {paciente.activo ? "Activo" : "Inactivo"}
+                        </span>
+                      </td>
+                    )}
 
                     {/* Acciones */}
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
-                        {/* ✅ BOTÓN ACTIVAR PACIENTE CON INDICADOR VISUAL */}
                         <button
                           onClick={() => handleActivateClick(paciente)}
-                          className={`${isActive
+                          className={`${
+                            isActive
                               ? "text-green-600 dark:text-green-400"
                               : "text-gray-400 hover:text-green-600 dark:text-gray-500 dark:hover:text-green-400"
-                            } transition-colors`}
+                          } transition-colors`}
                           title={isActive ? "Click para desfijar paciente" : "Click para fijar paciente"}
                         >
                           <svg
@@ -328,10 +343,11 @@ export function PatientTable({
                         <button
                           onClick={() => handleDeleteClick(paciente)}
                           disabled={!paciente.activo}
-                          className={`${!paciente.activo
+                          className={`${
+                            !paciente.activo
                               ? "text-red-300 dark:text-red-500 cursor-not-allowed opacity-50"
                               : "text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                            }`}
+                          }`}
                           title={!paciente.activo ? "Pacientes inactivos no se pueden eliminar" : "Borrar definitivamente"}
                         >
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

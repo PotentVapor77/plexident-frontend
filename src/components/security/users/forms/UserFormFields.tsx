@@ -194,7 +194,7 @@ export default function UserFormFields({
             required
             placeholder="Ej: jperez"
             minLength={4}
-            disabled={mode === "edit"}
+            disabled={true}
           />
 
           <SelectField

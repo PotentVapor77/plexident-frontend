@@ -10,7 +10,6 @@ import type { LatestIndicesCariesResponse } from "../../../../types/clinicalReco
 import { useNotification } from "../../../../context/notifications/NotificationContext";
 import RefreshButton from "../../../ui/button/RefreshButton";
 
-
 interface IndicesCariesSectionProps {
   formData: ClinicalRecordFormData;
   selectedPaciente: IPaciente | null;
@@ -21,14 +20,13 @@ interface IndicesCariesSectionProps {
   historialId?: string;
 }
 
-
 const IndicesCariesSection: React.FC<IndicesCariesSectionProps> = ({
   formData,
   selectedPaciente,
   lastUpdated,
   mode,
   isRefreshing = false,
-  historialId,
+  refreshSection,
 }) => {
   const { notify } = useNotification();
   const [indicesData, setIndicesData] = useState<LatestIndicesCariesResponse | null>(null);
@@ -41,145 +39,132 @@ const IndicesCariesSection: React.FC<IndicesCariesSectionProps> = ({
     isRefetching 
   } = useLatestIndicesCaries(selectedPaciente?.id || null);
 
+ // Sincronizar con formData.indices_caries_data (fuente de verdad del formulario)
+useEffect(() => {
+  if (!formData.indices_caries_data) return;
 
+  const d = formData.indices_caries_data;
+  setIndicesData({
+    id: d.id || '',
+    paciente: d.paciente || selectedPaciente?.id || '',
+    version_id: d.version_id || null,
+    cpo_c: d.cpo_c || 0,
+    cpo_p: d.cpo_p || 0,
+    cpo_o: d.cpo_o || 0,
+    cpo_total: d.cpo_total || 0,
+    ceo_c: d.ceo_c || 0,
+    ceo_e: d.ceo_e || 0,
+    ceo_o: d.ceo_o || 0,
+    ceo_total: d.ceo_total || 0,
+    fecha: d.fecha || null,
+    disponible: true,
+    origen: mode === "edit" ? "historial_especifico" : "ultimos_datos_paciente",
+  });
+}, [formData.indices_caries_data, selectedPaciente?.id, mode]);
+
+
+
+  
+  // Efecto para cargar datos iniciales
   useEffect(() => {
-  // 1. Prioridad máxima: Datos específicos del historial en modo EDIT
-  if (mode === "edit" && formData.indices_caries_data) {
-    const cariesData = formData.indices_caries_data;
-    console.log('Usando índices específicos del historial:', cariesData);
-    
-    setIndicesData({
-      id: cariesData.id || '',
-      paciente: cariesData.paciente || selectedPaciente?.id || null,
-      version_id: cariesData.version_id || null,
-      cpo_c: cariesData.cpo_c || 0,
-      cpo_p: cariesData.cpo_p || 0,
-      cpo_o: cariesData.cpo_o || 0,
-      cpo_total: cariesData.cpo_total || 0,
-      ceo_c: cariesData.ceo_c || 0,
-      ceo_e: cariesData.ceo_e || 0,
-      ceo_o: cariesData.ceo_o || 0,
-      ceo_total: cariesData.ceo_total || 0,
-      fecha: cariesData.fecha || null,
-      origen: "historial_especifico",
-      disponible: true,
-    });
-    return; // ¡IMPORTANTE! Salir para no sobrescribir
-  }
-  
-  // 2. Modo CREATE: Usar últimos datos del paciente
-  if (mode === "create" && queryData) {
-    if (queryData.disponible || queryData.id) {
-      console.log('Modo CREATE - Usando últimos índices del paciente:', queryData);
-      setIndicesData({
-        ...queryData,
-        disponible: true,
-        origen: "ultimos_datos_paciente"
-      });
-    } else {
-      setIndicesData(null);
-    }
-    return;
-  }
-  
-  // 3. Modo EDIT sin datos específicos: MOSTRAR NADA o buscar datos del historial
-  if (mode === "edit") {
-    // Si no hay datos específicos del historial, mantener null
-    // NO usar datos recientes del paciente en modo EDIT
-    setIndicesData(null);
-    return;
-  }
-  
-  // 4. Cualquier otro caso (sin datos)
-  setIndicesData(null);
-}, [queryData, mode, formData.indices_caries_data, selectedPaciente?.id]);
+    const loadInitialData = async () => {
+      if (!selectedPaciente?.id) return;
 
+      try {
+        if (mode === "create") {
+          console.log("Modo CREATE - Buscando últimos índices del paciente");
+          await refetchQuery();
+        } else {
+          // En edit, ClinicalRecordForm ya cargó indices_caries_data en formData
+          console.log("Modo EDIT - indices_caries_data desde formData:", formData.indices_caries_data);
+        }
+      } catch (e) {
+        console.error("Error cargando datos iniciales de índices:", e);
+        setError("Error al cargar índices de caries");
+      }
+    };
 
+    loadInitialData();
+  }, [mode, selectedPaciente?.id, refetchQuery, formData.indices_caries_data]);
 
-  // Manejar refresh manual
-  const handleRefresh = async () => {
-  if (!selectedPaciente?.id) {
-    notify({
-      type: "warning",
-      title: "Paciente no seleccionado",
-      message: "Seleccione un paciente para actualizar los índices",
-    });
-    return;
-  }
-
-  setLoading(true);
-  setError(null);
-
-  try {
-    if (mode === "create") {
-      // En modo creación: obtener últimos datos del paciente
-      await refetchQuery();
-    } else if (mode === "edit" && historialId) {
-      // En modo edición: obtener datos ESPECÍFICOS del historial
-      const indices = await indicesCariesService.getByHistorial(historialId);
-      if (indices) {
+  // Efecto para actualizar datos cuando cambia queryData (modo create)
+  useEffect(() => {
+    if (mode === "create" && queryData) {
+      console.log('Modo CREATE - Actualizando con queryData:', queryData);
+      if (queryData.disponible || queryData.id) {
         setIndicesData({
-          id: indices.id,
-          paciente: indices.paciente ?? null,
-          version_id: indices.version_id ?? null,
-          cpo_c: indices.cpo_c,
-          cpo_p: indices.cpo_p,
-          cpo_o: indices.cpo_o,
-          cpo_total: indices.cpo_total,
-          ceo_c: indices.ceo_c,
-          ceo_e: indices.ceo_e,
-          ceo_o: indices.ceo_o,
-          ceo_total: indices.ceo_total,
-          fecha: indices.fecha,
+          ...queryData,
           disponible: true,
-          origen: "historial_especifico"
+          origen: "ultimos_datos_paciente"
         });
       } else {
         setIndicesData(null);
-        notify({
-          type: "info",
-          title: "Sin datos específicos",
-          message: "Este historial no tiene índices de caries registrados",
-        });
       }
     }
-    
-    notify({
-      type: "success",
-      title: "Índices actualizados",
-      message: "Los índices de caries se han actualizado correctamente",
-    });
-  } catch (err: any) {
-    setError(err.message || "Error al cargar índices de caries");
-    notify({
-      type: "error",
-      title: "Error",
-      message: "No se pudieron actualizar los índices de caries",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+  }, [queryData, mode]);
 
+  // Manejar refresh manual
+  const handleRefresh = async () => {
+    if (!selectedPaciente?.id) {
+      notify({
+        type: "warning",
+        title: "Paciente no seleccionado",
+        message: "Seleccione un paciente para actualizar los índices",
+      });
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (mode === "create") {
+        console.log("Refresh en modo CREATE");
+        await refetchQuery();
+        notify({
+          type: "success",
+          title: "Índices actualizados",
+          message: "Los índices de caries se han actualizado correctamente",
+        });
+      } else if (mode === "edit") {
+        console.log("Refresh en modo EDIT (usando refreshSection)");
+        await refreshSection(); // esto actualiza formData.indices_caries_data
+        notify({
+          type: "success",
+          title: "Índices actualizados",
+          message: "Los índices de caries se han actualizado correctamente",
+        });
+        // El useEffect de sincronización tomará el nuevo formData y actualizará indicesData
+      }
+    } catch (err: any) {
+      console.error("Error en refresh:", err);
+      const errorMessage = err.message || "Error al cargar índices de caries";
+      setError(errorMessage);
+      notify({
+        type: "error",
+        title: "Error",
+        message: "No se pudieron actualizar los índices de caries",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Calcular edades para determinar qué índices mostrar
   const edadPaciente = selectedPaciente?.edad || 0;
   const mostrarCPO = edadPaciente >= 12;
   const mostrarCEO = edadPaciente < 12;
 
-
   // Determinar color según el estado
   const getEstadoColor = () => {
     if (!indicesData) return "bg-slate-100 text-slate-700";
     
-    // ✅ Validación segura con nullish coalescing
     const totalCaries = (indicesData.cpo_c ?? 0) + (indicesData.ceo_c ?? 0);
     
     if (totalCaries > 5) return "bg-rose-100 text-rose-700";
     if (totalCaries > 2) return "bg-amber-100 text-amber-700";
     return "bg-emerald-100 text-emerald-700";
   };
-
 
   // Calcular estadísticas
   const calcularEstadisticas = () => {
@@ -188,7 +173,6 @@ const IndicesCariesSection: React.FC<IndicesCariesSectionProps> = ({
     const totalDientesEvaluados = 32;
     const totalDientesTemporales = 20;
 
-    // ✅ Validación segura con valores por defecto
     const cpoTotal = indicesData.cpo_total ?? 0;
     const cpoC = indicesData.cpo_c ?? 0;
     const cpoP = indicesData.cpo_p ?? 0;
@@ -208,9 +192,21 @@ const IndicesCariesSection: React.FC<IndicesCariesSectionProps> = ({
     };
   };
 
-
   const estadisticas = calcularEstadisticas();
 
+  // CORRECCIÓN: Evitar división por cero en la línea 273
+  const calcularPromedioCPO = () => {
+    if (!indicesData || (indicesData.cpo_total ?? 0) === 0) return "0.0";
+    const total = indicesData.cpo_total ?? 0;
+    return (total / 32).toFixed(1);
+  };
+
+  // CORRECCIÓN: Evitar división por cero para CEO
+  const calcularPromedioCEO = () => {
+    if (!indicesData || (indicesData.ceo_total ?? 0) === 0) return "0.0";
+    const total = indicesData.ceo_total ?? 0;
+    return (total / 20).toFixed(1);
+  };
 
   return (
     <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
@@ -228,7 +224,7 @@ const IndicesCariesSection: React.FC<IndicesCariesSectionProps> = ({
           subtitle={
             lastUpdated 
               ? `Evaluado el: ${lastUpdated}` 
-              : indicesData?.fecha // ✅ Cambiado de fecha_evaluacion
+              : indicesData?.fecha
                 ? `Evaluado el: ${new Date(indicesData.fecha).toLocaleDateString('es-ES')}`
                 : "No existen índices de caries registrados"
           }
@@ -296,10 +292,16 @@ const IndicesCariesSection: React.FC<IndicesCariesSectionProps> = ({
               <Shield className="h-6 w-6 text-slate-400" />
             </div>
             <p className="text-sm text-slate-500">
-              No se encontraron índices de caries registrados para este paciente.
+              {mode === "edit" 
+                ? "Este historial no tiene índices de caries específicos registrados."
+                : "No se encontraron índices de caries registrados para este paciente."
+              }
             </p>
             <p className="text-xs text-slate-400 mt-2">
-              Use el botón "Calcular" para generar índices desde el odontograma o "Actualizar" para cargar registros existentes.
+              {mode === "create" 
+                ? 'Use el botón "Calcular" para generar índices desde el odontograma o "Actualizar" para cargar registros existentes.'
+                : 'Los índices de caries son específicos para cada historial clínico.'
+              }
             </p>
           </div>
         ) : (
@@ -313,7 +315,6 @@ const IndicesCariesSection: React.FC<IndicesCariesSectionProps> = ({
                 <h4 className="text-sm font-medium text-slate-800">Resumen de Salud Dental</h4>
                 {indicesData && (
                   <p className="text-sm text-slate-600 mt-1">
-                    {/* ✅ Validación segura */}
                     {((indicesData.cpo_c ?? 0) + (indicesData.ceo_c ?? 0)) === 0 
                       ? "Sin caries activas. Mantener hábitos preventivos."
                       : ((indicesData.cpo_c ?? 0) + (indicesData.ceo_c ?? 0)) <= 2
@@ -326,7 +327,6 @@ const IndicesCariesSection: React.FC<IndicesCariesSectionProps> = ({
               {indicesData && (
                 <div className="px-3 py-1 rounded-full text-sm font-medium bg-white border border-slate-200">
                   <span className="text-slate-700">
-                    {/* ✅ Validación segura con toFixed */}
                     Índice CPO: {(indicesData.cpo_total ?? 0).toFixed(1)} | ceo: {(indicesData.ceo_total ?? 0).toFixed(1)}
                   </span>
                 </div>
@@ -343,7 +343,6 @@ const IndicesCariesSection: React.FC<IndicesCariesSectionProps> = ({
                     <div className="flex items-center justify-between mb-2">
                       <h5 className="text-sm font-medium text-rose-700">Cariados (C)</h5>
                       <div className="text-2xl font-bold text-rose-700">
-                        {/* ✅ Validación segura */}
                         {indicesData.cpo_c ?? 0}
                       </div>
                     </div>
@@ -351,7 +350,6 @@ const IndicesCariesSection: React.FC<IndicesCariesSectionProps> = ({
                       <div className="flex justify-between items-center">
                         <span className="text-xs text-rose-500">Porcentaje</span>
                         <span className="text-sm font-medium text-rose-700">
-                          {/* ✅ Validación segura con toFixed */}
                           {(estadisticas?.porcentajeCariesCPO ?? 0).toFixed(1)}%
                         </span>
                       </div>
@@ -433,8 +431,8 @@ const IndicesCariesSection: React.FC<IndicesCariesSectionProps> = ({
                       <div className="flex justify-between items-center">
                         <span className="text-xs text-violet-500">Promedio</span>
                         <span className="text-sm font-medium text-violet-700">
-                          {/* ⭐ LÍNEA 273 CRÍTICA - CORREGIDA */}
-                          {((indicesData.cpo_total ?? 0) / 32).toFixed(1)}
+                          {/* ✅ CORREGIDO: Usar función segura */}
+                          {calcularPromedioCPO()}
                         </span>
                       </div>
                       <div className="h-2 bg-violet-200 rounded-full overflow-hidden">
@@ -444,7 +442,12 @@ const IndicesCariesSection: React.FC<IndicesCariesSectionProps> = ({
                             (indicesData.cpo_total ?? 0) <= 6 ? "bg-amber-500" :
                             "bg-rose-500"
                           }`}
-                          style={{ width: `${Math.min(100, ((indicesData.cpo_total ?? 0) / 32) * 100)}%` }}
+                          style={{ 
+                            width: `${Math.min(
+                              100, 
+                              ((indicesData.cpo_total ?? 0) > 0 ? ((indicesData.cpo_total ?? 0) / 32) * 100 : 0)
+                            )}%` 
+                          }}
                         />
                       </div>
                     </div>
@@ -554,7 +557,8 @@ const IndicesCariesSection: React.FC<IndicesCariesSectionProps> = ({
                       <div className="flex justify-between items-center">
                         <span className="text-xs text-violet-500">Promedio</span>
                         <span className="text-sm font-medium text-violet-700">
-                          {((indicesData.ceo_total ?? 0) / 20).toFixed(1)}
+                          {/* ✅ CORREGIDO: Usar función segura */}
+                          {calcularPromedioCEO()}
                         </span>
                       </div>
                       <div className="h-2 bg-violet-200 rounded-full overflow-hidden">
@@ -564,7 +568,12 @@ const IndicesCariesSection: React.FC<IndicesCariesSectionProps> = ({
                             (indicesData.ceo_total ?? 0) <= 6 ? "bg-amber-500" :
                             "bg-rose-500"
                           }`}
-                          style={{ width: `${Math.min(100, ((indicesData.ceo_total ?? 0) / 20) * 100)}%` }}
+                          style={{ 
+                            width: `${Math.min(
+                              100, 
+                              ((indicesData.ceo_total ?? 0) > 0 ? ((indicesData.ceo_total ?? 0) / 20) * 100 : 0)
+                            )}%` 
+                          }}
                         />
                       </div>
                     </div>
@@ -622,10 +631,17 @@ const IndicesCariesSection: React.FC<IndicesCariesSectionProps> = ({
             <span className="font-medium">Nota:</span> CPO (dientes permanentes) = Cariados + Perdidos + Obturados. ceo (dientes temporales) = cariados + extraídos + obturados.
           </p>
         </div>
+        {mode === "edit" && indicesData && (
+          <div className="flex items-center gap-2 mt-1">
+            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+            <p className="text-xs text-slate-600">
+              <span className="font-medium">Origen:</span> Índices específicos de este historial clínico
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );
 };
-
 
 export default IndicesCariesSection;

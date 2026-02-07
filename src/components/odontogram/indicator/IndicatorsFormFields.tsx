@@ -1,9 +1,10 @@
 // src/components/odontogram/indicator/IndicatorsFormFields.tsx
 
-import React from "react";
+import React, { useMemo } from "react";
 import type { IndicatorsFormData } from "./IndicatorsForm";
 import { usePiezasIndice } from "../../../hooks/odontogram/usePiezasIndice";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
+import type { InformacionPiezasResponse } from "../../../types/odontogram/typeBackendOdontograma";
 
 // ============================================================================
 // TYPES
@@ -14,11 +15,29 @@ interface IndicatorsFormFieldsProps {
   onInputChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => void;
-  onReset: () => void;
-  submitLoading: boolean;
-  mode: "create" | "edit";
   pacienteId: string | null;
+  informacionPiezas?: InformacionPiezasResponse | null;
+  loadingPiezas?: boolean;
+  errorPiezas?: string | null;
 }
+const obtenerLabelPieza = (piezaOriginal: string): string => {
+  const labels: Record<string, string> = {
+    '16': '1er Molar Superior Derecho',
+    '11': 'Incisivo Central Superior Derecho',
+    '26': '1er Molar Superior Izquierdo',
+    '36': '1er Molar Inferior Izquierdo',
+    '31': 'Incisivo Central Inferior Izquierdo',
+    '46': '1er Molar Inferior Derecho',
+    // Dentición temporal
+    '55': '2do Molar Temporal Superior Derecho',
+    '51': 'Incisivo Central Temporal Superior Derecho',
+    '65': '2do Molar Temporal Superior Izquierdo',
+    '75': '2do Molar Temporal Inferior Izquierdo',
+    '71': 'Incisivo Central Temporal Inferior Izquierdo',
+    '85': '2do Molar Temporal Inferior Derecho',
+  };
+  return labels[piezaOriginal] || `Pieza ${piezaOriginal}`;
+};
 
 // ============================================================================
 // COMPONENT
@@ -29,91 +48,54 @@ export default function IndicatorsFormFields({
   onInputChange,
   pacienteId,
 }: IndicatorsFormFieldsProps) {
-  // Cargar información de piezas alternativas
   const { informacionPiezas, isLoading: loadingPiezas } = usePiezasIndice(pacienteId);
 
+  const piezasData = useMemo(() => {
+    if (!informacionPiezas) return {};
+
+    return informacionPiezas.piezas ||
+      informacionPiezas.piezas_mapeo ||
+      {};
+  }, [informacionPiezas]);
+
   // ============================================================================
-  // HELPER FUNCTIONS
+  // HELPER FUNCTIONS - CORREGIDAS
   // ============================================================================
 
   // Obtener información de una pieza específica
   const obtenerInfoPieza = (piezaOriginal: string) => {
-    if (!informacionPiezas?.piezas) return null;
-    return informacionPiezas.piezas[piezaOriginal];
+    return piezasData[piezaOriginal] || null;
   };
 
-  // Obtener el label descriptivo de la pieza
-  const obtenerLabelPieza = (piezaOriginal: string): string => {
-    const labels: Record<string, string> = {
-      '16': '1er Molar Superior Derecho',
-      '11': 'Incisivo Central Superior Derecho',
-      '26': '1er Molar Superior Izquierdo',
-      '36': '1er Molar Inferior Izquierdo',
-      '31': 'Incisivo Central Inferior Izquierdo',
-      '46': '1er Molar Inferior Derecho',
-      // Dentición temporal
-      '55': '2do Molar Temporal Superior Derecho',
-      '51': 'Incisivo Central Temporal Superior Derecho',
-      '65': '2do Molar Temporal Superior Izquierdo',
-      '75': '2do Molar Temporal Inferior Izquierdo',
-      '71': 'Incisivo Central Temporal Inferior Izquierdo',
-      '85': '2do Molar Temporal Inferior Derecho',
-    };
-    return labels[piezaOriginal] || `Pieza ${piezaOriginal}`;
+  // Obtener estadísticas de forma segura
+  const estadisticas = informacionPiezas?.estadisticas || {
+    total_piezas: 6,
+    piezas_originales: 0,
+    piezas_alternativas: 0,
+    piezas_no_disponibles: 0,
+    porcentaje_disponible: 0,
   };
 
-  // Renderizar badge de estado de la pieza
-  const renderBadgePieza = (piezaOriginal: string) => {
-    const info = obtenerInfoPieza(piezaOriginal);
-    
-    if (!info) return null;
-    
-    // Pieza no disponible
-    if (!info.disponible) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-          <AlertCircle className="h-3 w-3" />
-          No disponible
-        </span>
-      );
-    }
-    
-    // Pieza alternativa
-    if (info.es_alternativa && info.codigo_usado) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-          <Info className="h-3 w-3" />
-          Alternativa: {info.codigo_usado}
-        </span>
-      );
-    }
-    
-    // Pieza original disponible
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-        <CheckCircle className="h-3 w-3" />
-        Original
-      </span>
-    );
-  };
-
+  // Obtener dentición de forma segura
+  const denticion = informacionPiezas?.denticion || 'permanente';
   // ============================================================================
-  // CONFIGURACIÓN DE PIEZAS
+  // CONFIGURACIÓN DE PIEZAS - CORREGIDA
   // ============================================================================
 
   const piezasIndice = ['16', '11', '26', '36', '31', '46'];
 
-  // Generar configuración de piezas con alternativas
   const teeth = piezasIndice.map((piezaOriginal) => {
     const info = obtenerInfoPieza(piezaOriginal);
-    const piezaUsada = info?.codigo_usado || piezaOriginal;
-    
+
     return {
       piezaOriginal,
-      piezaUsada,
-      placaKey: `pieza_${piezaUsada}_placa`,
-      calcKey: `pieza_${piezaUsada}_calculo`,
-      gingivitisKey: `pieza_${piezaUsada}_gingivitis`,
+      piezaUsada: info?.codigo_usado || piezaOriginal,
+      esAlternativa: info?.es_alternativa || false,
+      disponible: info?.disponible ?? true,
+
+      placaKey: `pieza_${piezaOriginal}_placa`,
+      calcKey: `pieza_${piezaOriginal}_calculo`,
+      gingivitisKey: `pieza_${piezaOriginal}_gingivitis`,
       info,
     };
   });
@@ -134,51 +116,48 @@ export default function IndicatorsFormFields({
   }
 
   // ============================================================================
-  // RENDER
+  // RENDER - CORREGIDO
   // ============================================================================
 
   return (
     <div className="space-y-8">
-      
       {/* ====================================================================
-          ALERTA DE INFORMACIÓN DE DENTICIÓN
+          ALERTA DE INFORMACIÓN DE DENTICIÓN - CORREGIDO
       ==================================================================== */}
       {informacionPiezas && (
-        <div className={`p-4 rounded-lg border ${
-          informacionPiezas.denticion === 'temporal'
+        <div className={`p-4 rounded-lg border ${denticion === 'temporal'
             ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
             : 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
-        }`}>
+          }`}>
           <div className="flex items-start gap-3">
             <Info className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
             <div className="flex-1">
               <h4 className="font-semibold text-gray-900 dark:text-gray-100">
-                Dentición: {informacionPiezas.denticion === 'temporal' ? 'Temporal (Decidua)' : 'Permanente'}
+                Dentición: {denticion === 'temporal' ? 'Temporal (Decidua)' : 'Permanente'}
               </h4>
               <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
-                {informacionPiezas.estadisticas.piezas_originales} piezas principales disponibles
-                {informacionPiezas.estadisticas.piezas_alternativas > 0 && (
-                  <>, {informacionPiezas.estadisticas.piezas_alternativas} alternativa(s) en uso</>
+                {estadisticas.piezas_originales} piezas principales disponibles
+                {estadisticas.piezas_alternativas > 0 && (
+                  <>, {estadisticas.piezas_alternativas} alternativa(s) en uso</>
                 )}
-                {informacionPiezas.estadisticas.piezas_no_disponibles > 0 && (
-                  <>, {informacionPiezas.estadisticas.piezas_no_disponibles} no disponible(s)</>
+                {estadisticas.piezas_no_disponibles > 0 && (
+                  <>, {estadisticas.piezas_no_disponibles} no disponible(s)</>
                 )}
               </p>
               <div className="mt-2 flex items-center gap-2">
                 <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div
-                    className={`h-2 rounded-full ${
-                      informacionPiezas.estadisticas.porcentaje_disponible >= 80
+                    className={`h-2 rounded-full ${estadisticas.porcentaje_disponible >= 80
                         ? 'bg-green-500'
-                        : informacionPiezas.estadisticas.porcentaje_disponible >= 50
-                        ? 'bg-yellow-500'
-                        : 'bg-red-500'
-                    }`}
-                    style={{ width: `${informacionPiezas.estadisticas.porcentaje_disponible}%` }}
+                        : estadisticas.porcentaje_disponible >= 50
+                          ? 'bg-yellow-500'
+                          : 'bg-red-500'
+                      }`}
+                    style={{ width: `${estadisticas.porcentaje_disponible}%` }}
                   />
                 </div>
                 <span className="text-xs text-gray-600 dark:text-gray-400 font-medium min-w-[3rem] text-right">
-                  {informacionPiezas.estadisticas.porcentaje_disponible.toFixed(1)}%
+                  {estadisticas.porcentaje_disponible.toFixed(1)}%
                 </span>
               </div>
             </div>
@@ -187,7 +166,7 @@ export default function IndicatorsFormFields({
       )}
 
       {/* ====================================================================
-          SECCIÓN: HIGIENE ORAL SIMPLIFICADA (OHI-S)
+          SECCIÓN: HIGIENE ORAL SIMPLIFICADA (OHI-S) - CORREGIDO
       ==================================================================== */}
       <div className="space-y-4">
         <div className="border-l-4 border-blue-500 pl-4">
@@ -199,7 +178,7 @@ export default function IndicatorsFormFields({
           </p>
         </div>
 
-        {/* Tabla de piezas dentales */}
+        {/* Tabla de piezas dentales - CORREGIDO */}
         <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -219,110 +198,108 @@ export default function IndicatorsFormFields({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {teeth.map(({ piezaOriginal, piezaUsada, placaKey, calcKey, gingivitisKey, info }) => {
+              {teeth.map(({ piezaOriginal, piezaUsada, esAlternativa, disponible, placaKey, calcKey, gingivitisKey, info }) => {
                 const isDisabled = !info?.disponible;
-                
+                const mostrarAdvertencia = !disponible;
                 return (
                   <tr
                     key={piezaOriginal}
-                    className={`${
-                      isDisabled 
-                        ? 'bg-gray-50 dark:bg-gray-900/50 opacity-60' 
-                        : 'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800'
-                    } transition-colors`}
+                    className={`border-b border-gray-200 dark:border-gray-700 ${!disponible ? 'opacity-50 bg-gray-50 dark:bg-gray-800/50' : ''
+                      }`}
                   >
-                    {/* Número de pieza dental */}
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
-                            isDisabled
-                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-500'
-                              : info?.es_alternativa
-                              ? 'bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300'
-                              : 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                          }`}>
-                            {piezaOriginal}
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              {obtenerLabelPieza(piezaOriginal)}
-                            </span>
-                            {info?.es_alternativa && piezaUsada !== piezaOriginal && (
-                              <span className="text-xs text-amber-600 dark:text-amber-400">
-                                → Usando pieza {piezaUsada}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        {renderBadgePieza(piezaOriginal)}
+                    {/* Columna: Pieza Dental */}
+                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
+                      <div className="flex items-center gap-2">
+                        <span>{obtenerLabelPieza(piezaOriginal)}</span>
+                        {esAlternativa && disponible && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                            Usando {piezaUsada}
+                          </span>
+                        )}
+                        {mostrarAdvertencia && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200">
+                            <AlertCircle className="w-3 h-3 mr-1" />
+                            No disponible
+                          </span>
+                        )}
                       </div>
+                      {esAlternativa && disponible && (
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                          Pieza {piezaOriginal} no disponible, usando {piezaUsada} como alternativa
+                        </p>
+                      )}
                     </td>
 
                     {/* Input Placa */}
                     <td className="px-4 py-3">
-                      <input
-                        type="number"
-                        name={placaKey}
-                        min={0}
-                        max={3}
-                        step={1}
-                        value={
-                          (formData[placaKey as keyof IndicatorsFormData] as number | null) ?? ""
-                        }
-                        onChange={onInputChange}
-                        disabled={isDisabled}
-                        placeholder={isDisabled ? "N/A" : "0-3"}
-                        className={`w-20 px-3 py-2 border rounded-lg transition-colors ${
-                          isDisabled
-                            ? 'border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
-                            : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                        }`}
-                      />
-                    </td>
+        <input
+          type="number"
+          name={placaKey}
+          min={0}
+          max={3}
+          step={1}
+          value={formData[placaKey] as number ?? ""}
+          onChange={onInputChange}
+          disabled={!disponible}
+          placeholder={disponible ? "0-3" : "N/D"}
+          className={`w-full px-3 py-2 border rounded-lg text-center
+            ${!disponible 
+              ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' 
+              : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800'
+            }
+            text-gray-900 dark:text-gray-100 
+            placeholder-gray-400 
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+            transition-colors`}
+        />
+      </td>
 
                     {/* Input Cálculo */}
                     <td className="px-4 py-3">
-                      <input
-                        type="number"
-                        name={calcKey}
-                        min={0}
-                        max={3}
-                        step={1}
-                        value={
-                          (formData[calcKey as keyof IndicatorsFormData] as number | null) ?? ""
-                        }
-                        onChange={onInputChange}
-                        disabled={isDisabled}
-                        placeholder={isDisabled ? "N/A" : "0-3"}
-                        className={`w-20 px-3 py-2 border rounded-lg transition-colors ${
-                          isDisabled
-                            ? 'border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
-                            : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                        }`}
-                      />
-                    </td>
+        <input
+          type="number"
+          name={calcKey}
+          min={0}
+          max={3}
+          step={1}
+          value={formData[calcKey] as number ?? ""}
+          onChange={onInputChange}
+          disabled={!disponible}
+          placeholder={disponible ? "0-3" : "N/D"}
+          className={`w-full px-3 py-2 border rounded-lg text-center
+            ${!disponible 
+              ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' 
+              : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800'
+            }
+            text-gray-900 dark:text-gray-100 
+            placeholder-gray-400 
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+            transition-colors`}
+        />
+      </td>
 
                     {/* Input Gingivitis */}
                     <td className="px-4 py-3">
-                      <input
-                        type="number"
-                        name={gingivitisKey}
-                        min={0}
-                        max={1}
-                        step={1}
-                        value={
-                          (formData[gingivitisKey as keyof IndicatorsFormData] as number | null) ?? ""
-                        }
-                        onChange={onInputChange}
-                        disabled={isDisabled}
-                        placeholder={isDisabled ? "N/A" : "0-1"}
-                        className={`w-20 px-3 py-2 border rounded-lg transition-colors ${
-                          isDisabled
-                            ? 'border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
-                            : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                        }`}
-                      />
+        <input
+          type="number"
+          name={gingivitisKey}
+          min={0}
+          max={3}
+          step={1}
+          value={formData[gingivitisKey] as number ?? ""}
+          onChange={onInputChange}
+          disabled={!disponible}
+          placeholder={disponible ? "0-3" : "N/D"}
+          className={`w-full px-3 py-2 border rounded-lg text-center
+            ${!disponible 
+              ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' 
+              : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800'
+            }
+            text-gray-900 dark:text-gray-100 
+            placeholder-gray-400 
+            focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent 
+            transition-colors`}
+        />
                     </td>
                   </tr>
                 );

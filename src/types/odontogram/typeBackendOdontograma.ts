@@ -229,11 +229,16 @@ export interface PiezaInfo {
   codigo_original?: string;
   diente_id?: string | null;
   ausente?: boolean;
+  motivo_no_disponible?: string; 
+  motivo_alternativa_no_disponible?: string; 
+  codigo_alternativa_intentada?: string;
 }
 export interface InformacionPiezasResponse {
   denticion: 'permanente' | 'temporal';
-  piezas: Record<string, PiezaInfo>;
+  piezas_mapeo: Record<string, PiezaInfo>;
   estadisticas: EstadisticasPiezas;
+  puede_crear_indicadores?: boolean;
+  mensaje?: string;
 }
 
 export interface VerificarDisponibilidadResponse {
@@ -297,14 +302,6 @@ export interface InformacionCalculo {
   calculos: CalculosIndicadores;
 }
 
-export interface PiezaInfo {
-  codigo_usado: string | null;
-  es_alternativa: boolean;
-  disponible: boolean;
-  codigo_original?: string;
-  diente_id?: string | null;
-  ausente?: boolean;
-}
 
 export interface EstadisticasPiezas {
   total_piezas: number;
@@ -314,11 +311,7 @@ export interface EstadisticasPiezas {
   porcentaje_disponible: number;
 }
 
-export interface InformacionPiezasResponse {
-  denticion: 'permanente' | 'temporal';
-  piezas: Record<string, PiezaInfo>;
-  estadisticas: EstadisticasPiezas;
-}
+
 
 export interface VerificarDisponibilidadResponse {
   puede_crear_indicadores: boolean;
@@ -335,7 +328,20 @@ export type BackendIndicadoresSaludBucal = {
   id: string;
   paciente: string;         
   fecha: string;   
-  
+  piezas_usadas_en_registro?: {
+    piezas_mapeo: Record<string, {
+      codigo_usado: string;
+      es_alternativa: boolean;
+      codigo_original: string;
+      datos: {
+        placa?: number | null;
+        calculo?: number | null;
+        gingivitis?: number | null;
+      };
+    }>;
+    denticion: 'permanente' | 'temporal';
+    estadisticas: any;
+  };
   // ===== CAMPOS DE AUDITORÍA =====
   creado_por?: string | null;
   actualizado_por?: string | null;

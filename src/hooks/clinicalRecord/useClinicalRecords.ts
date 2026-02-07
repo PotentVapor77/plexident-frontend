@@ -96,7 +96,12 @@ export function useClinicalRecordsByPaciente(pacienteId: string | null) {
 export function useClinicalRecordInitialData(pacienteId: string | null) {
   return useQuery({
     queryKey: clinicalRecordKeys.initialData(pacienteId!),
-    queryFn: () => clinicalRecordService.getInitialData(pacienteId!),
+    // queryFn: () => clinicalRecordService.getInitialData(pacienteId!),
+    queryFn: async () => {
+      const data = await clinicalRecordService.getInitialData(pacienteId!);
+      console.log("[HC][initialData] respuesta completa:", data);
+      return data;
+    },
     enabled: !!pacienteId,
     staleTime: 0, // Fresco como lechuga 
   });
@@ -199,3 +204,76 @@ export function useDeleteClinicalRecord(pacienteId: string | null) {
     },
   });
 }
+
+export function usePlanTratamientoByHistorial(historialId: string | null) {
+  return useQuery({
+    queryKey: [...clinicalRecordKeys.detail(historialId!), 'plan-tratamiento'],
+    queryFn: () => clinicalRecordService.getPlanTratamientoByHistorial(historialId!),
+    enabled: !!historialId,
+    staleTime: 60000,
+  });
+}
+
+/**
+ * Hook para obtener sesiones del plan
+ */
+export function useSesionesByHistorial(historialId: string | null) {
+  return useQuery({
+    queryKey: [...clinicalRecordKeys.detail(historialId!), 'sesiones-plan-tratamiento'],
+    queryFn: () => clinicalRecordService.getSesionesByHistorial(historialId!),
+    enabled: !!historialId,
+    staleTime: 60000,
+  });
+}
+
+/**
+ * Hook para obtener planes activos del paciente
+ */
+export function usePlanesTratamientoPaciente(pacienteId: string | null) {
+  return useQuery({
+    queryKey: [...clinicalRecordKeys.all, 'planes-paciente', pacienteId!],
+    queryFn: () => clinicalRecordService.getPlanesTratamientoPaciente(pacienteId!),
+    enabled: !!pacienteId,
+    staleTime: 30000,
+  });
+}
+
+/**
+ * Hook para obtener plan de tratamiento y sus sesiones
+ */
+export function usePlanTratamientoCompleto(historialId: string | null) {
+  const queryPlan = usePlanTratamientoByHistorial(historialId);
+  const querySesiones = useSesionesByHistorial(historialId);
+  
+  return {
+    plan: queryPlan.data,
+    sesiones: querySesiones.data,
+    isLoading: queryPlan.isLoading || querySesiones.isLoading,
+    isError: queryPlan.isError || querySesiones.isError,
+    refetch: () => {
+      queryPlan.refetch();
+      querySesiones.refetch();
+    }
+  };
+}
+
+/**
+ * Hook para obtener historial con plan de tratamiento completo
+ */
+export function useClinicalRecordCompleto(id: string | null) {
+  const queryHistorial = useClinicalRecord(id);
+  const queryPlanCompleto = usePlanTratamientoCompleto(id);
+  
+  return {
+    historial: queryHistorial.data,
+    plan: queryPlanCompleto.plan,
+    sesiones: queryPlanCompleto.sesiones,
+    isLoading: queryHistorial.isLoading || queryPlanCompleto.isLoading,
+    isError: queryHistorial.isError || queryPlanCompleto.isError,
+    refetch: () => {
+      queryHistorial.refetch();
+      queryPlanCompleto.refetch();
+    }
+  };
+}
+

@@ -44,7 +44,7 @@ export function mapBackendSesionToFrontend(
     id: backend.id,
     plan_tratamiento: backend.plan_tratamiento,
     fecha_programada: backend.fecha_programada || "",
-    autocompletar_diagnosticos: false, // no relevante en edición
+    autocompletar_diagnosticos: false, 
     procedimientos: backend.procedimientos || [],
     prescripciones: backend.prescripciones || [],
     notas: backend.notas || "",

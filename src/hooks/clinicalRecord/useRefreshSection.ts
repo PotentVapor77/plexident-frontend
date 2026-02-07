@@ -59,6 +59,7 @@ export const useRefreshSection = ({
         constantes_vitales: "Constantes Vitales",
         examen_estomatognatico: "Examen Estomatognático",
         odontograma_2d: "Odontograma 2D",
+        plan_tratamiento: "Plan de Tratamiento",
     };
 
     // Función auxiliar para obtener la sección de datos correcta
@@ -71,9 +72,19 @@ export const useRefreshSection = ({
             setError("No hay paciente seleccionado");
             return false;
         }
+        if (sectionKey === 'plan_tratamiento') {
+            notify({
+                type: "info",
+                title: "Información",
+                message: "Use el botón de refrescar dentro de la sección Plan de Tratamiento",
+            });
+            return false;
+        }
+        
         const normalizedSection = sectionKey.replace(/_/g, '-');
         const endpoint = `/clinical-records/${normalizedSection}/${pacienteId}/latest/`;
-        if (!endpoint) {
+        
+        if (!sectionEndpoints[sectionKey]) {
             setError(`Sección ${sectionKey} no soportada para refrescar`);
             return false;
         }

@@ -66,6 +66,7 @@ const ODONTOGRAM_ENDPOINTS = {
 export interface InformacionPiezasResponse {
   denticion: 'permanente' | 'temporal';
   piezas: Record<string, PiezaInfo>;
+  piezas_mapeo: Record<string, PiezaInfo>;
   estadisticas: EstadisticasPiezas;
 }
 export const PiezasIndiceService = {

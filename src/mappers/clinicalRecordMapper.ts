@@ -10,7 +10,8 @@ import type {
   ConstantesVitalesData,
   ExamenEstomatognaticoData,
   IndicadoresSaludBucalData,
-  IndicesCariesData
+  IndicesCariesData,
+  PlanTratamientoData,
 } from "../types/clinicalRecords/typeBackendClinicalRecord";
 
 /**
@@ -49,6 +50,7 @@ export const mapInitialDataToFormData = (
   odontologoId?: string
 ): Partial<ClinicalRecordFormData> & { 
   _dates: {[key: string]: string | null} 
+  _hasPlanTratamiento: boolean;
 } => {
   const antecedentesPersonales = initialData.antecedentes_personales || null;
   const antecedentesFamiliares = initialData.antecedentes_familiares || null;
@@ -56,7 +58,13 @@ export const mapInitialDataToFormData = (
   const examenEstomatognatico = initialData.examen_estomatognatico || null;
   const indicadoresSaludBucal = initialData.indicadores_salud_bucal || null;
   const indicesCaries = initialData.indices_caries || null;
+  const diagnosticosCIE = initialData.diagnosticos_cie || null;
+  console.log("[HC][mapper] initialData recibido:", initialData);
 
+  const planTratamiento = initialData.plan_tratamiento || null;
+  
+  console.log("[HC][mapper] planTratamiento detectado:", planTratamiento);
+  console.log("[HC][mapper] sesiones del plan:", planTratamiento?.sesiones);
 
   // Usar los datos del backend o valores por defecto
   const camposBackend = initialData.campos_formulario || {};
@@ -98,6 +106,13 @@ export const mapInitialDataToFormData = (
     examen_estomatognatico_data: examenEstomatognatico?.data || null,
     indices_caries_id: indicesCaries?.id || null,
     indices_caries_data: indicesCaries?.data || null,
+    diagnosticos_cie_id: diagnosticosCIE?.id || null,
+    diagnosticos_cie_data: diagnosticosCIE?.data || null,
+
+
+    plan_tratamiento_id: planTratamiento?.id || null,
+    plan_tratamiento_sesiones: planTratamiento?.sesiones || [],
+    plan_tratamiento_odontograma_id: planTratamiento?.version_odontograma || null,
 
     // Metadata de fechas (para mostrar en headers)
     _dates: {
@@ -109,8 +124,10 @@ export const mapInitialDataToFormData = (
       examen_estomatognatico: examenEstomatognatico?.fecha || null,
       indicadores_salud_bucal: indicadoresSaludBucal?.fecha || null,
       indices_caries: indicesCaries?.fecha || null,
-
-    }
+      diagnosticos_cie: diagnosticosCIE?.fecha || null,
+      plan_tratamiento: planTratamiento?.fecha_creacion || null,
+    },
+    _hasPlanTratamiento: !!planTratamiento
   };
 };
 
@@ -140,6 +157,7 @@ export const mapFormDataToPayload = (
         observaciones: formData.observaciones || undefined,
         unicodigo: formData.unicodigo || undefined,
         establecimiento_salud: formData.establecimiento_salud || undefined,
+        plan_tratamiento: formData.plan_tratamiento_id || undefined,
     };
 };
 
@@ -162,7 +180,11 @@ export const mapResponseToFormData = (
     antecedentes_familiares_data?: AntecedentesFamiliaresData;
     examen_estomatognatico_data?: ExamenEstomatognaticoData;
     indices_caries_data?: IndicesCariesData | null;
+    plan_tratamiento?: PlanTratamientoData | null;
+    plan_tratamiento_data?: PlanTratamientoData | null;
+    
   };
+const planTratamientoData = safeResponse.plan_tratamiento_data;
 
   return {
     paciente: response.paciente,
@@ -192,6 +214,14 @@ export const mapResponseToFormData = (
     observaciones: response.observaciones,
     indices_caries_id: response.indices_caries,
     indices_caries_data: safeResponse.indices_caries_data || null,
+    diagnosticos_cie_id: response.diagnosticos_cie || null,
+    diagnosticos_cie_data: safeResponse.diagnosticos_cie_data || null,
+     plan_tratamiento_id: planTratamientoData?.id || null,
+  plan_tratamiento_sesiones: planTratamientoData?.sesiones || [],
+  plan_tratamiento_odontograma_id: planTratamientoData?.version_odontograma || null,
+  plan_tratamiento_titulo: planTratamientoData?.titulo || "",
+  plan_tratamiento_descripcion: planTratamientoData?.descripcion || "",
+
   };
 };
 

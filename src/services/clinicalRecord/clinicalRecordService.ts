@@ -10,8 +10,12 @@ import type {
   ClinicalRecordPaginatedResponse,
   ClinicalRecordReopenPayload,
   ClinicalRecordUpdatePayload,
+  DiagnosticosCIEResponse,
+  PlanTratamientoData,
+  SesionTratamientoData,
 } from "../../types/clinicalRecords/typeBackendClinicalRecord";
 import axiosInstance from "../api/axiosInstance";
+import diagnosticosCieService from "./diagnosticosCieService";
 import { indicesCariesService } from "./indicesCariesService";
 
 const BASE_URL = "clinical-records";
@@ -210,6 +214,88 @@ export const clinicalRecordService = {
     );
     return response.data.data;
   },
+
+  getAvailableDiagnosticsCIE: async (pacienteId: string, tipocarga?: "nuevos" | "todos" | null) => {
+  const response = await axiosInstance.get<ApiListWrapper<DiagnosticosCIEResponse>>(
+    `${BASE_URL}/diagnosticos-cie/`,
+    {
+      params: { 
+        paciente_id: pacienteId,
+        tipo_carga: tipocarga || "nuevos"
+      }
+    }
+  );
+  return response.data.data;
+},
+  getDiagnosticsByRecord: async (historialId: string) => {
+  const response = await axiosInstance.get<ApiListWrapper<DiagnosticosCIEResponse>>(
+    `${BASE_URL}/${historialId}/obtener-diagnosticos-cie/`
+  );
+  return response.data.data;
+},
+getSesionesByHistorial: async (historialId: string): Promise<SesionTratamientoData[]> => {
+  const response = await axiosInstance.get<ApiListWrapper<SesionTratamientoData[]>>(
+    `${BASE_URL}/${historialId}/sesiones-plan-tratamiento/`
+  );
+  return response.data.data;
+},
+getPlanTratamientoByHistorial: async (historialId: string): Promise<PlanTratamientoData> => {
+  try {
+    const response = await axiosInstance.get<ApiListWrapper<PlanTratamientoData>>(
+      `${BASE_URL}/${historialId}/plan-tratamiento/`
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error(`Error obteniendo plan para historial ${historialId}:`, error);
+    throw error;
+  }
+},
+
+
+getPlanesTratamientoPaciente: async (pacienteId: string): Promise<PlanTratamientoData[]> => {
+  const response = await axiosInstance.get<ApiListWrapper<PlanTratamientoData[]>>(
+    `${BASE_URL}/planes-tratamiento/`,
+    { params: { pacienteid: pacienteId } }
+  );
+  return response.data.data;
+},
+
+getDatosCompletosPlan: async (historialId: string): Promise<any> => {
+  try {
+    const response = await axiosInstance.get<ApiListWrapper<any>>(
+      `${BASE_URL}/${historialId}/datos-completos-plan/`
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error(`Error obteniendo datos completos del plan para historial ${historialId}:`, error);
+    throw error;
+  }
+},
+getPlanesDisponibles: async (pacienteId: string): Promise<PlanTratamientoData[]> => {
+    return clinicalRecordService.getPlanesTratamientoPaciente(pacienteId);
+  },
+
+  getPlanTratamientoHistorico: async (historialId: string): Promise<PlanTratamientoData | null> => {
+  try {
+    const response = await axiosInstance.get<ApiListWrapper<PlanTratamientoData>>(
+      `${BASE_URL}/${historialId}/plan-tratamiento-historico/`
+    );
+    return response.data.data;
+  } catch (error: any) {
+    // Si no tiene plan asociado, retornar null
+    if (error.response?.status === 404) {
+      return null;
+    }
+    throw error;
+  }
+},
+
+  loadDiagnosticsToRecord: diagnosticosCieService.loadToRecord,
+  deleteAllDiagnosticsFromRecord: diagnosticosCieService.deleteAllFromRecord,
+  deleteDiagnosticIndividual: diagnosticosCieService.deleteIndividual,
+  updateDiagnosticType: diagnosticosCieService.updateType,
+  syncDiagnosticsInRecord: diagnosticosCieService.syncInRecord,
+
 
   getLatestByPaciente: indicesCariesService.getLatestByPaciente,
   getByHistorial: indicesCariesService.getByHistorial,

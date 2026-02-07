@@ -1,10 +1,11 @@
 // src/components/clinicalRecord/form/sections/IndicadoresSaludBucalSection.tsx
+// ACTUALIZADO: Soporte completo para visualización de piezas suplentes
+
 import React from "react";
-import { Activity, Shield, AlertCircle, RefreshCw } from "lucide-react";
+import { Activity, Shield, AlertCircle, RefreshCw, ArrowRight, Info } from "lucide-react";
 import type { ClinicalRecordFormData } from "../../../../core/types/clinicalRecord.types";
 import SectionHeader from "../ClinicalRecordSectionHeader";
 import { getIndicadoresResumen } from "../../../../core/utils/clinicalRecordUtils";
-
 
 interface IndicadoresSaludBucalSectionProps {
   formData: ClinicalRecordFormData;
@@ -38,6 +39,14 @@ const IndicadoresSaludBucalSection: React.FC<IndicadoresSaludBucalSectionProps> 
     }
     return "bg-blue-100 text-blue-700";
   };
+
+  // Contar piezas alternativas
+  const piezasAlternativas = indicadores?.valores_por_pieza?.filter(
+    p => p.es_alternativa
+  ).length || 0;
+
+  // Verificar si tiene metadata
+  const tieneMetadata = indicadores?.informacion_piezas?.tiene_metadata ?? true;
 
   return (
     <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
@@ -100,6 +109,59 @@ const IndicadoresSaludBucalSection: React.FC<IndicadoresSaludBucalSectionProps> 
           </div>
         ) : (
           <div className={`space-y-4 transition-opacity ${isRefreshing ? 'opacity-50' : 'opacity-100'}`}>
+            {/* Advertencia de metadata faltante */}
+            {/* {!tieneMetadata && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-sm font-medium text-amber-900 mb-1">
+                      Registro Antiguo
+                    </h4>
+                    <p className="text-sm text-amber-700">
+                      {indicadores.advertencia || 
+                       "Este registro no contiene información de piezas suplentes. Fue creado antes de implementar el sistema de piezas alternativas."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )} */}
+
+            {/* Información de piezas alternativas */}
+            {piezasAlternativas > 0 && tieneMetadata && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h4 className="text-sm font-medium text-blue-900 mb-2">
+                      Piezas Alternativas Utilizadas
+                    </h4>
+                    <p className="text-sm text-blue-700 mb-3">
+                      Se usaron {piezasAlternativas} pieza(s) alternativa(s) porque las piezas principales 
+                      no estaban disponibles en el momento de la evaluación.
+                    </p>
+                    
+                    {/* Listado de piezas alternativas */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {indicadores.valores_por_pieza
+                        .filter(p => p.es_alternativa)
+                        .map(pieza => (
+                          <div 
+                            key={pieza.pieza_original}
+                            className="flex items-center gap-2 px-3 py-2 bg-white border border-blue-200 rounded text-sm"
+                          >
+                            <span className="font-medium text-blue-900">{pieza.pieza_original}</span>
+                            <ArrowRight className="w-3 h-3 text-blue-600" />
+                            <span className="text-blue-700">{pieza.pieza_usada}</span>
+                          </div>
+                        ))
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Estado general */}
             <div className="flex items-center gap-3 p-4 bg-blue-50/50 border border-blue-100 rounded-lg">
               <div className={`p-2 rounded-lg ${getEstadoColor().split(' ')[0]}`}>
@@ -223,6 +285,15 @@ const IndicadoresSaludBucalSection: React.FC<IndicadoresSaludBucalSectionProps> 
                     />
                   </div>
                 </div>
+                
+                {/* Mostrar si hay piezas alternativas */}
+                {piezasAlternativas > 0 && (
+                  <div className="mt-2 pt-2 border-t border-slate-300">
+                    <p className="text-xs text-amber-600">
+                      {piezasAlternativas} alternativa(s)
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -283,6 +354,7 @@ const IndicadoresSaludBucalSection: React.FC<IndicadoresSaludBucalSectionProps> 
           <div className="h-2 w-2 rounded-full bg-blue-500"></div>
           <p className="text-xs text-slate-600">
             <span className="font-medium">Nota:</span> Los indicadores de salud bucal evalúan placa, cálculo y salud gingival para determinar el estado general de higiene oral.
+            {piezasAlternativas > 0 && " Las piezas alternativas fueron usadas para compensar piezas principales no disponibles."}
           </p>
         </div>
       </div>

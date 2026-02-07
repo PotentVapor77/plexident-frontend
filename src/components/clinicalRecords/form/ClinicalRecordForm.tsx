@@ -12,7 +12,9 @@ import { useClinicalRecordForm } from "../../../hooks/clinicalRecord/useClinical
 import ClinicalRecordFormFields from "./ClinicalRecordFormFields";
 import type {
   ClinicalRecordDetailResponse,
-  ClinicalRecordInitialData
+  ClinicalRecordInitialData,
+  SesionTratamientoData,
+  SincronizarDiagnosticosPayload,
 } from "../../../types/clinicalRecords/typeBackendClinicalRecord";
 import { useNotification } from "../../../context/notifications/NotificationContext";
 import type { IPaciente } from "../../../types/patient/IPatient";
@@ -20,6 +22,7 @@ import clinicalRecordService from "../../../services/clinicalRecord/clinicalReco
 import axiosInstance from "../../../services/api/axiosInstance";
 import api from "../../../services/api/axiosInstance";
 import { ENDPOINTS } from "../../../config/api";
+import { useSyncDiagnosticosCIEInRecord } from "../../../hooks/clinicalRecord/useDiagnosticosCIE";
 
 /**
  * ============================================================================
@@ -50,7 +53,9 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
 }) => {
   const { notify } = useNotification();
   const { user } = useAuth();
-  const [isLoadingEdit, setIsLoadingEdit] = useState(false);
+  const [isSavingDiagnosticos, setIsSavingDiagnosticos] = useState(false);
+  const [odontogramaData, setOdontogramaData] = useState<any>(null);
+  const [hasRefreshedOdontograma, setHasRefreshedOdontograma] = useState(false);
 
   // ========================================================================
   // FORM HOOK
@@ -69,12 +74,13 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
     validationErrors,
     initialDates,
     setInitialDates,
-
   } = useClinicalRecordForm();
 
+  // Hook para sincronizar diagnósticos (modo editar)
+  const syncDiagnosticosMutation = useSyncDiagnosticosCIEInRecord(recordId!);
 
   const refreshSection = async (section: string) => {
-    if (!selectedPaciente?.id || mode !== "edit") return;
+    if (!selectedPaciente?.id) return;
 
     try {
       const endpointMap: Record<string, string> = {
@@ -85,8 +91,78 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
         odontograma_2d: ENDPOINTS.clinicalRecords.odontograma2D.latestByPaciente(selectedPaciente.id),
         indicadores_salud_bucal: ENDPOINTS.clinicalRecords.indicadoresSaludBucal.latestByPaciente(selectedPaciente.id),
         indices_caries: ENDPOINTS.clinicalRecords.indicesCaries.latestByPaciente(selectedPaciente.id),
+        diagnosticos_cie: ENDPOINTS.clinicalRecords.diagnosticosCIE.getAvailable(selectedPaciente.id, 'nuevos'),
+        plan_tratamiento: '',
       };
+      if (section === 'plan_tratamiento') {
+        if (!recordId) {
+          notify({
+            type: "warning",
+            title: "Historial requerido",
+            message: "Debe guardar el historial primero para actualizar el plan de tratamiento.",
+          });
+          return;
+        }
 
+        try {
+          console.log('Refrescando plan de tratamiento...');
+
+          const planActualizado = await clinicalRecordService.getPlanTratamientoByHistorial(recordId);
+
+          if (planActualizado) {
+            console.log('Plan encontrado:', planActualizado);
+
+            // Actualizar todos los campos del plan
+            updateField('plan_tratamiento_id', planActualizado.id);
+            updateField('plan_tratamiento_titulo', planActualizado.titulo || '');
+            updateField('plan_tratamiento_descripcion', planActualizado.descripcion || '');
+            updateField('plan_tratamiento_odontograma_id', planActualizado.version_odontograma || null);
+
+            // Obtener sesiones actualizadas
+            try {
+              const sesionesActualizadas = await clinicalRecordService.getSesionesByHistorial(recordId);
+              updateField('plan_tratamiento_sesiones', sesionesActualizadas || []);
+              console.log('Sesiones actualizadas:', sesionesActualizadas?.length || 0);
+            } catch (sesionesError) {
+              console.warn('Error cargando sesiones:', sesionesError);
+              updateField('plan_tratamiento_sesiones', planActualizado.sesiones || []);
+            }
+
+            setInitialDates(prev => ({
+              ...prev,
+              plan_tratamiento: planActualizado.fecha_creacion || new Date().toISOString(),
+            }));
+
+            notify({
+              type: "success",
+              title: "Plan actualizado",
+              message: `Plan "${planActualizado.titulo}" actualizado correctamente`,
+            });
+          } else {
+            console.log('No hay plan asociado al historial');
+
+            updateField('plan_tratamiento_id', null);
+            updateField('plan_tratamiento_titulo', '');
+            updateField('plan_tratamiento_descripcion', '');
+            updateField('plan_tratamiento_sesiones', []);
+            updateField('plan_tratamiento_odontograma_id', null);
+
+            notify({
+              type: "info",
+              title: "Sin plan",
+              message: "No hay plan de tratamiento asociado a este historial",
+            });
+          }
+        } catch (error) {
+          console.error('Error refrescando plan:', error);
+          notify({
+            type: "error",
+            title: "Error",
+            message: "No se pudo actualizar el plan de tratamiento",
+          });
+        }
+        return; // Salir temprano para plan_tratamiento
+      }
       const endpoint = endpointMap[section];
       if (!endpoint) {
         notify({
@@ -114,6 +190,9 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
 
           case 'antecedentes_familiares':
             updateSectionData('antecedentes_familiares_data', data);
+            if (data.id) {
+              updateField('antecedentes_familiares_id', data.id);
+            }
             setInitialDates(prev => ({
               ...prev,
               antecedentes_familiares: data.fecha_creacion || new Date().toISOString(),
@@ -122,6 +201,9 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
 
           case 'constantes_vitales':
             updateSectionData('constantes_vitales_data', data);
+            if (data.id) {
+              updateField('constantes_vitales_id', data.id);
+            }
             setInitialDates(prev => ({
               ...prev,
               constantes_vitales: data.fecha_creacion || new Date().toISOString(),
@@ -130,26 +212,61 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
 
           case 'examen_estomatognatico':
             updateSectionData('examen_estomatognatico_data', data);
+            if (data.id) {
+              updateField('examen_estomatognatico_id', data.id);
+            }
             setInitialDates(prev => ({
               ...prev,
               examen_estomatognatico: data.fecha_creacion || new Date().toISOString(),
             }));
             break;
+
           case 'indicadores_salud_bucal':
             console.log('Actualizando indicadores de salud bucal:', data);
             updateSectionData('indicadores_salud_bucal_data', data);
+            if (data.id) {
+              updateField('indicadores_salud_bucal_id', data.id);
+              console.log(' ID de indicadores actualizado:', data.id);
+            }
             setInitialDates(prev => ({
               ...prev,
               indicadores_salud_bucal: data.fecha || data.fecha_creacion || new Date().toISOString(),
             }));
             break;
-             case 'indices_caries': 
-          updateSectionData('indices_caries_data', data);
-          setInitialDates(prev => ({
-            ...prev,
-            indices_caries: data.fecha_evaluacion || data.fecha_creacion || new Date().toISOString(),
-          }));
-          break;
+
+          case 'indices_caries':
+            updateSectionData('indices_caries_data', data);
+            if (data.id) {
+              updateField('indices_caries_id', data.id);
+              console.log(' ID de índices actualizado:', data.id);
+            }
+            setInitialDates(prev => ({
+              ...prev,
+              indices_caries: data.fecha_evaluacion || data.fecha_creacion || new Date().toISOString(),
+            }));
+            break;
+
+          case 'odontograma_2d':
+            setOdontogramaData(data);
+            setHasRefreshedOdontograma(true);
+            setInitialDates(prev => ({
+              ...prev,
+              odontograma_2d: data.fecha_captura || data.fecha_creacion || new Date().toISOString(),
+            }));
+            console.log('Odontograma refrescado localmente:', data);
+            break;
+
+          case "diagnosticos_cie":
+            const diagnosticosData = data;
+            if (diagnosticosData.diagnosticos) {
+              updateSectionData("diagnosticos_cie_data", diagnosticosData);
+              setInitialDates(prev => ({
+                ...prev,
+                diagnosticos_cie: new Date().toISOString(),
+              }));
+            }
+            break;
+
         }
 
         notify({
@@ -176,6 +293,9 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
       examen_estomatognatico: "Examen Estomatognático",
       indicadores_salud_bucal: "Indicadores de Salud Bucal",
       indices_caries: "Índices de Caries",
+      diagnosticos_cie: "Diagnósticos CIE-10",
+      odontograma_2d: "Odontograma 2D",
+      plan_tratamiento: "Plan de Tratamiento",
     };
     return names[section] || section;
   };
@@ -188,15 +308,13 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
     recordId ?? "",
     pacienteId ?? null
   );
-  const isSubmitting = createMutation.isPending || updateMutation.isPending;
+  const isSubmitting = createMutation.isPending || updateMutation.isPending || syncDiagnosticosMutation.isPending || isSavingDiagnosticos;
 
   // ========================================================================
   // CARGAR DATOS INICIALES EDIT
   // ========================================================================
   useEffect(() => {
     if (mode === "edit" && recordId) {
-      setIsLoadingEdit(true);
-
       const fetchRecordData = async () => {
         try {
           console.log('=== CARGANDO DATOS PARA EDICIÓN ===');
@@ -205,11 +323,47 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
           const response = await clinicalRecordService.getById(recordId);
           const detailData: ClinicalRecordDetailResponse = response;
 
-          console.log('Detail data recibida:', detailData);
-
+          console.log('=== DETAIL DATA COMPLETA ===');
+          console.log('Datos del plan de tratamiento en la respuesta:', {
+            plan_tratamiento: detailData.plan_tratamiento,
+            plan_tratamiento_data: detailData.plan_tratamiento_data,
+            plan_tratamiento_sesiones: detailData.plan_tratamiento_sesiones,
+            plan_tratamiento_titulo: detailData.plan_tratamiento_titulo,
+            plan_tratamiento_descripcion: detailData.plan_tratamiento_descripcion,
+            plan_tratamiento_id: detailData.plan_tratamiento_id,
+          });
+          let sesionesPlan: SesionTratamientoData[] = [];
           // Configurar paciente desde paciente_info
           if (detailData.paciente_info) {
             console.log('Configurando paciente:', detailData.paciente_info);
+            try {
+              console.log('Obteniendo sesiones del plan de tratamiento...');
+              const sesionesResponse = await clinicalRecordService.getSesionesByHistorial(recordId);
+              sesionesPlan = Array.isArray(sesionesResponse) ? sesionesResponse : [];
+              console.log('Sesiones obtenidas del endpoint:', sesionesPlan.length);
+            } catch (sesionesError) {
+              console.warn('No se pudieron obtener las sesiones:', sesionesError);
+
+              // Si falla, intentar obtener del plan de tratamiento
+              if (detailData.plan_tratamiento_data?.sesiones) {
+                sesionesPlan = detailData.plan_tratamiento_data.sesiones;
+              } else if (detailData.plan_tratamiento_sesiones) {
+                sesionesPlan = detailData.plan_tratamiento_sesiones;
+              }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             const pacienteCompatible: IPaciente = {
               id: detailData.paciente,
@@ -237,7 +391,6 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
           // Configurar odontólogo
           if (detailData.odontologo_responsable) {
             console.log('📌 Configurando odontólogo:', detailData.odontologo_info);
-
             updateField("odontologo_responsable", detailData.odontologo_responsable);
 
             if (detailData.odontologo_info) {
@@ -280,11 +433,69 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
           updateField("numero_historia_clinica_unica", detailData.numero_historia_clinica_unica || "");
           updateField("numero_archivo", detailData.numero_archivo || "");
 
+          // ============================================
+          // CARGAR DATOS DEL PLAN DE TRATAMIENTO
+          // ============================================
+          const cargarDatosPlanTratamiento = () => {
+            // Intentar múltiples fuentes posibles
+            const planDataSource = detailData.plan_tratamiento_data || detailData.plan_tratamiento;
+
+            if (planDataSource) {
+              console.log('🎯 Cargando datos del plan de tratamiento desde:', {
+                source: detailData.plan_tratamiento_data ? 'plan_tratamiento_data' : 'plan_tratamiento',
+                data: planDataSource
+              });
+
+              // Usar el ID del plan
+              updateField("plan_tratamiento_id", planDataSource.id);
+
+              // Cargar título y descripción
+              updateField("plan_tratamiento_titulo",
+                planDataSource.titulo ||
+                detailData.plan_tratamiento_titulo ||
+                "Plan de Tratamiento"
+              );
+              updateField("plan_tratamiento_descripcion",
+                planDataSource.descripcion ||
+                detailData.plan_tratamiento_descripcion ||
+                ""
+              );
+
+              // Cargar sesiones obtenidas
+              console.log('Cargando sesiones en el formulario:', sesionesPlan.length);
+              updateField("plan_tratamiento_sesiones", sesionesPlan);
+
+              // Cargar odontograma (verificar múltiples nombres de campo)
+              const odontogramaId =
+                planDataSource.version_odontograma ||
+                detailData.version_odontograma ||
+                null;
+
+              if (odontogramaId) {
+                console.log('Cargando version_odontograma:', odontogramaId);
+                updateField("plan_tratamiento_odontograma_id", odontogramaId);
+              } else {
+                console.log('No hay odontograma asociado');
+                updateField("plan_tratamiento_odontograma_id", null);
+              }
+            } else {
+              console.log('No hay datos de plan de tratamiento en la respuesta');
+              // Asegurar que los campos estén limpios
+              updateField("plan_tratamiento_id", null);
+              updateField("plan_tratamiento_titulo", "");
+              updateField("plan_tratamiento_descripcion", "");
+              updateField("plan_tratamiento_sesiones", []);
+              updateField("plan_tratamiento_odontograma_id", null);
+            }
+          };
+
+          // Llamar a la función para cargar el plan
+          cargarDatosPlanTratamiento();
+
           // Cargar datos de constantes vitales
           if (detailData.constantes_vitales_data) {
             console.log('Cargando constantes vitales:', detailData.constantes_vitales_data);
             updateSectionData("constantes_vitales_data", detailData.constantes_vitales_data);
-
             setInitialDates(prev => ({
               ...prev,
               constantes_vitales: detailData.constantes_vitales_data?.fecha_creacion || null,
@@ -295,7 +506,6 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
           if (detailData.indicadores_salud_bucal_data) {
             console.log('Cargando indicadores de salud bucal:', detailData.indicadores_salud_bucal_data);
             updateSectionData("indicadores_salud_bucal_data", detailData.indicadores_salud_bucal_data);
-
             setInitialDates(prev => ({
               ...prev,
               indicadores_salud_bucal: detailData.indicadores_salud_bucal_data?.fecha || null,
@@ -303,20 +513,18 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
           }
 
           if (detailData.indices_caries_data) {
-  console.log(' Cargando índices de caries:', detailData.indices_caries_data);
-  updateSectionData("indices_caries_data", detailData.indices_caries_data);
-  
-  setInitialDates(prev => ({
-    ...prev,
-    indices_caries: detailData.indices_caries_data?.fecha || null,
-  }));
-}
+            console.log('Cargando índices de caries:', detailData.indices_caries_data);
+            updateSectionData("indices_caries_data", detailData.indices_caries_data);
+            setInitialDates(prev => ({
+              ...prev,
+              indices_caries: detailData.indices_caries_data?.fecha || null,
+            }));
+          }
 
           // Cargar otras secciones
           if (detailData.antecedentes_personales_data) {
             console.log('📌 Cargando antecedentes personales');
             updateSectionData("antecedentes_personales_data", detailData.antecedentes_personales_data);
-
             setInitialDates(prev => ({
               ...prev,
               antecedentes_personales: detailData.antecedentes_personales_data?.fecha_creacion || null,
@@ -324,9 +532,8 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
           }
 
           if (detailData.antecedentes_familiares_data) {
-            console.log(' Cargando antecedentes familiares')
+            console.log('Cargando antecedentes familiares')
             updateSectionData("antecedentes_familiares_data", detailData.antecedentes_familiares_data);
-
             setInitialDates(prev => ({
               ...prev,
               antecedentes_familiares: detailData.antecedentes_familiares_data?.fecha_creacion || null,
@@ -334,21 +541,43 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
           }
 
           if (detailData.examen_estomatognatico_data) {
-            console.log(' Cargando examen estomatognático');
+            console.log('Cargando examen estomatognático');
             updateSectionData("examen_estomatognatico_data", detailData.examen_estomatognatico_data);
-
             setInitialDates(prev => ({
               ...prev,
               examen_estomatognatico: detailData.examen_estomatognatico_data?.fecha_creacion || null,
             }));
           }
-          console.log(' Cargando estado y observaciones:', {
-            estado: detailData.estado,
-            observaciones: detailData.observaciones
-          });
+
+          // Cargar diagnósticos CIE
+          if (detailData.diagnosticos_cie_data) {
+            console.log('Cargando diagnósticos CIE desde detailData:', detailData.diagnosticos_cie_data);
+            updateSectionData("diagnosticos_cie_data", detailData.diagnosticos_cie_data);
+          }
+
+          // CARGAR ODONTOGRAMA (FORM033) - usando el endpoint específico
+          try {
+            console.log('Obteniendo odontograma del historial...');
+            const form033Response = await clinicalRecordService.getForm033(recordId);
+            if (form033Response && form033Response.datos_form033) {
+              console.log('Odontograma cargado:', form033Response);
+              setOdontogramaData(form033Response.datos_form033);
+              setInitialDates(prev => ({
+                ...prev,
+                odontograma_2d: form033Response.fecha_captura || form033Response.fecha_creacion || null,
+              }));
+            }
+          } catch (form033Error) {
+            console.warn('No se pudo cargar el odontograma inicial:', form033Error);
+          }
+
           updateField("estado", detailData.estado);
           if (detailData.observaciones) {
             updateField("observaciones", detailData.observaciones);
+          }
+
+          if (detailData.diagnosticos_cie) {
+            updateField("diagnosticos_cie_id", detailData.diagnosticos_cie);
           }
 
           // Guardar fechas principales
@@ -367,8 +596,6 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
             title: "Error",
             message: "No se pudieron cargar los datos del historial",
           });
-        } finally {
-          setIsLoadingEdit(false);
         }
       };
 
@@ -382,9 +609,6 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
   useEffect(() => {
     if (mode === "create" && initialData) {
       console.log('=== INITIAL DATA RECIBIDA (CREATE) ===');
-      console.log('initialData completa:', initialData);
-      console.log('indicadores_salud_bucal:', initialData.indicadores_salud_bucal);
-      console.log('================================');
 
       // Configurar paciente
       if (initialData.paciente) {
@@ -476,6 +700,32 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
         );
       }
 
+      if (initialData.diagnosticos_cie?.data) {
+        updateSectionData("diagnosticos_cie_data", initialData.diagnosticos_cie.data);
+      }
+
+      if (initialData.plan_tratamiento) {
+        console.log('📌 Cargando datos iniciales del plan de tratamiento (CREATE):', initialData.plan_tratamiento);
+
+        const planData = initialData.plan_tratamiento;
+        if (planData.id) {
+          updateField("plan_tratamiento_id", planData.id);
+        }
+        if (planData.titulo) {
+          updateField("plan_tratamiento_titulo", planData.titulo);
+        }
+        if (planData.descripcion) {
+          updateField("plan_tratamiento_descripcion", planData.descripcion);
+        }
+        if (planData.sesiones) {
+          const sesiones = Array.isArray(planData.sesiones) ? planData.sesiones : [];
+          updateField("plan_tratamiento_sesiones", sesiones);
+        }
+        if (planData.version_odontograma) {
+          updateField("plan_tratamiento_odontograma_id", planData.version_odontograma);
+        }
+      }
+
       // Guardar fechas de referencia
       setInitialDates({
         motivo_consulta: initialData.motivo_consulta_fecha,
@@ -484,15 +734,26 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
         antecedentes_familiares: initialData.antecedentes_familiares?.fecha ?? null,
         constantes_vitales: initialData.constantes_vitales?.fecha ?? null,
         examen_estomatognatico: initialData.examen_estomatognatico?.fecha ?? null,
-        indicadores_salud_bucal: initialData.indicadores_salud_bucal?.fecha ?? null
+        indicadores_salud_bucal: initialData.indicadores_salud_bucal?.fecha ?? null,
+        diagnosticos_cie: initialData.diagnosticos_cie?.fecha ?? null,
       });
     }
   }, [initialData, user, mode]);
+
   // ========================================================================
-  // SUBMIT HANDLER
+  // SUBMIT HANDLER - CON ODONTOGRAMA INCLUIDO
   // ========================================================================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Debug: Mostrar todos los datos del plan antes de enviar
+    console.log('[SUBMIT] Datos del plan a enviar:', {
+      plan_tratamiento_id: formData.plan_tratamiento_id,
+      plan_tratamiento_titulo: formData.plan_tratamiento_titulo,
+      plan_tratamiento_descripcion: formData.plan_tratamiento_descripcion,
+      plan_tratamiento_sesiones: formData.plan_tratamiento_sesiones?.length || 0,
+      plan_tratamiento_odontograma_id: formData.plan_tratamiento_odontograma_id,
+    });
 
     // Validar
     if (!validate()) {
@@ -518,6 +779,12 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
         unicodigo: formData.unicodigo || undefined,
         establecimiento_salud: formData.establecimiento_salud || undefined,
         numero_hoja: formData.numero_hoja || 1,
+        plan_tratamiento_id: formData.plan_tratamiento_id || undefined,
+        plan_tratamiento_titulo: formData.plan_tratamiento_titulo || undefined,
+        plan_tratamiento_descripcion: formData.plan_tratamiento_descripcion || undefined,
+        plan_tratamiento_sesiones: formData.plan_tratamiento_sesiones || undefined,
+        plan_tratamiento_odontograma_id: formData.plan_tratamiento_odontograma_id || undefined,
+        plan_tratamiento: formData.plan_tratamiento_id || undefined,
       };
 
       // Agregar constantes vitales al payload si existen
@@ -540,7 +807,7 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
         console.log("Historial creado:", historialCreado.id);
 
         // ============================================
-        // GUARDAR FORM033 (ODONTOGRAMA)
+        // GUARDAR FORM033 (ODONTOGRAMA) DESDE EL ENDPOINT ACTUAL
         // ============================================
         if (selectedPaciente?.id) {
           try {
@@ -554,7 +821,7 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
             if (form033Response.data.success && form033Response.data.data) {
               console.log(" Guardando Form033 en el historial...");
 
-              // Guardar el Form033 en el historial
+              // Guardar el Form033 en el historial usando el endpoint
               await clinicalRecordService.addForm033(
                 historialCreado.id,
                 form033Response.data.data.form033,
@@ -570,7 +837,48 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
               " Error guardando Form033 (historial creado correctamente):",
               form033Error
             );
-            // No bloqueamos el flujo si falla el Form033
+          }
+        }
+
+        // ============================================
+        // GUARDAR DIAGNÓSTICOS CIE (si existen)
+        // ============================================
+        if (
+          formData.diagnosticos_cie_data &&
+          formData.diagnosticos_cie_data.diagnosticos &&
+          formData.diagnosticos_cie_data.diagnosticos.length > 0
+        ) {
+          try {
+            setIsSavingDiagnosticos(true);
+            console.log("Guardando diagnósticos CIE en historial recién creado...");
+
+            const diagnosticosPayload = {
+              diagnosticos_finales: formData.diagnosticos_cie_data.diagnosticos.map((diag) => ({
+                diagnostico_dental_id: diag.diagnostico_dental_id,
+                tipo_cie: diag.tipo_cie || "PRE",
+              })),
+              tipo_carga: formData.diagnosticos_cie_data.tipo_carga || "nuevos",
+            };
+
+            const diagnosticosResult = await clinicalRecordService.syncDiagnosticsInRecord(
+              historialCreado.id,
+              diagnosticosPayload
+            );
+
+            console.log("Diagnósticos CIE guardados:", diagnosticosResult);
+          } catch (diagnosticosError) {
+            console.warn(
+              "Error guardando diagnósticos CIE (historial creado correctamente):",
+              diagnosticosError
+            );
+            notify({
+              type: "warning",
+              title: "Diagnósticos no guardados",
+              message:
+                "El historial se creó correctamente, pero algunos diagnósticos CIE no se pudieron guardar.",
+            });
+          } finally {
+            setIsSavingDiagnosticos(false);
           }
         }
 
@@ -580,19 +888,37 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
           message: "El historial clínico se ha creado exitosamente.",
         });
 
-      } else if (mode === "edit") {
+      } else if (mode === "edit" && recordId) {
         // ============================================
         // ACTUALIZAR HISTORIAL
         // ============================================
+        console.log('[EDIT] Preparando payload de actualización...');
+        console.log('[EDIT] FormData actual:', {
+          examen_estomatognatico_id: formData.examen_estomatognatico_id,
+          indicadores_salud_bucal_id: formData.indicadores_salud_bucal_id,
+          indices_caries_id: formData.indices_caries_id,
+          plan_tratamiento_id: formData.plan_tratamiento_id,
+        });
         const updatePayload = {
           motivo_consulta: formData.motivo_consulta,
           embarazada: formData.embarazada || undefined,
           enfermedad_actual: formData.enfermedad_actual || undefined,
           observaciones: formData.observaciones || undefined,
           estado: formData.estado || undefined,
+          plan_tratamiento_id: formData.plan_tratamiento_id || undefined,
+          plan_tratamiento_titulo: formData.plan_tratamiento_titulo || undefined,
+          plan_tratamiento_descripcion: formData.plan_tratamiento_descripcion || undefined,
+          plan_tratamiento_sesiones: formData.plan_tratamiento_sesiones || undefined,
+          plan_tratamiento_odontograma_id: formData.plan_tratamiento_odontograma_id || undefined,
+          examen_estomatognatico: formData.examen_estomatognatico_id || undefined,
+          indicadores_salud_bucal: formData.indicadores_salud_bucal_id || undefined,
+          indices_caries: formData.indices_caries_id || undefined,
+          plan_tratamiento: formData.plan_tratamiento_id || undefined,
         };
 
-        // Añadir constantes vitales para update también
+        // ==========================================================================
+        // AGREGAR CONSTANTES VITALES SI SE MODIFICARON
+        // ==========================================================================
         if (formData.constantes_vitales_data) {
           const constantesVitales = formData.constantes_vitales_data as any;
           Object.assign(updatePayload, {
@@ -602,8 +928,86 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
             presion_arterial: constantesVitales.presion_arterial || undefined,
           });
         }
-
+        console.log('[EDIT] Payload completo a enviar:', updatePayload);
         await updateMutation.mutateAsync(updatePayload);
+        console.log('[EDIT] Historial actualizado exitosamente');
+        // ============================================
+        // GUARDAR ODONTOGRAMA ACTUALIZADO (si se refrescó)
+        // ============================================
+        if (hasRefreshedOdontograma && odontogramaData && recordId) {
+          try {
+            console.log("Guardando odontograma refrescado...");
+
+            // Obtener el odontograma más reciente del paciente
+            const form033Response = await axiosInstance.get<any>(
+              `/odontogram/export/form033/${selectedPaciente?.id}/json/`
+            );
+
+            if (form033Response.data.success && form033Response.data.data) {
+              // Usar el endpoint agregar-form033 para guardar/actualizar
+              await clinicalRecordService.addForm033(
+                recordId,
+                form033Response.data.data.form033,
+                "Odontograma actualizado al guardar el historial clínico"
+              );
+
+              console.log("Odontograma actualizado exitosamente");
+              setHasRefreshedOdontograma(false); // Resetear flag
+            }
+          } catch (odontogramaError) {
+            console.warn("Error guardando odontograma actualizado:", odontogramaError);
+          }
+        }
+        if (formData.diagnosticos_cie_data?.diagnosticos && formData.diagnosticos_cie_data.diagnosticos.length > 0) {
+          try {
+            setIsSavingDiagnosticos(true);
+            console.log("[MODO EDIT] Guardando diagnósticos CIE...");
+
+            // Preparar el payload exactamente como lo espera el backend
+            const diagnosticosPayload: SincronizarDiagnosticosPayload = {
+              diagnosticos_finales: formData.diagnosticos_cie_data.diagnosticos.map((diag: any) => ({
+                diagnostico_dental_id: diag.diagnostico_dental_id,
+                tipo_cie: diag.tipo_cie || "PRE",
+              })),
+              tipo_carga: formData.diagnosticos_cie_data.tipo_carga || "todos",
+            };
+
+            console.log(" Payload para sincronizar:", {
+              historialId: recordId,
+              cantidad: diagnosticosPayload.diagnosticos_finales.length,
+              tipo_carga: diagnosticosPayload.tipo_carga,
+              primeros: diagnosticosPayload.diagnosticos_finales.slice(0, 3),
+            });
+
+            // Usar el hook de sincronización
+            const resultado = await syncDiagnosticosMutation.mutateAsync(diagnosticosPayload);
+
+            console.log(" Resultado de sincronización:", resultado);
+
+            if (resultado.success) {
+              console.log(` Diagnósticos sincronizados exitosamente: ${resultado.total_diagnosticos}`);
+            } else {
+              console.warn(" La sincronización reportó problemas:", resultado.message);
+            }
+          } catch (diagnosticosError: any) {
+            console.error(" Error guardando diagnósticos CIE:", {
+              error: diagnosticosError.message,
+              response: diagnosticosError.response?.data,
+            });
+
+            notify({
+              type: "error",
+              title: "Error en diagnósticos",
+              message: `No se pudieron guardar los cambios en los diagnósticos CIE-10: ${diagnosticosError.message}`,
+            });
+
+          } finally {
+            setIsSavingDiagnosticos(false);
+          }
+        } else {
+          console.log("No hay diagnósticos CIE para guardar en este historial");
+        }
+
 
         notify({
           type: "success",
@@ -626,6 +1030,8 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
             ? "No se pudo crear el historial clínico."
             : "No se pudo actualizar el historial clínico.",
       });
+    } finally {
+      setIsSavingDiagnosticos(false);
     }
   };
 

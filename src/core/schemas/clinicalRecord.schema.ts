@@ -78,6 +78,7 @@ export const clinicalRecordCreateSchema = z.object({
   
   presion_arterial: presionArterialSchema,
   indicadores_salud_bucal: z.string().uuid().optional().nullable(),
+  plan_tratamiento: z.string().uuid().optional().nullable(),
 });
 
 /**

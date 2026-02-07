@@ -33,7 +33,7 @@ const ClinicalRecordCreateEditModal: React.FC<ClinicalRecordCreateEditModalProps
   // ========================================================================
   // FETCH DATA SEGÚN MODO
   // ========================================================================
-  
+
   // CREATE: Cargar datos iniciales del paciente
   const shouldFetchInitialData = mode === "create" && isOpen && !!pacienteId;
   const {
@@ -63,81 +63,91 @@ const ClinicalRecordCreateEditModal: React.FC<ClinicalRecordCreateEditModalProps
   const subtitle = isEdit
     ? "Actualice la información del historial clínico (Formulario 033)"
     : pacienteNombreCompleto
-    ? `Registre el historial clínico para ${pacienteNombreCompleto}`
-    : "Seleccione un paciente y registre el historial clínico";
+      ? `Registre el historial clínico para ${pacienteNombreCompleto}`
+      : "Seleccione un paciente y registre el historial clínico";
 
   const isLoading = loadingInitial || loadingExisting;
 
   // ========================================================================
   // TRANSFORMACIÓN DE DATOS PARA EL FORMULARIO
   // ========================================================================
-  
-  /**
-   * ✅ ADAPTACIÓN: Convertir ClinicalRecordDetailResponse a ClinicalRecordInitialData
-   */
-  const formInitialData: ClinicalRecordInitialData | undefined = 
+
+  const formInitialData: ClinicalRecordInitialData | undefined =
     isEdit && existingRecord
       ? {
-          // Información del paciente
-          paciente: {
-            id: existingRecord.paciente_info.id,
-            nombre_completo: `${existingRecord.paciente_info.nombres} ${existingRecord.paciente_info.apellidos}`,
-            cedula_pasaporte: existingRecord.paciente_info.cedula_pasaporte,
-            sexo: existingRecord.paciente_info.sexo,
-            edad: existingRecord.paciente_info.edad,
-          },
-          
-          // Campos de texto principales
-          motivo_consulta: existingRecord.motivo_consulta,
-          motivo_consulta_fecha: existingRecord.fecha_atencion,
-          embarazada: existingRecord.embarazada,
-          enfermedad_actual: existingRecord.enfermedad_actual,
-          enfermedad_actual_fecha: existingRecord.fecha_atencion,
-          
-          // Antecedentes Personales
-          antecedentes_personales: existingRecord.antecedentes_personales_data
-            ? {
-                id: existingRecord.antecedentes_personales,
-                fecha: existingRecord.antecedentes_personales_data.fecha_creacion,
-                data: existingRecord.antecedentes_personales_data,
-              }
-            : null,
-          
-          // Antecedentes Familiares
-          antecedentes_familiares: existingRecord.antecedentes_familiares_data
-            ? {
-                id: existingRecord.antecedentes_familiares,
-                fecha: existingRecord.antecedentes_familiares_data.fecha_creacion,
-                data: existingRecord.antecedentes_familiares_data,
-              }
-            : null,
-          
-          // Constantes Vitales
-          constantes_vitales: existingRecord.constantes_vitales_data
-            ? {
-                id: existingRecord.constantes_vitales,
-                fecha: existingRecord.constantes_vitales_data.fecha_creacion,
-                data: existingRecord.constantes_vitales_data,
-              }
-            : null,
-          
-          // Examen Estomatognático
-          examen_estomatognatico: existingRecord.examen_estomatognatico_data
-            ? {
-                id: existingRecord.examen_estomatognatico,
-                fecha: existingRecord.examen_estomatognatico_data.fecha_creacion,
-                data: existingRecord.examen_estomatognatico_data,
-              }
-            : null,
-        }
+        // Información del paciente
+        paciente: {
+          id: existingRecord.paciente_info.id,
+          nombre_completo: `${existingRecord.paciente_info.nombres} ${existingRecord.paciente_info.apellidos}`,
+          cedula_pasaporte: existingRecord.paciente_info.cedula_pasaporte,
+          sexo: existingRecord.paciente_info.sexo,
+          edad: existingRecord.paciente_info.edad,
+        },
+
+        // Campos de texto principales
+        motivo_consulta: existingRecord.motivo_consulta,
+        motivo_consulta_fecha: existingRecord.fecha_atencion,
+        embarazada: existingRecord.embarazada,
+        enfermedad_actual: existingRecord.enfermedad_actual,
+        enfermedad_actual_fecha: existingRecord.fecha_atencion,
+
+        // Antecedentes Personales
+        antecedentes_personales: existingRecord.antecedentes_personales_data
+          ? {
+            id: existingRecord.antecedentes_personales,
+            fecha: existingRecord.antecedentes_personales_data.fecha_creacion,
+            data: existingRecord.antecedentes_personales_data,
+          }
+          : null,
+
+        // Antecedentes Familiares
+        antecedentes_familiares: existingRecord.antecedentes_familiares_data
+          ? {
+            id: existingRecord.antecedentes_familiares,
+            fecha: existingRecord.antecedentes_familiares_data.fecha_creacion,
+            data: existingRecord.antecedentes_familiares_data,
+          }
+          : null,
+
+        // Constantes Vitales
+        constantes_vitales: existingRecord.constantes_vitales_data
+          ? {
+            id: existingRecord.constantes_vitales,
+            fecha: existingRecord.constantes_vitales_data.fecha_creacion,
+            data: existingRecord.constantes_vitales_data,
+          }
+          : null,
+
+        // Examen Estomatognático
+        examen_estomatognatico: existingRecord.examen_estomatognatico_data
+          ? {
+            id: existingRecord.examen_estomatognatico,
+            fecha: existingRecord.examen_estomatognatico_data.fecha_creacion,
+            data: existingRecord.examen_estomatognatico_data,
+          }
+          : null,
+        campos_formulario:
+          (existingRecord as any).campos_formulario ??
+          initialData?.campos_formulario ??
+          null,
+        IndicadoresSaludBucal:
+          (existingRecord as any).IndicadoresSaludBucal ??
+          initialData?.IndicadoresSaludBucal ??
+          null,
+        indicadores_salud_bucal:
+          (existingRecord as any).indicadores_salud_bucal ??
+          initialData?.indicadores_salud_bucal ??
+          null,
+      }
+
       : initialData;
 
   // ========================================================================
   // RENDER
   // ========================================================================
   return (
-    <Modal 
-      isOpen={isOpen} 
+    <Modal
+      isOpen={isOpen}
       onClose={onClose}
       showCloseButton={false}
       className="max-w-5xl"
@@ -151,7 +161,7 @@ const ClinicalRecordCreateEditModal: React.FC<ClinicalRecordCreateEditModalProps
           <div className="flex-shrink-0 p-2 bg-blue-50 rounded-lg text-blue-600">
             <FileText className="h-6 w-6" />
           </div>
-          
+
           {/* Textos */}
           <div>
             <h2 className="text-xl font-semibold text-gray-900">{title}</h2>

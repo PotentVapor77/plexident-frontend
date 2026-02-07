@@ -9,3 +9,5 @@ export { default as ExamenEstomatognaticoSection } from "./ExamenEstomatognatico
 export { default as ObservacionesSection } from "./ObservacionesSection";
 export { default as IndicadoresSaludBucalSection } from "./IndicadoresSaludBucalSection";
 export { default as IndicesCariesSection } from "./IndicesCariesSection";
+export { default as DiagnosticosCieSection } from "./DiagnosticosCieSection";
+export { default as PlanTratamientoSection } from "./PlanTratamientoSection";

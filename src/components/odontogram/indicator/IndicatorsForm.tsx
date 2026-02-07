@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { AxiosError } from "axios";
 import { useModal } from "../../../hooks/useModal";
-import { 
-  useCreateIndicadoresSaludBucal, 
-  useUpdateIndicadoresSaludBucal 
+import {
+  useCreateIndicadoresSaludBucal,
+  useUpdateIndicadoresSaludBucal
 } from "../../../hooks/odontogram/useIndicadoresSaludBucal";
 import { usePiezasIndice, useVerificarDisponibilidadPiezas } from "../../../hooks/odontogram/usePiezasIndice";
 import type { IndicadoresSaludBucalCreatePayload } from "../../../core/types/odontograma.types";
@@ -67,11 +67,11 @@ export default function IndicatorsForm({
   pacienteNombreCompleto,
   notify,
 }: IndicatorsFormProps) {
-  
+
   // ============================================================================
   // HOOKS
   // ============================================================================
-  
+
   const {
     isOpen: isSuccessModalOpen,
     openModal: openSuccessModal,
@@ -88,17 +88,17 @@ export default function IndicatorsForm({
   });
 
   // Cargar información de piezas alternativas
-  const { informacionPiezas, isLoading: loadingPiezas, error: errorPiezas } = 
+  const { informacionPiezas, isLoading: loadingPiezas, error: errorPiezas } =
     usePiezasIndice(pacienteId);
-  
+
   // Verificar disponibilidad de piezas
-  const { data: verificacion, isLoading: verificandoPiezas } = 
+  const { data: verificacion, isLoading: verificandoPiezas } =
     useVerificarDisponibilidadPiezas(pacienteId);
 
   // ============================================================================
   // STATE
   // ============================================================================
-  
+
   const [formData, setFormData] = useState<IndicatorsFormData>({
     paciente: initialData?.paciente ?? pacienteId ?? "",
     activo: initialData?.activo ?? true,
@@ -123,42 +123,66 @@ export default function IndicatorsForm({
 
   // Inicializar campos de piezas cuando se carga la información
   useEffect(() => {
-    if (informacionPiezas?.piezas && mode === "create") {
-      const newFormData: Record<string, string | number | boolean | null> = {};
-      
-      Object.entries(informacionPiezas.piezas).forEach(([piezaOriginal, info]) => {
-        const piezaUsada = info.codigo_usado || piezaOriginal;
-        
-        // Inicializar campos para cada pieza disponible
-        newFormData[`pieza_${piezaUsada}_placa`] = null;
-        newFormData[`pieza_${piezaUsada}_calculo`] = null;
-        newFormData[`pieza_${piezaUsada}_gingivitis`] = null;
-      });
+  if (informacionPiezas && mode === "create") {
+    const newFormData: Record<string, string | number | boolean | null> = {};
+    
+    const piezasData = informacionPiezas.piezas_mapeo || informacionPiezas.piezas || {};
+    
+    Object.keys(piezasData).forEach((piezaOriginal) => {
+      newFormData[`pieza_${piezaOriginal}_placa`] = null;
+      newFormData[`pieza_${piezaOriginal}_calculo`] = null;
+      newFormData[`pieza_${piezaOriginal}_gingivitis`] = null;
+    });
 
-      setFormData(prev => ({ ...prev, ...newFormData } as IndicatorsFormData));
-    }
-  }, [informacionPiezas, mode]);
-
+    setFormData(prev => ({ ...prev, ...newFormData } as IndicatorsFormData));
+  }
+}, [informacionPiezas, mode]);
+const handlePiezaChange = (
+  pieza: string,  
+  tipo: "placa" | "calculo" | "gingivitis",
+  valor: number | null
+) => {
+  setFormData(prev => ({
+    ...prev,
+    [`pieza_${pieza}_${tipo}`]: valor
+  }));
+};
   // Cargar datos iniciales en modo edición
   useEffect(() => {
-    if (initialData && mode === "edit" && informacionPiezas?.piezas) {
-      const newFormData: Record<string, string | number | boolean | null> = {};
-      
-      Object.entries(informacionPiezas.piezas).forEach(([piezaOriginal, info]) => {
-        const piezaUsada = info.codigo_usado || piezaOriginal;
-        
-        // Cargar valores desde initialData
-        newFormData[`pieza_${piezaUsada}_placa`] = 
-          (initialData as any)[`pieza_${piezaOriginal}_placa`] ?? null;
-        newFormData[`pieza_${piezaUsada}_calculo`] = 
-          (initialData as any)[`pieza_${piezaOriginal}_calculo`] ?? null;
-        newFormData[`pieza_${piezaUsada}_gingivitis`] = 
-          (initialData as any)[`pieza_${piezaOriginal}_gingivitis`] ?? null;
-      });
+  if (initialData && mode === "edit" && informacionPiezas) {
+    console.log('[IndicatorsForm] Cargando datos en modo edit', {
+      initialData,
+      informacionPiezas
+    });
+    
+    const newFormData: Record<string, string | number | boolean | null> = {};
+    const piezasData = informacionPiezas.piezas_mapeo || informacionPiezas.piezas || {};
 
-      setFormData(prev => ({ ...prev, ...newFormData } as IndicatorsFormData));
-    }
-  }, [initialData, mode, informacionPiezas]);
+    Object.entries(piezasData).forEach(([piezaOriginal, info]) => {
+      
+      const placaKey = `pieza_${piezaOriginal}_placa`;
+      const calculoKey = `pieza_${piezaOriginal}_calculo`;
+      const gingivitisKey = `pieza_${piezaOriginal}_gingivitis`;
+
+      newFormData[placaKey] = (initialData as any)[placaKey] ?? null;
+      newFormData[calculoKey] = (initialData as any)[calculoKey] ?? null;
+      newFormData[gingivitisKey] = (initialData as any)[gingivitisKey] ?? null;
+
+      console.log(`[IndicatorsForm] Cargando pieza ${piezaOriginal}:`, {
+        placaKey,
+        placa: newFormData[placaKey],
+        calculo: newFormData[calculoKey],
+        gingivitis: newFormData[gingivitisKey]
+      });
+    });
+
+    setFormData(prev => {
+      const updated = { ...prev, ...newFormData } as IndicatorsFormData;
+      console.log('[IndicatorsForm] FormData actualizado:', updated);
+      return updated;
+    });
+  }
+}, [initialData, mode, informacionPiezas]);
 
   // Mostrar advertencia si no hay suficientes piezas
   useEffect(() => {
@@ -237,7 +261,7 @@ export default function IndicatorsForm({
     if (informacionPiezas?.piezas) {
       Object.entries(informacionPiezas.piezas).forEach(([piezaOriginal, info]) => {
         if (!info.disponible) return;
-        
+
         const piezaUsada = info.codigo_usado || piezaOriginal;
 
         // Validar placa (0-3)
@@ -307,6 +331,8 @@ export default function IndicatorsForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    
+
     const validationErrors = validateFormData();
     if (validationErrors.length > 0) {
       notify({
@@ -332,6 +358,25 @@ export default function IndicatorsForm({
         nivel_fluorosis: formData.nivel_fluorosis,
         nivel_gingivitis: formData.nivel_gingivitis,
         observaciones: formData.observaciones,
+        pieza_16_placa: formData.pieza_16_placa,
+        pieza_16_calculo: formData.pieza_16_calculo,
+        pieza_16_gingivitis: formData.pieza_16_gingivitis,
+        pieza_11_placa: formData.pieza_11_placa,
+        pieza_11_calculo: formData.pieza_11_calculo,
+        pieza_11_gingivitis: formData.pieza_11_gingivitis,
+        pieza_26_placa: formData.pieza_26_placa,
+        pieza_26_calculo: formData.pieza_26_calculo,
+        pieza_26_gingivitis: formData.pieza_26_gingivitis,
+        pieza_36_placa: formData.pieza_36_placa,
+        pieza_36_calculo: formData.pieza_36_calculo,
+        pieza_36_gingivitis: formData.pieza_36_gingivitis,
+        pieza_31_placa: formData.pieza_31_placa,
+        pieza_31_calculo: formData.pieza_31_calculo,
+        pieza_31_gingivitis: formData.pieza_31_gingivitis,
+        pieza_46_placa: formData.pieza_36_placa,
+        pieza_46_calculo: formData.pieza_36_calculo,        
+        pieza_46_gingivitis: formData.pieza_36_gingivitis,
+
       };
 
       // Agregar campos de piezas dinámicamente
@@ -376,7 +421,7 @@ export default function IndicatorsForm({
       } else if (err instanceof Error) {
         errorMessage = err.message;
       }
-      
+
       notify({
         type: 'error',
         title: 'Error',
@@ -433,7 +478,7 @@ export default function IndicatorsForm({
     <>
       <div className="max-w-3xl mx-auto space-y-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          
+
           {/* ========================================================================
               ADVERTENCIA DE DISPONIBILIDAD
           ======================================================================== */}
@@ -460,11 +505,10 @@ export default function IndicatorsForm({
               INFORMACIÓN DE DENTICIÓN
           ======================================================================== */}
           {informacionPiezas && (
-            <div className={`p-4 rounded-lg border ${
-              informacionPiezas.denticion === 'temporal'
+            <div className={`p-4 rounded-lg border ${informacionPiezas.denticion === 'temporal'
                 ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
                 : 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
-            }`}>
+              }`}>
               <div className="flex items-start gap-3">
                 <Info className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
                 <div className="flex-1">
@@ -596,14 +640,14 @@ export default function IndicatorsForm({
           {/* ========================================================================
               CAMPOS DEL FORMULARIO
           ======================================================================== */}
-           <IndicatorsFormFields
-            pacienteId={pacienteId}
-            formData={formData}
-            onInputChange={handleInputChange}
-            onReset={resetForm}
-            submitLoading={submitLoading}
-            mode={mode}
-          />
+          <IndicatorsFormFields
+  formData={formData}
+  onInputChange={handleInputChange} 
+  pacienteId={pacienteId}
+  informacionPiezas={informacionPiezas} 
+  loadingPiezas={loadingPiezas}          
+  errorPiezas={errorPiezas}              
+/>
 
           {/* ========================================================================
               BOTONES DE ACCIÓN
@@ -618,9 +662,9 @@ export default function IndicatorsForm({
               Limpiar formulario
             </Button>
 
-            <Button 
-              type="submit" 
-              variant="primary" 
+            <Button
+              type="submit"
+              variant="primary"
               disabled={submitLoading || (verificacion && !verificacion.puede_crear_indicadores)}
             >
               {submitLoading
@@ -628,8 +672,8 @@ export default function IndicatorsForm({
                   ? "Registrando..."
                   : "Guardando..."
                 : mode === "create"
-                ? "Registrar indicadores"
-                : "Guardar cambios"}
+                  ? "Registrar indicadores"
+                  : "Guardar cambios"}
             </Button>
           </div>
 
@@ -647,7 +691,7 @@ export default function IndicatorsForm({
               <li>El sistema usa piezas alternativas cuando las principales no están disponibles</li>
               {informacionPiezas && informacionPiezas.estadisticas.piezas_alternativas > 0 && (
                 <li className="text-amber-700 dark:text-amber-400 font-medium">
-                  ⚠️ Se están usando {informacionPiezas.estadisticas.piezas_alternativas} pieza(s) alternativa(s)
+                  Se están usando {informacionPiezas.estadisticas.piezas_alternativas} pieza(s) alternativa(s)
                 </li>
               )}
               {!pacienteId && (

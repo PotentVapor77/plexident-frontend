@@ -1,4 +1,5 @@
 
+
 // src/types/clinicalRecord/typeBackendClinicalRecord.ts
 
 // ============================================================================
@@ -8,7 +9,7 @@
 export type EstadoHistorial = "BORRADOR" | "ABIERTO" | "CERRADO";
 export type EmbarazoEstado = "SI" | "NO";
 export type Sexo = "M" | "F";
-
+export type EstadoSesion = "PLANIFICADA" | "EN_PROGRESO" | "COMPLETADA" | "CANCELADA";
 // ============================================================================
 // TIPOS DE DATOS DE SECCIONES (CORREGIDOS SEGÚN BACKEND REAL)
 // ============================================================================
@@ -48,6 +49,7 @@ export interface AntecedentesPersonalesData {
   actualizado_por: string;
   paciente: string;
 }
+
 
 /**
  * Antecedentes Familiares - Estructura REAL del backend
@@ -343,6 +345,20 @@ export interface ClinicalRecordDetailResponse {
 
   indices_caries?: string | null;
   indices_caries_data?: IndicesCariesData | null;
+
+  diagnosticos_cie?: string | null;
+  diagnosticos_cie_data?: DiagnosticosCIEResponse | null;
+  tiene_diagnosticos_cie?: boolean;
+  diagnosticos_cie_activos?: number;
+  diagnosticos_cie_inactivos?: number;
+  plan_tratamiento_data?: PlanTratamientoData | null;
+  plan_tratamiento?: PlanTratamientoData | null; 
+  plan_tratamiento_id?: string | null;
+  plan_tratamiento_sesiones?: SesionTratamientoData[] | null;
+  plan_tratamiento_titulo?: string | null;
+  plan_tratamiento_descripcion?: string | null;
+  version_odontograma?: string | null;
+  
 }
 export interface CamposFormulario {
   institucion_sistema: string;
@@ -376,7 +392,10 @@ export interface ClinicalRecordInitialData {
     numero_historia_clinica_unica: string;
     numero_archivo: string;
     numero_hoja: number;
-  } ;
+  } 
+  
+  
+  ;
 
   
   
@@ -417,71 +436,116 @@ export interface ClinicalRecordInitialData {
     fecha: string | null;
     data: IndicesCariesData | null;
   } | null;
+  diagnosticos_cie?: {
+    id: string | null;
+    fecha: string | null;
+    data: DiagnosticosCIEResponse | null; 
+    tipo_carga: "nuevos" | "todos" | null;
+  } | null;
+
+  plan_tratamiento?: {
+  id: string;
+  titulo: string;
+  descripcion?: string;
+  sesiones?: SesionTratamientoData[];
+  version_odontograma?: string;
+  estado?: string;
+  fecha_creacion: string;
+} | null;
 
 }
-
-
+export interface InformacionPiezas {
+  tiene_metadata: boolean;
+  mensaje?: string;
+  advertencia?: string;
+  denticion?: 'permanente' | 'temporal' | 'mixta';
+  estadisticas?: {
+    total_piezas: number;
+    piezas_originales: number;
+    piezas_alternativas: number;
+    piezas_no_disponibles: number;
+    porcentaje_disponible: number;
+    piezas_disponibles: number;
+  };
+  piezas_mapeo?: Record<string, {
+    codigo_usado: string;
+    es_alternativa: boolean;
+    disponible: boolean;
+    codigo_original: string;
+    diente_id: string | null;
+    ausente: boolean;
+    motivo?: string;
+    tipo?: string;
+    motivo_original_no_disponible?: string;
+    motivo_alternativa_no_disponible?: string;
+    
+  }
+  
+  >;
+}
+export interface ResumenIndicador {
+  nivel: string;
+  valor: number | null;
+  rango?: string | null;
+  recomendacion: string;
+}
 export interface IndicadoresSaludBucalData {
   id: string;
   fecha: string;
   fecha_formateada: string;
-  paciente_nombre: string;
-  creado_por_nombre: string;
+  paciente_nombre: string | null;
+  creado_por_nombre: string | null;
   
-  // Indicadores principales
-  enfermedad_periodontal: string | null;
+  // Diagnósticos con descripciones
+  enfermedad_periodontal: "LEVE" | "MODERADA" | "SEVERA" | null;
   enfermedad_periodontal_display: string | null;
-  tipo_oclusion: string | null;
+  tipo_oclusion: "ANGLE_I" | "ANGLE_II" | "ANGLE_III" | null;
   tipo_oclusion_display: string | null;
-  nivel_fluorosis: string | null;
+  nivel_fluorosis: "NINGUNA" | "LEVE" | "MODERADA" | "SEVERA" | null;
   nivel_fluorosis_display: string | null;
-  gi_promedio_gingivitis: number;
-  nivel_gingivitis_display: string;
-  observaciones: string | null;
-  informacion_calculo_json: any | null;
-  
-  // Datos por pieza
-  valores_por_pieza: Array<{
-    pieza: string;
-    placa: {
-      valor: number | null;
-      descripcion: string | null;
-      escala: string;
-    };
-    calculo: {
-      valor: number | null;
-      descripcion: string | null;
-      escala: string;
-    };
-    gingivitis: {
-      valor: number | null;
-      descripcion: string | null;
-      escala: string;
-    };
-    completo: boolean;
-  }>;
-  
-  // Resúmenes calculados
+  nivel_gingivitis_display: string | null;
+   piezas_usadas_en_registro?: {
+    piezas_mapeo: Record<string, {
+      codigo_usado: string;
+      es_alternativa: boolean;
+      disponible: boolean;
+      codigo_original?: string;
+      diente_id?: string | null;
+      ausente?: boolean;
+      ambos_ausentes?: boolean;
+      motivo?: string;
+      datos?: Record<string, number>;
+    }>;
+    denticion: 'permanente' | 'temporal';
+    estadisticas: any;
+    fecha_registro?: string;
+    tipo_operacion?: string;
+  } | null;
+  // Promedios
   ohi_promedio_placa: number;
   ohi_promedio_calculo: number;
-  resumen_higiene: {
-    nivel: string;
-    valor: number;
-    rango: string;
-    recomendacion: string;
-  };
-  resumen_gingival: {
-    nivel: string;
-    valor: number;
-    rango: string;
-    recomendacion: string;
-  };
+  gi_promedio_gingivitis: number;
   
-  // Metadata
+  // Resúmenes estructurados
+  resumen_higiene: ResumenIndicador;
+  resumen_gingival: ResumenIndicador;
+  
+  valores_por_pieza: ValorPorPieza[];
+  
+  informacion_piezas: InformacionPiezas;
+  
+  informacion_calculo_json: any | null;
+  
+  observaciones: string | null;
   activo: boolean;
-  paciente: string;
-  creado_por: string;
+  
+  advertencia?: string;
+  requiere_actualizacion_metadata?: boolean;
 }
+
+
+
+
 
 // ============================================================================
 // REQUEST PAYLOADS
@@ -510,6 +574,7 @@ export interface ClinicalRecordCreatePayload {
   pulso?: number | null;
   frecuencia_respiratoria?: number | null;
   presion_arterial?: string | null;
+  plan_tratamiento?: string;
 }
 
 /**
@@ -530,9 +595,35 @@ export interface ClinicalRecordUpdatePayload {
   pulso?: number | null;
   frecuencia_respiratoria?: number | null;
   presion_arterial?: string | null;
+  plan_tratamiento?: string | null;  
+  indicadores_salud_bucal?: string | null;
+  indices_caries?: string | null;
 }
 
-
+export interface ValorPorPieza {
+  pieza_original: string;
+  pieza_usada: string;
+  es_alternativa: boolean;
+  disponible: boolean;
+  placa: {
+    valor: number | null;
+    descripcion: string | null;
+    escala: string;
+  };
+  calculo: {
+    valor: number | null;
+    descripcion: string | null;
+    escala: string;
+  };
+  gingivitis: {
+    valor: number | null;
+    descripcion: string | null;
+    escala: string;
+  };
+  completo: boolean;
+  mensaje_alternativa?: string; 
+  
+}
 
 
 
@@ -586,6 +677,115 @@ export interface LatestIndicesCariesResponse {
     origen?: string; 
 }
 
+export interface DiagnosticoCIEData {
+  id: string;
+  tipo_cie_display: string;
+  prioridad_efectiva: number;
+  estado_tratamiento: string;
+  fecha_creacion: any;
+  diagnostico_dental_id: string;
+  diagnostico_nombre: string;
+  diagnostico_siglas: string;
+  codigo_cie: string;
+  diente_fdi: string;
+  superficie_nombre: string;
+  fecha_diagnostico: string;
+  tipo_cie: "PRE" | "DEF";
+  activo: boolean;
+  // Campos opcionales
+  descripcion?: string;
+}
+
+export interface DiagnosticosCIEResponse {
+  success: boolean;
+  message: string;
+  disponible?: boolean;
+  tipo_carga: "todos" | "nuevos" | null;
+  total_diagnosticos: number;
+  diagnosticos: DiagnosticoCIEData[];
+  paciente_nombre?: string;
+  paciente_cedula?: string;
+  estadisticas?: {
+    presuntivos: number;
+    definitivos: number;
+  };
+}
+
+export interface DiagnosticoCIEIndividualResponse {
+  success: boolean;
+  message: string;
+  diagnostico_id?: string;
+  tipo_cie?: "PRE" | "DEF";
+  tipo_cie_display?: string;
+  error?: string;
+}
+
+export interface DiagnosticoCIEUpdatePayload {
+  tipo_cie: "PRE" | "DEF";
+}
+
+export interface SincronizarDiagnosticosPayload {
+  diagnosticos_finales: Array<{
+    diagnostico_dental_id: string;
+    tipo_cie: "PRE" | "DEF";
+  }>;
+  tipo_carga: "nuevos" | "todos";
+}
+
+export interface SincronizarDiagnosticosResponse {
+  success: boolean;
+  message: string;
+  tipo_carga: string;
+  total_diagnosticos: number;
+  estadisticas: {
+    desactivados: number;
+    creados: number;
+    actualizados: number;
+  };
+  diagnosticos: DiagnosticoCIEData[];
+  error?: string;
+}
+export interface SesionTratamientoData {
+  id: string;
+  plan_tratamiento: string;
+  numero_sesion: number;
+  fecha_programada: string | null;
+  fecha_ejecucion: string | null;
+  procedimientos: string;
+  diagnosticos_complicaciones: string;
+  diagnosticos_y_complicaciones: string;
+  prescripciones: string;
+  notas: string;
+  estado: EstadoSesion;
+  cita: string | null;
+  activo: boolean;
+  fecha_creacion: string;
+  fecha_modificacion: string | null;
+  // Borrar si no se necesita
+  observaciones: string | null;
+
+}
+export type EstadoPlanTratamiento = "ACTIVO" | "INACTIVO";
+
+export interface PlanTratamientoData {
+  id: string;
+
+  titulo: string;
+  descripcion?: string;
+  sesiones?: SesionTratamientoData[];
+  version_odontograma?: string;
+  estado?: string;
+  fecha_creacion: string;
+
+}
+
+export interface PlanesTratamientoPacienteResponse {
+  success: boolean;
+  message: string;
+  planes: PlanTratamientoData[];
+  total_planes: number;
+  tiene_plan_activo: boolean;
+}
 // ============================================================================
 // PAGINACIÓN Y WRAPPERS
 // ============================================================================

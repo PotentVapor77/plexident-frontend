@@ -33,19 +33,19 @@ export const ENDPOINTS = {
   patients: {
     base: '/patients/pacientes/',
     byId: (id: string) => `/patients/pacientes/${id}/`,
-    
+
   },
 
-    // ANAMNESIS GENERAL
+  // ANAMNESIS GENERAL
   anamnesis: {
     base: '/patients/anamnesis-general/',
     byId: (id: string) => `/patients/anamnesis-general/${id}/`,
     byPaciente: (pacienteId: string) => `/patients/anamnesis-general/by-paciente/${pacienteId}/`,
     resumenRiesgos: (id: string) => `/patients/anamnesis-general/${id}/resumen_riesgos/`,
   },
-  
 
-   // ============================================================================
+
+  // ============================================================================
   // ANTECEDENTES PERSONALES (Relacionado OneToOne con Patient)
   // ============================================================================
   personalBackgrounds: {
@@ -55,8 +55,8 @@ export const ENDPOINTS = {
   },
 
 
-  
-   // ============================================================================
+
+  // ============================================================================
   // ANTECEDENTES Fammiliares (Relacionado OneToOne con Patient)
   // ============================================================================
   familyBackgrounds: {
@@ -65,7 +65,7 @@ export const ENDPOINTS = {
     byPaciente: (pacienteId: string) => `/patients/antecedentes-familiares/?paciente=${pacienteId}`,
   },
 
-     // ============================================================================
+  // ============================================================================
   // signo vitales
   // ============================================================================
   vitalSigns: {
@@ -74,7 +74,7 @@ export const ENDPOINTS = {
     byPaciente: (pacienteId: string) => `/patients/constantes-vitales/?paciente=${pacienteId}`,
   },
 
-   stomatognathicExam: {
+  stomatognathicExam: {
     base: '/patients/examen-estomatognatico/',
     byId: (id: string) => `/patients/examen-estomatognatico/${id}/`,
     byPaciente: (pacienteId: string) => `/patients/examen-estomatognatico/by-paciente/${pacienteId}/`,
@@ -82,42 +82,43 @@ export const ENDPOINTS = {
   },
 
 
-    // ✅ CONSULTAS
+  // ✅ CONSULTAS
   consultations: {
     base: '/patients/consultas/',
     byId: (id: string) => `/patients/consultas/${id}/`,
     byPaciente: (pacienteId: string) => `/patients/consultas/by-paciente/${pacienteId}/`,
   },
 
-clinicalRecords: {
+  clinicalRecords: {
     base: '/clinical-records/',
     byId: (id: string) => `/clinical-records/${id}/`,
     byPaciente: (pacienteId: string) => `/clinical-records/by-paciente/?paciente_id=${pacienteId}`,
     cargarDatosIniciales: (pacienteId: string) => `/clinical-records/cargar-datos-iniciales/?paciente_id=${pacienteId}`,
     cerrar: (id: string) => `/clinical-records/${id}/cerrar/`,
     reabrir: (id: string) => `/clinical-records/${id}/reabrir/`,
+
     antecedentesPersonales: {
-    base: '/clinical-records/antecedentes-personales/',
-    latestByPaciente: (pacienteId: string) => `/clinical-records/antecedentes-personales/${pacienteId}/latest/`,
-  },
-  antecedentesFamiliares: {
-    base: '/clinical-records/antecedentes-familiares/',
-    latestByPaciente: (pacienteId: string) => `/clinical-records/antecedentes-familiares/${pacienteId}/latest/`,
-  },
-  constantesVitales: {
-    base: '/clinical-records/constantes-vitales/',
-    latestByPaciente: (pacienteId: string) => `/clinical-records/constantes-vitales/${pacienteId}/latest/`,
-  },
-  examenEstomatognatico: {
-    base: '/clinical-records/examen-estomatognatico/',
-    latestByPaciente: (pacienteId: string) => `/clinical-records/examen-estomatognatico/${pacienteId}/latest/`,
-  },
-  odontograma2D: {
-    base: '/clinical-records/odontograma-2d/',
-    latestByPaciente: (pacienteId: string) => `/clinical-records/odontograma-2d/${pacienteId}/latest/`,
-  },
-  indicadoresSaludBucal: {
-      latestByPaciente: (pacienteId: string) => 
+      base: '/clinical-records/antecedentes-personales/',
+      latestByPaciente: (pacienteId: string) => `/clinical-records/antecedentes-personales/${pacienteId}/latest/`,
+    },
+    antecedentesFamiliares: {
+      base: '/clinical-records/antecedentes-familiares/',
+      latestByPaciente: (pacienteId: string) => `/clinical-records/antecedentes-familiares/${pacienteId}/latest/`,
+    },
+    constantesVitales: {
+      base: '/clinical-records/constantes-vitales/',
+      latestByPaciente: (pacienteId: string) => `/clinical-records/constantes-vitales/${pacienteId}/latest/`,
+    },
+    examenEstomatognatico: {
+      base: '/clinical-records/examen-estomatognatico/',
+      latestByPaciente: (pacienteId: string) => `/clinical-records/examen-estomatognatico/${pacienteId}/latest/`,
+    },
+    odontograma2D: {
+      base: '/clinical-records/odontograma-2d/',
+      latestByPaciente: (pacienteId: string) => `/clinical-records/odontograma-2d/${pacienteId}/latest/`,
+    },
+    indicadoresSaludBucal: {
+      latestByPaciente: (pacienteId: string) =>
         `/clinical-records/indicadores-salud-bucal/${pacienteId}/latest/`,
       recargarByPaciente: (pacienteId: string) =>
         `/clinical-records/indicadores-salud-bucal/${pacienteId}/recargar/`,
@@ -130,25 +131,32 @@ clinicalRecords: {
       latestByPaciente: (pacienteId: string) =>
         `/clinical-records/indices-caries/${pacienteId}/latest/`,
     },
+    diagnosticosCIE: {
+      getAvailable: (pacienteId: string, tipocarga: "nuevos" | "todos" = "nuevos") =>
+        `/clinical-records/diagnosticos-cie/?pacienteid=${pacienteId}&tipocarga=${tipocarga}`,
+    },
+    planTratamiento: {
+      
+    }
   },
 
 
-   // ============================================================================
+  // ============================================================================
   // CITAS / APPOINTMENTS
   // ============================================================================
-    appointment: {
+  appointment: {
     citas: {
       base: '/appointment/citas/',
       byId: (id: string) => `/appointment/citas/${id}/`,
       porOdontologo: (odontologoId: string) => `/appointment/citas/por-odontologo/${odontologoId}/`,
       porSemana: '/appointment/citas/por-semana/',
-      
+
       hoy: '/appointment/citas/hoy/',
 
       historial: (id: string) => `/appointment/citas/${id}/historial/`,
       delDia: '/appointment/citas/del-dia/',
       proximas: '/appointment/citas/proximas/',
-      
+
 
 
       porPaciente: (pacienteId: string) => `/appointment/citas/by-paciente/${pacienteId}/`,
@@ -156,7 +164,7 @@ clinicalRecords: {
       reprogramar: (id: string) => `/appointment/citas/${id}/reprogramar/`,
       cambiarEstado: (id: string) => `/appointment/citas/${id}/cambiar-estado/`,
       horariosDisponibles: '/appointment/citas/horarios-disponibles/',
-            // ✅ NUEVO: Endpoints para recordatorios
+
       enviarRecordatorio: (id: string) => `/appointment/citas/${id}/recordatorio/`,
       estadisticasRecordatorios: '/appointment/citas/estadisticas-recordatorios/',
 
@@ -171,7 +179,7 @@ clinicalRecords: {
       byId: (id: string) => `/appointment/recordatorio/${id}/`,
     },
   },
-    dashboard: {
+  dashboard: {
     stats: '/dashboard/stats/',
     overview: '/dashboard/overview/',
     kpis: '/dashboard/kpis/',
@@ -182,79 +190,115 @@ clinicalRecords: {
     estadisticasAvanzadas: '/dashboard/estadisticas-avanzadas/',
     periodosDisponibles: '/dashboard/periodos-disponibles/',
 
-    },
+  },
 
   odontograma: {
-  base: '/patients/odontograma/',
-  byId: (id: string) => `/patients/odontograma/${id}/`,
-  form033: {
-    base: '/patients/form-033/',
-    byId: (id: string) => `/patients/form-033/${id}/`,
-    byPaciente: (pacienteId: string) => `/patients/form-033/by-paciente/${pacienteId}/`,
-  },
-  diagnosticos: {
-    base: '/patients/diagnosticos-odontograma/',
-    byId: (id: string) => `/patients/diagnosticos-odontograma/${id}/`,
-  },
-  export: {
-    jsonExport: (pacienteId: string) => `/odontogram/export/form033/${pacienteId}/json/`,
+    base: '/patients/odontograma/',
+    byId: (id: string) => `/patients/odontograma/${id}/`,
+    form033: {
+      base: '/patients/form-033/',
+      byId: (id: string) => `/patients/form-033/${id}/`,
+      byPaciente: (pacienteId: string) => `/patients/form-033/by-paciente/${pacienteId}/`,
+    },
+    diagnosticos: {
+      base: '/patients/diagnosticos-odontograma/',
+      byId: (id: string) => `/patients/diagnosticos-odontograma/${id}/`,
+    },
+    export: {
+      jsonExport: (pacienteId: string) => `/odontogram/export/form033/${pacienteId}/json/`,
       htmlPreview: (pacienteId: string) => `/odontogram/export/form033/${pacienteId}/html/`,
       pdfDownload: (pacienteId: string) => `/odontogram/export/form033/${pacienteId}/pdf/`,
       pdfSave: (pacienteId: string) => `/odontogram/export/form033/${pacienteId}/guardar-pdf/`,
-  },
-
-  clinicalRecords: {
-  base: '/clinical-records/',
-  byId: (id: string) => `/clinical-records/${id}/`,
-  byPaciente: (pacienteId: string) => `/clinical-records/by-paciente/?paciente_id=${pacienteId}`,
-  cargarDatosIniciales: (pacienteId: string) => `/clinical-records/cargar-datos-iniciales/?paciente_id=${pacienteId}`,
-  cerrar: (id: string) => `/clinical-records/${id}/cerrar/`,
-  reabrir: (id: string) => `/clinical-records/${id}/reabrir/`,
-  
-  // AGREGAR ESTOS NUEVOS ENDPOINTS:
-  antecedentesPersonales: {
-    base: '/clinical-records/antecedentes-personales/',
-    latestByPaciente: (pacienteId: string) => `/clinical-records/antecedentes-personales/${pacienteId}/latest/`,
-  },
-  antecedentesFamiliares: {
-    base: '/clinical-records/antecedentes-familiares/',
-    latestByPaciente: (pacienteId: string) => `/clinical-records/antecedentes-familiares/${pacienteId}/latest/`,
-  },
-  constantesVitales: {
-    base: '/clinical-records/constantes-vitales/',
-    latestByPaciente: (pacienteId: string) => `/clinical-records/constantes-vitales/${pacienteId}/latest/`,
-  },
-  examenEstomatognatico: {
-    base: '/clinical-records/examen-estomatognatico/',
-    latestByPaciente: (pacienteId: string) => `/clinical-records/examen-estomatognatico/${pacienteId}/latest/`,
-  },
-  odontograma2D: {
-    base: '/clinical-records/odontograma-2d/',
-    latestByPaciente: (pacienteId: string) => `/clinical-records/odontograma-2d/${pacienteId}/latest/`,
-  },
-  indicadoresSaludBucal: {
-      latestByPaciente: (pacienteId: string) => 
-        `/api/clinical-records/indicadores-salud-bucal/${pacienteId}/latest/`,
-      recargarByPaciente: (pacienteId: string) =>
-        `/api/clinical-records/indicadores-salud-bucal/${pacienteId}/recargar/`,
-      byHistorial: (historialId: string) =>
-        `/api/clinical-records/indicadores-salud-bucal/historial/${historialId}/`,
     },
-  indicesCaries: {
-    base: '/clinical-records/indices-caries/',
-    latestByPaciente: (pacienteId: string) => 
-      `/clinical-records/indices-caries/${pacienteId}/latest/`,
-    saveToHistorial: (historialId: string) =>
-      `/clinical-records/${historialId}/guardar-indices-caries/`,
-    updateInHistorial: (historialId: string) =>
-      `/clinical-records/${historialId}/actualizar-indices-caries/`,
+
+    clinicalRecords: {
+      base: '/clinical-records/',
+      byId: (id: string) => `/clinical-records/${id}/`,
+      byPaciente: (pacienteId: string) => `/clinical-records/by-paciente/?paciente_id=${pacienteId}`,
+      cargarDatosIniciales: (pacienteId: string) => `/clinical-records/cargar-datos-iniciales/?paciente_id=${pacienteId}`,
+      cerrar: (id: string) => `/clinical-records/${id}/cerrar/`,
+      reabrir: (id: string) => `/clinical-records/${id}/reabrir/`,
+
+      // AGREGAR ESTOS NUEVOS ENDPOINTS:
+      antecedentesPersonales: {
+        base: '/clinical-records/antecedentes-personales/',
+        latestByPaciente: (pacienteId: string) => `/clinical-records/antecedentes-personales/${pacienteId}/latest/`,
+      },
+      antecedentesFamiliares: {
+        base: '/clinical-records/antecedentes-familiares/',
+        latestByPaciente: (pacienteId: string) => `/clinical-records/antecedentes-familiares/${pacienteId}/latest/`,
+      },
+      constantesVitales: {
+        base: '/clinical-records/constantes-vitales/',
+        latestByPaciente: (pacienteId: string) => `/clinical-records/constantes-vitales/${pacienteId}/latest/`,
+      },
+      examenEstomatognatico: {
+        base: '/clinical-records/examen-estomatognatico/',
+        latestByPaciente: (pacienteId: string) => `/clinical-records/examen-estomatognatico/${pacienteId}/latest/`,
+      },
+      odontograma2D: {
+        base: '/clinical-records/odontograma-2d/',
+        latestByPaciente: (pacienteId: string) => `/clinical-records/odontograma-2d/${pacienteId}/latest/`,
+      },
+      indicadoresSaludBucal: {
+        latestByPaciente: (pacienteId: string) =>
+          `/api/clinical-records/indicadores-salud-bucal/${pacienteId}/latest/`,
+        recargarByPaciente: (pacienteId: string) =>
+          `/api/clinical-records/indicadores-salud-bucal/${pacienteId}/recargar/`,
+        byHistorial: (historialId: string) =>
+          `/api/clinical-records/indicadores-salud-bucal/historial/${historialId}/`,
+      },
+      indicesCaries: {
+        base: '/clinical-records/indices-caries/',
+        latestByPaciente: (pacienteId: string) =>
+          `/clinical-records/indices-caries/${pacienteId}/latest/`,
+        saveToHistorial: (historialId: string) =>
+          `/clinical-records/${historialId}/guardar-indices-caries/`,
+        updateInHistorial: (historialId: string) =>
+          `/clinical-records/${historialId}/actualizar-indices-caries/`,
+      },
+      diagnosticosCIE: {
+        getAvailable: (pacienteId: string, tipocarga: "nuevos" | "todos" = "nuevos") =>
+          `/clinical-records/diagnosticos-cie/?paciente_id=${pacienteId}&tipocarga=${tipocarga}`,
+
+        loadToRecord: (historialId: string) =>
+          `/clinical-records/${historialId}/cargar-diagnosticos-cie/`,
+
+        getByRecord: (historialId: string) =>
+          `/clinical-records/${historialId}/obtener-diagnosticos-cie/`,
+
+        deleteAllFromRecord: (historialId: string) =>
+          `/clinical-records/${historialId}/eliminar-diagnosticos-cie/`,
+
+        syncInRecord: (historialId: string) =>
+          `/clinical-records/${historialId}/sincronizar-diagnosticos-cie/`,
+
+        updateType: (historialId: string, diagnosticoId: string) =>
+          `/clinical-records/${historialId}/diagnosticos-cie/${diagnosticoId}/actualizar-tipo/`,
+
+        deleteIndividual: (historialId: string, diagnosticoId: string) =>
+          `/clinical-records/${historialId}/diagnosticos-cie/${diagnosticoId}/`,
+      },
+      planTratamiento: {
+        getByHistorial: (historialId: string) => `/clinical-records/${historialId}/plan-tratamiento/`,
+        getResumenCompleto: (historialId: string) => `/clinical-records/${historialId}/resumen-plan-tratamiento/`,
+        getSesiones: (historialId: string) => `/clinical-records/${historialId}/sesiones-plan-tratamiento/`,
+        getDatosCompletos: (historialId: string) => `/clinical-records/${historialId}/datos-completos-plan/`,
+        getPlanesByPaciente: (pacienteId: string) => `/clinical-records/planes-tratamiento/?pacienteid=${pacienteId}`,
+      },
+      planTratamientoByHistorial: (historialId: string) =>
+        `clinical-records/${historialId}/plan-tratamiento`,
+      sesionesTratamientoByHistorial: (historialId: string) =>
+        `/clinical-records/${historialId}/sesiones-plan-tratamiento/`,
+      planesTratamientoByPaciente: (pacienteId: string) =>
+        `clinical-records/planes-tratamiento?pacienteid=${pacienteId}`,
+    },
   },
-},
-},
 
 
 
-  
+
+
 } as const;
 
 // Configuración de paginación

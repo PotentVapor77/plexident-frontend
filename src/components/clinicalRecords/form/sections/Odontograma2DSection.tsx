@@ -1,11 +1,11 @@
 // src/components/clinicalRecord/form/sections/Odontograma2DSection.tsx
 
 import React, { useState, useEffect } from "react";
-import { Download, Eye, Printer, AlertCircle, Loader2, FileText, CheckCircle, RefreshCw } from "lucide-react";
+import {  AlertCircle, Loader2, FileText, CheckCircle, RefreshCw } from "lucide-react";
 import type { ClinicalRecordFormData } from "../../../../core/types/clinicalRecord.types";
 import type { IPaciente } from "../../../../types/patient/IPatient";
 import Button from "../../../ui/button/Button";
-import { API_BASE_URL, ENDPOINTS } from "../../../../config/api";
+import { ENDPOINTS } from "../../../../config/api";
 import { ToothCrownReadOnly } from "./odonto2d/ToothCrownReadOnly";
 import { adaptForm033ToSurfaceColors, shouldShowOverlayIcon } from "../../../../core/utils/form033Adapter";
 import clinicalRecordService from "../../../../services/clinicalRecord/clinicalRecordService";
@@ -22,9 +22,11 @@ interface Odontograma2DSectionProps {
   lastUpdated?: string | null;
   validationErrors: Record<string, string>;
   refreshSection: () => Promise<void>;
+  refreshIndicesCaries?: () => Promise<void>;
   mode?: "create" | "edit"; 
   historialId?: string; 
   isRefreshing?: boolean;
+  onOdontogramaDataChange?: (data: Form033Data | null) => void;
 }
 
 interface ApiResponseWrapper<T> {
@@ -148,6 +150,9 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
   validationErrors,
   mode = "create",
   historialId,
+  refreshSection,
+  refreshIndicesCaries,
+  isRefreshing = false,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [odontogramaData, setOdontogramaData] = useState<Form033Data | null>(null);
@@ -176,12 +181,12 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
     setError(null);
 
     try {
-      console.log(" Cargando snapshot del historial:", historialIdParam);
+      console.log("Cargando snapshot del historial:", historialIdParam);
 
       const snapshot = await clinicalRecordService.getForm033(historialIdParam);
 
       if (snapshot && snapshot.datos_form033) {
-        console.log(" Snapshot cargado exitosamente");
+        console.log("Snapshot cargado exitosamente");
 
         const adaptedData: Form033Data = {
           timestamp: snapshot.fecha_captura,
@@ -200,7 +205,7 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
       console.error("Error cargando snapshot:", err);
 
       if (err.response?.status === 404 && selectedPaciente?.id) {
-        console.log(" Snapshot no encontrado, cargando datos actuales como fallback");
+        console.log("Snapshot no encontrado, cargando datos actuales como fallback");
         await loadCurrentOdontogramaData(selectedPaciente.id);
       } else {
         setError("No se pudo cargar el odontograma guardado");
@@ -222,7 +227,7 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
       console.log("Cargando odontograma actual del paciente:", pacienteId);
 
       const response = await axiosInstance.get<Form033Response>(
-      ENDPOINTS.odontograma.export.jsonExport(pacienteId)
+        ENDPOINTS.odontograma.export.jsonExport(pacienteId)
       );
 
       if (response.data.success && response.data.data) {
@@ -247,90 +252,46 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
   };
 
   // ========================================================================
-  // RECARGAR DATOS ACTUALES (botón manual)
+  // RECARGAR DATOS ACTUALES (botón manual) - VERSIÓN MEJORADA
   // ========================================================================
-  const handleReloadCurrentData = () => {
-    if (selectedPaciente?.id) {
-      loadCurrentOdontogramaData(selectedPaciente.id);
+  const handleReloadCurrentData = async () => {
+    if (!selectedPaciente?.id) {
+      setError("No hay paciente seleccionado");
+      return;
     }
-  };
 
-  const handlePreviewHTML = () => {
-  if (!selectedPaciente?.id) return;
-  const url = `${API_BASE_URL}${ENDPOINTS.odontograma.export.htmlPreview(selectedPaciente.id)}`;
-  window.open(url, "_blank");
-};
+    setIsLoading(true);
+    setError(null);
 
-  const handleDownloadPDF = async () => {
-    if (!selectedPaciente?.id) return;
     try {
-      setIsLoading(true);
-      const url = ENDPOINTS.odontograma.export.pdfDownload(selectedPaciente.id);
-      const response = await axiosInstance.get(url, { responseType: "blob" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(response.data);
-      const contentDisposition = response.headers["content-disposition"];
-      let filename = `Form033_${selectedPaciente.cedula_pasaporte}_${
-        new Date().toISOString().split("T")[0]
-      }.pdf`;
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-        if (filenameMatch && filenameMatch[1]) {
-          filename = filenameMatch[1];
-        }
+      if (refreshSection) {
+        await refreshSection();
       }
-      link.setAttribute("download", filename);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
+
+      await loadCurrentOdontogramaData(selectedPaciente.id);
+
+      if (refreshIndicesCaries) {
+        await refreshIndicesCaries();
+      }
+
+      console.log("Datos recargados exitosamente");
     } catch (err: any) {
-      setError(err.response?.data?.message || "No se pudo descargar el PDF");
-    } finally {
-      setIsLoading(false);
+      console.error("Error al recargar datos:", err);
+      setError(err.message || "Error al recargar los datos");
     }
   };
 
-  const handleSavePDF = async () => {
-    if (!selectedPaciente?.id) return;
-    try {
-      setIsLoading(true);
-      const response = await axiosInstance.post<
-        ApiResponseWrapper<{
-          estado: string;
-          mensaje: string;
-          archivo: string;
-          ruta: string;
-          tamaño_kb: number;
-          timestamp: string;
-        }>
-      >(ENDPOINTS.odontograma.export.pdfSave(selectedPaciente.id));
-
-      if (response.data.success) {
-        setError(null);
-        alert(response.data.data.mensaje || "PDF guardado exitosamente en el servidor");
-      } else {
-        setError(response.data.message || "Error al guardar el PDF");
-      }
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message || err.response?.data?.mensaje || "No se pudo guardar el PDF"
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const hasOdontogramaData = !!odontogramaData;
   const hasValidationError = !!validationErrors.odontograma;
 
-   return (
+  return (
     <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
       
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 border border-blue-100">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 border border-blue-100"> 
             <FileText className="h-5 w-5 text-blue-600" />
           </div>
           <div>
@@ -404,39 +365,11 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
             </Button>
           )}
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePreviewHTML}
-            disabled={!selectedPaciente || isLoading}
-            startIcon={<Eye className="h-4 w-4" />}
-          >
-            Vista Previa HTML
-          </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDownloadPDF}
-            disabled={!selectedPaciente || isLoading}
-            startIcon={<Download className="h-4 w-4" />}
-          >
-            Descargar PDF
-          </Button>
-
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleSavePDF}
-            disabled={!selectedPaciente || isLoading}
-            startIcon={<Printer className="h-4 w-4" />}
-          >
-            Guardar en Servidor
-          </Button>
         </div>
 
-        {/* LOADING STATE */}
-        {isLoading && (
+        {/* LOADING STATE - Combinado con isRefreshing */}
+        {(isLoading || isRefreshing) && (
           <div className="flex items-center justify-center p-8 border border-slate-200 rounded-lg">
             <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
             <span className="ml-3 text-slate-600">Cargando datos del odontograma...</span>
@@ -444,7 +377,7 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
         )}
 
         {/* ERROR STATE */}
-        {error && (
+        {error && !isLoading && (
           <div className="flex items-start gap-3 p-4 bg-rose-50 border border-rose-200 rounded-lg">
             <AlertCircle className="h-5 w-5 text-rose-600 mt-0.5 flex-shrink-0" />
             <div>
@@ -454,8 +387,9 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => loadCurrentOdontogramaData(selectedPaciente.id)}
+                  onClick={handleReloadCurrentData}
                   className="mt-2 text-rose-700 hover:text-rose-800"
+                  disabled={isLoading}
                 >
                   Reintentar
                 </Button>
@@ -463,7 +397,6 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
             </div>
           </div>
         )}
-
 
         {/* ODONTOGRAMA DATA - FORMATO 2 FILAS */}
         {odontogramaData && !isLoading && (
@@ -474,20 +407,22 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveTab("permanente")}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "permanente"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
-                    }`}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === "permanente"
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                  }`}
                 >
                   Dientes Permanentes (32 dientes)
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab("temporal")}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "temporal"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
-                    }`}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === "temporal"
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                  }`}
                 >
                   Dientes Temporales (20 dientes)
                 </button>
@@ -648,7 +583,8 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => loadCurrentOdontogramaData(selectedPaciente.id)}
+              onClick={handleReloadCurrentData}
+              disabled={isLoading}
             >
               Reintentar carga
             </Button>
@@ -667,7 +603,7 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
         )}
 
         {/* VALIDATION ERROR */}
-        {validationErrors.odontograma && (
+        {validationErrors.odontograma && !isLoading && (
           <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
             <div>
@@ -687,8 +623,6 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
  * ============================================================================
  */
 
-
-
 /**
  * Renderiza una celda individual de diente con corona SVG y badges
  * SIEMPRE MUESTRA EL NÚMERO FDI
@@ -700,7 +634,6 @@ const renderDienteCell = (
   index: number,
   isUpperQuadrant: boolean,
   fdiNumber: string
-
 ) => {
   // Obtener FDI del diente o generar uno vacío
   const fdi = diente?.codigo_fdi || "00";
@@ -760,18 +693,17 @@ const renderDienteCell = (
         size="sm"
         showBadge={false}
         overlayIcon={overlayIcon}
-
       />
     </div>
   );
+
   const fdiBadge = (
     <div className="h-5 flex items-center justify-center w-16">
-      <div className="px-1 py-0.1 rounded text-[8px] font-boldtext-slate-900 border border-slate-400/50 backdrop-blur-sm">
+      <div className="px-1 py-0.1 rounded text-[8px] font-bold text-slate-900 border border-slate-400/50 backdrop-blur-sm">
         {fdiNumber}
       </div>
     </div>
   );
-
 
   return (
     <div className="flex flex-col items-center gap-px w-11">
@@ -788,7 +720,6 @@ const renderDienteCell = (
           {fdiBadge}
           {mobilityBlock}
           {recessionBlock}
-
         </>
       )}
     </div>
@@ -842,7 +773,6 @@ const renderLegend = () => {
           </div>
         ))}
       </div>
-
     </div>
   );
 };

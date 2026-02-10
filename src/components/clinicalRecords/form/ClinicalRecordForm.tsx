@@ -93,6 +93,7 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
         indices_caries: ENDPOINTS.clinicalRecords.indicesCaries.latestByPaciente(selectedPaciente.id),
         diagnosticos_cie: ENDPOINTS.clinicalRecords.diagnosticosCIE.getAvailable(selectedPaciente.id, 'nuevos'),
         plan_tratamiento: '',
+        examenes_complementarios: ENDPOINTS.clinicalRecords.examenesComplementarios.latestByPaciente(selectedPaciente.id),
       };
       if (section === 'plan_tratamiento') {
         if (!recordId) {
@@ -267,7 +268,20 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
             }
             break;
 
+          case "examenes_complementarios":
+            updateSectionData("examenes_complementarios_data", data);
+            if (data.id) {
+              updateField("examenes_complementarios_id", data.id);
+            }
+            setInitialDates(prev => ({
+              ...prev,
+              examenes_complementarios: data.fecha_creacion || new Date().toISOString(),
+            }));
+            break;
+
         }
+
+
 
         notify({
           type: "success",
@@ -403,7 +417,17 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
               setSelectedOdontologo(odontologoUser);
             }
           }
-
+if (detailData.examenes_complementarios_data) {
+  console.log('📌 Cargando exámenes complementarios:', detailData.examenes_complementarios_data);
+  updateSectionData("examenes_complementarios_data", detailData.examenes_complementarios_data);
+  if (detailData.examenes_complementarios_data.id) {
+    updateField("examenes_complementarios_id", detailData.examenes_complementarios_data.id);
+  }
+  setInitialDates(prev => ({
+    ...prev,
+    examenes_complementarios: detailData.examenes_complementarios_data?.fecha_creacion || null,
+  }));
+}
           // Campos de texto
           console.log('📌 Cargando campos de texto');
           if (detailData.motivo_consulta) {
@@ -545,7 +569,7 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
             updateSectionData("examen_estomatognatico_data", detailData.examen_estomatognatico_data);
             setInitialDates(prev => ({
               ...prev,
-              examen_estomatognatico: detailData.examen_estomatognatico_data?.fecha_creacion || null,
+              examen_estomatognatico: detailData.examen_estomatognatico_data?.fecha_modificacion || null,
             }));
           }
 
@@ -1060,6 +1084,7 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
         formData={formData}
         updateField={updateField}
         updateSectionData={updateSectionData}
+
         selectedPaciente={selectedPaciente}
         setSelectedPaciente={setSelectedPaciente}
         selectedOdontologo={selectedOdontologo}

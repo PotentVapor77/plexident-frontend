@@ -144,7 +144,7 @@ export function ComplementaryExamViewModal({
 
         <div className="space-y-6">
           {/* Tarjeta de Información del Paciente */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
+          {/* <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
             <div className="flex items-start gap-4">
               <div className="w-16 h-16 rounded-xl bg-blue-600 dark:bg-blue-700 text-white flex items-center justify-center text-xl font-semibold shadow-lg flex-shrink-0">
                 {initials}
@@ -176,7 +176,6 @@ export function ComplementaryExamViewModal({
                   </div>
                 </div>
                 
-                {/* Resumen destacado */}
                 {exam.resumen_examenes_complementarios && (
                   <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800">
                     <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2">
@@ -189,7 +188,7 @@ export function ComplementaryExamViewModal({
                 )}
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Sección: Solicitud de Exámenes */}
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">

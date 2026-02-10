@@ -5,7 +5,24 @@ import { useVitalSigns } from "../../../../hooks/vitalSigns/useVitalSigns";
 import type { IVitalSigns } from "../../../../types/vitalSigns/IVitalSigns";
 import { getPacienteById } from "../../../../services/patient/patientService";
 import type { IPaciente } from "../../../../types/patient/IPatient";
-import { useAuth } from "../../../../hooks/auth/useAuth"; // ✅ AGREGAR
+import { useAuth } from "../../../../hooks/auth/useAuth";
+import {
+  Search,
+  Filter,
+  Eye,
+  Edit2,
+  Trash2,
+  User,
+  Calendar,
+  Activity,
+  Heart,
+  Thermometer,
+  Wind,
+  FileText,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 interface VitalSignsTableProps {
   onEdit?: (vital: IVitalSigns) => void;
@@ -28,7 +45,7 @@ export function VitalSignsTable({
   const [pageSize, setPageSize] = useState(5);
   const [search, setSearch] = useState("");
   const [pacienteCache, setPacienteCache] = useState<PacienteCache>({});
-  const { user } = useAuth(); // ✅ AGREGAR
+  const { user } = useAuth();
 
   const { vitalSigns, pagination, isLoading, isError, error } = useVitalSigns({
     page,
@@ -37,7 +54,7 @@ export function VitalSignsTable({
     paciente: pacienteId,
   });
 
-  const isAdmin = user?.rol === "Administrador"; // ✅ AGREGAR
+  const isAdmin = user?.rol === "Administrador";
 
   // ✅ FILTRAR: Solo mostrar activos para no administradores
   const vitalList = isAdmin 
@@ -121,11 +138,17 @@ export function VitalSignsTable({
     return `${text.substring(0, maxLength)}...`;
   };
 
+  const getEstadoColor = (activo: boolean) => {
+    return activo
+      ? 'bg-success-50 text-success-700 border-success-200 dark:bg-success-900/30 dark:text-success-400 dark:border-success-800'
+      : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700';
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="flex flex-col items-center gap-2">
-          <div className="h-8 w-8 rounded-full border-4 border-blue-600 border-t-transparent animate-spin" />
+          <div className="h-8 w-8 rounded-full border-4 border-brand-600 border-t-transparent animate-spin" />
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Cargando registros médicos y datos del paciente...
           </p>
@@ -136,26 +159,16 @@ export function VitalSignsTable({
 
   if (isError) {
     return (
-      <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4">
+      <div className="rounded-lg bg-error-50 dark:bg-error-900/20 p-4 border border-error-200 dark:border-error-800">
         <div className="flex">
           <div className="flex-shrink-0">
-            <svg
-              className="h-5 w-5 text-red-400"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-5.75a.75.75 0 011.5 0v1.5a.75.75 0 01-1.5 0v-1.5zm0-7a.75.75 0 011.5 0v5.5a.75.75 0 01-1.5 0v-5.5z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <AlertCircle className="h-5 w-5 text-error-400" />
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+            <h3 className="text-sm font-medium text-error-800 dark:text-error-200">
               Error al cargar registros médicos
             </h3>
-            <p className="mt-2 text-sm text-red-700 dark:text-red-300">
+            <p className="mt-2 text-sm text-error-700 dark:text-error-300">
               {error || "Error desconocido"}
             </p>
           </div>
@@ -168,315 +181,284 @@ export function VitalSignsTable({
     <div className="space-y-4">
       {/* Header con buscador */}
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="w-full sm:flex-1">
+        <div className="w-full sm:flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
             placeholder="Buscar por nombre de paciente, cédula..."
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 shadow-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 focus:border-transparent focus:ring-2 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
           />
         </div>
         <div className="flex items-center gap-2">
           <label className="text-sm text-gray-700 dark:text-gray-300">
             Mostrar:
           </label>
-          <select
-            value={pageSize}
-            onChange={(e) => {
-              setPageSize(Number(e.target.value));
-              setPage(1);
-            }}
-            className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-          </select>
+          <div className="relative">
+            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(1);
+              }}
+              className="pl-10 pr-8 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 appearance-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
         </div>
       </div>
 
       {/* Tabla */}
-      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-800">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                Paciente
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                Consulta
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                Signos vitales
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                Fecha consulta
-              </th>
-              {/* ✅ Ocultar columna Estado para no administradores */}
-              {isAdmin && (
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                  Estado
-                </th>
-              )}
-              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
-            {vitalList.length === 0 ? (
+      <div className="relative overflow-hidden rounded-lg border border-gray-200 shadow-sm dark:border-gray-700">
+        <div className="overflow-x-auto custom-scrollbar max-h-[calc(100vh-20rem)]">
+          <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400 min-w-[900px]">
+            <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400 sticky top-0 z-10">
               <tr>
-                <td
-                  colSpan={isAdmin ? 6 : 5} 
-                  className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <svg
-                      className="h-12 w-12 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                    <p className="text-sm">No se encontraron registros médicos</p>
-                    {search && (
-                      <button
-                        onClick={() => setSearch("")}
-                        className="text-sm text-blue-600 hover:underline"
-                      >
-                        Limpiar búsqueda
-                      </button>
-                    )}
-                  </div>
-                </td>
+                <th scope="col" className="px-6 py-3 font-medium min-w-[200px]">Paciente</th>
+                <th scope="col" className="px-6 py-3 font-medium min-w-[200px]">Consulta</th>
+                <th scope="col" className="px-6 py-3 font-medium min-w-[220px]">Signos vitales</th>
+                <th scope="col" className="px-6 py-3 font-medium min-w-[140px]">Fecha consulta</th>
+                {isAdmin && (
+                  <th scope="col" className="px-6 py-3 font-medium min-w-[120px]">Estado</th>
+                )}
+                <th scope="col" className="px-6 py-3 text-right font-medium min-w-[140px]">Acciones</th>
               </tr>
-            ) : (
-              vitalList.map((v) => {
-                const paciente = getPacienteObject(v);
-                if (!paciente && typeof v.paciente === "string") {
-                  void ensurePatientInCache(v.paciente);
-                }
-
-                const patientName = getPatientName(v);
-                const patientInitials = getPatientInitials(v);
-                const patientId = getPatientId(v);
-                const tieneConsulta = v.motivo_consulta || v.enfermedad_actual;
-
-                return (
-                  <tr
-                    key={v.id}
-                    className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+            </thead>
+            <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
+              {vitalList.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={isAdmin ? 6 : 5}
+                    className="px-6 py-12 text-center"
                   >
-                    {/* Paciente */}
-                    <td className="whitespace-nowrap px-6 py-4">
-                      <div className="flex items-center">
-                        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white font-semibold shadow-md shadow-blue-500/30">
-                          {patientInitials}
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                            {patientName}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            CI {patientId}
-                          </div>
-                        </div>
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="rounded-full bg-gray-100 p-3 dark:bg-gray-800">
+                        <FileText className="h-8 w-8 text-gray-400" />
                       </div>
-                    </td>
+                      <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+                        No se encontraron registros médicos
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        {search ? 'Intenta con otros términos de búsqueda' : 'No hay registros médicos'}
+                      </p>
+                      {search && (
+                        <button
+                          onClick={() => setSearch("")}
+                          className="mt-3 text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
+                        >
+                          Limpiar búsqueda
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                vitalList.map((v) => {
+                  const paciente = getPacienteObject(v);
+                  if (!paciente && typeof v.paciente === "string") {
+                    void ensurePatientInCache(v.paciente);
+                  }
 
-                    {/* Consulta */}
-                    <td className="px-6 py-4">
-                      <div className="max-w-xs">
-                        {tieneConsulta ? (
-                          <div className="text-sm">
-                            {v.motivo_consulta && (
-                              <div className="font-medium text-gray-900 dark:text-gray-100">
-                                <span className="font-semibold">Motivo:</span>{" "}
-                                {truncateText(v.motivo_consulta || "No especificado", 50)}
-                              </div>
-                            )}
-                            {v.enfermedad_actual && (
-                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                <span className="font-medium">Enf. actual:</span>{" "}
-                                {truncateText(v.enfermedad_actual, 60)}
-                              </div>
-                            )}
+                  const patientName = getPatientName(v);
+                  const patientInitials = getPatientInitials(v);
+                  const patientId = getPatientId(v);
+                  const tieneConsulta = v.motivo_consulta || v.enfermedad_actual;
+
+                  return (
+                    <tr
+                      key={v.id}
+                      className="group hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                    >
+                      {/* Paciente */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
+                            {patientInitials}
                           </div>
-                        ) : (
-                          <span className="text-sm text-gray-400 italic">
-                            Sin datos de consulta
-                          </span>
-                        )}
-                      </div>
-                    </td>
+                          <div className="flex flex-col">
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {patientName}
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              CI: {patientId}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
 
-                    {/* Signos vitales */}
-                    <td className="px-6 py-4">
-                        <div className="text-sm text-gray-700 dark:text-gray-300">
-                          <span className="font-semibold">
-                            {v.temperatura ?? "-"}°C
-                          </span>{" "}
-                          · Pulso:{" "}
-                          <span className="font-semibold">
-                            {v.pulso ?? "-"} lpm
-                          </span>{" "}
-                          · FR:{" "}
-                          <span className="font-semibold">
-                            {v.frecuencia_respiratoria ?? "-"} rpm
-                          </span>{" "}
-                          · PA:{" "}
-                          <span className="font-semibold">
-                            {v.presion_arterial || "-"}
-                          </span>
+                      {/* Consulta */}
+                      <td className="px-6 py-4">
+                        <div className="max-w-xs">
+                          {tieneConsulta ? (
+                            <div className="space-y-1">
+                              {v.motivo_consulta && (
+                                <div className="text-sm">
+                                  <span className="font-semibold text-gray-700 dark:text-gray-300">Motivo:</span>
+                                  <p className="text-gray-600 dark:text-gray-400 mt-0.5">
+                                    {truncateText(v.motivo_consulta || "No especificado", 50)}
+                                  </p>
+                                </div>
+                              )}
+                              {v.enfermedad_actual && (
+                                <div className="text-xs">
+                                  <span className="font-medium text-gray-600 dark:text-gray-500">Enf. actual:</span>
+                                  <p className="text-gray-500 dark:text-gray-400 mt-0.5">
+                                    {truncateText(v.enfermedad_actual, 60)}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-500 dark:text-gray-400 italic">
+                              Sin datos de consulta
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Signos vitales */}
+                      <td className="px-6 py-4">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="flex items-center gap-2">
+                            <Thermometer className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                            <div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">Temperatura</div>
+                              <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                                {v.temperatura ?? "-"}°C
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Heart className="h-4 w-4 text-error-600 dark:text-error-400" />
+                            <div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">Pulso</div>
+                              <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                                {v.pulso ?? "-"} lpm
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Wind className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            <div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">Frec. Resp.</div>
+                              <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                                {v.frecuencia_respiratoria ?? "-"} rpm
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Activity className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                            <div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">Presión Art.</div>
+                              <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                                {v.presion_arterial || "-"}
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </td>
 
                       {/* Fecha consulta */}
-                      <td className="whitespace-nowrap px-6 py-4">
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                          <Calendar className="h-3.5 w-3.5" />
                           {formatDate(v.fecha_consulta || v.fecha_creacion)}
                         </div>
                       </td>
 
-                    {/* ✅ Estado - Solo para Administrador */}
-                    {isAdmin && (
-                      <td className="whitespace-nowrap px-6 py-4">
-                        <span
-                          className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                            v.activo
-                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                              : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                          }`}
-                        >
-                          {v.activo ? "Activo" : "Inactivo"}
-                        </span>
+                      {/* ✅ Estado - Solo para Administrador */}
+                      {isAdmin && (
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getEstadoColor(v.activo)}`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${v.activo ? 'bg-success-500' : 'bg-gray-400'}`} />
+                            {v.activo ? "Activo" : "Inactivo"}
+                          </span>
+                        </td>
+                      )}
+
+                      {/* Acciones */}
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end gap-1">
+                          {/* Ver */}
+                          {onView && (
+                            <button
+                              onClick={() => handleView(v)}
+                              className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:bg-brand-50 hover:text-brand-600 dark:text-gray-400 dark:hover:bg-brand-500/10 dark:hover:text-brand-300 transition-colors"
+                              title="Ver detalles"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
+                          )}
+
+                          {/* Editar */}
+                          {onEdit && (
+                            <button
+                              onClick={() => handleEdit(v)}
+                              className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:bg-orange-50 hover:text-orange-600 dark:text-gray-400 dark:hover:bg-orange-500/10 dark:hover:text-orange-300 transition-colors"
+                              title="Editar"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </button>
+                          )}
+
+                          {/* Eliminar */}
+                          {onDelete && (
+                            <button
+                              onClick={() => handleDeleteClick(v)}
+                              disabled={!v.activo}
+                              className={`inline-flex items-center justify-center h-8 w-8 rounded-md transition-colors ${
+                                !v.activo
+                                  ? "text-gray-300 dark:text-gray-600 cursor-not-allowed opacity-50"
+                                  : "text-gray-500 hover:bg-error-50 hover:text-error-600 dark:text-gray-400 dark:hover:bg-error-500/10 dark:hover:text-error-300"
+                              }`}
+                              title={!v.activo ? "No se puede eliminar" : "Eliminar registro"}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
                       </td>
-                    )}
-
-                    {/* Acciones */}
-                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                      <div className="flex justify-end gap-2">
-                        {onView && (
-                          <button
-                            onClick={() => handleView(v)}
-                            className="text-blue-600 transition-colors hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                            title="Ver detalles"
-                          >
-                            <svg
-                              className="h-5 w-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeWidth={2}
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                              />
-                              <path
-                                strokeWidth={2}
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                              />
-                            </svg>
-                          </button>
-                        )}
-
-                        {onEdit && (
-                          <button
-                            onClick={() => handleEdit(v)}
-                            className="text-indigo-600 transition-colors hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                            title="Editar"
-                          >
-                            <svg
-                              className="h-5 w-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeWidth={2}
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                              />
-                            </svg>
-                          </button>
-                        )}
-
-                        {onDelete && (
-                          <button
-                            onClick={() => handleDeleteClick(v)}
-                            disabled={!v.activo}
-                            className={`transition-colors ${
-                              v.activo
-                                ? "text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                : "cursor-not-allowed text-red-300 opacity-50 dark:text-red-500"
-                            }`}
-                            title={
-                              !v.activo
-                                ? "Registros inactivos no se pueden eliminar"
-                                : "Eliminar"
-                            }
-                          >
-                            <svg
-                              className="h-5 w-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeWidth={2}
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862A2 2 0 015.867 19.142L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 text-xs font-medium text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 sticky bottom-0">
+          Mostrando {vitalList.length} de {pagination?.count || 0} registros médicos
+        </div>
       </div>
 
       {/* Paginación */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex flex-col items-center justify-between gap-4 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 sm:flex-row">
-          <div>
-            Mostrando página{" "}
-            <span className="font-medium">{pagination.page}</span> de{" "}
-            <span className="font-medium">{pagination.totalPages}</span> (
-            {pagination.count} registros)
+        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div className="text-sm text-gray-700 dark:text-gray-300">
+            Página <span className="font-medium">{pagination.page}</span> de{" "}
+            <span className="font-medium">{pagination.totalPages}</span> • Total: {pagination.count}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             <button
               onClick={() => setPage(page - 1)}
               disabled={!pagination.hasPrevious}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
+              <ChevronLeft className="h-4 w-4" />
               Anterior
             </button>
             <button
               onClick={() => setPage(page + 1)}
               disabled={!pagination.hasNext}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Siguiente
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>

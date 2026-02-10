@@ -1,6 +1,6 @@
 // src/core/types/clinicalRecord.types.ts
 
-import type { AntecedentesFamiliaresData, AntecedentesPersonalesData, ConstantesVitalesData, DiagnosticoCIEData, DiagnosticosCIEResponse, EmbarazoEstado, EstadoHistorial, ExamenEstomatognaticoData, IndicadoresSaludBucalData, IndicesCariesData, SesionTratamientoData,  } from "../../types/clinicalRecords/typeBackendClinicalRecord";
+import type { AntecedentesFamiliaresData, AntecedentesPersonalesData, ConstantesVitalesData, DiagnosticoCIEData, DiagnosticosCIEResponse, EmbarazoEstado, EstadoHistorial, ExamenesComplementariosData, ExamenEstomatognaticoData, IndicadoresSaludBucalData, IndicesCariesData, SesionTratamientoData,  } from "../../types/clinicalRecords/typeBackendClinicalRecord";
 
 /**
  * Datos del formulario de historial clínico
@@ -52,7 +52,8 @@ export interface ClinicalRecordFormData {
   plan_tratamiento_odontograma_id?: string | null;
     
     
-
+examenes_complementarios_id: string | null;
+examenes_complementarios_data: ExamenesComplementariosData | null;
 }
 /**
  * Filtros para la tabla de historiales
@@ -189,6 +190,9 @@ export interface DiagnosticosCIEActions {
     // Filtros
     setMostrarInactivos: (mostrar: boolean) => void;
 }
+
+
+
 /**
  * Opciones de paginación
  */

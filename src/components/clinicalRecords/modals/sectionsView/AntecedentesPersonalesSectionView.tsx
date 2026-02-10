@@ -1,9 +1,7 @@
 // src/components/clinicalRecord/modals/sectionsView/AntecedentesPersonalesSectionView.tsx
 import React from "react";
-import { User, AlertCircle, Pill, Heart } from "lucide-react";
 import type { 
     ClinicalRecordDetailResponse, 
-    AntecedentesPersonalesData 
 } from "../../../../types/clinicalRecords/typeBackendClinicalRecord";
 import { getAntecedentesPersonalesDisplay } from "../../../../core/utils/clinicalRecordUtils";
 
@@ -26,42 +24,22 @@ export const AntecedentesPersonalesSectionView: React.FC<
     const patologias = antecedentes?.patologias ?? [];
     const otros = antecedentes?.otros ?? [];
     
-    // Estadísticas
-    const totalItems = alergias.length + patologias.length + otros.length;
-    
-    const getBackgroundColor = (type: 'alergias' | 'patologias' | 'otros') => {
-        switch(type) {
-            case 'alergias': return 'bg-blue-50 border-blue-100';
-            case 'patologias': return 'bg-amber-50 border-amber-100';
-            case 'otros': return 'bg-purple-50 border-purple-100';
-            default: return 'bg-gray-50 border-gray-100';
+    // Para PDF: Mostrar máximo 2 elementos por fila, sin colores fuertes
+    const chunkArray = (array: string[], size: number) => {
+        const result = [];
+        for (let i = 0; i < array.length; i += size) {
+            result.push(array.slice(i, i + size));
         }
-    };
-    
-    const getIcon = (type: 'alergias' | 'patologias' | 'otros') => {
-        switch(type) {
-            case 'alergias': return <AlertCircle className="h-4 w-4 text-blue-600" />;
-            case 'patologias': return <Heart className="h-4 w-4 text-amber-600" />;
-            case 'otros': return <Pill className="h-4 w-4 text-purple-600" />;
-            default: return <AlertCircle className="h-4 w-4 text-gray-600" />;
-        }
+        return result;
     };
 
-    // Función para obtener la fuente de los datos
-    const getFuenteInfo = (data: AntecedentesPersonalesData | undefined) => {
-        if (!data) return 'Información no disponible';
-        
-        // Usar fecha de creación del paciente
-        const fecha = data.fecha_creacion 
-            ? new Date(data.fecha_creacion).toLocaleDateString('es-ES')
-            : 'Fecha desconocida';
-        
-        return `Registrado el: ${fecha}`;
-    };
+    // Dividir en grupos de 2 para mejor layout en PDF
+    const alergiasChunks = chunkArray(alergias, 2);
+    const patologiasChunks = chunkArray(patologias, 2);
+    const otrosChunks = chunkArray(otros, 2);
 
     // Función para formatear patologías específicas
     const formatPatologia = (patologia: string) => {
-        // Si es una patología con formato "Enfermedad: Estado"
         if (patologia.includes(': ')) {
             const [nombre, estado] = patologia.split(': ');
             if (estado === 'CONTROLADA' || estado === 'SI' || estado === 'NO') {
@@ -72,208 +50,181 @@ export const AntecedentesPersonalesSectionView: React.FC<
     };
 
     return (
-        <section className="space-y-6 p-4 bg-white rounded-lg border border-gray-200 shadow-theme-sm">
-            {/* Encabezado de sección */}
-            <div className="border-b border-gray-300 pb-3">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div>
-                            <h3 className="text-base font-semibold text-gray-900">
-                                D. Antecedentes Patológicos Personales
-                            </h3>
-                            <p className="text-xs text-gray-500 mt-1">
-                                Historial médico personal, alergias y condiciones previas
-                            </p>
-                        </div>
-                    </div>
-                    
-                    {/* Badge de estado */}
-                    <div className="flex items-center gap-2">
-                        {antecedentesData ? (
-                            <div className={`px-3 py-1 rounded-full text-xs font-medium ${tieneContenido ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                                {tieneContenido ? `${totalItems} REGISTROS` : 'SIN PATOLOGÍAS'}
-                            </div>
-                        ) : (
-                            <div className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                NO REGISTRADO
-                            </div>
-                        )}
-                    </div>
-                </div>
+        <section className="space-y-4 p-4 bg-white rounded-lg border border-gray-200">
+            {/* Encabezado simplificado */}
+            <div className="pb-2">
+                <h3 className="text-base font-semibold text-gray-900">
+                    D. Antecedentes Patológicos Personales
+                </h3>
+                <p className="text-xs text-gray-600 mt-1">
+                    Historial médico personal, alergias y condiciones previas
+                </p>
             </div>
 
-            {/* Contenido principal */}
-            <div className="space-y-6">
+            {/* Contenido principal - Minimalista para PDF */}
+            <div className="space-y-5">
                 {/* Estado de datos */}
                 {!antecedentesData ? (
-                    <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                        <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center rounded-full bg-gray-100 text-gray-400">
-                            <User className="h-6 w-6" />
-                        </div>
-                        <p className="text-sm text-gray-500 italic mb-1">
+                    <div className="text-center py-6 border border-gray-200 rounded">
+                        <p className="text-sm text-gray-500">
                             No se encontraron antecedentes personales registrados
-                        </p>
-                        <p className="text-xs text-gray-400">
-                            Esta información no ha sido registrada en el sistema
                         </p>
                     </div>
                 ) : !tieneContenido ? (
-                    <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-                        <div className="flex items-start gap-3">
-                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mt-0.5">
-                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-semibold text-emerald-800 mb-1">
-                                    Sin antecedentes patológicos
-                                </h4>
-                                <p className="text-sm text-emerald-700">
-                                    El paciente no reporta alergias, patologías ni otros antecedentes personales relevantes.
-                                </p>
-                            </div>
+                    <div className="p-3 bg-gray-50 border border-gray-200 rounded">
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                            <p className="text-sm text-gray-700">
+                                Sin antecedentes patológicos reportados
+                            </p>
                         </div>
                     </div>
                 ) : (
-                    <div className="space-y-8">
-                        {/* Alergias */}
+                    <div className="space-y-6">
+                        {/* Alergias - Diseño compacto */}
                         {alergias.length > 0 && (
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-2">
-                                    {getIcon('alergias')}
-                                    <h4 className="text-sm font-bold text-blue-700 uppercase tracking-wider">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className="w-1 h-4 bg-red-500 rounded-full"></div>
+                                    <h4 className="text-sm font-semibold text-gray-800">
                                         Alergias ({alergias.length})
                                     </h4>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    {alergias.map((alergia, idx) => (
-                                        <div
-                                            key={`alergia-${idx}`}
-                                            className={`p-3 rounded-lg border ${getBackgroundColor('alergias')}`}
-                                        >
-                                            <div className="flex items-start gap-2">
-                                                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-blue-600 text-xs font-bold mt-0.5">
-                                                    {idx + 1}
+                                <div className="space-y-2">
+                                    {alergiasChunks.map((chunk, chunkIndex) => (
+                                        <div key={`alergias-chunk-${chunkIndex}`} className="flex gap-3">
+                                            {chunk.map((alergia, idx) => (
+                                                <div
+                                                    key={`alergia-${chunkIndex}-${idx}`}
+                                                    className="flex-1 p-2.5 border border-gray-200 rounded bg-white"
+                                                >
+                                                    <div className="flex items-start">
+                                                        <div className="mr-2 text-gray-500 text-xs">
+                                                            {chunkIndex * 2 + idx + 1}.
+                                                        </div>
+                                                        <p className="text-sm text-gray-900">{alergia}</p>
+                                                    </div>
                                                 </div>
-                                                <p className="text-sm text-gray-900 font-medium">{alergia}</p>
-                                            </div>
+                                            ))}
+                                            {/* Si el chunk tiene solo 1 elemento, añadir espacio vacío */}
+                                            {chunk.length === 1 && (
+                                                <div className="flex-1"></div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         )}
 
-                        {/* Patologías */}
+                        {/* Patologías - Diseño compacto */}
                         {patologias.length > 0 && (
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-2">
-                                    {getIcon('patologias')}
-                                    <h4 className="text-sm font-bold text-amber-700 uppercase tracking-wider">
-                                        Patologías y Enfermedades ({patologias.length})
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className="w-1 h-4 bg-brand-400 rounded-full"></div>
+                                    <h4 className="text-sm font-semibold text-gray-800">
+                                        Patologías ({patologias.length})
                                     </h4>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                    {patologias.map((patologia, idx) => (
-                                        <div
-                                            key={`patologia-${idx}`}
-                                            className={`p-3 rounded-lg border ${getBackgroundColor('patologias')}`}
-                                        >
-                                            <div className="flex items-start gap-2">
-                                                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-amber-600 text-xs font-bold mt-0.5">
-                                                    {idx + 1}
+                                <div className="space-y-2">
+                                    {patologiasChunks.map((chunk, chunkIndex) => (
+                                        <div key={`patologias-chunk-${chunkIndex}`} className="flex gap-3">
+                                            {chunk.map((patologia, idx) => (
+                                                <div
+                                                    key={`patologia-${chunkIndex}-${idx}`}
+                                                    className="flex-1 p-2.5 border border-gray-200 rounded bg-white"
+                                                >
+                                                    <div className="flex items-start">
+                                                        <div className="mr-2 text-gray-500 text-xs">
+                                                            {chunkIndex * 2 + idx + 1}.
+                                                        </div>
+                                                        <p className="text-sm text-gray-900">{formatPatologia(patologia)}</p>
+                                                    </div>
                                                 </div>
-                                                <p className="text-sm text-gray-900">{formatPatologia(patologia)}</p>
-                                            </div>
+                                            ))}
+                                            {chunk.length === 1 && (
+                                                <div className="flex-1"></div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         )}
 
-                        {/* Otros antecedentes */}
+                        {/* Otros antecedentes - Diseño compacto */}
                         {otros.length > 0 && (
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-2">
-                                    {getIcon('otros')}
-                                    <h4 className="text-sm font-bold text-purple-700 uppercase tracking-wider">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className="w-1 h-4-1.5 h-4 bg-gray-600 rounded-full"></div>
+                                    <h4 className="text-sm font-semibold text-gray-800">
                                         Otros Antecedentes ({otros.length})
                                     </h4>
                                 </div>
-                                <div className="space-y-3">
-                                    {otros.map((otro, idx) => (
-                                        <div
-                                            key={`otro-${idx}`}
-                                            className={`p-4 rounded-lg border ${getBackgroundColor('otros')}`}
-                                        >
-                                            <div className="flex items-start gap-3">
-                                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-100 text-purple-600 text-xs font-bold mt-0.5">
-                                                    {idx + 1}
+                                <div className="space-y-2">
+                                    {otrosChunks.map((chunk, chunkIndex) => (
+                                        <div key={`otros-chunk-${chunkIndex}`} className="flex gap-3">
+                                            {chunk.map((otro, idx) => (
+                                                <div
+                                                    key={`otro-${chunkIndex}-${idx}`}
+                                                    className="flex-1 p-2.5 border border-gray-200 rounded bg-white"
+                                                >
+                                                    <div className="flex items-start">
+                                                        <div className="mr-2 text-gray-500 text-xs">
+                                                            {chunkIndex * 2 + idx + 1}.
+                                                        </div>
+                                                        <p className="text-sm text-gray-900 italic">{otro}</p>
+                                                    </div>
                                                 </div>
-                                                <p className="text-sm text-gray-900 italic">{otro}</p>
-                                            </div>
+                                            ))}
+                                            {chunk.length === 1 && (
+                                                <div className="flex-1"></div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         )}
-                    </div>
-                )}
 
-                {/* Resumen estadístico - solo si hay contenido */}
-                {antecedentesData && tieneContenido && (
-                    <div className="pt-4 border-t border-gray-200">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                {alergias.length > 0 && (
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                                        <span className="text-xs text-gray-600">
-                                            <span className="font-semibold">{alergias.length}</span> alergias
-                                        </span>
-                                    </div>
-                                )}
-                                {patologias.length > 0 && (
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-2 w-2 rounded-full bg-amber-500"></div>
-                                        <span className="text-xs text-gray-600">
-                                            <span className="font-semibold">{patologias.length}</span> patologías
-                                        </span>
-                                    </div>
-                                )}
-                                {otros.length > 0 && (
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-2 w-2 rounded-full bg-purple-500"></div>
-                                        <span className="text-xs text-gray-600">
-                                            <span className="font-semibold">{otros.length}</span> otros
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="text-xs text-gray-500 font-medium">
-                                Total: {totalItems} registros
+                        {/* Resumen minimalista */}
+                        <div className="pt-3 border-t border-gray-200">
+                            <div className="flex items-center justify-between text-xs text-gray-600">
+                                <div className="flex items-center gap-4">
+                                    {alergias.length > 0 && (
+                                        <span>Alergias: {alergias.length}</span>
+                                    )}
+                                    {patologias.length > 0 && (
+                                        <span>Patologías: {patologias.length}</span>
+                                    )}
+                                    {otros.length > 0 && (
+                                        <span>Otros: {otros.length}</span>
+                                    )}
+                                </div>
+                                <span className="font-medium">
+                                    Total: {alergias.length + patologias.length + otros.length}
+                                </span>
                             </div>
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Pie de sección */}
-            <div className="pt-4 border-t border-gray-200">
-                <div className="flex justify-between items-center">
+            {/* Pie de sección minimalista */}
+            <div className="pt-3 border-t border-gray-200">
+                <div className="flex justify-between items-center text-xs">
                     <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                        <p className="text-xs text-gray-500">
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400"></div>
+                        <span className="text-gray-600">
                             {antecedentesData 
                                 ? (tieneContenido 
-                                    ? "Sección D con antecedentes registrados" 
-                                    : "Sección D - Sin patologías reportadas")
-                                : "Sección D - No registrada"}
-                        </p>
+                                    ? "Sección D" 
+                                    : "Sin patologías")
+                                : "No registrada"}
+                        </span>
                     </div>
-                    <div className="text-xs text-gray-400">
-                        {getFuenteInfo(antecedentesData)}
-                    </div>
+                    {antecedentesData?.fecha_creacion && (
+                        <span className="text-gray-500">
+                            {new Date(antecedentesData.fecha_creacion).toLocaleDateString('es-ES')}
+                        </span>
+                    )}
                 </div>
             </div>
         </section>

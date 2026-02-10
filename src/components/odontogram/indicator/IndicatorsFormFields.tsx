@@ -289,7 +289,7 @@ export default function IndicatorsFormFields({
           value={formData[gingivitisKey] as number ?? ""}
           onChange={onInputChange}
           disabled={!disponible}
-          placeholder={disponible ? "0-3" : "N/D"}
+          placeholder={disponible ? "0-1" : "N/D"}
           className={`w-full px-3 py-2 border rounded-lg text-center
             ${!disponible 
               ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' 

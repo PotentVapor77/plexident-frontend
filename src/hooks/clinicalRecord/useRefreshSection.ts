@@ -9,7 +9,8 @@ export type RefreshableSection =
     | "antecedentes_familiares_data"
     | "constantes_vitales_data"
     | "examen_estomatognatico_data"
-    | "odontograma_2d_data";
+    | "odontograma_2d_data"
+    | "examenes_complementarios_data";
 
 // Mapeo de secciones internas a endpoints
 const sectionToEndpoint: Record<string, RefreshableSection> = {
@@ -18,6 +19,7 @@ const sectionToEndpoint: Record<string, RefreshableSection> = {
     constantes_vitales: "constantes_vitales_data",
     examen_estomatognatico: "examen_estomatognatico_data",
     odontograma_2d: "odontograma_2d_data",
+    examenes_complementarios: "examenes_complementarios_data",
 };
 
 interface RefreshSectionOptions {
@@ -50,6 +52,7 @@ export const useRefreshSection = ({
         constantes_vitales: `/clinical-records/constantes-vitales/${pacienteId}/latest/`,
         examen_estomatognatico: `/clinical-records/examen-estomatognatico/${pacienteId}/latest/`,
         odontograma_2d: `/clinical-records/odontograma-2d/${pacienteId}/latest/`,
+        examenes_complementarios: `/clinical-records/examenes-complementarios/${pacienteId}/latest/`
     };
 
     // Nombres de sección para mostrar
@@ -60,6 +63,7 @@ export const useRefreshSection = ({
         examen_estomatognatico: "Examen Estomatognático",
         odontograma_2d: "Odontograma 2D",
         plan_tratamiento: "Plan de Tratamiento",
+        examenes_complementarios: "Examenes Complementarios"
     };
 
     // Función auxiliar para obtener la sección de datos correcta

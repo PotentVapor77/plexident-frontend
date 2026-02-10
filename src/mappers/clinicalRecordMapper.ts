@@ -8,6 +8,7 @@ import type {
   ClinicalRecordDetailResponse,
   ClinicalRecordInitialData,
   ConstantesVitalesData,
+  ExamenesComplementariosData,
   ExamenEstomatognaticoData,
   IndicadoresSaludBucalData,
   IndicesCariesData,
@@ -29,6 +30,32 @@ export const formatDateToReadable = (dateString: string | null): string => {
   });
 };
 
+// Función para formato aaaa-mm-dd
+export const formatDateAAAAMMDD = (dateString: string | null): string => {
+  if (!dateString) return "No especificada";
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Función para hora hh:mm
+export const formatTimeHHMM = (dateString: string | null): string => {
+  if (!dateString) return "No especificada";
+  const date = new Date(dateString);
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+export const formatTime = (dateString: string | Date): string => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+};
 /**
  * Formatea solo la fecha (sin hora)
  */
@@ -59,12 +86,17 @@ export const mapInitialDataToFormData = (
   const indicadoresSaludBucal = initialData.indicadores_salud_bucal || null;
   const indicesCaries = initialData.indices_caries || null;
   const diagnosticosCIE = initialData.diagnosticos_cie || null;
+
   console.log("[HC][mapper] initialData recibido:", initialData);
 
   const planTratamiento = initialData.plan_tratamiento || null;
   
   console.log("[HC][mapper] planTratamiento detectado:", planTratamiento);
   console.log("[HC][mapper] sesiones del plan:", planTratamiento?.sesiones);
+  const examenesComplementarios = initialData.examenes_complementarios || null;
+
+
+
 
   // Usar los datos del backend o valores por defecto
   const camposBackend = initialData.campos_formulario || {};
@@ -113,6 +145,8 @@ export const mapInitialDataToFormData = (
     plan_tratamiento_id: planTratamiento?.id || null,
     plan_tratamiento_sesiones: planTratamiento?.sesiones || [],
     plan_tratamiento_odontograma_id: planTratamiento?.version_odontograma || null,
+ examenes_complementarios_id: examenesComplementarios?.id || null,
+    examenes_complementarios_data: examenesComplementarios?.data || null,
 
     // Metadata de fechas (para mostrar en headers)
     _dates: {
@@ -126,6 +160,7 @@ export const mapInitialDataToFormData = (
       indices_caries: indicesCaries?.fecha || null,
       diagnosticos_cie: diagnosticosCIE?.fecha || null,
       plan_tratamiento: planTratamiento?.fecha_creacion || null,
+      examenes_complementarios: examenesComplementarios?.fecha || null
     },
     _hasPlanTratamiento: !!planTratamiento
   };
@@ -158,6 +193,7 @@ export const mapFormDataToPayload = (
         unicodigo: formData.unicodigo || undefined,
         establecimiento_salud: formData.establecimiento_salud || undefined,
         plan_tratamiento: formData.plan_tratamiento_id || undefined,
+        examenes_complementarios: formData.examenes_complementarios_id || undefined,
     };
 };
 
@@ -182,7 +218,8 @@ export const mapResponseToFormData = (
     indices_caries_data?: IndicesCariesData | null;
     plan_tratamiento?: PlanTratamientoData | null;
     plan_tratamiento_data?: PlanTratamientoData | null;
-    
+    examenes_complementarios?: ExamenesComplementariosData | null;
+    examenes_complementarios_data?: ExamenesComplementariosData | null;
   };
 const planTratamientoData = safeResponse.plan_tratamiento_data;
 
@@ -221,6 +258,7 @@ const planTratamientoData = safeResponse.plan_tratamiento_data;
   plan_tratamiento_odontograma_id: planTratamientoData?.version_odontograma || null,
   plan_tratamiento_titulo: planTratamientoData?.titulo || "",
   plan_tratamiento_descripcion: planTratamientoData?.descripcion || "",
+  examenes_complementarios_data: safeResponse.examenes_complementarios_data || null,
 
   };
 };

@@ -1,9 +1,14 @@
 import AppointmentCalendar from "../../components/appointments/AppointmentCalendar";
+import { FullScreenLayout } from "../../layout/FullScreenLayout";
 
 export default function AppointmentsPage() {
   return (
-    <div className="container mx-auto px-4 py-6">
+
+<div className="container mx-auto px-1 py-3">
       <AppointmentCalendar />
     </div>
+    
+
+    
   );
 }

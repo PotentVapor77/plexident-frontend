@@ -80,10 +80,13 @@ export const ENDPOINTS = {
     resumenPatologias: (id: string) => `/patients/examen-estomatognatico/${id}/resumen_patologias/`,
   },
 
+  
+
   complementaryExams: {
-  base: '/patients/examenes-complementarios/',
-  byId: (id: string) => `/patients/examenes-complementarios/${id}/`,
-},
+    base: '/patients/examenes-complementarios/',
+    byId: (id: string) => `/patients/examenes-complementarios/${id}/`,
+    byPaciente: (pacienteId: string) => `/patients/examenes-complementarios/?paciente=${pacienteId}`,
+  },
 
 
   // ✅ CONSULTAS
@@ -123,6 +126,21 @@ clinicalRecords: {
       base: '/clinical-records/odontograma-2d/',
       latestByPaciente: (pacienteId: string) => `/clinical-records/odontograma-2d/${pacienteId}/latest/`,
     },
+
+    examenesComplementarios: {
+      base: '/clinical-records/examenes-complementarios/',
+      latestByPaciente: (pacienteId: string) => 
+        `/clinical-records/examenes-complementarios/${pacienteId}/latest/`,
+      guardar: (historialId: string) => 
+        `/clinical-records/${historialId}/guardar-examenes-complementarios/`,
+      actualizar: (historialId: string) => 
+        `/clinical-records/${historialId}/actualizar-examenes-complementarios/`,
+      todosDelPaciente: (historialId: string) => 
+        `/clinical-records/${historialId}/todos-examenes-complementarios/`,
+    },
+
+
+
     indicadoresSaludBucal: {
       latestByPaciente: (pacienteId: string) =>
         `/clinical-records/indicadores-salud-bucal/${pacienteId}/latest/`,

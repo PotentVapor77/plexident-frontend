@@ -172,8 +172,8 @@ const ClinicalRecordTable: React.FC<ClinicalRecordTableProps> = ({
 
             {/* Acciones */}
             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <div className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                {/* Ver */}
+              <div className="flex justify-end gap-1">
+                {/* Ver - Siempre visible */}
                 {onViewClick && (
                   <Button
                     variant="outline"
@@ -187,42 +187,66 @@ const ClinicalRecordTable: React.FC<ClinicalRecordTableProps> = ({
                   </Button>
                 )}
 
-                {/* Editar (solo si puede editar) */}
-                {onEditClick && record.puede_editar && record.estado !== "CERRADO" && (
+                {/* Editar - Se deshabilita según condiciones */}
+                {onEditClick && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => onEditClick(record)}
-                    className="text-gray-500 hover:bg-orange-50 hover:text-orange-600 dark:text-gray-400 dark:hover:bg-orange-500/10 dark:hover:text-orange-300"
-                    title="Editar historial"
+                    disabled={!record.puede_editar || record.estado === "CERRADO"}
+                    className={`text-gray-500 hover:bg-orange-50 hover:text-orange-600 dark:text-gray-400 dark:hover:bg-orange-500/10 dark:hover:text-orange-300 ${
+                      (!record.puede_editar || record.estado === "CERRADO") 
+                        ? "opacity-50 cursor-not-allowed hover:bg-transparent hover:text-gray-500 dark:hover:bg-transparent dark:hover:text-gray-400" 
+                        : ""
+                    }`}
+                    title={!record.puede_editar || record.estado === "CERRADO" 
+                      ? "No se puede editar" 
+                      : "Editar historial"
+                    }
                   >
                     <Edit2 className="h-4 w-4" />
                     <span className="sr-only">Editar</span>
                   </Button>
                 )}
 
-                {/* Cerrar (solo si está abierto) */}
-                {onCloseClick && record.estado === "ABIERTO" && record.activo && (
+                {/* Cerrar - Se deshabilita según condiciones */}
+                {onCloseClick && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => onCloseClick(record)}
-                    className="text-success-600 hover:bg-success-50 hover:text-success-700 dark:text-success-400 dark:hover:bg-success-500/10 dark:hover:text-success-300"
-                    title="Cerrar historial"
+                    disabled={record.estado !== "ABIERTO" || !record.activo}
+                    className={`text-success-600 hover:bg-success-50 hover:text-success-700 dark:text-success-400 dark:hover:bg-success-500/10 dark:hover:text-success-300 ${
+                      (record.estado !== "ABIERTO" || !record.activo) 
+                        ? "opacity-50 cursor-not-allowed hover:bg-transparent hover:text-success-600 dark:hover:bg-transparent dark:hover:text-success-400" 
+                        : ""
+                    }`}
+                    title={record.estado !== "ABIERTO" || !record.activo 
+                      ? "No se puede cerrar" 
+                      : "Cerrar historial"
+                    }
                   >
                     <Lock className="h-4 w-4" />
                     <span className="sr-only">Cerrar</span>
                   </Button>
                 )}
 
-                {/* Eliminar (solo si está activo) */}
-                {onDeleteClick && record.activo && record.estado !== "CERRADO" && (
+                {/* Eliminar - Se deshabilita según condiciones */}
+                {onDeleteClick && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => onDeleteClick(record)}
-                    className="text-gray-500 hover:bg-error-50 hover:text-error-600 dark:text-gray-400 dark:hover:bg-error-500/10 dark:hover:text-error-300"
-                    title="Eliminar historial"
+                    disabled={!record.activo || record.estado === "CERRADO"}
+                    className={`text-gray-500 hover:bg-error-50 hover:text-error-600 dark:text-gray-400 dark:hover:bg-error-500/10 dark:hover:text-error-300 ${
+                      (!record.activo || record.estado === "CERRADO") 
+                        ? "opacity-50 cursor-not-allowed hover:bg-transparent hover:text-gray-500 dark:hover:bg-transparent dark:hover:text-gray-400" 
+                        : ""
+                    }`}
+                    title={!record.activo || record.estado === "CERRADO" 
+                      ? "No se puede eliminar" 
+                      : "Eliminar historial"
+                    }
                   >
                     <Trash2 className="h-4 w-4" />
                     <span className="sr-only">Eliminar</span>

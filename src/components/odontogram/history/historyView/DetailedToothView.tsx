@@ -157,7 +157,6 @@ export const DetailedToothView: React.FC<DetailedToothViewProps> = ({
               <ToothSurfacesStaticView
                 toothId={selectedTooth}
                 diagnosticos={toothDiagnostics}
-                getPermanentColorForSurface={getPermanentColorForSurface}
               />
             </div>
           )}

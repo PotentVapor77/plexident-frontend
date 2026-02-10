@@ -6,7 +6,7 @@ import { useModal } from "../../hooks/useModal";
 import type { PlanTratamientoDetailResponse, PlanTratamientoListResponse, SesionTratamientoListResponse } from "../../types/treatmentPlan/typeBackendTreatmentPlan";
 import { useDeletePlanTratamiento, usePlanesTratamiento, usePlanTratamiento } from "../../hooks/treatmentPlan/useTreatmentPlan";
 import { useDeleteSesionTratamiento, useSesionesTratamiento } from "../../hooks/treatmentPlan/useTreatmentSession";
-import { ArrowLeft, Calendar, FileText, Plus } from "lucide-react";
+import { ArrowLeft, Calendar, FileText, Plus, User, Users } from "lucide-react";
 import Button from "../ui/button/Button";
 import TreatmentPlanTable from "./table/TreatmentPlanTable";
 import SessionTable from "./table/SessionTable";
@@ -17,6 +17,7 @@ import SessionCreateEditModal from "./modals/SessionCreateEditModal";
 import SessionDeleteModal from "./modals/SessionDeleteModal";
 import SessionViewModal from "./modals/SessionViewModal";
 import { usePacienteActivo } from "../../context/PacienteContext";
+
 // ============================================================================
 // COMPONENT
 // ============================================================================
@@ -101,6 +102,7 @@ export default function TreatmentPlanManagement() {
     // Plan seleccionado
     const { data: planDetalle } = usePlanTratamiento(planSeleccionadoId);
     const pageSizeSesiones = 10;
+    
     // Sesiones del plan seleccionado
     const {
         sesiones,
@@ -245,50 +247,66 @@ export default function TreatmentPlanManagement() {
                     <div className="mb-8">
                         <div className="flex items-start justify-between gap-4">
                             {/* Título + descripciones */}
-                            <div>
-                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                                    {pacienteActivo
-                                        ? `Planes de tratamiento de ${pacienteNombreCompleto}`
-                                        : "Planes de tratamiento"}
-                                </h1>
-                                <p className="mt-1 text-gray-600 dark:text-gray-400">
-                                    {pacienteActivo
-                                        ? "Gestiona los planes de tratamiento del paciente"
-                                        : "Administra los planes de tratamiento de todos los pacientes"}
-                                </p>
-
-                                {pacienteActivo && (
-                                    <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-200">
-                                        Solo se muestran planes del paciente activo. Haga clic en{" "}
-                                        <span className="font-semibold">"Ver sesiones"</span> para gestionar
-                                        las sesiones de tratamiento de cada plan.
-                                    </div>
-                                )}
+                            <div className="flex items-start gap-4">
+                                {/* <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
+                                    <FileText className="h-6 w-6" />
+                                </div> */}
+                                <div>
+                                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                        Planes de Tratamiento
+                                    </h1>
+                                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                        {pacienteActivo
+                                            ? `Gestión de planes para ${pacienteNombreCompleto}`
+                                            : "Administra los planes de tratamiento de todos los pacientes"}
+                                    </p>
+                                    
+                                    {pacienteActivo && (
+                                        <div className="mt-3 flex items-center gap-2 text-xs text-brand-600 dark:text-brand-400">
+                                            <User className="h-3 w-3" />
+                                            <span>Paciente activo seleccionado</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="flex items-start">
-                                <Button variant="primary" onClick={handleCreatePlanClick}>
-                                    <Plus className="mr-2 h-5 w-5" />
+                                <Button 
+                                    variant="primary" 
+                                    onClick={handleCreatePlanClick}
+                                    className="inline-flex items-center gap-2"
+                                >
+                                    <Plus className="h-4 w-4" />
                                     Crear plan
                                 </Button>
                             </div>
                         </div>
+
+                        {pacienteActivo && (
+                            <div className="mt-4 p-3 rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20">
+                                <p className="text-sm text-blue-800 dark:text-blue-200">
+                                    <span className="font-medium">Nota:</span> Solo se muestran planes del paciente activo. 
+                                    Haga clic en <span className="font-semibold">"Sesiones"</span> para gestionar 
+                                    las sesiones de tratamiento de cada plan.
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Contenido */}
                     {isLoadingPlanes ? (
-                        <div className="flex items-center justify-center py-12">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
-                            <span className="ml-4 text-gray-600 dark:text-gray-400">
+                        <div className="flex flex-col items-center justify-center rounded-lg border border-gray-200 py-12 dark:border-gray-700">
+                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600"></div>
+                            <span className="mt-4 text-sm text-gray-600 dark:text-gray-400">
                                 Cargando planes de tratamiento...
                             </span>
                         </div>
                     ) : isErrorPlanes ? (
-                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
-                            <p className="text-red-800 dark:text-red-200 font-semibold">
+                        <div className="rounded-lg border border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20">
+                            <p className="font-semibold text-red-800 dark:text-red-200">
                                 Error al cargar los planes
                             </p>
-                            <p className="text-red-600 dark:text-red-400 mt-2">
+                            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
                                 {errorPlanes || "Error desconocido"}
                             </p>
                         </div>
@@ -303,15 +321,16 @@ export default function TreatmentPlanManagement() {
                             />
 
                             {paginationPlanes && paginationPlanes.total_pages > 1 && (
-                                <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600 dark:text-gray-400">
-                                    <p>
+                                <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
                                         Mostrando página <span className="font-semibold">{paginationPlanes.page}</span>{" "}
                                         de <span className="font-semibold">{paginationPlanes.total_pages}</span>,{" "}
-                                        {paginationPlanes.count} registros totales
+                                        <span className="font-semibold">{paginationPlanes.count}</span> registros totales
                                     </p>
                                     <div className="flex gap-2">
                                         <Button
                                             variant="outline"
+                                            size="sm"
                                             onClick={() => setPagePlanes(pagePlanes - 1)}
                                             disabled={!paginationPlanes.has_previous}
                                         >
@@ -319,6 +338,7 @@ export default function TreatmentPlanManagement() {
                                         </Button>
                                         <Button
                                             variant="outline"
+                                            size="sm"
                                             onClick={() => setPagePlanes(pagePlanes + 1)}
                                             disabled={!paginationPlanes.has_next}
                                         >
@@ -333,51 +353,64 @@ export default function TreatmentPlanManagement() {
             )}
 
             {/* ======================================================================
-          VISTA DE SESIONES
-      ====================================================================== */}
+            VISTA DE SESIONES
+            ====================================================================== */}
             {vistaActual === "sesiones" && (
                 <>
                     {/* Header */}
                     <div className="mb-8">
                         {/* Botón volver */}
-                        <Button
-                            variant="outline"
-                            onClick={handleVolverAPlanes}
-                            className="mb-4 inline-flex items-center"
-                        >
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Volver a planes
-                        </Button>
+                        <div className="mb-4">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleVolverAPlanes}
+                                className="inline-flex items-center gap-2"
+                            >
+                                <ArrowLeft className="h-4 w-4" />
+                                Volver a planes
+                            </Button>
+                        </div>
 
                         {/* Título + texto + botón Crear sesión */}
                         <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="rounded-lg bg-brand-100 p-3 dark:bg-brand-900/30">
-                                    <Calendar className="h-8 w-8 text-brand-600 dark:text-brand-400" />
+                            <div className="flex items-start gap-4">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
+                                    <Calendar className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                                        Sesiones de tratamiento
+                                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                        Sesiones de Tratamiento
                                     </h1>
-                                    <p className="mt-1 text-gray-600 dark:text-gray-400">
+                                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                         {planDetalle
-                                            ? `Plan: ${planDetalle.titulo}`
-                                            : "Gestiona las sesiones del plan seleccionado"}
+                                            ? `Plan: "${planDetalle.titulo}"`
+                                            : "Gestión de sesiones del plan seleccionado"}
                                     </p>
+                                    {pacienteActivo && (
+                                        <div className="mt-2 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                            <Users className="h-3 w-3" />
+                                            <span>{pacienteNombreCompleto}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
                             <div className="flex items-start">
-                                <Button variant="primary" onClick={handleCreateSesionClick}>
-                                    <Plus className="mr-2 h-5 w-5" />
+                                <Button 
+                                    variant="primary" 
+                                    onClick={handleCreateSesionClick}
+                                    className="inline-flex items-center gap-2"
+                                >
+                                    <Plus className="h-4 w-4" />
                                     Crear sesión
                                 </Button>
                             </div>
                         </div>
 
-                        <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+                        <div className="mt-4 p-3 rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20">
                             <p className="text-sm text-blue-800 dark:text-blue-200">
-                                Las sesiones representan las visitas o procedimientos programados
+                                <span className="font-medium">Nota:</span> Las sesiones representan las visitas o procedimientos programados
                                 dentro del plan de tratamiento seleccionado.
                             </p>
                         </div>
@@ -385,46 +418,42 @@ export default function TreatmentPlanManagement() {
 
                     {/* Contenido */}
                     {isLoadingSesiones ? (
-                        <div className="flex items-center justify-center py-12">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
-                            <span className="ml-4 text-gray-600 dark:text-gray-400">
+                        <div className="flex flex-col items-center justify-center rounded-lg border border-gray-200 py-12 dark:border-gray-700">
+                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600"></div>
+                            <span className="mt-4 text-sm text-gray-600 dark:text-gray-400">
                                 Cargando sesiones...
                             </span>
                         </div>
                     ) : isErrorSesiones ? (
-                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
-                            <p className="text-red-800 dark:text-red-200 font-semibold">
+                        <div className="rounded-lg border border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20">
+                            <p className="font-semibold text-red-800 dark:text-red-200">
                                 Error al cargar las sesiones
                             </p>
-                            <p className="text-red-600 dark:text-red-400 mt-2">
+                            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
                                 {errorSesiones || "Error desconocido"}
                             </p>
                         </div>
                     ) : (
                         <>
-                            <div className="space-y-3">
-                                {/* card header sesiones ... */}
-                                <div className="space-y-3 w-full">
-                                    <SessionTable
-                                        sesiones={sesiones}
-                                        onViewClick={handleViewSesionClick}
-                                        onEditClick={handleEditSesionClick}
-                                        onDeleteClick={handleDeleteSesionClick}
-                                    />
-                                </div>
-                            </div>
+                            <SessionTable
+                                sesiones={sesiones}
+                                onViewClick={handleViewSesionClick}
+                                onEditClick={handleEditSesionClick}
+                                onDeleteClick={handleDeleteSesionClick}
+                            />
 
                             {paginationSesiones && paginationSesiones.total_pages > 1 && (
-                                <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600 dark:text-gray-400">
-                                    <p>
+                                <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
                                         Mostrando página{" "}
                                         <span className="font-semibold">{paginationSesiones.page}</span> de{" "}
                                         <span className="font-semibold">{paginationSesiones.total_pages}</span>,{" "}
-                                        {paginationSesiones.count} registros totales
+                                        <span className="font-semibold">{paginationSesiones.count}</span> registros totales
                                     </p>
                                     <div className="flex gap-2">
                                         <Button
                                             variant="outline"
+                                            size="sm"
                                             onClick={() => setPageSesiones(pageSesiones - 1)}
                                             disabled={!paginationSesiones.has_previous}
                                         >
@@ -432,6 +461,7 @@ export default function TreatmentPlanManagement() {
                                         </Button>
                                         <Button
                                             variant="outline"
+                                            size="sm"
                                             onClick={() => setPageSesiones(pageSesiones + 1)}
                                             disabled={!paginationSesiones.has_next}
                                         >
@@ -446,8 +476,8 @@ export default function TreatmentPlanManagement() {
             )}
 
             {/* ======================================================================
-          MODALES - PLANES
-      ====================================================================== */}
+            MODALES - PLANES
+            ====================================================================== */}
             {isCreatePlanModalOpen && (
                 <TreatmentPlanCreateEditModal
                     isOpen={isCreatePlanModalOpen}
@@ -479,8 +509,8 @@ export default function TreatmentPlanManagement() {
             )}
 
             {/* ======================================================================
-          MODALES - SESIONES
-      ====================================================================== */}
+            MODALES - SESIONES
+            ====================================================================== */}
             {isCreateSesionModalOpen && planSeleccionadoId && (
                 <SessionCreateEditModal
                     isOpen={isCreateSesionModalOpen}
@@ -497,7 +527,6 @@ export default function TreatmentPlanManagement() {
                     isOpen={isViewSesionModalOpen}
                     onClose={closeViewSesionModal}
                     sesionId={selectedSesion.id}
-                    
                 />
             )}
 

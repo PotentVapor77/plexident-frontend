@@ -23,11 +23,7 @@ export const clinicalRecordKeys = {
   initialData: (pacienteId: string) =>
     [...clinicalRecordKeys.all, "initial-data", pacienteId] as const,
 };
-
-/**
- * Hook para obtener la lista de historiales clínicos
- */
-export function useClinicalRecords(params: {
+export interface ClinicalRecordSearchParams {
   page?: number;
   page_size?: number;
   search?: string;
@@ -35,11 +31,18 @@ export function useClinicalRecords(params: {
   paciente?: string;
   odontologo_responsable?: string;
   activo?: boolean;
-}) {
+  fecha_desde?: string; 
+  fecha_hasta?: string; 
+}
+/**
+ * Hook para obtener la lista de historiales clínicos
+ */
+export function useClinicalRecords(params: ClinicalRecordSearchParams) {
   const queryResult = useQuery({
     queryKey: clinicalRecordKeys.list(params),
     queryFn: () => clinicalRecordService.getAll(params),
     staleTime: 30000, // 30 segundos
+    placeholderData: (previousData) => previousData,
   });
 
   return {
@@ -50,8 +53,10 @@ export function useClinicalRecords(params: {
       total_pages: queryResult.data?.total_pages || 1,
       has_next: !!queryResult.data?.next,
       has_previous: !!queryResult.data?.previous,
+      page_size: queryResult.data?.page_size || params.page_size || 35, 
     },
     isLoading: queryResult.isLoading,
+    isFetching: queryResult.isFetching, 
     isError: queryResult.isError,
     error: queryResult.error?.message || null,
     refetch: queryResult.refetch,
@@ -96,7 +101,6 @@ export function useClinicalRecordsByPaciente(pacienteId: string | null) {
 export function useClinicalRecordInitialData(pacienteId: string | null) {
   return useQuery({
     queryKey: clinicalRecordKeys.initialData(pacienteId!),
-    // queryFn: () => clinicalRecordService.getInitialData(pacienteId!),
     queryFn: async () => {
       const data = await clinicalRecordService.getInitialData(pacienteId!);
       console.log("[HC][initialData] respuesta completa:", data);

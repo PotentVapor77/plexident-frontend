@@ -1,8 +1,14 @@
 // src/core/utils/clinicalRecordUtils.ts
 
 import { formatDateOnly } from "../../mappers/clinicalRecordMapper";
-import type { AntecedentesFamiliaresData, AntecedentesPersonalesData, ClinicalRecordDetailResponse, ClinicalRecordListResponse, ExamenEstomatognaticoData, IndicadoresSaludBucalData } from "../../types/clinicalRecords/typeBackendClinicalRecord";
-
+import type { 
+  AntecedentesFamiliaresData, 
+  AntecedentesPersonalesData, 
+  ClinicalRecordDetailResponse, 
+  ClinicalRecordListResponse, 
+  ExamenEstomatognaticoData, 
+  IndicadoresSaludBucalData 
+} from "../../types/clinicalRecords/typeBackendClinicalRecord";
 
 /**
  * ============================================================================
@@ -103,171 +109,467 @@ export const calculateStatistics = (historiales: ClinicalRecordListResponse[]) =
 
 export const getEstablecimientoPacienteSummary = (record: ClinicalRecordDetailResponse) => {
   return {
-    establecimiento: {
-    },
+    establecimiento: {},
     paciente: {
-      nombre: record.paciente_info ? 
-              `${record.paciente_info.nombres} ${record.paciente_info.apellidos}` : 
-              "No registrado",
+      nombre: record.paciente_info
+        ? `${record.paciente_info.nombres} ${record.paciente_info.apellidos}`
+        : "No registrado",
       identificacion: record.paciente_info?.cedula_pasaporte || "N/A",
-      sexo: record.paciente_info?.sexo === "M" ? "Masculino" : 
-            record.paciente_info?.sexo === "F" ? "Femenino" : "No especificado",
+      sexo:
+        record.paciente_info?.sexo === "M"
+          ? "Masculino"
+          : record.paciente_info?.sexo === "F"
+          ? "Femenino"
+          : "No especificado",
       edad: record.paciente_info?.edad?.toString() || "N/A",
       fechaNacimiento: formatDateOnly(record.paciente_info?.fecha_nacimiento),
-    }
+    },
   };
 };
 
 // ============================================================================
-// ANTECEDENTES UTILITIES
+// ANTECEDENTES PERSONALES - UTILIDADES COMPLETAS
 // ============================================================================
 
-export const getAntecedentesPersonalesDisplay = (data: AntecedentesPersonalesData | null | undefined) => {
-  if (!data) return null;
+interface AntecedentesPersonalesDisplay {
+  tieneContenido: boolean;
+  alergias: string[];
+  patologias: string[];
+  otros: string[];
+  habitos: string[];
+  observaciones: string[];
+}
 
-  const antecedentes = {
-    alergias: [] as string[],
-    patologias: [] as string[],
-    otros: [] as string[],
-    tieneContenido: false
+/**
+ * Procesa y organiza los antecedentes personales para mostrar en la UI
+ * Incluye TODOS los campos del modelo Django
+ */
+export const getAntecedentesPersonalesDisplay = (
+  data: AntecedentesPersonalesData | null | undefined
+): AntecedentesPersonalesDisplay | null => {
+  const resultado: AntecedentesPersonalesDisplay = {
+    tieneContenido: false,
+    alergias: [],
+    patologias: [],
+    otros: [],
+    habitos: [],
+    observaciones: [],
   };
 
-  // Alergias
-  if (data.alergia_antibiotico && data.alergia_antibiotico !== 'NO') {
-    const detalle = data.alergia_antibiotico === 'OTRO' && data.alergia_antibiotico_otro 
-      ? `Antibiótico: ${data.alergia_antibiotico_otro}`
-      : `Antibiótico: ${data.alergia_antibiotico}`;
-    antecedentes.alergias.push(detalle);
-    antecedentes.tieneContenido = true;
+  if (!data) return null;
+
+  // ===== ALERGIAS =====
+  if (data.alergia_antibiotico && data.alergia_antibiotico !== "NO") {
+    const detalle =
+      data.alergia_antibiotico === "OTRO" && data.alergia_antibiotico_otro
+        ? ` (${data.alergia_antibiotico_otro})`
+        : "";
+    resultado.alergias.push(`Antibiótico: ${data.alergia_antibiotico}${detalle}`);
   }
 
-  if (data.alergia_anestesia && data.alergia_anestesia !== 'NO') {
-    const detalle = data.alergia_anestesia === 'OTRO' && data.alergia_anestesia_otro 
-      ? `Anestesia: ${data.alergia_anestesia_otro}`
-      : `Anestesia: ${data.alergia_anestesia}`;
-    antecedentes.alergias.push(detalle);
-    antecedentes.tieneContenido = true;
+  if (data.alergia_anestesia && data.alergia_anestesia !== "NO") {
+    const detalle =
+      data.alergia_anestesia === "OTRO" && data.alergia_anestesia_otro
+        ? ` (${data.alergia_anestesia_otro})`
+        : "";
+    resultado.alergias.push(`Anestesia: ${data.alergia_anestesia}${detalle}`);
   }
 
-  // Patologías principales
-  if (data.hemorragias === 'SI') {
-    antecedentes.patologias.push('Hemorragias');
-    antecedentes.tieneContenido = true;
+  // ===== PATOLOGÍAS =====
+  if (data.hemorragias && data.hemorragias === "SI") {
+    const detalle = data.hemorragias_detalle ? `: ${data.hemorragias_detalle}` : "";
+    resultado.patologias.push(`Hemorragias${detalle}`);
   }
 
-  if (data.vih_sida === 'POSITIVO') {
-    antecedentes.patologias.push('VIH/SIDA (Positivo)');
-    antecedentes.tieneContenido = true;
+  // ✅ VIH/SIDA
+  if (data.vih_sida && data.vih_sida !== "NEGATIVO") {
+    const label = getVihSidaLabel(data.vih_sida);
+    const detalle =
+      data.vih_sida === "OTRO" && data.vih_sida_otro ? ` (${data.vih_sida_otro})` : "";
+    resultado.patologias.push(`VIH/SIDA: ${label}${detalle}`);
   }
 
-  if (data.tuberculosis === 'ACTIVA') {
-    antecedentes.patologias.push('Tuberculosis (Activa)');
-    antecedentes.tieneContenido = true;
+  // ✅ TUBERCULOSIS
+  if (data.tuberculosis && data.tuberculosis !== "NUNCA") {
+    const label = getTuberculosisLabel(data.tuberculosis);
+    const detalle =
+      data.tuberculosis === "OTRO" && data.tuberculosis_otro
+        ? ` (${data.tuberculosis_otro})`
+        : "";
+    resultado.patologias.push(`Tuberculosis: ${label}${detalle}`);
   }
 
-  // Enfermedades crónicas
-  if (data.asma && data.asma !== 'NO') {
-    antecedentes.patologias.push(`Asma: ${data.asma}`);
-    antecedentes.tieneContenido = true;
+  if (data.asma && data.asma !== "NO") {
+    const detalle = data.asma === "OTRO" && data.asma_otro ? ` (${data.asma_otro})` : "";
+    resultado.patologias.push(`Asma: ${data.asma}${detalle}`);
   }
 
-  if (data.diabetes && data.diabetes !== 'NO') {
-    antecedentes.patologias.push(`Diabetes: ${data.diabetes}`);
-    antecedentes.tieneContenido = true;
+  if (data.diabetes && data.diabetes !== "NO") {
+    const label = getDiabetesLabel(data.diabetes);
+    const detalle = data.diabetes_otro ? ` (${data.diabetes_otro})` : "";
+    resultado.patologias.push(`Diabetes: ${label}${detalle}`);
   }
 
-  if (data.hipertension_arterial && data.hipertension_arterial !== 'NO') {
-    antecedentes.patologias.push(`Hipertensión arterial: ${data.hipertension_arterial}`);
-    antecedentes.tieneContenido = true;
+  if (data.hipertension_arterial && data.hipertension_arterial !== "NO") {
+    const label = getHipertensionLabel(data.hipertension_arterial);
+    const detalle =
+      data.hipertension_arterial === "OTRO" && data.hipertension_arterial_otro
+        ? ` (${data.hipertension_arterial_otro})`
+        : "";
+    resultado.patologias.push(`Hipertensión arterial: ${label}${detalle}`);
   }
 
-  if (data.enfermedad_cardiaca && data.enfermedad_cardiaca !== 'NO') {
-    antecedentes.patologias.push(`Enfermedad cardíaca: ${data.enfermedad_cardiaca}`);
-    antecedentes.tieneContenido = true;
+  if (data.enfermedad_cardiaca && data.enfermedad_cardiaca !== "NO") {
+    const label = getEnfermedadCardiacaLabel(data.enfermedad_cardiaca);
+    const detalle =
+      data.enfermedad_cardiaca === "OTRO" && data.enfermedad_cardiaca_otro
+        ? ` (${data.enfermedad_cardiaca_otro})`
+        : "";
+    resultado.patologias.push(`Enfermedad cardíaca: ${label}${detalle}`);
   }
 
-  // Otros
- // if (data.otros_antecedentes && data.otros_antecedentes.trim()) {
-   // antecedentes.otros.push(data.otros_antecedentes);
-  //  antecedentes.tieneContenido = true;
- // }
+  // ✅ OTROS ANTECEDENTES
+  if (data.otros_antecedentes_personales?.trim()) {
+    resultado.otros.push(data.otros_antecedentes_personales.trim());
+  }
 
-  return antecedentes;
+  // ✅ HÁBITOS
+  if (data.habitos?.trim()) {
+    resultado.habitos.push(data.habitos.trim());
+  }
+
+  // ✅ OBSERVACIONES
+  if (data.observaciones?.trim()) {
+    resultado.observaciones.push(data.observaciones.trim());
+  }
+
+  // Determinar si tiene contenido
+  resultado.tieneContenido =
+    resultado.alergias.length > 0 ||
+    resultado.patologias.length > 0 ||
+    resultado.otros.length > 0 ||
+    resultado.habitos.length > 0 ||
+    resultado.observaciones.length > 0;
+
+  return resultado;
 };
 
+// ============================================================================
+// ANTECEDENTES FAMILIARES - UTILIDADES COMPLETAS
+// ============================================================================
 
+interface AntecedentesFamiliaresDisplay {
+  tieneContenido: boolean;
+  cardiovasculares: string[];
+  metabolicas: string[];
+  cancer: string[];
+  infecciosas: string[];
+  mentales: string[];
+  malformaciones: string[];
+  otros: string[];
+}
 
-
-export const getAntecedentesFamiliaresDisplay = (data: AntecedentesFamiliaresData | null | undefined) => {
-  if (!data) return null;
-
-  const familiares = {
-    patologias: [] as Array<{patologia: string, parentesco: string}>,
-    tieneContenido: false
+/**
+ * Procesa y organiza los antecedentes familiares para mostrar en la UI
+ * Incluye TODOS los campos del modelo Django
+ */
+export const getAntecedentesFamiliaresDisplay = (
+  data: AntecedentesFamiliaresData | null | undefined
+): AntecedentesFamiliaresDisplay | null => {
+  const resultado: AntecedentesFamiliaresDisplay = {
+    tieneContenido: false,
+    cardiovasculares: [],
+    metabolicas: [],
+    cancer: [],
+    infecciosas: [],
+    mentales: [],
+    malformaciones: [],
+    otros: [],
   };
 
-  // Patologías familiares
-  const patologias = [
-    { field: data.cardiopatia_familiar, label: 'Cardiopatía' },
-    { field: data.hipertension_arterial_familiar, label: 'Hipertensión arterial' },
-    { field: data.enfermedad_vascular_familiar, label: 'Enfermedad vascular' },
-    { field: data.cancer_familiar, label: 'Cáncer' },
-    { field: data.enfermedad_mental_familiar, label: 'Enfermedad mental' },
-  ];
+  if (!data) return null;
 
-  patologias.forEach(p => {
-    if (p.field && p.field !== 'NO') {
-      familiares.patologias.push({
-        patologia: p.label,
-        parentesco: p.field
-      });
-      familiares.tieneContenido = true;
+  // ===== ENFERMEDADES CARDIOVASCULARES =====
+  if (data.cardiopatia_familiar && data.cardiopatia_familiar !== "NO") {
+    const familiar = getFamiliarLabel(data.cardiopatia_familiar);
+    const detalle =
+      data.cardiopatia_familiar === "OTRO" && data.cardiopatia_familiar_otro
+        ? ` (${data.cardiopatia_familiar_otro})`
+        : "";
+    resultado.cardiovasculares.push(`Cardiopatía: ${familiar}${detalle}`);
+  }
+
+  if (
+    data.hipertension_arterial_familiar &&
+    data.hipertension_arterial_familiar !== "NO"
+  ) {
+    const familiar = getFamiliarLabel(data.hipertension_arterial_familiar);
+    const detalle =
+      data.hipertension_arterial_familiar === "OTRO" &&
+      data.hipertension_arterial_familiar_otro
+        ? ` (${data.hipertension_arterial_familiar_otro})`
+        : "";
+    resultado.cardiovasculares.push(`Hipertensión arterial: ${familiar}${detalle}`);
+  }
+
+  if (
+    data.enfermedad_vascular_familiar &&
+    data.enfermedad_vascular_familiar !== "NO"
+  ) {
+    const familiar = getFamiliarLabel(data.enfermedad_vascular_familiar);
+    const detalle =
+      data.enfermedad_vascular_familiar === "OTRO" &&
+      data.enfermedad_vascular_familiar_otro
+        ? ` (${data.enfermedad_vascular_familiar_otro})`
+        : "";
+    resultado.cardiovasculares.push(`Enfermedad vascular: ${familiar}${detalle}`);
+  }
+
+  // ===== ENFERMEDADES METABÓLICAS =====
+  // ✅ ENDÓCRINO METABÓLICO
+  if (
+    data.endocrino_metabolico_familiar &&
+    data.endocrino_metabolico_familiar !== "NO"
+  ) {
+    const familiar = getFamiliarLabel(data.endocrino_metabolico_familiar);
+    const detalle =
+      data.endocrino_metabolico_familiar === "OTRO" &&
+      data.endocrino_metabolico_familiar_otro
+        ? ` (${data.endocrino_metabolico_familiar_otro})`
+        : "";
+    resultado.metabolicas.push(`Endócrino metabólico: ${familiar}${detalle}`);
+  }
+
+  // ===== CÁNCER =====
+  if (data.cancer_familiar && data.cancer_familiar !== "NO") {
+    const familiar = getFamiliarLabel(data.cancer_familiar);
+    const familiarDetalle =
+      data.cancer_familiar === "OTRO" && data.cancer_familiar_otro
+        ? ` (${data.cancer_familiar_otro})`
+        : "";
+
+    let tipoCancer = "";
+    if (data.tipo_cancer) {
+      const tipoLabel = getTipoCancerLabel(data.tipo_cancer);
+      const tipoDetalle =
+        data.tipo_cancer === "OTRO" && data.tipo_cancer_otro
+          ? ` (${data.tipo_cancer_otro})`
+          : "";
+      tipoCancer = ` - Tipo: ${tipoLabel}${tipoDetalle}`;
     }
-  });
 
-  // Otros antecedentes
-  if (data.otros_antecedentes_familiares && data.otros_antecedentes_familiares.trim()) {
-    familiares.patologias.push({
-      patologia: 'Otros antecedentes',
-      parentesco: data.otros_antecedentes_familiares
-    });
-    familiares.tieneContenido = true;
+    resultado.cancer.push(`Cáncer: ${familiar}${familiarDetalle}${tipoCancer}`);
   }
 
-  return familiares;
+  // ===== ENFERMEDADES INFECCIOSAS =====
+  // ✅ TUBERCULOSIS
+  if (data.tuberculosis_familiar && data.tuberculosis_familiar !== "NO") {
+    const familiar = getFamiliarLabel(data.tuberculosis_familiar);
+    const detalle =
+      data.tuberculosis_familiar === "OTRO" && data.tuberculosis_familiar_otro
+        ? ` (${data.tuberculosis_familiar_otro})`
+        : "";
+    resultado.infecciosas.push(`Tuberculosis: ${familiar}${detalle}`);
+  }
+
+  // ✅ ENFERMEDAD INFECCIOSA
+  if (
+    data.enfermedad_infecciosa_familiar &&
+    data.enfermedad_infecciosa_familiar !== "NO"
+  ) {
+    const familiar = getFamiliarLabel(data.enfermedad_infecciosa_familiar);
+    const detalle =
+      data.enfermedad_infecciosa_familiar === "OTRO" &&
+      data.enfermedad_infecciosa_familiar_otro
+        ? ` (${data.enfermedad_infecciosa_familiar_otro})`
+        : "";
+    resultado.infecciosas.push(`Enfermedad infecciosa: ${familiar}${detalle}`);
+  }
+
+  // ===== ENFERMEDADES MENTALES =====
+  if (data.enfermedad_mental_familiar && data.enfermedad_mental_familiar !== "NO") {
+    const familiar = getFamiliarLabel(data.enfermedad_mental_familiar);
+    const detalle =
+      data.enfermedad_mental_familiar === "OTRO" &&
+      data.enfermedad_mental_familiar_otro
+        ? ` (${data.enfermedad_mental_familiar_otro})`
+        : "";
+    resultado.mentales.push(`Enfermedad mental: ${familiar}${detalle}`);
+  }
+
+  // ===== MALFORMACIONES =====
+  // ✅ MALFORMACIÓN
+  if (data.malformacion_familiar && data.malformacion_familiar !== "NO") {
+    const familiar = getFamiliarLabel(data.malformacion_familiar);
+    const detalle =
+      data.malformacion_familiar === "OTRO" && data.malformacion_familiar_otro
+        ? ` (${data.malformacion_familiar_otro})`
+        : "";
+    resultado.malformaciones.push(`Malformación: ${familiar}${detalle}`);
+  }
+
+  // ===== OTROS =====
+  if (data.otros_antecedentes_familiares?.trim()) {
+    resultado.otros.push(data.otros_antecedentes_familiares.trim());
+  }
+
+  // Determinar si tiene contenido
+  resultado.tieneContenido =
+    resultado.cardiovasculares.length > 0 ||
+    resultado.metabolicas.length > 0 ||
+    resultado.cancer.length > 0 ||
+    resultado.infecciosas.length > 0 ||
+    resultado.mentales.length > 0 ||
+    resultado.malformaciones.length > 0 ||
+    resultado.otros.length > 0;
+
+  return resultado;
 };
 
+// ============================================================================
+// FUNCIONES HELPER PARA LABELS
+// ============================================================================
 
-export const getExamenHallazgos = (data: ExamenEstomatognaticoData | null | undefined) => {
+function getVihSidaLabel(value: string): string {
+  const labels: Record<string, string> = {
+    NEGATIVO: "Negativo",
+    POSITIVO: "Positivo",
+    DESCONOCIDO: "Desconocido",
+    OTRO: "Otro",
+  };
+  return labels[value] || value;
+}
+
+function getTuberculosisLabel(value: string): string {
+  const labels: Record<string, string> = {
+    NUNCA: "Nunca",
+    TRATADA: "Tratada",
+    ACTIVA: "Activa",
+    DESCONOCIDO: "Desconocido",
+    OTRO: "Otro",
+  };
+  return labels[value] || value;
+}
+
+function getDiabetesLabel(value: string): string {
+  const labels: Record<string, string> = {
+    NO: "No",
+    TIPO_1: "Tipo 1",
+    TIPO_2: "Tipo 2",
+    GESTACIONAL: "Gestacional",
+    OTRO: "Otro",
+  };
+  return labels[value] || value;
+}
+
+function getHipertensionLabel(value: string): string {
+  const labels: Record<string, string> = {
+    NO: "No",
+    CONTROLADA: "Controlada",
+    NO_CONTROLADA: "No controlada",
+    SIN_TRATAMIENTO: "Sin tratamiento",
+    OTRO: "Otro",
+  };
+  return labels[value] || value;
+}
+
+function getEnfermedadCardiacaLabel(value: string): string {
+  const labels: Record<string, string> = {
+    NO: "No",
+    INSUFICIENCIA: "Insuficiencia cardíaca",
+    ARRITMIA: "Arritmia",
+    VALVULOPATIA: "Valvulopatía",
+    INFARTO: "Infarto",
+    OTRO: "Otro",
+  };
+  return labels[value] || value;
+}
+
+function getFamiliarLabel(value: string): string {
+  const labels: Record<string, string> = {
+    NO: "No",
+    PADRE: "Padre",
+    MADRE: "Madre",
+    HERMANO: "Hermano(a)",
+    ABUELO: "Abuelo(a)",
+    TIO: "Tío(a)",
+    OTRO: "Otro familiar",
+  };
+  return labels[value] || value;
+}
+
+function getTipoCancerLabel(value: string): string {
+  const labels: Record<string, string> = {
+    MAMA: "Mama",
+    PULMON: "Pulmón",
+    PROSTATA: "Próstata",
+    COLON: "Colon",
+    ESTOMAGO: "Estómago",
+    HIGADO: "Hígado",
+    PANCREAS: "Páncreas",
+    LEUCEMIA: "Leucemia",
+    PIEL: "Piel",
+    OTRO: "Otro",
+  };
+  return labels[value] || value;
+}
+
+// ============================================================================
+// EXAMEN ESTOMATOGNÁTICO
+// ============================================================================
+
+export const getExamenHallazgos = (
+  data: ExamenEstomatognaticoData | null | undefined
+) => {
   if (!data) return [];
-  if (data.examen_sin_patologia) return [{ region: "General", detalle: "Sin patología aparente" }];
+  if (data.examen_sin_patologia)
+    return [{ region: "General", detalle: "Sin patología aparente" }];
 
   const regiones = [
     { nombre: "Labios", cp: data.labios_cp, desc: data.labios_descripcion },
     { nombre: "Mejillas", cp: data.mejillas_cp, desc: data.mejillas_descripcion },
-    { nombre: "Maxilar Superior", cp: data.maxilar_superior_cp, desc: data.maxilar_superior_descripcion },
-    { nombre: "Maxilar Inferior", cp: data.maxilar_inferior_cp, desc: data.maxilar_inferior_descripcion },
+    {
+      nombre: "Maxilar Superior",
+      cp: data.maxilar_superior_cp,
+      desc: data.maxilar_superior_descripcion,
+    },
+    {
+      nombre: "Maxilar Inferior",
+      cp: data.maxilar_inferior_cp,
+      desc: data.maxilar_inferior_descripcion,
+    },
     { nombre: "Lengua", cp: data.lengua_cp, desc: data.lengua_descripcion },
     { nombre: "Paladar", cp: data.paladar_cp, desc: data.paladar_descripcion },
-    { nombre: "Piso de la boca", cp: data.piso_boca_cp, desc: data.piso_boca_descripcion },
+    {
+      nombre: "Piso de la boca",
+      cp: data.piso_boca_cp,
+      desc: data.piso_boca_descripcion,
+    },
     { nombre: "Carrillos", cp: data.carrillos_cp, desc: data.carrillos_descripcion },
-    { nombre: "Glándulas Salivales", cp: data.glandulas_salivales_cp, desc: data.glandulas_salivales_descripcion },
+    {
+      nombre: "Glándulas Salivales",
+      cp: data.glandulas_salivales_cp,
+      desc: data.glandulas_salivales_descripcion,
+    },
     { nombre: "ATM", cp: data.atm_cp, desc: data.atm_observacion },
     { nombre: "Ganglios", cp: data.ganglios_cp, desc: data.ganglios_descripcion },
   ];
 
   return regiones
-    .filter(r => r.cp) 
-    .map(r => ({
+    .filter((r) => r.cp)
+    .map((r) => ({
       region: r.nombre,
-      detalle: r.desc || "Patología detectada (sin descripción detallada)"
+      detalle: r.desc || "Patología detectada (sin descripción detallada)",
     }));
 };
 
+// ============================================================================
+// INDICADORES DE SALUD BUCAL
+// ============================================================================
 
 export const getIndicadoresResumen = (indicadores: IndicadoresSaludBucalData) => {
   const ohis = indicadores.ohi_promedio_placa + indicadores.ohi_promedio_calculo;
-  
+
   // Determinar nivel de higiene oral
   let higieneNivel = "";
   if (ohis <= 0.6) higieneNivel = "Excelente";
@@ -285,7 +587,8 @@ export const getIndicadoresResumen = (indicadores: IndicadoresSaludBucalData) =>
   else gingivitisNivel = "Severa";
 
   // Calcular porcentaje de piezas completas
-  const piezasCompletas = indicadores.valores_por_pieza.filter(p => p.completo).length;
+  const piezasCompletas = indicadores.valores_por_pieza.filter((p) => p.completo)
+    .length;
   const totalPiezas = indicadores.valores_por_pieza.length;
   const completitud = totalPiezas > 0 ? (piezasCompletas / totalPiezas) * 100 : 0;
 

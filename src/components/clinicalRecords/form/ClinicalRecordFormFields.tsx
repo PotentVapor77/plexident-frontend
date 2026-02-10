@@ -16,7 +16,7 @@ import ObservacionesSection from "./sections/ObservacionesSection";
 import InfoSection from "./sections/InfoSection";
 import Odontograma2DSection from "./sections/Odontograma2DSection";
 import IndicadoresSaludBucalSection from "./sections/IndicadoresSaludBucalSection";
-import { DiagnosticosCieSection, IndicesCariesSection, PlanTratamientoSection } from "./sections";
+import { DiagnosticosCieSection, ExamenesComplementariosSection, IndicesCariesSection, PlanTratamientoSection } from "./sections";
 /**
  * ============================================================================
  * PROPS
@@ -37,6 +37,7 @@ interface ClinicalRecordFormFieldsProps {
     | "indicadores_salud_bucal_data"
     | "indices_caries_data"
     | "diagnosticos_cie_data"
+    | "examenes_complementarios_data"
   >(
     section: T,
     data: ClinicalRecordFormData[T]
@@ -50,6 +51,7 @@ interface ClinicalRecordFormFieldsProps {
   initialDates: { [key: string]: string | null };
   refreshSections: (section: string) => Promise<void>;
   historialId?: string;
+  refreshLoadingMap?: Record<string, boolean>;
 }
 
 /**
@@ -68,9 +70,11 @@ const ClinicalRecordFormFields: React.FC<ClinicalRecordFormFieldsProps> = ({
   initialDates,
   refreshSections,
   historialId,
+  refreshLoadingMap = {},
 }) => {
   console.log("[HC][FormFields] formData.plan_tratamiento_sesiones:", formData.plan_tratamiento_sesiones);
   console.log("[HC][FormFields] formData.plan_tratamiento_odontograma_id:", formData.plan_tratamiento_odontograma_id);
+  console.log("[HC][FormFields] formData.examenes_complementarios_data:", formData.examenes_complementarios_data);
   return (
     <div className="space-y-8">
 
@@ -180,6 +184,15 @@ const ClinicalRecordFormFields: React.FC<ClinicalRecordFormFieldsProps> = ({
         refreshSection={() => refreshSections("indices_caries")}
         historialId={historialId}
       />
+
+      <ExamenesComplementariosSection
+        formData={formData}
+        lastUpdated={initialDates.examenes_complementarios}
+        refreshSection={() => refreshSections("examenes_complementarios")}
+        mode={mode}
+        refreshLoading={refreshLoadingMap["examenes_complementarios"] || false}
+      />
+
       <DiagnosticosCieSection
         modo={mode === "create" ? "crear" : "editar"}
         pacienteId={selectedPaciente?.id ?? null}
@@ -196,33 +209,35 @@ const ClinicalRecordFormFields: React.FC<ClinicalRecordFormFieldsProps> = ({
         refreshSection={() => refreshSections("diagnosticos_cie")}
       />
 
+
+
       <PlanTratamientoSection
-  sesiones={formData.plan_tratamiento_sesiones}
-  odontogramaId={formData.plan_tratamiento_odontograma_id}
-  planTitulo={formData.plan_tratamiento_titulo}
-  planDescripcion={formData.plan_tratamiento_descripcion}
-  onPlanSeleccionado={(planData) => {
-    updateField("plan_tratamiento_id", planData.planId);
-    updateField("plan_tratamiento_sesiones", planData.sesiones);
-    updateField("plan_tratamiento_odontograma_id", planData.odontogramaId);
-    if (planData.titulo) {
-      updateField("plan_tratamiento_titulo", planData.titulo);
-    }
-    if (planData.descripcion) {
-      updateField("plan_tratamiento_descripcion", planData.descripcion);
-    }
-  }}
-  mode={mode}
-  estadoHistorial={formData.estado as "BORRADOR" | "ABIERTO" | "CERRADO"}
-  pacienteId={selectedPaciente?.id ?? null}
-  historialId={historialId ?? null}
-  onRefresh={() => {
-    // Refrescar datos generales del historial
-    if (historialId) {
-      refreshSections('plan_tratamiento');
-    }
-  }}
-/>
+        sesiones={formData.plan_tratamiento_sesiones}
+        odontogramaId={formData.plan_tratamiento_odontograma_id}
+        planTitulo={formData.plan_tratamiento_titulo}
+        planDescripcion={formData.plan_tratamiento_descripcion}
+        onPlanSeleccionado={(planData) => {
+          updateField("plan_tratamiento_id", planData.planId);
+          updateField("plan_tratamiento_sesiones", planData.sesiones);
+          updateField("plan_tratamiento_odontograma_id", planData.odontogramaId);
+          if (planData.titulo) {
+            updateField("plan_tratamiento_titulo", planData.titulo);
+          }
+          if (planData.descripcion) {
+            updateField("plan_tratamiento_descripcion", planData.descripcion);
+          }
+        }}
+        mode={mode}
+        estadoHistorial={formData.estado as "BORRADOR" | "ABIERTO" | "CERRADO"}
+        pacienteId={selectedPaciente?.id ?? null}
+        historialId={historialId ?? null}
+        onRefresh={() => {
+          // Refrescar datos generales del historial
+          if (historialId) {
+            refreshSections('plan_tratamiento');
+          }
+        }}
+      />
 
       {/* ====================================================================
           Observaciones Adicionales

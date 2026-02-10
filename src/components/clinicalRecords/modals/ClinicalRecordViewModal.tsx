@@ -1,10 +1,11 @@
 // src/components/clinicalRecord/modals/ClinicalRecordViewModal.tsx
 
-import React from "react";
+import React, { useRef } from "react";
 import {
   X,
   FileText,
   Clock,
+  Download,
 } from "lucide-react";
 import { Modal } from "../../ui/modal";
 import Button from "../../ui/button/Button";
@@ -25,6 +26,14 @@ import { Odontograma2DSectionView } from "./sectionsView/Odontograma2DSectionVie
 import { IndicadoresSaludBucalSectionView } from "./sectionsView/IndicadoresSaludBucalSectionView";
 import { IndicesCariesSectionView } from "./sectionsView/IndicesCariesSectionView";
 import { SimbologiaOdontogramaSectionView } from "./sectionsView/SimbologiaOdontogramaSectionView";
+import { AntecedentesFamiliaresSectionView } from "./sectionsView/AntecedentesFamiliaresSection";
+import { PedidoExamenesSectionView } from "./sectionsView/PedidoExamenesSectionView";
+import { InformeExamenesSectionView } from "./sectionsView/InformeExamenesSectionView";
+import { DiagnosticosCIESectionView } from "./sectionsView/DiagnosticosCIESectionView";
+import { DatosProfesionalSectionView } from "./sectionsView/DatosProfesionalSectionView";
+import { PlanTratamientoSectionView } from "./sectionsView/PlanTratamientoSectionView";
+import { generatePDFFromElement } from "../pdf/pdfGenerator";
+
 
 interface ClinicalRecordViewModalProps {
   isOpen: boolean;
@@ -37,6 +46,8 @@ const ClinicalRecordViewModal: React.FC<ClinicalRecordViewModalProps> = ({
   onClose,
   selectedRecord,
 }) => {
+  const modalContentRef = useRef<HTMLDivElement>(null);
+  
   // 1. Fetch de datos
   const {
     data: apiResponse,
@@ -48,6 +59,21 @@ const ClinicalRecordViewModal: React.FC<ClinicalRecordViewModalProps> = ({
     enabled: isOpen && !!selectedRecord?.id,
     staleTime: 0,
   });
+
+  // Función para descargar como PDF
+  const handleDownloadPDF = async () => {
+    if (!modalContentRef.current || !record) return;
+
+    const pacienteNombre = record?.paciente_data?.nombres || "Paciente";
+    const pacienteApellido = record?.paciente_data?.apellidos || "";
+    const fecha = record?.fecha_creacion
+      ? new Date(record.fecha_creacion).toISOString().split("T")[0]
+      : new Date().toISOString().split("T")[0];
+
+    const fileName = `Historial_Clinico_${pacienteNombre}_${pacienteApellido}_${fecha}.pdf`;
+
+    await generatePDFFromElement(modalContentRef.current, fileName);
+  };
 
   if (!isOpen) return null;
 
@@ -89,21 +115,16 @@ const ClinicalRecordViewModal: React.FC<ClinicalRecordViewModalProps> = ({
     );
   }
 
-  // Helpers para acceder a la data anidada
-  // const personales = record.antecedentes_personales_data;
-  // const familiares = record.antecedentes_familiares_data;
-  // const vitales = record.constantes_vitales_data;
-  // const examen = record.examen_estomatognatico_data;
   const isComplete = record.esta_completo;
   const hasPlanTratamiento = !!record.plan_tratamiento_data;
-  
+
   // ==========================================================================
   // RENDER
   // ==========================================================================
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="max-w-5xl">
       {/* CONTENEDOR PRINCIPAL CON FLEX COL Y ALTURA COMPLETA */}
-      <div className="flex flex-col h-full max-h-[90vh]">
+      <div ref={modalContentRef} className="flex flex-col h-full max-h-[90vh]">
         {/* HEADER - FIXED */}
         <div className="flex-shrink-0 flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800">
           <div className="flex items-center gap-3">
@@ -129,13 +150,23 @@ const ClinicalRecordViewModal: React.FC<ClinicalRecordViewModalProps> = ({
               </div>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-2 text-gray-400 hover:bg-gray-200 hover:text-gray-500 dark:hover:bg-gray-700"
-            aria-label="Cerrar modal"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleDownloadPDF}
+              className="flex items-center gap-2 rounded-lg px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              aria-label="Descargar PDF"
+            >
+              <Download className="h-4 w-4" />
+              <span className="text-sm font-medium">Descargar PDF</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="rounded-lg p-2 text-gray-400 hover:bg-gray-200 hover:text-gray-500 dark:hover:bg-gray-700"
+              aria-label="Cerrar modal"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* BODY - SCROLLABLE (usa el espacio restante) */}
@@ -150,7 +181,7 @@ const ClinicalRecordViewModal: React.FC<ClinicalRecordViewModalProps> = ({
             {/* D. ANTECEDENTES PERSONALES */}
             <AntecedentesPersonalesSectionView record={record} />
             {/* E. ANTECEDENTES FAMILIARES */}
-
+            <AntecedentesFamiliaresSectionView record={record} />
             {/* F. CONSTANTES VITALES */}
             <ConstantesVitalesSectionView record={record} />
             {/* G. EXAMEN ESTOMATOLOGICO */}
@@ -162,9 +193,17 @@ const ClinicalRecordViewModal: React.FC<ClinicalRecordViewModalProps> = ({
             {/* J. INDICES CPO */}
             <IndicesCariesSectionView record={record} />
             {/* K. SIMBOLOGÍA DEL ODONTOGRAMA */}
-<SimbologiaOdontogramaSectionView />
-            {/* 4. OBSERVACIONES Y FOOTER */}
-            
+            <SimbologiaOdontogramaSectionView />
+            {/* L. PEDIDO DE EXÁMENES */}
+            <PedidoExamenesSectionView record={record} />
+            {/* M. INFORME DE EXÁMENES */}
+            <InformeExamenesSectionView record={record} />
+            {/* N. DIAGNÓSTICOS */}
+            <DiagnosticosCIESectionView record={record} />
+            {/* O. DATOS PROFESIONALES */}
+            <DatosProfesionalSectionView record={record} />
+            {/* P. PLAN DE TRATAMIENTO */}
+            <PlanTratamientoSectionView record={record} />
 
             <div className="text-xs text-gray-400 pt-4 border-t mt-8 flex flex-col gap-1">
               <div className="flex items-center gap-2">

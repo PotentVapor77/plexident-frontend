@@ -4,7 +4,23 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import type { IAntecedenteCombinado } from '../../../../hooks/backgrounds/useBackgrounds';
 import { useAntecedentes } from '../../../../hooks/backgrounds/useBackgrounds';
 import type { IPaciente } from '../../../../types/patient/IPatient';
-import { useAuth } from '../../../../hooks/auth/useAuth'; // ✅ AGREGAR
+import { useAuth } from '../../../../hooks/auth/useAuth';
+import {
+  Search,
+  Filter,
+  Eye,
+  Edit2,
+  Trash2,
+  User,
+  Calendar,
+  Clock,
+  AlertCircle,
+  Heart,
+  Activity,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+} from 'lucide-react';
 
 interface BackgroundsTableProps {
   pacienteId?: string;
@@ -35,9 +51,9 @@ export function BackgroundsTable({
   const [pageSize, setPageSize] = useState(5);
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const { user } = useAuth(); // ✅ AGREGAR
+  const { user } = useAuth();
 
-  const isAdmin = user?.rol === 'Administrador'; // ✅ AGREGAR
+  const isAdmin = user?.rol === 'Administrador';
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -178,7 +194,6 @@ export function BackgroundsTable({
   };
 
   const getEstadoAntecedentes = useCallback((agrupado: AntecedentesAgrupados): string => {
-    // Si no hay antecedentes registrados
     if (!agrupado.personal && !agrupado.familiar) {
       return 'No registrado';
     }
@@ -186,22 +201,34 @@ export function BackgroundsTable({
     const personalActivo = agrupado.personal?.activo;
     const familiarActivo = agrupado.familiar?.activo;
 
-    // Si ambos están activos
     if (personalActivo === true && familiarActivo === true) {
       return 'Activo';
     }
 
-    // Si ambos están inactivos
     if (personalActivo === false && familiarActivo === false) {
       return 'Inactivo';
     }
 
-    // Si al menos uno está activo
     if (personalActivo === true || familiarActivo === true) {
       return 'Parcial';
     }
 
     return 'Inactivo';
+  }, []);
+
+  const getEstadoColor = useCallback((estado: string) => {
+    switch (estado) {
+      case 'Activo':
+        return 'bg-success-50 text-success-700 border-success-200 dark:bg-success-900/30 dark:text-success-400 dark:border-success-800';
+      case 'Parcial':
+        return 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800';
+      case 'No registrado':
+        return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700';
+      case 'Inactivo':
+        return 'bg-error-50 text-error-700 border-error-200 dark:bg-error-900/30 dark:text-error-400 dark:border-error-800';
+      default:
+        return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700';
+    }
   }, []);
 
   const handleEdit = (antecedentesAgrupados: AntecedentesAgrupados) => {
@@ -229,7 +256,7 @@ export function BackgroundsTable({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-gray-600 dark:text-gray-400">Cargando antecedentes...</p>
         </div>
       </div>
@@ -238,22 +265,16 @@ export function BackgroundsTable({
 
   if (isError) {
     return (
-      <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4">
+      <div className="rounded-lg bg-error-50 dark:bg-error-900/20 p-4 border border-error-200 dark:border-error-800">
         <div className="flex">
           <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <AlertCircle className="h-5 w-5 text-error-400" />
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+            <h3 className="text-sm font-medium text-error-800 dark:text-error-200">
               Error al cargar antecedentes
             </h3>
-            <p className="mt-2 text-sm text-red-700 dark:text-red-300">
+            <p className="mt-2 text-sm text-error-700 dark:text-error-300">
               {error?.toString() || 'Error desconocido'}
             </p>
           </div>
@@ -264,20 +285,10 @@ export function BackgroundsTable({
 
   if (antecedentesAgrupados.length === 0) {
     return (
-      <div className="text-center py-12">
-        <svg
-          className="mx-auto h-12 w-12 text-gray-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
+      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 py-12 text-center dark:border-gray-700">
+        <div className="rounded-full bg-gray-100 p-3 dark:bg-gray-800">
+          <FileText className="h-6 w-6 text-gray-400" />
+        </div>
         <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
           {searchInput ? 'No se encontraron resultados' : 'No hay antecedentes registrados'}
         </h3>
@@ -291,7 +302,7 @@ export function BackgroundsTable({
         {searchInput && (
           <button
             onClick={() => setSearchInput('')}
-            className="mt-3 text-sm text-blue-600 hover:underline"
+            className="mt-3 text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
           >
             Limpiar búsqueda
           </button>
@@ -304,13 +315,14 @@ export function BackgroundsTable({
     <div className="space-y-4">
       {/* Header con buscador */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <div className="w-full sm:flex-1">
+        <div className="w-full sm:flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
             placeholder="Buscar por paciente, cédula..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           />
         </div>
 
@@ -318,289 +330,263 @@ export function BackgroundsTable({
           <label className="text-sm text-gray-700 dark:text-gray-300">
             Mostrar:
           </label>
-          <select
-            value={pageSize}
-            onChange={(e) => {
-              setPageSize(Number(e.target.value));
-              setPage(1);
-            }}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-          </select>
+          <div className="relative">
+            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(1);
+              }}
+              className="pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
         </div>
       </div>
 
       {/* Tabla */}
-      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-800">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                Paciente
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                Alergias
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                Condiciones Personales
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                Antecedentes Familiares
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                Última modificación
-              </th>
-              {/* ✅ Ocultar columna Estado para no administradores */}
-              {isAdmin && (
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                  Estado
-                </th>
-              )}
-              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
-            {antecedentesAgrupados.map((agrupado) => {
-              const estado = getEstadoAntecedentes(agrupado);
-              const isActivo = estado === 'Activo' || estado === 'Solo personal' || estado === 'Solo familiar' || estado === 'Parcial';
-              
-              return (
-                <tr
-                  key={agrupado.pacienteId}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                >
-                  {/* Paciente */}
-                  <td className="whitespace-nowrap px-6 py-4">
-                    <div className="flex items-center">
-                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white font-semibold shadow-md shadow-blue-500/30">
-                        {agrupado.pacienteInitials}
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {agrupado.pacienteNombre}
+      <div className="relative overflow-hidden rounded-lg border border-gray-200 shadow-sm dark:border-gray-700">
+        <div className="overflow-x-auto custom-scrollbar max-h-[calc(100vh-20rem)]">
+          <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400 min-w-[1000px]">
+            <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400 sticky top-0 z-10">
+              <tr>
+                <th scope="col" className="px-6 py-3 font-medium min-w-[200px]">Paciente</th>
+                <th scope="col" className="px-6 py-3 font-medium min-w-[150px]">Alergias</th>
+                <th scope="col" className="px-6 py-3 font-medium min-w-[180px]">Condiciones Personales</th>
+                <th scope="col" className="px-6 py-3 font-medium min-w-[180px]">Antecedentes Familiares</th>
+                <th scope="col" className="px-6 py-3 font-medium min-w-[140px]">Última modificación</th>
+                {isAdmin && (
+                  <th scope="col" className="px-6 py-3 font-medium min-w-[120px]">Estado</th>
+                )}
+                <th scope="col" className="px-6 py-3 text-right font-medium min-w-[140px]">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
+              {antecedentesAgrupados.map((agrupado) => {
+                const estado = getEstadoAntecedentes(agrupado);
+                const isActivo = estado === 'Activo' || estado === 'Parcial';
+                
+                return (
+                  <tr key={agrupado.pacienteId} className="group hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                    {/* Paciente */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
+                          {agrupado.pacienteInitials}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          CI {agrupado.pacienteCedula}
-                        </div>
-                        <div className="text-xs text-gray-400 dark:text-gray-500">
-                          Creación: {formatDate(agrupado.fechaCreacion)}
+                        <div className="flex flex-col">
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {agrupado.pacienteNombre}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            CI: {agrupado.pacienteCedula}
+                          </span>
+                          <div className="flex items-center gap-1 mt-1 text-xs text-gray-400 dark:text-gray-500">
+                            <Calendar className="h-3 w-3" />
+                            Creación: {formatDate(agrupado.fechaCreacion)}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  
-                  {/* Alergias */}
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 dark:text-white">
-                      {agrupado.personal ? (
-                        <>
-                          {agrupado.personal.alergia_antibiotico !== 'NO' && agrupado.personal.alergia_antibiotico && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 mr-1 mb-1">
-                              Antibiótico
-                            </span>
-                          )}
-                          {agrupado.personal.alergia_anestesia !== 'NO' && agrupado.personal.alergia_anestesia && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400 mr-1 mb-1">
-                              Anestesia
-                            </span>
-                          )}
-                          {(agrupado.personal.alergia_antibiotico === 'NO' || !agrupado.personal.alergia_antibiotico) &&
-                            (agrupado.personal.alergia_anestesia === 'NO' || !agrupado.personal.alergia_anestesia) && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">Sin alergias</span>
-                            )}
-                        </>
-                      ) : (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">-</span>
-                      )}
-                    </div>
-                  </td>
-
-                  {/* Condiciones Personales */}
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 dark:text-white">
-                      {agrupado.personal ? (
-                        <>
-                          {agrupado.personal.diabetes !== 'NO' && agrupado.personal.diabetes && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 mr-1 mb-1">
-                              Diabetes
-                            </span>
-                          )}
-                          {agrupado.personal.hipertension_arterial !== 'NO' && agrupado.personal.hipertension_arterial && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400 mr-1 mb-1">
-                              HTA
-                            </span>
-                          )}
-                          {agrupado.personal.asma !== 'NO' && agrupado.personal.asma && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400 mr-1 mb-1">
-                              Asma
-                            </span>
-                          )}
-                          {(agrupado.personal.diabetes === 'NO' || !agrupado.personal.diabetes) &&
-                            (agrupado.personal.hipertension_arterial === 'NO' || !agrupado.personal.hipertension_arterial) &&
-                            (agrupado.personal.asma === 'NO' || !agrupado.personal.asma) && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">Ninguna</span>
-                            )}
-                        </>
-                      ) : (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">-</span>
-                      )}
-                    </div>
-                  </td>
-
-                  {/* Antecedentes Familiares */}
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 dark:text-white">
-                      {agrupado.familiar ? (
-                        <>
-                          {agrupado.familiar.cancer_familiar !== 'NO' && agrupado.familiar.cancer_familiar && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 mr-1 mb-1">
-                              Cáncer
-                            </span>
-                          )}
-                          {agrupado.familiar.cardiopatia_familiar !== 'NO' && agrupado.familiar.cardiopatia_familiar && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 mr-1 mb-1">
-                              Cardiopatía
-                            </span>
-                          )}
-                          {agrupado.familiar.endocrino_metabolico_familiar !== 'NO' && agrupado.familiar.endocrino_metabolico_familiar && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 mr-1 mb-1">
-                              Diabetes
-                            </span>
-                          )}
-                          {(!agrupado.familiar.cancer_familiar || agrupado.familiar.cancer_familiar === 'NO') &&
-                            (!agrupado.familiar.cardiopatia_familiar || agrupado.familiar.cardiopatia_familiar === 'NO') &&
-                            (!agrupado.familiar.endocrino_metabolico_familiar || agrupado.familiar.endocrino_metabolico_familiar === 'NO') && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">Ninguno</span>
-                            )}
-                        </>
-                      ) : (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">-</span>
-                      )}
-                    </div>
-                  </td>
-
-                  {/* Última modificación */}
-                  <td className="whitespace-nowrap px-6 py-4">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {formatDate(agrupado.fechaModificacion || agrupado.fechaCreacion)}
-                    </div>
-                  </td>
-
-                  {/* ✅ Estado - Solo para Administrador */}
-                  {isAdmin && (
-                    <td className="whitespace-nowrap px-6 py-4">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          estado === 'Activo' || estado === 'Solo personal' || estado === 'Solo familiar'
-                            ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                            : estado === 'Parcial'
-                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
-                            : estado === 'No registrado'
-                            ? "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
-                            : "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-                        }`}
-                      >
-                        {estado}
-                      </span>
                     </td>
-                  )}
+                    
+                    {/* Alergias */}
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {agrupado.personal ? (
+                          <>
+                            {agrupado.personal.alergia_antibiotico !== 'NO' && agrupado.personal.alergia_antibiotico && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-error-50 text-error-700 border border-error-200 dark:bg-error-900/30 dark:text-error-400 dark:border-error-800">
+                                <AlertCircle className="h-3 w-3" />
+                                Antibiótico
+                              </span>
+                            )}
+                            {agrupado.personal.alergia_anestesia !== 'NO' && agrupado.personal.alergia_anestesia && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800">
+                                <Activity className="h-3 w-3" />
+                                Anestesia
+                              </span>
+                            )}
+                            {(agrupado.personal.alergia_antibiotico === 'NO' || !agrupado.personal.alergia_antibiotico) &&
+                              (agrupado.personal.alergia_anestesia === 'NO' || !agrupado.personal.alergia_anestesia) && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">Sin alergias</span>
+                              )}
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-500 dark:text-gray-400">-</span>
+                        )}
+                      </div>
+                    </td>
 
-                  {/* Acciones */}
-                  <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => handleView(agrupado)}
-                        className="text-blue-600 transition-colors hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                        title="Ver detalles"
-                      >
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleEdit(agrupado)}
-                        className="text-indigo-600 transition-colors hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                        title="Editar"
-                      >
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(agrupado)}
-                        disabled={!isActivo}
-                        className={`transition-colors ${
-                          !isActivo
-                            ? 'cursor-not-allowed text-red-300 opacity-50 dark:text-red-500'
-                            : 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
-                        }`}
-                        title={
-                          !isActivo
-                            ? 'Registros inactivos no se pueden eliminar'
-                            : 'Eliminar'
-                        }
-                      >
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    {/* Condiciones Personales */}
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {agrupado.personal ? (
+                          <>
+                            {agrupado.personal.diabetes !== 'NO' && agrupado.personal.diabetes && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
+                                <Activity className="h-3 w-3" />
+                                Diabetes
+                              </span>
+                            )}
+                            {agrupado.personal.hipertension_arterial !== 'NO' && agrupado.personal.hipertension_arterial && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800">
+                                <Activity className="h-3 w-3" />
+                                HTA
+                              </span>
+                            )}
+                            {agrupado.personal.asma !== 'NO' && agrupado.personal.asma && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800">
+                                <Activity className="h-3 w-3" />
+                                Asma
+                              </span>
+                            )}
+                            {(agrupado.personal.diabetes === 'NO' || !agrupado.personal.diabetes) &&
+                              (agrupado.personal.hipertension_arterial === 'NO' || !agrupado.personal.hipertension_arterial) &&
+                              (agrupado.personal.asma === 'NO' || !agrupado.personal.asma) && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">Ninguna</span>
+                              )}
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-500 dark:text-gray-400">-</span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Antecedentes Familiares */}
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {agrupado.familiar ? (
+                          <>
+                            {agrupado.familiar.cancer_familiar !== 'NO' && agrupado.familiar.cancer_familiar && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-error-50 text-error-700 border border-error-200 dark:bg-error-900/30 dark:text-error-400 dark:border-error-800">
+                                <AlertCircle className="h-3 w-3" />
+                                Cáncer
+                              </span>
+                            )}
+                            {agrupado.familiar.cardiopatia_familiar !== 'NO' && agrupado.familiar.cardiopatia_familiar && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
+                                <Heart className="h-3 w-3" />
+                                Cardiopatía
+                              </span>
+                            )}
+                            {agrupado.familiar.endocrino_metabolico_familiar !== 'NO' && agrupado.familiar.endocrino_metabolico_familiar && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-success-50 text-success-700 border border-success-200 dark:bg-success-900/30 dark:text-success-400 dark:border-success-800">
+                                <Activity className="h-3 w-3" />
+                                Diabetes
+                              </span>
+                            )}
+                            {(!agrupado.familiar.cancer_familiar || agrupado.familiar.cancer_familiar === 'NO') &&
+                              (!agrupado.familiar.cardiopatia_familiar || agrupado.familiar.cardiopatia_familiar === 'NO') &&
+                              (!agrupado.familiar.endocrino_metabolico_familiar || agrupado.familiar.endocrino_metabolico_familiar === 'NO') && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">Ninguno</span>
+                              )}
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-500 dark:text-gray-400">-</span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Última modificación */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <Clock className="h-3.5 w-3.5" />
+                        {formatDate(agrupado.fechaModificacion || agrupado.fechaCreacion)}
+                      </div>
+                    </td>
+
+                    {/* Estado - Solo para Administrador */}
+                    {isAdmin && (
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getEstadoColor(estado)}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${
+                            estado === 'Activo' ? 'bg-success-500' :
+                            estado === 'Parcial' ? 'bg-orange-500' :
+                            estado === 'No registrado' ? 'bg-gray-400' :
+                            'bg-error-500'
+                          }`} />
+                          {estado}
+                        </span>
+                      </td>
+                    )}
+
+                    {/* Acciones */}
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end gap-1">
+                        {/* Ver */}
+                        {onView && (
+                          <button
+                            onClick={() => handleView(agrupado)}
+                            className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:bg-brand-50 hover:text-brand-600 dark:text-gray-400 dark:hover:bg-brand-500/10 dark:hover:text-brand-300 transition-colors"
+                            title="Ver detalles"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+                        )}
+
+                        {/* Editar */}
+                        <button
+                          onClick={() => handleEdit(agrupado)}
+                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:bg-orange-50 hover:text-orange-600 dark:text-gray-400 dark:hover:bg-orange-500/10 dark:hover:text-orange-300 transition-colors"
+                          title="Editar"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+
+                        {/* Eliminar */}
+                        <button
+                          onClick={() => handleDeleteClick(agrupado)}
+                          disabled={!isActivo}
+                          className={`inline-flex items-center justify-center h-8 w-8 rounded-md transition-colors ${
+                            !isActivo
+                              ? "text-gray-300 dark:text-gray-600 cursor-not-allowed opacity-50"
+                              : "text-gray-500 hover:bg-error-50 hover:text-error-600 dark:text-gray-400 dark:hover:bg-error-500/10 dark:hover:text-error-300"
+                          }`}
+                          title={!isActivo ? "No se puede eliminar" : "Eliminar antecedente"}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 text-xs font-medium text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 sticky bottom-0">
+          Mostrando {antecedentesAgrupados.length} de {pagination?.total_count || 0} antecedentes
+        </div>
       </div>
 
       {/* Paginación */}
       {pagination && pagination.total_pages > 1 && (
         <div className="flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
           <div className="text-sm text-gray-700 dark:text-gray-300">
-            Mostrando página <span className="font-medium">{page}</span> de{" "}
-            <span className="font-medium">{pagination.total_pages}</span> ({pagination.total_count || 0} antecedentes totales)
+            Página <span className="font-medium">{page}</span> de{" "}
+            <span className="font-medium">{pagination.total_pages}</span> • Total: {pagination.total_count || 0}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             <button
               onClick={() => setPage(page - 1)}
               disabled={page === 1}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
+              <ChevronLeft className="h-4 w-4" />
               Anterior
             </button>
             <button
               onClick={() => setPage(page + 1)}
               disabled={page === pagination.total_pages}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Siguiente
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>

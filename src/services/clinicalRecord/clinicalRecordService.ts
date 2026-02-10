@@ -11,6 +11,11 @@ import type {
   ClinicalRecordReopenPayload,
   ClinicalRecordUpdatePayload,
   DiagnosticosCIEResponse,
+  ExamenesComplementariosCreatePayload,
+  ExamenesComplementariosData,
+  ExamenesComplementariosListResponse,
+  ExamenesComplementariosResponse,
+  ExamenesComplementariosUpdatePayload,
   PlanTratamientoData,
   SesionTratamientoData,
 } from "../../types/clinicalRecords/typeBackendClinicalRecord";
@@ -151,9 +156,68 @@ export const clinicalRecordService = {
     const response = await axiosInstance.delete<ApiListWrapper<{ id: string }>>(
       `${BASE_URL}/${id}/`
     );
-
     return response.data.data;
   },
+
+  saveExamenesComplementarios: async (
+    historialId: string,
+    payload: ExamenesComplementariosCreatePayload | { examenes_complementarios_id: string }
+  ): Promise<ExamenesComplementariosResponse> => {
+    const response = await axiosInstance.post<ExamenesComplementariosResponse>(
+      `${BASE_URL}/${historialId}/guardar-examenes-complementarios/`,
+      payload
+    );
+
+    return response.data;
+  },
+
+  /**
+   * Actualizar exámenes complementarios de un historial
+   */
+  updateExamenesComplementarios: async (
+    historialId: string,
+    payload: ExamenesComplementariosUpdatePayload
+  ): Promise<ExamenesComplementariosResponse> => {
+    const response = await axiosInstance.patch<ExamenesComplementariosResponse>(
+      `${BASE_URL}/${historialId}/actualizar-examenes-complementarios/`,
+      payload
+    );
+
+    return response.data;
+  },
+
+  /**
+   * Obtener todos los exámenes complementarios del paciente del historial
+   */
+  getTodosExamenesComplementarios: async (
+    historialId: string
+  ): Promise<ExamenesComplementariosListResponse> => {
+    const response = await axiosInstance.get<ExamenesComplementariosListResponse>(
+      `${BASE_URL}/${historialId}/todos-examenes-complementarios/`
+    );
+
+    return response.data;
+  },
+
+  /**
+   * Obtener el último examen complementario de un paciente
+   */
+  getLatestExamenesComplementarios: async (
+    pacienteId: string
+  ): Promise<ExamenesComplementariosData | null> => {
+    try {
+      const response = await axiosInstance.get<ApiListWrapper<ExamenesComplementariosData>>(
+        `${BASE_URL}/examenes-complementarios/${pacienteId}/latest/`
+      );
+      return response.data.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  },
+
   addForm033: async (
     historialId: string,
     form033Data: any,
@@ -289,6 +353,10 @@ getPlanesDisponibles: async (pacienteId: string): Promise<PlanTratamientoData[]>
     throw error;
   }
 },
+
+
+
+
 
   loadDiagnosticsToRecord: diagnosticosCieService.loadToRecord,
   deleteAllDiagnosticsFromRecord: diagnosticosCieService.deleteAllFromRecord,

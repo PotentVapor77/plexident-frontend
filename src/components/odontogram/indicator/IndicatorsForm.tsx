@@ -331,8 +331,6 @@ const handlePiezaChange = (
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    
-
     const validationErrors = validateFormData();
     if (validationErrors.length > 0) {
       notify({
@@ -373,9 +371,9 @@ const handlePiezaChange = (
         pieza_31_placa: formData.pieza_31_placa,
         pieza_31_calculo: formData.pieza_31_calculo,
         pieza_31_gingivitis: formData.pieza_31_gingivitis,
-        pieza_46_placa: formData.pieza_36_placa,
-        pieza_46_calculo: formData.pieza_36_calculo,        
-        pieza_46_gingivitis: formData.pieza_36_gingivitis,
+        pieza_46_placa: formData.pieza_46_placa,
+        pieza_46_calculo: formData.pieza_46_calculo,        
+        pieza_46_gingivitis: formData.pieza_46_gingivitis,
 
       };
 

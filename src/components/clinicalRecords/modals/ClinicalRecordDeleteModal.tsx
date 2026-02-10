@@ -34,10 +34,8 @@ export default function ClinicalRecordDeleteModal({
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      {/* ====================================================================
-          HEADER
-      ==================================================================== */}
+    <Modal isOpen={isOpen} onClose={onClose} className="max-w-3xl p-7">
+      
       <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-error-100 text-error-600 dark:bg-error-500/20 dark:text-error-400">
@@ -54,9 +52,6 @@ export default function ClinicalRecordDeleteModal({
         </div>
       </div>
 
-      {/* ====================================================================
-          CONTENIDO
-      ==================================================================== */}
       <div className="px-6 py-6">
         {/* Alerta de advertencia */}
         <div className="mb-6 rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
@@ -115,17 +110,8 @@ export default function ClinicalRecordDeleteModal({
           </div>
         </div>
 
-        {/* Nota adicional */}
-        <p className="mt-4 text-xs text-gray-600 dark:text-gray-400">
-          <span className="font-semibold">Nota:</span> Esta es una eliminación lógica. El
-          historial se marcará como inactivo en el sistema pero se mantendrá en la base de datos
-          por auditoría.
-        </p>
       </div>
 
-      {/* ====================================================================
-          FOOTER
-      ==================================================================== */}
       <div className="flex justify-end gap-3 border-t border-gray-200 px-6 py-4 dark:border-gray-800">
         <Button variant="outline" onClick={onClose} disabled={isDeleting}>
           Cancelar

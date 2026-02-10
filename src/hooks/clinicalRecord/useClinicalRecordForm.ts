@@ -37,6 +37,9 @@ export function useClinicalRecordForm(
     plan_tratamiento_sesiones: [],
     plan_tratamiento_odontograma_id: null,
     plan_tratamiento_id: null,
+    examenes_complementarios_data: null,
+    examenes_complementarios_id: null
+    
   };
 
   // Usar useCallback para evitar recrear la función en cada render
@@ -199,6 +202,8 @@ export function useClinicalRecordForm(
       | "indicadores_salud_bucal_data"
       | "indices_caries_data"
       | "diagnosticos_cie_data"
+      | "examenes_complementarios_data"
+      
       
   >(
     section: T,

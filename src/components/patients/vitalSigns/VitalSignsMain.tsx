@@ -1,4 +1,4 @@
-// src/components/vitalSigns/VitalSignsMain.tsx - CÓDIGO COMPLETO
+// src/components/vitalSigns/VitalSignsMain.tsx - CÓDIGO COMPLETO CON UI UNIFICADA
 
 import { useState } from "react";
 import { VitalSignsTable } from "./table/VitalSignsTable";
@@ -44,6 +44,21 @@ import type {
   IAntecedenteFamiliar,
 } from "../../../types/backgrounds/IBackground";
 import { BackgroundsTable } from "../backgrounds/table/BackgroundsTable";
+
+// Iconos para unificación
+import { 
+  FileText, 
+  Activity, 
+  Heart, 
+  Thermometer,
+  User,
+  AlertCircle,
+  Plus,
+  Clipboard,
+  Stethoscope,
+  Microscope,
+  ChevronRight
+} from "lucide-react";
 
 // ✅ Definir tipos de pestañas (agregamos complementarios)
 type TabType = "signos-vitales" | "estomatognatico" | "antecedentes" | "complementarios";
@@ -438,30 +453,38 @@ export default function VitalSignsMain() {
     });
   };
 
-  // ✅ Tabs actualizados con Exámenes Complementarios
+  // ✅ Tabs actualizados con Exámenes Complementarios - CON ESTILO UNIFICADO
   const tabs = [
     {
       id: "signos-vitales",
       label: "Registros Médicos",
-      icon: "📋",
+      icon: <Clipboard className="h-5 w-5" />,
+      color: "text-blue-600 dark:text-blue-400",
+      bgColor: "bg-blue-50 dark:bg-blue-900/30",
       description: "Consultas y constantes vitales integradas",
     },
     {
       id: "antecedentes",
       label: "Antecedentes Médicos",
-      icon: "🩺",
+      icon: <FileText className="h-5 w-5" />,
+      color: "text-purple-600 dark:text-purple-400",
+      bgColor: "bg-purple-50 dark:bg-purple-900/30",
       description: "Antecedentes personales y familiares",
     },
     {
       id: "estomatognatico",
       label: "Exámenes Estomatognáticos",
-      icon: "👄",
+      icon: <Stethoscope className="h-5 w-5" />,
+      color: "text-orange-600 dark:text-orange-400",
+      bgColor: "bg-orange-50 dark:bg-orange-900/30",
       description: "Exámenes de regiones orales y faciales",
     },
     {
       id: "complementarios",
       label: "Exámenes Complementarios",
-      icon: "🔬",
+      icon: <Microscope className="h-5 w-5" />,
+      color: "text-green-600 dark:text-green-400",
+      bgColor: "bg-green-50 dark:bg-green-900/30",
       description: "Solicitud e informes de exámenes de laboratorio",
     },
   ] as const;
@@ -554,347 +577,246 @@ export default function VitalSignsMain() {
     return { personal, familiar };
   };
 
+  // Componente unificado para mostrar paciente fijado
+  const PacienteFijadoInfo = ({ title }: { title: string }) => {
+  if (!pacienteActivo) return null;
+  
+  const iconMap = {
+    "signos-vitales": <Activity className="h-4 w-4" />,
+    "antecedentes": <FileText className="h-4 w-4" />,
+    "estomatognatico": <Stethoscope className="h-4 w-4" />,
+    "complementarios": <Microscope className="h-4 w-4" />,
+  };
+
+  const colorClasses = {
+    "signos-vitales": {
+      container: "bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-800/30",
+      iconBg: "bg-blue-100 dark:bg-blue-800/30",
+      iconColor: "text-blue-600 dark:text-blue-400",
+      text: "text-blue-700 dark:text-blue-300",
+      badge: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300"
+    },
+    "antecedentes": {
+      container: "bg-purple-50 dark:bg-purple-900/10 border-purple-100 dark:border-purple-800/30",
+      iconBg: "bg-purple-100 dark:bg-purple-800/30",
+      iconColor: "text-purple-600 dark:text-purple-400",
+      text: "text-purple-700 dark:text-purple-300",
+      badge: "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300"
+    },
+    "estomatognatico": {
+      container: "bg-orange-50 dark:bg-orange-900/10 border-orange-100 dark:border-orange-800/30",
+      iconBg: "bg-orange-100 dark:bg-orange-800/30",
+      iconColor: "text-orange-600 dark:text-orange-400",
+      text: "text-orange-700 dark:text-orange-300",
+      badge: "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300"
+    },
+    "complementarios": {
+      container: "bg-green-50 dark:bg-green-900/10 border-green-100 dark:border-green-800/30",
+      iconBg: "bg-green-100 dark:bg-green-800/30",
+      iconColor: "text-green-600 dark:text-green-400",
+      text: "text-green-700 dark:text-green-300",
+      badge: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
+    }
+  };
+
+  const colors = colorClasses[activeTab];
+
+  return (
+    <div className={`rounded-lg border p-3 mb-3 ${colors.container}`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg ${colors.iconBg} ${colors.iconColor}`}>
+            {iconMap[activeTab]}
+          </div>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <p className={`text-xs font-medium ${colors.text}`}>
+                {title} del paciente:
+              </p>
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${colors.badge}`}>
+                <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Filtrado
+              </span>
+            </div>
+            <div className="mt-1">
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                {pacienteActivo.nombres} {pacienteActivo.apellidos}
+              </p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-xs text-gray-600 dark:text-gray-400">
+                  CI: {pacienteActivo.cedula_pasaporte}
+                </span>
+                <span className="text-xs text-gray-600 dark:text-gray-400">•</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400">
+                  {pacienteActivo.sexo === "M" ? "♂" : "♀"}
+                </span>
+                <span className="text-xs text-gray-600 dark:text-gray-400">•</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400">
+                  Edad: {pacienteActivo.edad}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+  // Componente unificado para alerta sin paciente
+  const SinPacienteAlerta = ({ mensaje }: { mensaje: string }) => (
+    <div className="rounded-lg bg-warning-50 dark:bg-warning-900/20 p-4 border border-warning-200 dark:border-warning-800 mb-6">
+      <div className="flex items-start gap-3">
+        <AlertCircle className="h-5 w-5 text-warning-500 flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-medium text-warning-800 dark:text-warning-200">
+            Atención requerida
+          </p>
+          <p className="mt-1 text-sm text-warning-700 dark:text-warning-300">
+            <strong>Nota:</strong> {mensaje}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
   // ✅ Renderizar contenido de tabs (agregamos caso complementarios)
   const renderTabContent = () => {
-    switch (activeTab) {
-      case "complementarios":
-        return (
+    const tabMessages = {
+      "complementarios": {
+        title: "Mostrando exámenes complementarios",
+        alerta: "Para gestionar exámenes complementarios, primero debe fijar un paciente desde la vista principal de 'Gestión de Pacientes'."
+      },
+      "estomatognatico": {
+        title: "Mostrando examen estomatognático",
+        alerta: "Para gestionar exámenes, primero debe fijar un paciente desde la vista principal de 'Gestión de Pacientes'."
+      },
+      "antecedentes": {
+        title: "Mostrando antecedentes médicos",
+        alerta: "Para gestionar antecedentes, primero debe fijar un paciente desde la vista principal de 'Gestión de Pacientes'."
+      },
+      "signos-vitales": {
+        title: "Mostrando registros médicos",
+        alerta: "Para gestionar registros médicos (consultas y signos vitales), primero debe fijar un paciente desde la vista principal de 'Gestión de Pacientes'."
+      }
+    };
+
+    const currentTab = tabMessages[activeTab];
+
+    return (
+      <>
+        {pacienteActivo && <PacienteFijadoInfo title={currentTab.title} />}
+        
+        {!pacienteActivo && (
           <>
-            {pacienteActivo && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">📌</span>
-                    <div>
-                      <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                        Mostrando exámenes complementarios del paciente fijado:
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <div>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {pacienteActivo.nombres} {pacienteActivo.apellidos}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            CI: {pacienteActivo.cedula_pasaporte} •{" "}
-                            {pacienteActivo.sexo === "M" ? " 👨 Masculino" : " 👩 Femenino"} • Edad:{" "}
-                            {pacienteActivo.edad}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Filtrado por paciente
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-            {!pacienteActivo && (
-              <div className="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-yellow-600 dark:text-yellow-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
+            <SinPacienteAlerta mensaje={currentTab.alerta} />
+            {activeTab === "antecedentes" && (
+              <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-4 border border-blue-200 dark:border-blue-800 mb-6">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                   </svg>
-                  <p className="text-sm text-yellow-800 dark:text-yellow-300">
-                    <strong>Nota:</strong> Para gestionar exámenes complementarios, primero debe fijar un paciente
-                    desde la vista principal de "Gestión de Pacientes".
-                  </p>
+                  <div>
+                    <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                      Vista general
+                    </p>
+                    <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
+                      Mostrando antecedentes de todos los pacientes. Fije un paciente para filtrar o crear nuevos antecedentes.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
+          </>
+        )}
+
+        {/* Renderizar la tabla correspondiente */}
+        <div className="mt-4">
+          {activeTab === "complementarios" && (
             <ComplementaryExamTable
               onView={handleViewComplementaryExam}
               onEdit={handleEditComplementaryExam}
               onDelete={handleOpenDeleteComplementaryExam}
               pacienteId={pacienteActivo?.id}
             />
-          </>
-        );
-
-      case "estomatognatico":
-        return (
-          <>
-            {pacienteActivo && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">📌</span>
-                    <div>
-                      <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                        Mostrando examen estomatognatico del paciente fijado:
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <div>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {pacienteActivo.nombres} {pacienteActivo.apellidos}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            CI: {pacienteActivo.cedula_pasaporte} •{" "}
-                            {pacienteActivo.sexo === "M" ? " 👨 Masculino" : " 👩 Femenino"} • Edad:{" "}
-                            {pacienteActivo.edad}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Filtrado por paciente
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-            {!pacienteActivo && (
-              <div className="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-yellow-600 dark:text-yellow-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <p className="text-sm text-yellow-800 dark:text-yellow-300">
-                    <strong>Nota:</strong> Para gestionar exámenes, primero debe fijar un paciente
-                    desde la vista principal de "Gestión de Pacientes".
-                  </p>
-                </div>
-              </div>
-            )}
+          )}
+          {activeTab === "estomatognatico" && (
             <StomatognathicExamTable
               onView={handleViewExam}
               onEdit={handleEditExam}
               onDelete={handleOpenDeleteExam}
               pacienteId={pacienteActivo?.id}
             />
-          </>
-        );
-
-      case "antecedentes":
-        return (
-          <>
-            {pacienteActivo && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">📋</span>
-                    <div>
-                      <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                        Mostrando antecedentes médicos del paciente fijado:
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <div>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {pacienteActivo.nombres} {pacienteActivo.apellidos}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            CI: {pacienteActivo.cedula_pasaporte} •{" "}
-                            {pacienteActivo.sexo === "M" ? " 👨 Masculino" : " 👩 Femenino"} •
-                            Edad: {pacienteActivo.edad}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Filtrado por paciente
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {!pacienteActivo && (
-              <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-blue-600 dark:text-blue-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <p className="text-sm text-blue-800 dark:text-blue-300">
-                    <strong>Vista general:</strong> Mostrando antecedentes de todos los pacientes.
-                    Fije un paciente para filtrar o crear nuevos antecedentes.
-                  </p>
-                </div>
-              </div>
-            )}
-
+          )}
+          {activeTab === "antecedentes" && (
             <BackgroundsTable
               pacienteId={pacienteActivo?.id}
               onView={handleViewBackground}
               onEdit={handleEditBackground}
               onDelete={handleOpenDeleteBackground}
             />
-          </>
-        );
-
-      case "signos-vitales":
-        return (
-          <>
-            {pacienteActivo && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">📌</span>
-                    <div>
-                      <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                        Mostrando registros médicos del paciente fijado:
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <div>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {pacienteActivo.nombres} {pacienteActivo.apellidos}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            CI: {pacienteActivo.cedula_pasaporte} •{" "}
-                            {pacienteActivo.sexo === "M" ? " 👨 Masculino" : " 👩 Femenino"} • Edad:{" "}
-                            {pacienteActivo.edad}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Filtrado por paciente
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-            {!pacienteActivo && (
-              <div className="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-yellow-600 dark:text-yellow-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <p className="text-sm text-yellow-800 dark:text-yellow-300">
-                    <strong>Nota:</strong> Para gestionar registros médicos (consultas y signos
-                    vitales), primero debe fijar un paciente desde la vista principal de "Gestión de
-                    Pacientes".
-                  </p>
-                </div>
-              </div>
-            )}
+          )}
+          {activeTab === "signos-vitales" && (
             <VitalSignsTable
               onView={handleViewVital}
               onEdit={handleEditVital}
               onDelete={handleOpenDeleteVital}
               pacienteId={pacienteActivo?.id}
             />
-          </>
-        );
-
-      default:
-        return null;
-    }
+          )}
+        </div>
+      </>
+    );
   };
 
-  //  Renderizar botón de acción (agregamos caso complementarios)
+  // Renderizar botón de acción con estilo unificado
   const renderActionButton = () => {
-    switch (activeTab) {
-      case "complementarios":
-        return (
-          <button
-            onClick={handleCreateComplementaryExam}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!pacienteActivo}
-          >
-            + Registrar Examen Complementario
-          </button>
-        );
-      case "estomatognatico":
-        return (
-          <button
-            onClick={handleCreateExam}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!pacienteActivo}
-          >
-            + Registrar Examen
-          </button>
-        );
-      case "antecedentes":
-        return (
-          <button
-            onClick={handleCreateBackground}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!pacienteActivo}
-          >
-            + Crear Antecedentes
-          </button>
-        );
-      case "signos-vitales":
-        return (
-          <button
-            onClick={handleCreateVital}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!pacienteActivo}
-          >
-            + Nuevo Registro Médico
-          </button>
-        );
-      default:
-        return null;
-    }
+    const buttonConfig = {
+      "complementarios": {
+        label: "Registrar Examen Complementario",
+        color: "bg-green-600 hover:bg-green-700",
+        icon: <Microscope className="h-4 w-4 mr-2" />,
+      },
+      "estomatognatico": {
+        label: "Registrar Examen",
+        color: "bg-orange-600 hover:bg-orange-700",
+        icon: <Stethoscope className="h-4 w-4 mr-2" />,
+      },
+      "antecedentes": {
+        label: "Crear Antecedentes",
+        color: "bg-purple-600 hover:bg-purple-700",
+        icon: <FileText className="h-4 w-4 mr-2" />,
+      },
+      "signos-vitales": {
+        label: "Nuevo Registro Médico",
+        color: "bg-blue-600 hover:bg-blue-700",
+        icon: <Plus className="h-4 w-4 mr-2" />,
+      },
+    };
+
+    const config = buttonConfig[activeTab];
+
+    return (
+      <button
+        onClick={
+          activeTab === "complementarios" ? handleCreateComplementaryExam :
+          activeTab === "estomatognatico" ? handleCreateExam :
+          activeTab === "antecedentes" ? handleCreateBackground :
+          handleCreateVital
+        }
+        className={`inline-flex items-center px-4 py-2 rounded-lg text-white font-medium transition-colors ${config.color} disabled:opacity-50 disabled:cursor-not-allowed`}
+        disabled={!pacienteActivo}
+      >
+        {config.icon}
+        {config.label}
+      </button>
+    );
   };
 
   // Obtener los datos para los modales usando backgroundToView
@@ -905,60 +827,63 @@ export default function VitalSignsMain() {
   return (
     <>
       <div className="mb-8">
-        <div className="flex justify-between items-start mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
               Gestión Clínica - Detalles del Paciente
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Administra los aspectos clínicos de los pacientes (consultas, signos vitales,
-              antecedentes, exámenes)
+            <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">
+              Administra los aspectos clínicos de los pacientes (consultas, signos vitales, antecedentes, exámenes)
             </p>
           </div>
 
-          <div className="flex gap-3">{renderActionButton()}</div>
+          <div className="flex gap-3">
+            {renderActionButton()}
+          </div>
         </div>
 
-        <div className="border-b border-gray-200 dark:border-gray-700">
-          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+        {/* Tabs con estilo unificado */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-1 mb-6">
+          <div className="flex flex-wrap gap-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as TabType)}
                 className={`
-                  group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors
-                  ${
-                    activeTab === tab.id
-                      ? "border-blue-500 text-blue-600 dark:text-blue-400 dark:border-blue-400"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+                  group relative flex-1 sm:flex-none min-w-[150px] sm:min-w-0
+                  flex items-center justify-center gap-2 sm:gap-3
+                  py-3 px-3 sm:px-4 rounded-md
+                  transition-all duration-200
+                  ${activeTab === tab.id 
+                    ? `${tab.bgColor} ${tab.color} font-semibold shadow-sm` 
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }
                 `}
               >
-                <span className="mr-2 text-lg">{tab.icon}</span>
-                <div className="text-left">
-                  <div className="font-medium">{tab.label}</div>
-                  <div
-                    className={`text-xs mt-1 ${
-                      activeTab === tab.id
-                        ? "text-blue-500 dark:text-blue-300"
-                        : "text-gray-400 dark:text-gray-500"
-                    }`}
-                  >
+                <div className={`p-1.5 rounded-lg ${activeTab === tab.id ? 'bg-white/50 dark:bg-white/10' : 'bg-gray-100 dark:bg-gray-700'}`}>
+                  {tab.icon}
+                </div>
+                <div className="flex flex-col items-start">
+                  <span className="text-sm font-medium whitespace-nowrap">
+                    {tab.label}
+                  </span>
+                  <span className={`text-xs ${activeTab === tab.id ? 'opacity-80' : 'text-gray-500 dark:text-gray-500'} hidden sm:block`}>
                     {tab.description}
-                  </div>
+                  </span>
                 </div>
                 {activeTab === tab.id && (
-                  <span className="ml-3 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                    Actual
-                  </span>
+                  <ChevronRight className="h-4 w-4 ml-auto hidden sm:block" />
+                )}
+                {activeTab === tab.id && (
+                  <div className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3/4 h-0.5 ${tab.color.replace('text-', 'bg-')} rounded-full`} />
                 )}
               </button>
             ))}
-          </nav>
+          </div>
         </div>
       </div>
 
-      <div className="mt-6">{renderTabContent()}</div>
+      <div className="mt-2">{renderTabContent()}</div>
 
       {/* ✅ Modales para Exámenes Complementarios */}
       {complementaryExamToView && (

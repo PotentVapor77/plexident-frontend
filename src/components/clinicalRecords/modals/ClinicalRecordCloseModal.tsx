@@ -86,7 +86,7 @@ export default function ClinicalRecordCloseModal({
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} className="max-w-3xl p-7">
       {/* ====================================================================
           HEADER
       ==================================================================== */}

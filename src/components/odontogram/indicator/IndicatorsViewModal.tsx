@@ -1,4 +1,5 @@
-import React from "react";
+// src/components/ui/IndicatorsViewModal.tsx
+import React, { useEffect } from "react";
 import type { BackendIndicadoresSaludBucal } from "../../../types/odontogram/typeBackendOdontograma";
 import { Modal } from "../../ui/modal";
 
@@ -6,13 +7,26 @@ interface IndicatorsViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   registro: BackendIndicadoresSaludBucal | null;
+  datosPaciente?: {
+    nombres: string;
+    apellidos: string;
+    cedula: string;
+  };
 }
 
 export const IndicatorsViewModal: React.FC<IndicatorsViewModalProps> = ({
   isOpen,
   onClose,
   registro,
+  datosPaciente,
 }) => {
+  // Debug: Ver qué está llegando realmente cuando se abre el modal
+  useEffect(() => {
+    if (isOpen && registro) {
+      console.log("Datos recibidos en Modal:", { registro, datosPaciente });
+    }
+  }, [isOpen, registro, datosPaciente]);
+
   if (!isOpen || !registro) return null;
 
   const formatDate = (dateString?: string | null): string => {
@@ -28,28 +42,51 @@ export const IndicatorsViewModal: React.FC<IndicatorsViewModalProps> = ({
     }
   };
 
+  // Lógica mejorada para obtener nombre completo
   const getPatientFullName = () => {
-  const nombre = registro.paciente_nombre?.trim();
-  const apellido = registro.paciente_apellido?.trim();
+    // 1. Prioridad: Datos pasados explícitamente vía prop
+    if (datosPaciente?.nombres || datosPaciente?.apellidos) {
+      return `${datosPaciente.nombres || ""} ${datosPaciente.apellidos || ""}`.trim();
+    }
 
-  if (nombre && apellido) {
-    return `${nombre} ${apellido}`;
-  }
+    // 2. Prioridad: Campos planos en el registro (si el serializer los incluye)
+    const nombre = registro.paciente_nombre?.trim();
+    const apellido = registro.paciente_apellido?.trim();
+    if (nombre || apellido) {
+      return `${nombre || ""} ${apellido || ""}`.trim();
+    }
 
-  return nombre || apellido || "Paciente no especificado";
-};
+    // 3. Fallback: Verificar si 'paciente' viene como objeto (aunque TS diga string)
+    // Esto pasa a menudo si el backend usa depth=1
+    const pacienteAny = registro.paciente as any;
+    if (typeof pacienteAny === 'object' && pacienteAny !== null) {
+      const n = pacienteAny.nombres || pacienteAny.nombre || "";
+      const a = pacienteAny.apellidos || pacienteAny.apellido || "";
+      if (n || a) return `${n} ${a}`.trim();
+    }
+
+    return "Paciente no especificado";
+  };
+
+  // Lógica mejorada para obtener cédula
+  const getPatientCedula = () => {
+    // 1. Prop explicita
+    if (datosPaciente?.cedula) return datosPaciente.cedula;
+
+    // 2. Campo plano
+    if (registro.paciente_cedula) return registro.paciente_cedula;
+
+    // 3. Objeto anidado (fallback)
+    const pacienteAny = registro.paciente as any;
+    if (typeof pacienteAny === 'object' && pacienteAny?.cedula_pasaporte) {
+      return pacienteAny.cedula_pasaporte;
+    }
+
+    return "No registrada";
+  };
 
   const formatValue = (value?: number | null): string =>
     value == null ? "No registrado" : value.toFixed(2);
-
-  const getPeriodontalText = () =>
-    registro.enfermedad_periodontal || "No registrada";
-
-  const getOclusionText = () =>
-    registro.tipo_oclusion || "No registrada";
-
-  const getFluorosisText = () =>
-    registro.nivel_fluorosis || "No registrada";
 
   return (
     <Modal
@@ -82,7 +119,7 @@ export const IndicatorsViewModal: React.FC<IndicatorsViewModalProps> = ({
                 </p>
               </div>
               <span className="inline-flex items-center rounded-full bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200 px-3 py-1 text-xs font-medium">
-                Registro #{registro.id ?? "N/D"}
+                Registro #{registro.id?.slice(0, 8) ?? "N/D"}
               </span>
             </div>
 
@@ -97,10 +134,10 @@ export const IndicatorsViewModal: React.FC<IndicatorsViewModalProps> = ({
               </div>
               <div>
                 <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                  CI
+                  CI / Pasaporte
                 </p>
                 <p className="mt-1 text-gray-900 dark:text-gray-100">
-                  {registro.paciente_cedula ?? "No registrada"}
+                  {getPatientCedula()}
                 </p>
               </div>
               <div>
@@ -116,6 +153,7 @@ export const IndicatorsViewModal: React.FC<IndicatorsViewModalProps> = ({
 
           {/* OHI */}
           <section className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-emerald-200/70 dark:border-emerald-900/60 p-4">
+            {/* ... (Resto del código igual) ... */}
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -147,7 +185,7 @@ export const IndicatorsViewModal: React.FC<IndicatorsViewModalProps> = ({
                   {formatValue(registro.ohi_promedio_calculo)}
                 </p>
               </div>
-              
+
               <div className="rounded-lg bg-emerald-50/80 dark:bg-emerald-900/30 px-3 py-2">
                 <p className="text-xs uppercase tracking-wide text-emerald-700 dark:text-emerald-200">
                   GI Gingivitis promedio
@@ -159,30 +197,16 @@ export const IndicatorsViewModal: React.FC<IndicatorsViewModalProps> = ({
             </div>
           </section>
 
-
           {/* Evaluación clínica */}
           <section className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-indigo-200/70 dark:border-indigo-900/60 p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                  Evaluación clínica
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Características periodontales, oclusales y de fluorosis.
-                </p>
-              </div>
-              <span className="inline-flex items-center rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-200 px-3 py-1 text-xs font-medium">
-                Estado clínico
-              </span>
-            </div>
-
+            {/* ... (Resto del código igual) ... */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               <div className="rounded-lg bg-indigo-50/70 dark:bg-indigo-900/30 px-3 py-2">
                 <p className="text-xs uppercase tracking-wide text-indigo-700 dark:text-indigo-200">
                   Enfermedad periodontal
                 </p>
                 <p className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {getPeriodontalText()}
+                  {registro.enfermedad_periodontal || "No registrada"}
                 </p>
               </div>
               <div className="rounded-lg bg-indigo-50/70 dark:bg-indigo-900/30 px-3 py-2">
@@ -190,7 +214,7 @@ export const IndicatorsViewModal: React.FC<IndicatorsViewModalProps> = ({
                   Tipo de oclusión
                 </p>
                 <p className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {getOclusionText()}
+                  {registro.tipo_oclusion || "No registrada"}
                 </p>
               </div>
               <div className="rounded-lg bg-indigo-50/70 dark:bg-indigo-900/30 px-3 py-2">
@@ -198,7 +222,7 @@ export const IndicatorsViewModal: React.FC<IndicatorsViewModalProps> = ({
                   Nivel de fluorosis
                 </p>
                 <p className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {getFluorosisText()}
+                  {registro.nivel_fluorosis || "No registrada"}
                 </p>
               </div>
             </div>
@@ -206,20 +230,7 @@ export const IndicatorsViewModal: React.FC<IndicatorsViewModalProps> = ({
 
           {/* Observaciones */}
           <section className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-amber-200/70 dark:border-amber-900/60 p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                  Observaciones adicionales
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Comentarios relevantes registrados por el profesional.
-                </p>
-              </div>
-              <span className="inline-flex items-center rounded-full bg-amber-50 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200 px-3 py-1 text-xs font-medium">
-                Notas
-              </span>
-            </div>
-
+            {/* ... (Resto del código igual) ... */}
             <p className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-line bg-amber-50/60 dark:bg-amber-900/20 rounded-lg px-3 py-2">
               {registro.observaciones || "No se registraron observaciones."}
             </p>

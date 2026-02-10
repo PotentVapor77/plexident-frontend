@@ -98,7 +98,7 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "Historias Clínicas", path: "/historia-clinica", pro: false },
 
-      { name: "Nueva Historia", path: "/nueva-historia", pro: false },
+      // { name: "Nueva Historia", path: "/nueva-historia", pro: false },
 
 
     ],
@@ -108,7 +108,9 @@ const navItems: NavItem[] = [
     name: "Plan Tratamiento",
     subItems: [
       { name: "Planes de Tratamiento", path: "/plan-tratamiento", pro: false },
-      { name: "Nuevo Plan", path: "/nuevo-plan", pro: false },
+
+      // { name: "Nuevo Plan", path: "/nuevo-plan", pro: false },
+
     ],
   },
  

@@ -1,6 +1,6 @@
-// src/components/clinicalRecord/form/sections/AntecedentesPersonalesSection.tsx
+// src/components/clinicalRecord/form/sections/AntecedentesPersonalesSection.tsx - ACTUALIZADO
 import React from "react";
-import { RefreshCw, User } from "lucide-react";
+import { RefreshCw, User, AlertCircle, Heart, Activity } from "lucide-react";
 import type { ClinicalRecordFormData } from "../../../../core/types/clinicalRecord.types";
 import SectionHeader from "../ClinicalRecordSectionHeader";
 import { getAntecedentesPersonalesDisplay } from "../../../../core/utils/clinicalRecordUtils";
@@ -10,8 +10,7 @@ interface AntecedentesPersonalesSectionProps {
   lastUpdated: string | null;
   mode: "create" | "edit";
   refreshSection: () => Promise<void>;
-  isRefreshing?: boolean
-
+  isRefreshing?: boolean;
 }
 
 const AntecedentesPersonalesSection: React.FC<AntecedentesPersonalesSectionProps> = ({
@@ -19,7 +18,6 @@ const AntecedentesPersonalesSection: React.FC<AntecedentesPersonalesSectionProps
   lastUpdated,
   refreshSection,
   isRefreshing = false
-  
 }) => {
   const antecedentes = getAntecedentesPersonalesDisplay(formData.antecedentes_personales_data);
 
@@ -88,7 +86,8 @@ const AntecedentesPersonalesSection: React.FC<AntecedentesPersonalesSectionProps
             {/* Alergias */}
             {antecedentes.alergias.length > 0 && (
               <div className="mb-4">
-                <h4 className="text-sm font-bold text-blue-700 uppercase tracking-wider mb-2">
+                <h4 className="text-sm font-bold text-blue-700 uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4" />
                   Alergias
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -107,7 +106,8 @@ const AntecedentesPersonalesSection: React.FC<AntecedentesPersonalesSectionProps
             {/* Patologías */}
             {antecedentes.patologias.length > 0 && (
               <div className="mb-4">
-                <h4 className="text-sm font-bold text-amber-700 uppercase tracking-wider mb-2">
+                <h4 className="text-sm font-bold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <Heart className="w-4 h-4" />
                   Patologías y Enfermedades
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -123,10 +123,31 @@ const AntecedentesPersonalesSection: React.FC<AntecedentesPersonalesSectionProps
               </div>
             )}
 
-            {/* Otros */}
+            {/* Hábitos */}
+            {antecedentes.habitos.length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-sm font-bold text-teal-700 uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  Hábitos
+                </h4>
+                <div className="space-y-2">
+                  {antecedentes.habitos.map((habito, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 bg-teal-50/50 border border-teal-100 rounded-lg"
+                    >
+                      <p className="text-sm text-slate-700 whitespace-pre-wrap">{habito}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Otros Antecedentes */}
             {antecedentes.otros.length > 0 && (
               <div className="mb-4">
-                <h4 className="text-sm font-bold text-purple-700 uppercase tracking-wider mb-2">
+                <h4 className="text-sm font-bold text-purple-700 uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-purple-500" />
                   Otros Antecedentes
                 </h4>
                 <div className="space-y-2">
@@ -135,7 +156,27 @@ const AntecedentesPersonalesSection: React.FC<AntecedentesPersonalesSectionProps
                       key={idx}
                       className="p-3 bg-purple-50/50 border border-purple-100 rounded-lg"
                     >
-                      <p className="text-sm text-slate-700 italic">{otro}</p>
+                      <p className="text-sm text-slate-700 whitespace-pre-wrap">{otro}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Observaciones */}
+            {antecedentes.observaciones.length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-slate-500" />
+                  Observaciones Generales
+                </h4>
+                <div className="space-y-2">
+                  {antecedentes.observaciones.map((obs, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 bg-slate-50 border border-slate-200 rounded-lg"
+                    >
+                      <p className="text-sm text-slate-700 italic whitespace-pre-wrap">{obs}</p>
                     </div>
                   ))}
                 </div>

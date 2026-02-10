@@ -11,3 +11,4 @@ export { default as IndicadoresSaludBucalSection } from "./IndicadoresSaludBucal
 export { default as IndicesCariesSection } from "./IndicesCariesSection";
 export { default as DiagnosticosCieSection } from "./DiagnosticosCieSection";
 export { default as PlanTratamientoSection } from "./PlanTratamientoSection";
+export { default as ExamenesComplementariosSection } from "./ExamenesComplementariosSection";

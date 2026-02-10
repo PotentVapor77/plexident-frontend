@@ -1,16 +1,22 @@
 // src/components/clinicalRecord/ClinicalRecordManagement.tsx
 
-import React, { useState, useEffect } from "react";
-import { FileText, Search, Filter } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { FileText, Search, Filter, Calendar, X } from "lucide-react";
 import ClinicalRecordTable from "./table/ClinicalRecordTable";
 import ClinicalRecordViewModal from "./modals/ClinicalRecordViewModal";
 import ClinicalRecordCreateEditModal from "./modals/ClinicalRecordCreateEditModal";
 import ClinicalRecordDeleteModal from "./modals/ClinicalRecordDeleteModal";
 import ClinicalRecordCloseModal from "./modals/ClinicalRecordCloseModal";
 import { usePacienteActivo } from "../../context/PacienteContext";
+import { useNotification } from "../../context/notifications/NotificationContext";
 import type { ClinicalRecordListResponse } from "../../types/clinicalRecords/typeBackendClinicalRecord";
-import { useClinicalRecords, useClinicalRecordsByPaciente } from "../../hooks/clinicalRecord/useClinicalRecords";
+import { 
+    useClinicalRecords, 
+    useClinicalRecordsByPaciente,
+    useDeleteClinicalRecord 
+} from "../../hooks/clinicalRecord/useClinicalRecords";
 import Button from "../ui/button/Button";
+import { useDebounce } from "../../hooks/useDebounce";
 
 
 /**
@@ -21,14 +27,18 @@ import Button from "../ui/button/Button";
 
 const ClinicalRecordManagement: React.FC = () => {
     const { pacienteActivo } = usePacienteActivo();
+    const { notify } = useNotification();
 
     // ==========================================================================
     // ESTADOS LOCALES
     // ==========================================================================
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize] = useState(10);
+    const [pageSize] = useState(35); 
     const [searchTerm, setSearchTerm] = useState("");
     const [estadoFilter, setEstadoFilter] = useState<string>("");
+    const [fechaDesde, setFechaDesde] = useState<string>("");
+    const [fechaHasta, setFechaHasta] = useState<string>("");
+    const [showFilters, setShowFilters] = useState(false);
 
     // Estados de modales
     const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -37,6 +47,8 @@ const ClinicalRecordManagement: React.FC = () => {
     const [closeModalOpen, setCloseModalOpen] = useState(false);
     const [selectedRecord, setSelectedRecord] =
         useState<ClinicalRecordListResponse | null>(null);
+
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
     // ==========================================================================
     // HOOKS DE DATOS
@@ -58,13 +70,18 @@ const ClinicalRecordManagement: React.FC = () => {
     } = useClinicalRecords({
         page: currentPage,
         page_size: pageSize,
-        search: searchTerm,
+        search: debouncedSearchTerm,
         estado: estadoFilter,
         activo: true,
+        ...(fechaDesde && { fecha_desde: fechaDesde }),
+        ...(fechaHasta && { fecha_hasta: fechaHasta }),
     });
 
+    // Hook de mutación para eliminar
+    const deleteMutation = useDeleteClinicalRecord(pacienteActivo?.id || null);
+
     // ==========================================================================
-    // ✅ SELECCIÓN CONDICIONAL DE DATOS (SOLUCIÓN AL PROBLEMA)
+    //  SELECCIÓN DE DATOS
     // ==========================================================================
     const historiales = pacienteActivo ? historialesPaciente : historialesGeneral;
     const isLoading = pacienteActivo ? isLoadingPaciente : isLoadingGeneral;
@@ -72,20 +89,19 @@ const ClinicalRecordManagement: React.FC = () => {
     const refetch = pacienteActivo ? refetchPaciente : refetchGeneral;
 
     // ==========================================================================
-    // DEBUG (Puedes eliminarlo después de verificar)
+    // FILTROS ACTIVOS
     // ==========================================================================
-    useEffect(() => {
-        console.log("=== ClinicalRecordManagement Debug ===");
-        console.log("pacienteActivo:", pacienteActivo);
-        console.log("pacienteActivo?.id:", pacienteActivo?.id);
-        console.log("historialesPaciente:", historialesPaciente);
-        console.log("historialesPaciente.length:", historialesPaciente?.length);
-        console.log("historialesGeneral:", historialesGeneral);
-        console.log("historiales (seleccionados):", historiales);
-        console.log("historiales.length:", historiales.length);
-        console.log("isLoading:", isLoading);
-        console.log("error:", error);
-    }, [pacienteActivo, historialesPaciente, historialesGeneral, historiales, isLoading, error]);
+    const hasActiveFilters = useMemo(() => {
+        return !!(searchTerm || estadoFilter || fechaDesde || fechaHasta);
+    }, [searchTerm, estadoFilter, fechaDesde, fechaHasta]);
+
+    const activeFiltersCount = useMemo(() => {
+        let count = 0;
+        if (searchTerm) count++;
+        if (estadoFilter) count++;
+        if (fechaDesde || fechaHasta) count++; 
+        return count;
+    }, [searchTerm, estadoFilter, fechaDesde, fechaHasta]);
 
     // ==========================================================================
     // HANDLERS
@@ -128,10 +144,55 @@ const ClinicalRecordManagement: React.FC = () => {
         handleModalClose();
     };
 
+    /**
+     * HANDLER DE CONFIRMACIÓN DE ELIMINACIÓN
+     */
+    const handleDeleteConfirm = async () => {
+        if (!selectedRecord) return;
+
+        try {
+            await deleteMutation.mutateAsync(selectedRecord.id);
+            
+            notify({
+                type: "success",
+                title: "Historial eliminado",
+                message: "El historial clínico se eliminó correctamente del sistema.",
+            });
+
+            handleSuccess();
+        } catch (err: any) {
+            let errorMessage = "Error al eliminar el historial clínico";
+            
+            if (err?.response?.data?.message) {
+                errorMessage = err.response.data.message;
+            } else if (err?.message) {
+                errorMessage = err.message;
+            }
+
+            notify({
+                type: "error",
+                title: "Error al eliminar",
+                message: errorMessage,
+            });
+        }
+    };
+
+    const handleClearFilters = () => {
+        setSearchTerm("");
+        setEstadoFilter("");
+        setFechaDesde("");
+        setFechaHasta("");
+        setCurrentPage(1);
+    };
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedSearchTerm, estadoFilter, fechaDesde, fechaHasta]);
+
     // ==========================================================================
     // RENDER - LOADING STATE
     // ==========================================================================
-    if (isLoading) {
+    if (isLoading && !historiales.length) {
         return (
             <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
@@ -145,7 +206,7 @@ const ClinicalRecordManagement: React.FC = () => {
     // ==========================================================================
     // RENDER - ERROR STATE
     // ==========================================================================
-    if (error) {
+    if (error && !historiales.length) {
         return (
             <div className="bg-error-50 border border-error-200 text-error-700 p-6 rounded-lg dark:bg-error-900/20 dark:border-error-800 dark:text-error-400">
                 <h3 className="font-semibold text-lg mb-2">
@@ -182,40 +243,76 @@ const ClinicalRecordManagement: React.FC = () => {
                             : "Administra todos los historiales clínicos del sistema"}
                     </p>
                 </div>
-                <Button onClick={handleCreateClick} size="md">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Nuevo Historial
-                </Button>
+                <div className="flex gap-3">
+                    {!pacienteActivo && (
+                        <Button 
+                            onClick={() => setShowFilters(!showFilters)} 
+                            variant="outline"
+                            size="md"
+                        >
+                            <Filter className="w-4 h-4 mr-2" />
+                            Filtros
+                            {activeFiltersCount > 0 && (
+                                <span className="ml-2 bg-brand-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                    {activeFiltersCount}
+                                </span>
+                            )}
+                        </Button>
+                    )}
+                    <Button onClick={handleCreateClick} size="md">
+                        <FileText className="w-4 h-4 mr-2" />
+                        Nuevo Historial
+                    </Button>
+                </div>
             </div>
 
             {/* ====================================================================
-          FILTROS (Solo cuando NO hay paciente activo)
+          FILTROS MEJORADOS (Solo cuando NO hay paciente activo)
       ==================================================================== */}
-            {!pacienteActivo && (
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                    <div className="flex gap-4 flex-wrap">
-                        {/* Búsqueda */}
-                        <div className="flex-1 min-w-[250px]">
+            {!pacienteActivo && showFilters && (
+                <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                    <div className="space-y-4">
+                        {/* Fila 1: Búsqueda */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Búsqueda general
+                            </label>
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                 <input
                                     type="text"
-                                    placeholder="Buscar por nombre, cédula, motivo..."
+                                    placeholder="Buscar por paciente, CI, motivo de consulta, odontólogo..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-700 dark:text-white"
                                 />
+                                {searchTerm && (
+                                    <button
+                                        onClick={() => setSearchTerm("")}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                )}
                             </div>
+                            {searchTerm && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Buscando en tiempo real...
+                                </p>
+                            )}
                         </div>
 
-                        {/* Filtro de estado */}
-                        <div className="min-w-[200px]">
-                            <div className="relative">
-                                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        {/* Fila 2: Estado y Fechas */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {/* Estado */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Estado
+                                </label>
                                 <select
                                     value={estadoFilter}
                                     onChange={(e) => setEstadoFilter(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-700 dark:text-white"
                                 >
                                     <option value="">Todos los estados</option>
                                     <option value="BORRADOR">Borrador</option>
@@ -223,48 +320,122 @@ const ClinicalRecordManagement: React.FC = () => {
                                     <option value="CERRADO">Cerrado</option>
                                 </select>
                             </div>
+
+                            {/* Fecha desde */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Desde
+                                </label>
+                                <div className="relative">
+                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input
+                                        type="date"
+                                        value={fechaDesde}
+                                        onChange={(e) => setFechaDesde(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-700 dark:text-white"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Fecha hasta */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Hasta
+                                </label>
+                                <div className="relative">
+                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input
+                                        type="date"
+                                        value={fechaHasta}
+                                        onChange={(e) => setFechaHasta(e.target.value)}
+                                        min={fechaDesde || undefined}
+                                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-700 dark:text-white"
+                                    />
+                                </div>
+                            </div>
                         </div>
+
+                        {/* Fila 3: Acciones */}
+                        {hasActiveFilters && (
+                            <div className="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-700">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleClearFilters}
+                                >
+                                    <X className="w-4 h-4 mr-2" />
+                                    Limpiar filtros
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* ====================================================================
+          INDICADOR DE BÚSQUEDA ACTIVA
+      ==================================================================== */}
+            {hasActiveFilters && !pacienteActivo && (
+                <div className="bg-blue-light-50 border border-blue-light-200 text-blue-light-700 p-3 rounded-lg dark:bg-blue-light-900/20 dark:border-blue-light-800 dark:text-blue-light-400">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Filter className="w-4 h-4" />
+                            <span className="text-sm font-medium">
+                                Filtros activos: {activeFiltersCount}
+                            </span>
+                        </div>
+                        {isLoading && (
+                            <div className="flex items-center gap-2">
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-light-600 border-t-transparent"></div>
+                                <span className="text-xs">Buscando...</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
 
             {/* ====================================================================
           TABLA DE HISTORIALES
-          ✅ CORREGIDO: Ahora recibe la variable correcta "historiales"
       ==================================================================== */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <ClinicalRecordTable
-                    historiales={historiales}
-                    onViewClick={handleViewClick}
-                    onEditClick={handleEditClick}
-                    onDeleteClick={handleDeleteClick}
-                    onCloseClick={handleCloseClick}
-                />
-            </div>
+            <ClinicalRecordTable
+                historiales={historiales}
+                onViewClick={handleViewClick}
+                onEditClick={handleEditClick}
+                onDeleteClick={handleDeleteClick}
+                onCloseClick={handleCloseClick}
+            />
 
             {/* ====================================================================
-          PAGINACIÓN (Solo cuando NO hay paciente activo)
+          PAGINACIÓN (Solo para vista general)
       ==================================================================== */}
-            {!pacienteActivo && pagination && pagination.total_pages > 1 && (
+            {!pacienteActivo && pagination.total_pages > 1 && (
                 <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Mostrando página {pagination.page} de {pagination.total_pages},{" "}
-                        {pagination.count} registros totales
-                    </p>
+                    <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Página {pagination.page} de {pagination.total_pages}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                            {pagination.count} registro{pagination.count !== 1 ? 's' : ''} en total
+                            {historiales.length > 0 && ` • Mostrando ${historiales.length} en esta página`}
+                        </p>
+                    </div>
                     <div className="flex gap-2">
                         <Button
                             variant="outline"
                             size="sm"
-                            disabled={!pagination.has_previous}
-                            onClick={() => setCurrentPage(currentPage - 1)}
+                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                            disabled={!pagination.has_previous || isLoading}
                         >
                             Anterior
                         </Button>
+                        <div className="flex items-center px-3 text-sm text-gray-700 dark:text-gray-300">
+                            {currentPage}
+                        </div>
                         <Button
                             variant="outline"
                             size="sm"
-                            disabled={!pagination.has_next}
-                            onClick={() => setCurrentPage(currentPage + 1)}
+                            onClick={() => setCurrentPage((p) => p + 1)}
+                            disabled={!pagination.has_next || isLoading}
                         >
                             Siguiente
                         </Button>
@@ -296,8 +467,7 @@ const ClinicalRecordManagement: React.FC = () => {
                 isOpen={viewModalOpen}
                 onClose={handleModalClose} 
                 selectedRecord={selectedRecord} 
-
-                />
+            />
 
             {/* Modal Crear/Editar */}
             <ClinicalRecordCreateEditModal
@@ -320,10 +490,8 @@ const ClinicalRecordManagement: React.FC = () => {
                     isOpen={deleteModalOpen}
                     onClose={handleModalClose}
                     record={selectedRecord} 
-                    onConfirm={() => {
-                        
-                    }}
-                    isDeleting={false}
+                    onConfirm={handleDeleteConfirm}
+                    isDeleting={deleteMutation.isPending}
                 />
             )}
 

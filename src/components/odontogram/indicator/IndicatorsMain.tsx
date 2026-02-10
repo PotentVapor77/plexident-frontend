@@ -12,8 +12,17 @@ import {
 import { useModal } from "../../../hooks/useModal";
 import { useNotification } from "../../../context/notifications/NotificationContext";
 import { usePacienteActivo } from "../../../context/PacienteContext";
-import { Plus, ChevronLeft, ChevronRight, Filter } from "lucide-react";
-import Button from "../../ui/button/Button";
+import { 
+  Plus, 
+  ChevronLeft, 
+  ChevronRight, 
+  Filter,
+  AlertCircle,
+  FileText,
+  Activity,
+  User,
+  Clipboard
+} from "lucide-react";
 import { IndicatorsCreateEditModal } from "./IndicatorsCreateEditModal";
 import { IndicatorsDeleteModal } from "./IndicatorsDeleteModal";
 import { IndicatorsSuccessModal } from "./IndicatorsSuccessModal";
@@ -109,6 +118,15 @@ export const IndicatorsMain: React.FC = () => {
   };
 
   const handleNew = () => {
+    if (!pacienteActivo) {
+      notify({
+        type: "warning",
+        title: "Paciente no fijado",
+        message:
+          "Para registrar indicadores, primero debe fijar un paciente desde la vista principal de Gestión de Pacientes.",
+      });
+      return;
+    }
     setSelectedRegistro(null);
     openCreateEditModal();
   };
@@ -183,17 +201,26 @@ export const IndicatorsMain: React.FC = () => {
     }
   };
 
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1);
+  };
+
   // ============================================================================
-  // LOADING STATE
+  // LOADING STATE UNIFICADO
   // ============================================================================
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">
-            Cargando indicadores...
+      <div className="flex items-center justify-center py-12">
+        <div className="flex flex-col items-center gap-2">
+          <div className="h-8 w-8 rounded-full border-4 border-brand-600 border-t-transparent animate-spin" />
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Cargando indicadores de salud bucal...
           </p>
         </div>
       </div>
@@ -201,139 +228,187 @@ export const IndicatorsMain: React.FC = () => {
   }
 
   // ============================================================================
-  // ERROR STATE
+  // ERROR STATE UNIFICADO
   // ============================================================================
 
   if (isError) {
     return (
-      <div className="bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg p-6 shadow-theme-sm">
-        <h3 className="text-lg font-semibold text-error-900 dark:text-error-100 mb-2">
-          Error al cargar indicadores
-        </h3>
-        <p className="text-error-700 dark:text-error-300">
-          {error || "Error desconocido"}
-        </p>
+      <div className="rounded-lg bg-error-50 dark:bg-error-900/20 p-4 border border-error-200 dark:border-error-800">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <AlertCircle className="h-5 w-5 text-error-400" />
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-error-800 dark:text-error-200">
+              Error al cargar indicadores
+            </h3>
+            <p className="mt-2 text-sm text-error-700 dark:text-error-300">
+              {error || "Error desconocido"}
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
 
   // ============================================================================
-  // RENDER PRINCIPAL
+  // COMPONENTE PARA PACIENTE FIJADO
+  // ============================================================================
+
+  const PacienteFijadoInfo = () => {
+    if (!pacienteActivo) return null;
+
+    return (
+      <div className="rounded-lg border p-3 mb-4 bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-800/30 text-blue-600 dark:text-blue-400">
+              <Activity className="h-4 w-4" />
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                  Mostrando indicadores del paciente:
+                </p>
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
+                  <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Filtrado
+                </span>
+              </div>
+              <div className="mt-1">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {pacienteActivo.nombres} {pacienteActivo.apellidos}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">
+                    CI: {pacienteActivo.cedula_pasaporte}
+                  </span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">•</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">
+                    {pacienteActivo.sexo === "M" ? "♂" : "♀"}
+                  </span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">•</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">
+                    Edad: {pacienteActivo.edad}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ============================================================================
+  // ALERTA SIN PACIENTE
+  // ============================================================================
+
+  const SinPacienteAlerta = () => (
+    <div className="rounded-lg bg-warning-50 dark:bg-warning-900/20 p-4 border border-warning-200 dark:border-warning-800 mb-6">
+      <div className="flex items-start gap-3">
+        <AlertCircle className="h-5 w-5 text-warning-500 flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-medium text-warning-800 dark:text-warning-200">
+            Atención requerida
+          </p>
+          <p className="mt-1 text-sm text-warning-700 dark:text-warning-300">
+            <strong>Nota:</strong> Para gestionar indicadores de salud bucal, primero debe fijar un paciente desde la vista principal de 'Gestión de Pacientes'.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ============================================================================
+  // RENDER PRINCIPAL UNIFICADO
   // ============================================================================
 
   return (
-    <div className="space-y-6">
-      {/* Cabecera principal */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            Gestión de indicadores
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            {pacienteActivo
-              ? `Indicadores de salud bucal del paciente ${pacienteNombreCompleto}`
-              : "Administra los registros de indicadores de salud bucal de los pacientes"}
-          </p>
-          {pacienteActivo && (
-            <p className="mt-1 text-xs text-brand-700 dark:text-brand-300">
-              Solo se muestran indicadores del paciente activo seleccionado en
-              la gestión de pacientes.
+    <>
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+              Indicadores de Salud Bucal
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">
+              Administra los indicadores clínicos de salud bucal (enfermedad periodontal, oclusión, fluorosis, OHI)
             </p>
-          )}
-        </div>
-
-        <div className="flex items-center gap-3">
-          {/* Selector de registros por página */}
-          <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-            <span>Mostrar:</span>
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
-              className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              registros por página
-            </span>
           </div>
 
-          {/* Botón de nuevo registro */}
-          <Button
-            onClick={handleNew}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-500 hover:bg-brand-600 dark:bg-brand-600 dark:hover:bg-brand-700 rounded-lg shadow-theme-sm transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Registrar indicadores
-          </Button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleNew}
+              className="inline-flex items-center px-4 py-2 rounded-lg text-white font-medium transition-colors bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!pacienteActivo}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Registrar Indicadores
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Card principal con tabla */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-theme-sm p-0">
-        {pacienteActivo && (
-          <div className="mb-0 inline-flex items-center gap-2 rounded-full bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300 px-3 py-1 text-xs">
-            <Filter className="w-3.5 h-3.5" />
-            <span>
-              Filtrando por paciente:{" "}
-              <span className="font-semibold">{pacienteNombreCompleto}</span>
-            </span>
+        {/* Información del paciente fijado */}
+        {pacienteActivo && <PacienteFijadoInfo />}
+        
+        {/* Alerta si no hay paciente fijado */}
+        {!pacienteActivo && <SinPacienteAlerta />}
+
+        {/* Tabla con paginación integrada */}
+        <div className="mt-4">
+          <IndicatorsTable
+            registros={indicadores}
+            showInactivos={false}
+            showPatientColumn={!pacienteActivo}
+            onView={handleView}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            search={search}
+            onSearchChange={handleSearch}
+            page={page}
+            pageSize={pageSize}
+            totalPages={pagination.totalPages}
+            totalCount={pagination.count}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+          />
+        </div>
+
+        {/* Paginación adicional (por si se necesita fuera de la tabla) */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg mt-4">
+            <div className="text-sm text-gray-700 dark:text-gray-300">
+              Página <span className="font-medium">{pagination.page}</span> de{" "}
+              <span className="font-medium">{pagination.totalPages}</span> • Total: {pagination.count}
+            </div>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setPage(page - 1)}
+                disabled={!pagination.hasPrevious}
+                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Anterior
+              </button>
+              <button
+                onClick={() => setPage(page + 1)}
+                disabled={!pagination.hasNext}
+                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Siguiente
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
-
-        <IndicatorsTable
-          registros={indicadores}
-          showInactivos={false}
-          showPatientColumn={!pacienteActivo}
-          onView={handleView}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          search={search}
-          onSearchChange={handleSearch}
-        />
       </div>
-
-      {/* Paginación */}
-      {pagination && pagination.totalPages > 1 && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-theme-sm px-4 sm:px-6 py-3">
-          <p className="text-sm text-gray-700 dark:text-gray-300">
-            Mostrando página{" "}
-            <span className="font-semibold text-gray-900 dark:text-white">
-              {pagination.page}
-            </span>{" "}
-            de{" "}
-            <span className="font-semibold text-gray-900 dark:text-white">
-              {pagination.totalPages}
-            </span>
-            , {pagination.count} registros totales
-          </p>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setPage(page - 1)}
-              disabled={!pagination.hasPrevious}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-theme-xs"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Anterior
-            </button>
-            <button
-              onClick={() => setPage(page + 1)}
-              disabled={!pagination.hasNext}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-theme-xs"
-            >
-              Siguiente
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Modales */}
       <IndicatorsCreateEditModal
@@ -356,6 +431,11 @@ export const IndicatorsMain: React.FC = () => {
           setSelectedRegistro(null);
         }}
         registro={selectedRegistro}
+        datosPaciente={pacienteActivo ? {
+          nombres: pacienteActivo.nombres,
+          apellidos: pacienteActivo.apellidos,
+          cedula: pacienteActivo.cedula_pasaporte
+        } : undefined}
       />
 
       <IndicatorsDeleteModal
@@ -372,6 +452,6 @@ export const IndicatorsMain: React.FC = () => {
         isOpen={isSuccessOpen}
         onClose={closeSuccessModal}
       />
-    </div>
+    </>
   );
 };

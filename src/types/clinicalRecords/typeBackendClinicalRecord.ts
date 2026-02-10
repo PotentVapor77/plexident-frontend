@@ -24,26 +24,37 @@ export interface AntecedentesPersonalesData {
   fecha_creacion: string;
   fecha_modificacion: string;
   activo: boolean;
-  
+
   // Alergias
   alergia_antibiotico: string | null;
   alergia_antibiotico_otro: string;
   alergia_anestesia: string | null;
   alergia_anestesia_otro: string;
-  
+
   // Condiciones médicas
   hemorragias: string | null;
+  hemorragias_detalle: string;
+
   vih_sida: string | null;
+  vih_sida_otro: string;
+
   tuberculosis: string | null;
+  tuberculosis_otro: string;
+
+  // Enfermedades crónicas
   asma: string | null;
+  asma_otro: string;
   diabetes: string | null;
   diabetes_otro: string;
   hipertension_arterial: string | null;
+  hipertension_arterial_otro: string;
   enfermedad_cardiaca: string | null;
   enfermedad_cardiaca_otro: string;
 
-  
-  
+  otros_antecedentes_personales: string;
+  habitos: string;
+  observaciones: string;
+
   // Metadata
   creado_por: string;
   actualizado_por: string;
@@ -61,21 +72,90 @@ export interface AntecedentesFamiliaresData {
   fecha_creacion: string;
   fecha_modificacion: string;
   activo: boolean;
-  
-  // Historial familiar
+
+  // Enfermedades cardiovasculares
   cardiopatia_familiar: string | null;
+  cardiopatia_familiar_otro: string;
   hipertension_arterial_familiar: string | null;
+  hipertension_arterial_familiar_otro: string;
   enfermedad_vascular_familiar: string | null;
+  enfermedad_vascular_familiar_otro: string;
+
+  endocrino_metabolico_familiar: string | null;
+  endocrino_metabolico_familiar_otro: string;
+
+  // Cáncer
   cancer_familiar: string | null;
+  cancer_familiar_otro: string;
+  tipo_cancer: string | null;
+  tipo_cancer_otro: string;
+
+  tuberculosis_familiar: string | null;
+  tuberculosis_familiar_otro: string;
+
+  // Enfermedades mentales
   enfermedad_mental_familiar: string | null;
+  enfermedad_mental_familiar_otro: string;
+
+  enfermedad_infecciosa_familiar: string | null;
+  enfermedad_infecciosa_familiar_otro: string;
+
+  malformacion_familiar: string | null;
+  malformacion_familiar_otro: string;
+
+  // Otros
   otros_antecedentes_familiares: string;
-  
+  observaciones: string;
+
   // Metadata
   creado_por: string;
   actualizado_por: string;
   paciente: string;
 }
 
+
+export const VIH_SIDA_CHOICES = [
+  { value: 'NEGATIVO', label: 'Negativo' },
+  { value: 'POSITIVO', label: 'Positivo' },
+  { value: 'DESCONOCIDO', label: 'Desconocido' },
+  { value: 'OTRO', label: 'Otro' },
+] as const;
+
+export const TUBERCULOSIS_CHOICES = [
+  { value: 'NUNCA', label: 'Nunca' },
+  { value: 'TRATADA', label: 'Tratada' },
+  { value: 'ACTIVA', label: 'Activa' },
+  { value: 'DESCONOCIDO', label: 'Desconocido' },
+  { value: 'OTRO', label: 'Otro' },
+] as const;
+
+export const TIPO_CANCER_CHOICES = [
+  { value: 'MAMA', label: 'Mama' },
+  { value: 'PULMON', label: 'Pulmón' },
+  { value: 'PROSTATA', label: 'Próstata' },
+  { value: 'COLON', label: 'Colon' },
+  { value: 'ESTOMAGO', label: 'Estómago' },
+  { value: 'HIGADO', label: 'Hígado' },
+  { value: 'PANCREAS', label: 'Páncreas' },
+  { value: 'LEUCEMIA', label: 'Leucemia' },
+  { value: 'PIEL', label: 'Piel' },
+  { value: 'OTRO', label: 'Otro' },
+] as const;
+
+export const FAMILIAR_BASE_CHOICES = [
+  { value: 'NO', label: 'No' },
+  { value: 'PADRE', label: 'Padre' },
+  { value: 'MADRE', label: 'Madre' },
+  { value: 'HERMANO', label: 'Hermano(a)' },
+  { value: 'ABUELO', label: 'Abuelo(a)' },
+  { value: 'TIO', label: 'Tío(a)' },
+  { value: 'OTRO', label: 'Otro familiar' },
+] as const;
+export const ESTADO_EXAMENES_CHOICES = [
+  { value: 'SIN_PEDIDO', label: 'Sin Pedido', color: 'gray' },
+  { value: 'PENDIENTE', label: 'Pendiente', color: 'orange' },
+  { value: 'COMPLETADO', label: 'Completado', color: 'green' },
+] as const;
 /**
  * Constantes Vitales - Estructura REAL del backend
  */
@@ -86,13 +166,13 @@ export interface ConstantesVitalesData {
   fecha_creacion: string;
   fecha_modificacion: string;
   activo: boolean;
-  
+
   // Signos vitales
   temperatura: string;
   pulso: number;
   frecuencia_respiratoria: number;
   presion_arterial: string;
-  
+
   // Metadata
   creado_por: string;
   actualizado_por: string;
@@ -109,12 +189,12 @@ export interface ExamenEstomatognaticoData {
   fecha_creacion: string;
   fecha_modificacion: string;
   activo: boolean;
-  
+
   // Flags generales
   examen_sin_patologia: boolean;
   tiene_patologias: boolean;
   total_regiones_anormales: number;
-  
+
   // ATM
   atm_cp: boolean;
   atm_sp: boolean;
@@ -124,7 +204,7 @@ export interface ExamenEstomatognaticoData {
   atm_ulcera: boolean;
   atm_otra_patologia: boolean;
   atm_observacion: string;
-  
+
   // Mejillas
   mejillas_cp: boolean;
   mejillas_sp: boolean;
@@ -134,7 +214,7 @@ export interface ExamenEstomatognaticoData {
   mejillas_ulcera: boolean;
   mejillas_otra_patologia: boolean;
   mejillas_descripcion: string;
-  
+
   // Maxilar Inferior
   maxilar_inferior_cp: boolean;
   maxilar_inferior_sp: boolean;
@@ -144,7 +224,7 @@ export interface ExamenEstomatognaticoData {
   maxilar_inferior_ulcera: boolean;
   maxilar_inferior_otra_patologia: boolean;
   maxilar_inferior_descripcion: string;
-  
+
   // Maxilar Superior
   maxilar_superior_cp: boolean;
   maxilar_superior_sp: boolean;
@@ -154,7 +234,7 @@ export interface ExamenEstomatognaticoData {
   maxilar_superior_ulcera: boolean;
   maxilar_superior_otra_patologia: boolean;
   maxilar_superior_descripcion: string;
-  
+
   // Paladar
   paladar_cp: boolean;
   paladar_sp: boolean;
@@ -164,7 +244,7 @@ export interface ExamenEstomatognaticoData {
   paladar_ulcera: boolean;
   paladar_otra_patologia: boolean;
   paladar_descripcion: string;
-  
+
   // Piso de Boca
   piso_boca_cp: boolean;
   piso_boca_sp: boolean;
@@ -174,7 +254,7 @@ export interface ExamenEstomatognaticoData {
   piso_boca_ulcera: boolean;
   piso_boca_otra_patologia: boolean;
   piso_boca_descripcion: string;
-  
+
   // Carrillos
   carrillos_cp: boolean;
   carrillos_sp: boolean;
@@ -184,7 +264,7 @@ export interface ExamenEstomatognaticoData {
   carrillos_ulcera: boolean;
   carrillos_otra_patologia: boolean;
   carrillos_descripcion: string;
-  
+
   // Glándulas Salivales
   glandulas_salivales_cp: boolean;
   glandulas_salivales_sp: boolean;
@@ -194,7 +274,7 @@ export interface ExamenEstomatognaticoData {
   glandulas_salivales_ulcera: boolean;
   glandulas_salivales_otra_patologia: boolean;
   glandulas_salivales_descripcion: string;
-  
+
   // Ganglios
   ganglios_cp: boolean;
   ganglios_sp: boolean;
@@ -204,7 +284,7 @@ export interface ExamenEstomatognaticoData {
   ganglios_ulcera: boolean;
   ganglios_otra_patologia: boolean;
   ganglios_descripcion: string;
-  
+
   // Lengua
   lengua_cp: boolean;
   lengua_sp: boolean;
@@ -214,7 +294,7 @@ export interface ExamenEstomatognaticoData {
   lengua_ulcera: boolean;
   lengua_otra_patologia: boolean;
   lengua_descripcion: string;
-  
+
   // Labios
   labios_cp: boolean;
   labios_sp: boolean;
@@ -224,7 +304,7 @@ export interface ExamenEstomatognaticoData {
   labios_ulcera: boolean;
   labios_otra_patologia: boolean;
   labios_descripcion: string;
-  
+
   // Resumen de patologías
   regiones_con_patologia: Array<{
     region: string;
@@ -238,7 +318,7 @@ export interface ExamenEstomatognaticoData {
     otra: boolean;
     observacion: string;
   };
-  
+
   // Metadata
   creado_por: string;
   actualizado_por: string;
@@ -268,7 +348,7 @@ export interface ClinicalRecordListResponse {
   activo: boolean;
   puede_editar: boolean;
   esta_completo: boolean;
-  indicadores_salud?: any; 
+  indicadores_salud?: any;
   indicadores_salud_bucal?: IndicadoresSaludBucalData;
 }
 
@@ -277,7 +357,7 @@ export interface ClinicalRecordListResponse {
  */
 export interface ClinicalRecordDetailResponse {
   id: string;
-  
+
   // Paciente
   paciente: string;
   paciente_info: {
@@ -289,7 +369,7 @@ export interface ClinicalRecordDetailResponse {
     edad: number;
     fecha_nacimiento: string | null;
   };
-  
+
   // Odontólogo
   odontologo_responsable: string;
   odontologo_info: {
@@ -298,12 +378,12 @@ export interface ClinicalRecordDetailResponse {
     apellidos: string;
     rol: string;
   };
-  
+
   // Secciones del Form 033
   motivo_consulta: string;
   embarazada: EmbarazoEstado | null;
   enfermedad_actual: string;
-  
+
   // Referencias a secciones
   antecedentes_personales: string | null;
   antecedentes_personales_data?: AntecedentesPersonalesData;
@@ -315,21 +395,21 @@ export interface ClinicalRecordDetailResponse {
   examen_estomatognatico_data?: ExamenEstomatognaticoData;
   indicadores_salud_bucal: string | null;
   indicadores_salud_bucal_data?: IndicadoresSaludBucalData;
-  
+
   // Metadata
   estado: EstadoHistorial;
   estado_display: string;
   fecha_atencion: string;
   fecha_cierre: string | null;
   observaciones: string;
-  
+
   institucion_sistema: string;
   unicodigo: string;
   establecimiento_salud: string;
   numero_hoja: number;
   numero_historia_clinica_unica: string;
   numero_archivo: string;
-  
+
   // Auditoría
   creado_por: string;
   creado_por_info: {
@@ -352,13 +432,15 @@ export interface ClinicalRecordDetailResponse {
   diagnosticos_cie_activos?: number;
   diagnosticos_cie_inactivos?: number;
   plan_tratamiento_data?: PlanTratamientoData | null;
-  plan_tratamiento?: PlanTratamientoData | null; 
+  plan_tratamiento?: PlanTratamientoData | null;
   plan_tratamiento_id?: string | null;
   plan_tratamiento_sesiones?: SesionTratamientoData[] | null;
   plan_tratamiento_titulo?: string | null;
   plan_tratamiento_descripcion?: string | null;
   version_odontograma?: string | null;
-  
+  examenes_complementarios?: ExamenesComplementariosData[] | null;
+  examenes_complementarios_data: ExamenesComplementariosData | null; // 🆕
+    
 }
 export interface CamposFormulario {
   institucion_sistema: string;
@@ -372,14 +454,14 @@ export interface CamposFormulario {
  * Datos iniciales pre-cargados del paciente
  */
 export interface ClinicalRecordInitialData {
-  
+
   paciente: {
     id: string;
     nombre_completo: string;
     cedula_pasaporte: string;
     sexo: Sexo;
     edad: number;
-  } | null; 
+  } | null;
   motivo_consulta: string | null;
   motivo_consulta_fecha: string | null;
   embarazada: EmbarazoEstado | null;
@@ -392,32 +474,32 @@ export interface ClinicalRecordInitialData {
     numero_historia_clinica_unica: string;
     numero_archivo: string;
     numero_hoja: number;
-  } 
-  
-  
+  }
+
+
   ;
 
-  
-  
+
+
   antecedentes_personales: {
 
     id: string | null;
     fecha: string | null;
     data: AntecedentesPersonalesData | null;
   } | null;
-  
+
   antecedentes_familiares: {
     id: string | null;
     fecha: string | null;
     data: AntecedentesFamiliaresData | null;
   } | null;
-  
+
   constantes_vitales: {
     id: string | null;
     fecha: string | null;
     data: ConstantesVitalesData | null;
   } | null;
-  
+
   examen_estomatognatico: {
     id: string | null;
     fecha: string | null;
@@ -439,19 +521,26 @@ export interface ClinicalRecordInitialData {
   diagnosticos_cie?: {
     id: string | null;
     fecha: string | null;
-    data: DiagnosticosCIEResponse | null; 
+    data: DiagnosticosCIEResponse | null;
     tipo_carga: "nuevos" | "todos" | null;
   } | null;
 
   plan_tratamiento?: {
-  id: string;
-  titulo: string;
-  descripcion?: string;
-  sesiones?: SesionTratamientoData[];
-  version_odontograma?: string;
-  estado?: string;
-  fecha_creacion: string;
-} | null;
+    id: string;
+    titulo: string;
+    descripcion?: string;
+    sesiones?: SesionTratamientoData[];
+    version_odontograma?: string;
+    estado?: string;
+    fecha_creacion: string;
+  } | null;
+
+  examenes_complementarios?: {
+    id: string | null;
+    fecha: string | null;
+    data: ExamenesComplementariosData | null;
+
+  }
 
 }
 export interface InformacionPiezas {
@@ -478,9 +567,9 @@ export interface InformacionPiezas {
     tipo?: string;
     motivo_original_no_disponible?: string;
     motivo_alternativa_no_disponible?: string;
-    
+
   }
-  
+
   >;
 }
 export interface ResumenIndicador {
@@ -495,7 +584,7 @@ export interface IndicadoresSaludBucalData {
   fecha_formateada: string;
   paciente_nombre: string | null;
   creado_por_nombre: string | null;
-  
+
   // Diagnósticos con descripciones
   enfermedad_periodontal: "LEVE" | "MODERADA" | "SEVERA" | null;
   enfermedad_periodontal_display: string | null;
@@ -504,7 +593,7 @@ export interface IndicadoresSaludBucalData {
   nivel_fluorosis: "NINGUNA" | "LEVE" | "MODERADA" | "SEVERA" | null;
   nivel_fluorosis_display: string | null;
   nivel_gingivitis_display: string | null;
-   piezas_usadas_en_registro?: {
+  piezas_usadas_en_registro?: {
     piezas_mapeo: Record<string, {
       codigo_usado: string;
       es_alternativa: boolean;
@@ -525,20 +614,20 @@ export interface IndicadoresSaludBucalData {
   ohi_promedio_placa: number;
   ohi_promedio_calculo: number;
   gi_promedio_gingivitis: number;
-  
+
   // Resúmenes estructurados
   resumen_higiene: ResumenIndicador;
   resumen_gingival: ResumenIndicador;
-  
+
   valores_por_pieza: ValorPorPieza[];
-  
+
   informacion_piezas: InformacionPiezas;
-  
+
   informacion_calculo_json: any | null;
-  
+
   observaciones: string | null;
   activo: boolean;
-  
+
   advertencia?: string;
   requiere_actualizacion_metadata?: boolean;
 }
@@ -575,6 +664,7 @@ export interface ClinicalRecordCreatePayload {
   frecuencia_respiratoria?: number | null;
   presion_arterial?: string | null;
   plan_tratamiento?: string;
+  examenes_complementarios?: string;
 }
 
 /**
@@ -595,9 +685,10 @@ export interface ClinicalRecordUpdatePayload {
   pulso?: number | null;
   frecuencia_respiratoria?: number | null;
   presion_arterial?: string | null;
-  plan_tratamiento?: string | null;  
+  plan_tratamiento?: string | null;
   indicadores_salud_bucal?: string | null;
   indices_caries?: string | null;
+  examenes_complementarios?: string | null;
 }
 
 export interface ValorPorPieza {
@@ -621,8 +712,8 @@ export interface ValorPorPieza {
     escala: string;
   };
   completo: boolean;
-  mensaje_alternativa?: string; 
-  
+  mensaje_alternativa?: string;
+
 }
 
 
@@ -642,39 +733,39 @@ export interface ClinicalRecordReopenPayload {
   motivo_reapertura: string;
 }
 export interface IndicesCariesData {
-    id: string;
-    paciente: string;          
-    version_id: string | null;
-    fecha: string;              
-    // Índices CPO (Adultos)
-    cpo_c: number;
-    cpo_p: number;
-    cpo_o: number;
-    cpo_total: number;
-    
-    // Índices ceo (Niños)
-    ceo_c: number;
-    ceo_e: number;
-    ceo_o: number;
-    ceo_total: number;
+  id: string;
+  paciente: string;
+  version_id: string | null;
+  fecha: string;
+  // Índices CPO (Adultos)
+  cpo_c: number;
+  cpo_p: number;
+  cpo_o: number;
+  cpo_total: number;
+
+  // Índices ceo (Niños)
+  ceo_c: number;
+  ceo_e: number;
+  ceo_o: number;
+  ceo_total: number;
 }
 
 // Para respuestas que pueden tener campos null
 export interface LatestIndicesCariesResponse {
-    id: string | null;
-    paciente: string | null;
-    version_id: string | null;
-    fecha: string | null;
-    cpo_c: number | null;
-    cpo_p: number | null;
-    cpo_o: number | null;
-    cpo_total: number | null;
-    ceo_c: number | null;
-    ceo_e: number | null;
-    ceo_o: number | null;
-    ceo_total: number | null;
-    disponible?: boolean;        
-    origen?: string; 
+  id: string | null;
+  paciente: string | null;
+  version_id: string | null;
+  fecha: string | null;
+  cpo_c: number | null;
+  cpo_p: number | null;
+  cpo_o: number | null;
+  cpo_total: number | null;
+  ceo_c: number | null;
+  ceo_e: number | null;
+  ceo_o: number | null;
+  ceo_total: number | null;
+  disponible?: boolean;
+  origen?: string;
 }
 
 export interface DiagnosticoCIEData {
@@ -797,6 +888,7 @@ export interface ClinicalRecordPaginatedResponse {
   results: ClinicalRecordListResponse[];
   total_pages: number;
   current_page: number;
+  page_size: number;
 }
 
 export interface ApiListWrapper<T> {
@@ -807,6 +899,63 @@ export interface ApiListWrapper<T> {
   errors: unknown;
 }
 
+export type EstadoExamenesComplementarios = "PENDIENTE" | "COMPLETADO" | "SIN_PEDIDO";
 
+export interface ExamenesComplementariosData {
+  // Identificación
+  id: string;
+  paciente: string;
+
+  // Auditoría
+  fecha_creacion: string;
+  fecha_modificacion: string;
+  activo: boolean;
+
+  // PEDIDO DE EXÁMENES
+  pedido_examenes: string;
+  pedido_examenes_detalle: string;
+
+  informe_examenes: string;
+  informe_examenes_detalle: string;
+
+  // CAMPOS COMPUTADOS (read-only)
+  estado_examenes: EstadoExamenesComplementarios;
+  resumen_examenes_complementarios: string;
+  tiene_pedido_examenes_pendiente: boolean;
+  tiene_informe_examenes_completado: boolean;
+}
+
+export interface ExamenesComplementariosCreatePayload {
+  paciente: string;
+  pedido_examenes?: string;
+  pedido_examenes_detalle?: string;
+  informe_examenes?: string;
+  informe_examenes_detalle?: string;
+}
+export interface ExamenesComplementariosUpdatePayload {
+  pedido_examenes?: string;
+  pedido_examenes_detalle?: string;
+  informe_examenes?: string;
+  informe_examenes_detalle?: string;
+}
+
+/**
+ * Respuesta de la API para operaciones con exámenes
+ */
+export interface ExamenesComplementariosResponse {
+  success: boolean;
+  message: string;
+  data: ExamenesComplementariosData;
+}
+
+/**
+ * Respuesta para listado de exámenes del paciente
+ */
+export interface ExamenesComplementariosListResponse {
+  success: boolean;
+  total: number;
+  paciente_id: string;
+  examenes: ExamenesComplementariosData[];
+}
 
 

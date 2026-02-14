@@ -12,7 +12,7 @@ export const usePlanTratamientoManagement = (
   historialId: string | null,
   pacienteId: string | null,
   historialEstado: 'BORRADOR' | 'ABIERTO' | 'CERRADO',
-  isEditMode: boolean = false
+
 ) => {
   const [mostrarSelectorPlanes, setMostrarSelectorPlanes] = useState(false);
   

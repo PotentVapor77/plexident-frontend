@@ -28,6 +28,7 @@ export const ENDPOINTS = {
   users: {
     base: '/users/usuarios/',
     byId: (id: string) => `/users/usuarios/${id}/`,
+    toggleStatus: (id: string) => `/users/usuarios/${id}/toggle_status/`,
 
   },
   patients: {
@@ -378,6 +379,6 @@ export const PAGINATION = {
 } as const;
 
 export const TIMEOUTS = {
-  api: 10000,        // 10 segundos
+  api: 30000,        // 10 segundos
   fileUpload: 30000, // 30 segundos
 } as const;

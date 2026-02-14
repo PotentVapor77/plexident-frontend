@@ -287,3 +287,11 @@ export const getEstadoColor = (estado: string): string => {
   return colores[estado] || colores.BORRADOR;
 };
 
+export const getPDFButtonColor = (estado: string): string => {
+  switch (estado) {
+    case "CERRADO":
+      return "text-gray-500 hover:bg-gray-50 hover:text-gray-600 dark:text-gray-400 dark:hover:bg-gray-500/10 dark:hover:text-gray-300";
+    default:
+      return "text-brand-600 hover:bg-brand-50 hover:text-brand-700 dark:text-brand-400 dark:hover:bg-brand-500/10 dark:hover:text-brand-300";
+  }
+};

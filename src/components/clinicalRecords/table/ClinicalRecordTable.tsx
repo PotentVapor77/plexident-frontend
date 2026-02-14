@@ -17,7 +17,8 @@ import type {
   ClinicalRecordDetailResponse 
 } from "../../../types/clinicalRecords/typeBackendClinicalRecord";
 import { formatDateToReadable } from "../../../mappers/treatmentPlanMapper";
-import { getEstadoColor } from "../../../mappers/clinicalRecordMapper";
+import { getEstadoColor, getPDFButtonColor } from "../../../mappers/clinicalRecordMapper";
+import PDFDownloadButton from "../pdf/PDFDownloadButton";
 
 /**
  * ============================================================================
@@ -119,6 +120,7 @@ const ClinicalRecordTable: React.FC<ClinicalRecordTableProps> = ({
     () =>
       historiales.map((record: any) => {
         const nombrePaciente = getPacienteNombre(record);
+        const pdfButtonColor = getPDFButtonColor(record.estado);
         
         return (
           <tr key={record.id} className="group hover:bg-gray-50 dark:hover:bg-gray-800/50">
@@ -173,6 +175,18 @@ const ClinicalRecordTable: React.FC<ClinicalRecordTableProps> = ({
             {/* Acciones */}
             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <div className="flex justify-end gap-1">
+                {/* PDF - Solo descarga */}
+                <PDFDownloadButton
+                  historialId={record.id}
+                  pacienteNombre={nombrePaciente}
+                  numeroHistoria={record.numero_historia_clinica_unica}
+                  mode="download"
+                  size="sm"
+                  text=""
+                  className={`${pdfButtonColor} p-2`}
+
+                />
+
                 {/* Ver - Siempre visible */}
                 {onViewClick && (
                   <Button
@@ -209,7 +223,7 @@ const ClinicalRecordTable: React.FC<ClinicalRecordTableProps> = ({
                   </Button>
                 )}
 
-                {/* Cerrar - Se deshabilita según condiciones */}
+                {/* Cerrar */}
                 {onCloseClick && (
                   <Button
                     variant="outline"
@@ -285,7 +299,7 @@ const ClinicalRecordTable: React.FC<ClinicalRecordTableProps> = ({
   return (
     <div className="relative overflow-hidden rounded-lg border border-gray-200 shadow-sm dark:border-gray-700 w-full">
       <div className="overflow-x-auto custom-scrollbar max-h-[calc(100vh-20rem)]">
-        <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400 min-w-[800px]">
+        <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400 min-w-[900px]">
           <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400 sticky top-0 z-10">
             <tr>
               <th scope="col" className="px-6 py-3 font-medium min-w-[200px]">Paciente</th>
@@ -293,7 +307,7 @@ const ClinicalRecordTable: React.FC<ClinicalRecordTableProps> = ({
               <th scope="col" className="px-6 py-3 font-medium min-w-[150px]">Fecha atención</th>
               <th scope="col" className="px-6 py-3 font-medium min-w-[180px]">Odontólogo</th>
               <th scope="col" className="px-6 py-3 font-medium min-w-[150px]">Estado</th>
-              <th scope="col" className="px-6 py-3 text-right font-medium min-w-[180px]">Acciones</th>
+              <th scope="col" className="px-6 py-3 text-right font-medium min-w-[220px]">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">

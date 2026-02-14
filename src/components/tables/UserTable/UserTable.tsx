@@ -1,7 +1,8 @@
 // tables/UserTable/UserTable.tsx
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../ui/table";
 import Badge, { type BadgeColor } from "../../ui/badge/Badge";
-import type { IUser } from "../../../types/IUser";
+import type { IUser } from "../../../types/user/IUser";
+
 
 interface UserTableProps {
   users: IUser[];

@@ -15,6 +15,7 @@ export interface IUser {
   fecha_modificacion?: string;
   creado_por?: string;
   actualizado_por?: string;
+  activo?: boolean;
 }
 
 // Datos para crear un usuario (lo que espera createUser)

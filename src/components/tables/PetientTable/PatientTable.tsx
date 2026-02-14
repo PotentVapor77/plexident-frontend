@@ -1,8 +1,7 @@
 // tables/PatientTable.tsx
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../ui/table";
 import Badge, { type BadgeColor } from "../../ui/badge/Badge";
-import type { IPatient, PatientTableProps } from "../../../types/IPatient";
-
+import type { IPatient, PatientTableProps } from "../../../types/patient/IPatient";
 
 export function PatientTable({ 
   patients, 

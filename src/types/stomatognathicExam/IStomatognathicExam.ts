@@ -251,3 +251,19 @@ export interface IStomatognathicExamCreate {
 export interface IStomatognathicExamUpdate extends Partial<IStomatognathicExamCreate> {
   activo?: boolean;
 }
+export interface IStomatognathicExamListResponse {
+  success: boolean;
+  message?: string;
+  data: {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: IStomatognathicExam[];
+  };
+}
+
+export interface IStomatognathicExamSingleResponse {
+  success: boolean;
+  message?: string;
+  data: IStomatognathicExam;
+}

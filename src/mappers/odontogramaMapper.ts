@@ -1,14 +1,13 @@
 // src/mappers/odontogramaMapper.ts
 
 import type { OdontoColorKey, DiagnosticoCategory, OdontogramaData } from "../components/odontogram";
-import type { PrioridadKey, DiagnosticoItem, DiagnosticoEntry, TipoDiagnostico, AtributoClinicoDefinicion, IndicadoresSaludBucal } from "../core/types/odontograma.types";
+import type { PrioridadKey, DiagnosticoItem, DiagnosticoEntry, TipoDiagnostico, AtributoClinicoDefinicion,  } from "../core/types/odontograma.types";
 import type {
   DiagnosticoBackend,
   CategoriaDiagnosticoBackend,
   OdontogramaCompletoBackend,
   DiagnosticoDentalBackend,
   TipoAtributoClinicoBackend,
-  BackendIndicadoresSaludBucal
 } from "../types/odontogram/typeBackendOdontograma";
 
 // ============================================================================
@@ -368,42 +367,3 @@ export function extraerDiagnosticosNuevos(
 
   return nuevos
 }
-
-export const mapBackendIndicadoresToDomain = (
-  data: BackendIndicadoresSaludBucal,
-): IndicadoresSaludBucal => ({
-  id: data.id,
-  pacienteId: data.paciente,
-  fecha: new Date(data.fecha),
-  placa: {
-    16: data.pieza_16_placa,
-    11: data.pieza_11_placa,
-    26: data.pieza_26_placa,
-    36: data.pieza_36_placa,
-    31: data.pieza_31_placa,
-    46: data.pieza_46_placa,
-  },
-  calculo: {
-    16: data.pieza_16_calculo,
-    11: data.pieza_11_calculo,
-    26: data.pieza_26_calculo,
-    36: data.pieza_36_calculo,
-    31: data.pieza_31_calculo,
-    46: data.pieza_46_calculo,
-  },
-  gingivitis: {
-    16: data.pieza_16_gingivitis,
-    11: data.pieza_11_gingivitis,
-    26: data.pieza_26_gingivitis,
-    36: data.pieza_36_gingivitis,
-    31: data.pieza_31_gingivitis,
-    46: data.pieza_46_gingivitis,
-  },
-  giPromedioGingivitis: data.gi_promedio_gingivitis,
-  ohiPromedioPlaca: data.ohi_promedio_placa,
-  ohiPromedioCalculo: data.ohi_promedio_calculo,
-  enfermedadPeriodontal: data.enfermedad_periodontal,
-  tipoOclusion: data.tipo_oclusion,
-  nivelFluorosis: data.nivel_fluorosis,
-  observaciones: data.observaciones,
-});

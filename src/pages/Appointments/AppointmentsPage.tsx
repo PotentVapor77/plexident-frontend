@@ -1,5 +1,4 @@
 import AppointmentCalendar from "../../components/appointments/AppointmentCalendar";
-import { FullScreenLayout } from "../../layout/FullScreenLayout";
 
 export default function AppointmentsPage() {
   return (

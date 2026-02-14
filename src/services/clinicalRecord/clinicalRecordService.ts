@@ -354,7 +354,33 @@ getPlanesDisponibles: async (pacienteId: string): Promise<PlanTratamientoData[]>
   }
 },
 
+asociarPlanTratamiento: async (historialId: string, planId: string): Promise<any> => {
+    try {
+      const response = await axiosInstance.post(
+        `${BASE_URL}/${historialId}/asociar-plan/`, 
+        { plan_id: planId } // Asegúrate de que el body coincida con lo que espera tu Backend
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error al asociar plan de tratamiento:", error);
+      throw error;
+    }
+  },
 
+  /**
+   * Desasocia el plan de tratamiento actual de un historial clínico
+   */
+  desasociarPlanTratamiento: async (historialId: string): Promise<any> => {
+    try {
+      const response = await axiosInstance.post(
+        `${BASE_URL}/${historialId}/desasociar-plan/`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error al desasociar plan de tratamiento:", error);
+      throw error;
+    }
+  },
 
 
 

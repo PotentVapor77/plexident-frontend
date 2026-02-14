@@ -5,7 +5,6 @@ import {
   X,
   FileText,
   Clock,
-  Download,
 } from "lucide-react";
 import { Modal } from "../../ui/modal";
 import Button from "../../ui/button/Button";
@@ -32,8 +31,6 @@ import { InformeExamenesSectionView } from "./sectionsView/InformeExamenesSectio
 import { DiagnosticosCIESectionView } from "./sectionsView/DiagnosticosCIESectionView";
 import { DatosProfesionalSectionView } from "./sectionsView/DatosProfesionalSectionView";
 import { PlanTratamientoSectionView } from "./sectionsView/PlanTratamientoSectionView";
-import { generatePDFFromElement } from "../pdf/pdfGenerator";
-
 
 interface ClinicalRecordViewModalProps {
   isOpen: boolean;
@@ -61,19 +58,6 @@ const ClinicalRecordViewModal: React.FC<ClinicalRecordViewModalProps> = ({
   });
 
   // Función para descargar como PDF
-  const handleDownloadPDF = async () => {
-    if (!modalContentRef.current || !record) return;
-
-    const pacienteNombre = record?.paciente_data?.nombres || "Paciente";
-    const pacienteApellido = record?.paciente_data?.apellidos || "";
-    const fecha = record?.fecha_creacion
-      ? new Date(record.fecha_creacion).toISOString().split("T")[0]
-      : new Date().toISOString().split("T")[0];
-
-    const fileName = `Historial_Clinico_${pacienteNombre}_${pacienteApellido}_${fecha}.pdf`;
-
-    await generatePDFFromElement(modalContentRef.current, fileName);
-  };
 
   if (!isOpen) return null;
 
@@ -151,14 +135,7 @@ const ClinicalRecordViewModal: React.FC<ClinicalRecordViewModalProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleDownloadPDF}
-              className="flex items-center gap-2 rounded-lg px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-              aria-label="Descargar PDF"
-            >
-              <Download className="h-4 w-4" />
-              <span className="text-sm font-medium">Descargar PDF</span>
-            </button>
+           
             <button
               onClick={onClose}
               className="rounded-lg p-2 text-gray-400 hover:bg-gray-200 hover:text-gray-500 dark:hover:bg-gray-700"

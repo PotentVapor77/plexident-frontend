@@ -1,5 +1,5 @@
 
-
+// src/types/patient/IPatient.ts
 // ============================================================================
 // TIPOS ENUMERADOS
 // ============================================================================
@@ -55,8 +55,18 @@ export interface IPaciente {
   creado_por?: string;
   actualizado_por?: string;
   nombre_completo?: string;
+  alergias?: string; 
+  enfermedades_sistemicas?: string;
+  [key: string]: any; 
 }
-
+export type IPatient = IPaciente;
+export interface PatientTableProps {
+  patients: IPatient[];
+  currentData: IPatient[];
+  onViewPatient: (patient: IPatient) => void;
+  onEditPatient: (patient: IPatient) => void;
+  onDeletePatient: (patient: IPatient) => void;
+}
 // ============================================================================
 // DATOS PARA CREAR UN PACIENTE
 // ============================================================================
@@ -197,3 +207,4 @@ export const getEmbarazadaLabel = (embarazada: Embarazada): string => {
   const found = EMBARAZADA_CHOICES.find(([value]) => value === embarazada);
   return found ? found[1] : embarazada;
 };
+

@@ -48,6 +48,7 @@ export interface ICita {
   odontologo: string;
   odontologo_detalle: IOdontologo;
   fecha: string;
+  fecha_inicio: string;
   hora_inicio: string;
   hora_fin: string;
   duracion: number;

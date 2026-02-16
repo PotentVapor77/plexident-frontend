@@ -7,19 +7,12 @@ import { es } from 'date-fns/locale';
 import appointmentService from '../../services/appointments/appointmentService';
 import type { IAlertaCita } from '../../types/appointments/IAppointment';
 
+// ✅ NUEVA INTERFAZ adaptada a la respuesta real del backend
 interface CitasProximasResponse {
-  total_alertas: number;
-  hora_actual: string;
-  fecha_actual: string;
-  ventana_minutos: number;
-  citas_proximas: IAlertaCita[];
-  tiene_alertas_criticas: boolean;
-}
-
-// ✅ Definir el tipo ApiResponse
-interface ApiResponse {
-  data?: CitasProximasResponse;
-  citas_proximas?: IAlertaCita[];
+  minutos: number;
+  total: number;
+  citas: IAlertaCita[];
+  scope: string;
 }
 
 const NotificationDropdown = () => {
@@ -36,7 +29,7 @@ const NotificationDropdown = () => {
     // Actualizar cada 2 minutos en segundo plano
     const interval = setInterval(() => {
       cargarCitasProximas();
-    }, 120000); // 2 minutos
+    }, 120000);
 
     return () => clearInterval(interval);
   }, []);
@@ -58,7 +51,7 @@ const NotificationDropdown = () => {
     };
   }, [isOpen]);
 
-  // ✅ CORREGIDO: Función completa sin duplicados
+  // ✅ FUNCIÓN CORREGIDA para manejar la estructura real del backend
   const cargarCitasProximas = async () => {
     setLoading(true);
     setError(null);
@@ -66,34 +59,31 @@ const NotificationDropdown = () => {
       const response = await appointmentService.getCitasProximas();
       console.log('📦 Respuesta citas próximas:', response);
       
+      // La respuesta puede venir en diferentes formatos según cómo se procese en el servicio
       if (response && typeof response === 'object') {
-        // Caso 1: Respuesta con estructura { data: { citas_proximas: [] } }
-        if ('data' in response && response.data) {
-          const apiResponse = response as ApiResponse;
-          const data = apiResponse.data;
-          
-          if (data && data.citas_proximas && Array.isArray(data.citas_proximas)) {
-            setCitasProximas(data.citas_proximas);
-            console.log(`✅ ${data.citas_proximas.length} citas próximas cargadas`);
+        
+        // Caso 1: Respuesta directa con estructura { minutos, total, citas, scope }
+        if ('citas' in response && Array.isArray(response.citas)) {
+          setCitasProximas(response.citas as IAlertaCita[]);
+          console.log(`✅ ${response.citas.length} citas próximas cargadas`);
+        }
+        // Caso 2: Respuesta dentro de 'data' (si el servicio lo envuelve)
+        else if ('data' in response && response.data && typeof response.data === 'object') {
+          const data = response.data as any;
+          if (data.citas && Array.isArray(data.citas)) {
+            setCitasProximas(data.citas as IAlertaCita[]);
+            console.log(`✅ ${data.citas.length} citas próximas cargadas (desde data)`);
           } else {
-            console.warn('⚠️ No se encontró citas_proximas en data:', data);
             setCitasProximas([]);
           }
-        } 
-        // Caso 2: Respuesta directa { citas_proximas: [] }
-        else if ('citas_proximas' in response && Array.isArray(response.citas_proximas)) {
-          const apiResponse = response as ApiResponse;
-          setCitasProximas(apiResponse.citas_proximas || []);
-          console.log(`✅ ${apiResponse.citas_proximas?.length || 0} citas próximas cargadas`);
         }
-        // Caso 3: Respuesta como array directo
+        // Caso 3: Array directo (por si acaso)
         else if (Array.isArray(response)) {
           setCitasProximas(response as IAlertaCita[]);
           console.log(`✅ ${response.length} citas próximas cargadas`);
         } else {
-          console.error('❌ Estructura de respuesta no reconocida:', response);
+          console.warn('⚠️ Estructura de respuesta no reconocida:', response);
           setCitasProximas([]);
-          setError('Formato de respuesta inválido');
         }
       } else {
         console.error('❌ Respuesta no válida:', response);
@@ -157,7 +147,7 @@ const NotificationDropdown = () => {
         )}
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown (el resto del JSX se mantiene igual) */}
       {isOpen && (
         <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 
                         rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 

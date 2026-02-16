@@ -1,6 +1,6 @@
 // src/components/odontogram/patient/PacienteInfoPanel.tsx
 import React from "react";
-import { X, User, Calendar, Phone, MapPin, CreditCard, ChevronDown, ChevronUp } from "lucide-react";
+import { X, User, Calendar, Phone, MapPin, CreditCard, ChevronDown, ChevronUp, Users, AlertCircle } from "lucide-react";
 import type { IPaciente } from "../../../types/patient/IPatient";
 import Button from "../../ui/button/Button";
 
@@ -30,21 +30,28 @@ export const PacienteInfoPanel: React.FC<Props> = ({
 
   const isMinimized = collapsed ?? false;
 
-  // Estilo común para los contenedores de datos
-  const InfoItem = ({ icon: Icon, label, value, subValue }: any) => (
-    <div className="flex items-start gap-3 group">
-      <div className="mt-0.5 p-1.5 rounded-md bg-gray-50 text-gray-400 group-hover:bg-brand-50 group-hover:text-brand-500 transition-colors duration-200 dark:bg-gray-800 dark:text-gray-400">
+  const InfoItem = ({ icon: Icon, label, value, subValue, urgent = false }: any) => (
+    <div className="flex items-start gap-3">
+      <div className={`mt-0.5 p-1.5 rounded-md ${
+        urgent ? 'bg-amber-50 text-amber-600' : 'bg-gray-50 text-gray-400'
+      }`}>
         <Icon className="w-4 h-4" />
       </div>
       <div className="flex flex-col">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+        <span className={`text-xs font-medium uppercase tracking-wide ${
+          urgent ? 'text-amber-700' : 'text-gray-500'
+        }`}>
           {label}
         </span>
-        <span className="text-sm font-medium text-gray-900 dark:text-white/90">
+        <span className={`text-sm font-semibold ${
+          urgent ? 'text-amber-900' : 'text-gray-900'
+        }`}>
           {value}
         </span>
         {subValue && (
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className={`text-xs ${
+            urgent ? 'text-amber-600/80' : 'text-gray-500'
+          }`}>
             {subValue}
           </span>
         )}
@@ -54,97 +61,224 @@ export const PacienteInfoPanel: React.FC<Props> = ({
 
   if (isMinimized) {
     return (
-      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-3 hover:shadow-md transition-all duration-300 inline-block">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-theme-sm p-2">
         <button
           onClick={onToggleCollapsed}
-          className="flex items-center gap-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-brand-600 transition-colors w-full"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
-            <User className="h-4 w-4" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-50 text-brand-600 border border-brand-100">
+            <User className="h-3.5 w-3.5" />
           </div>
-          <span className="whitespace-nowrap">{paciente.nombres} {paciente.apellidos}</span>
-          <ChevronDown className="h-4 w-4 opacity-50" />
+          <span className="flex-1 text-left truncate">{paciente.nombres} {paciente.apellidos}</span>
+          <ChevronDown className="h-4 w-4 text-gray-400" />
         </button>
       </div>
     );
   }
 
+  // Verificar si hay información de emergencia
+  const hasEmergencyInfo = paciente.contacto_emergencia_nombre || paciente.contacto_emergencia_telefono;
+
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="bg-brand-500 p-5 relative overflow-hidden">
-        {/* Elementos decorativos de fondo */}
-        <div className="absolute -top-4 -right-4 w-20 h-20 bg-white/10 rounded-full blur-2xl" />
-        <div className="absolute top-1/2 -left-4 w-12 h-12 bg-brand-400/20 rounded-full blur-xl" />
-        
-        <div className="relative flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white">
-              <User className="h-6 w-6" />
+    <section className="bg-white rounded-lg border border-gray-200 shadow-theme-sm overflow-hidden">
+      {/* Header minimalista */}
+      <div className="border-b border-gray-200 px-5 py-4 bg-gray-50/50">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 border border-brand-100">
+              <User className="h-5 w-5 text-brand-600" />
             </div>
-            <div className="flex flex-col">
-              <h3 className="font-bold text-white text-lg">
-                {paciente.nombres}
-                <span className="block font-medium text-white/80">{paciente.apellidos}</span>
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">
+                {paciente.nombres} {paciente.apellidos}
               </h3>
-              <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full bg-green-500/20 border border-green-500/30 text-xs font-semibold text-green-100">
-                Paciente Activo
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                  <span className="text-xs text-gray-600">Paciente Activo</span>
+                </div>
+                <span className="text-gray-300">•</span>
+                <span className="text-xs text-gray-500">ID: {paciente.id.substring(0, 8)}...</span>
               </div>
             </div>
           </div>
           
           <button
             onClick={onToggleCollapsed}
-            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
-            title="Minimizar"
+            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Minimizar panel"
           >
             <ChevronUp className="h-5 w-5" />
           </button>
         </div>
       </div>
 
-      {/* Información del paciente */}
-      <div className="p-6 space-y-5 bg-white dark:bg-gray-900">
-        <InfoItem 
-          icon={CreditCard} 
-          label="Identificación" 
-          value={paciente.cedula_pasaporte} 
-        />
-        
-        <InfoItem 
-          icon={Calendar} 
-          label="Edad y Nacimiento" 
-          value={`${calcularEdad(paciente.fecha_nacimiento)} años`}
-          subValue={new Date(paciente.fecha_nacimiento).toLocaleDateString("es-ES", {
-            year: "numeric", month: "long", day: "numeric"
-          })}
-        />
+      {/* Información del paciente en grid */}
+      <div className="p-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Información básica - tonos neutros */}
+          <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+            <div className="flex items-center gap-2 mb-2">
+              <CreditCard className="h-3.5 w-3.5 text-gray-500" />
+              <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                Identificación
+              </span>
+            </div>
+            <div className="px-2 py-1.5 bg-white rounded border border-gray-100">
+              <p className="text-sm text-gray-900 font-medium">
+                {paciente.cedula_pasaporte}
+              </p>
+            </div>
+          </div>
 
-        {(paciente.telefono || paciente.direccion) && <div className="h-px bg-gray-100 dark:bg-gray-800 my-2" />}
+          <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+            <div className="flex items-center gap-2 mb-2">
+              <Calendar className="h-3.5 w-3.5 text-gray-500" />
+              <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                Edad
+              </span>
+            </div>
+            <div className="px-2 py-1.5 bg-white rounded border border-gray-100">
+              <div className="flex items-baseline gap-2">
+                <p className="text-lg font-bold text-gray-900">
+                  {calcularEdad(paciente.fecha_nacimiento)}
+                </p>
+                <span className="text-xs text-gray-500">años</span>
+              </div>
+            </div>
+          </div>
 
-        {paciente.telefono && (
-          <InfoItem icon={Phone} label="Contacto" value={paciente.telefono} />
-        )}
+          <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+            <div className="flex items-center gap-2 mb-2">
+              <Calendar className="h-3.5 w-3.5 text-gray-500" />
+              <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                Fecha Nacimiento
+              </span>
+            </div>
+            <div className="px-2 py-1.5 bg-white rounded border border-gray-100">
+              <p className="text-sm text-gray-900">
+                {new Date(paciente.fecha_nacimiento).toLocaleDateString("es-ES", {
+                  year: "numeric", month: "long", day: "numeric"
+                })}
+              </p>
+            </div>
+          </div>
 
-        {paciente.direccion && (
-          <InfoItem icon={MapPin} label="Residencia" value={paciente.direccion} />
-        )}
+          {paciente.telefono && (
+            <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+              <div className="flex items-center gap-2 mb-2">
+                <Phone className="h-3.5 w-3.5 text-gray-500" />
+                <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                  Teléfono
+                </span>
+              </div>
+              <div className="px-2 py-1.5 bg-white rounded border border-gray-100">
+                <p className="text-sm text-gray-900 font-medium">
+                  {paciente.telefono}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {paciente.direccion && (
+            <div className="border border-gray-200 rounded-lg p-3 bg-gray-50 md:col-span-2">
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="h-3.5 w-3.5 text-gray-500" />
+                <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                  Dirección
+                </span>
+              </div>
+              <div className="px-2 py-1.5 bg-white rounded border border-gray-100">
+                <p className="text-sm text-gray-900">
+                  {paciente.direccion}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Información de emergencia - destacada con color ámbar */}
+          {hasEmergencyInfo && (
+            <>
+              <div className="col-span-2 mt-2 mb-1">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-amber-600" />
+                  <span className="text-xs font-semibold text-amber-800 uppercase tracking-wide">
+                    Contacto de Emergencia
+                  </span>
+                  <div className="flex-1 h-px bg-amber-200"></div>
+                </div>
+              </div>
+
+              {paciente.contacto_emergencia_nombre && (
+                <div className="border border-amber-200 rounded-lg p-3 bg-amber-50/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="h-3.5 w-3.5 text-amber-600" />
+                    <span className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
+                      Nombre Contacto
+                    </span>
+                  </div>
+                  <div className="px-2 py-1.5 bg-white rounded border border-amber-100">
+                    <p className="text-sm text-amber-900 font-medium">
+                      {paciente.contacto_emergencia_nombre}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {paciente.contacto_emergencia_telefono && (
+                <div className="border border-amber-200 rounded-lg p-3 bg-amber-50/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Phone className="h-3.5 w-3.5 text-amber-600" />
+                    <span className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
+                      Teléfono Emergencia
+                    </span>
+                  </div>
+                  <div className="px-2 py-1.5 bg-white rounded border border-amber-100">
+                    <p className="text-sm text-amber-900 font-medium">
+                      {paciente.contacto_emergencia_telefono}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Footer con botón de acción */}
       {onRemovePaciente && (
-        <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
-          <Button
-            variant="outline"
-            onClick={onRemovePaciente}
-            className="w-full inline-flex items-center justify-center gap-2"
-            size="sm"
-          >
-            <X className="h-4 w-4" />
-            Cambiar Paciente
-          </Button>
+        <div className="border-t border-gray-200 px-5 py-4 bg-gray-50/50">
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              onClick={onRemovePaciente}
+              size="sm"
+              className="inline-flex items-center gap-2"
+            >
+              <X className="h-4 w-4" />
+              Cambiar Paciente
+            </Button>
+          </div>
         </div>
       )}
-    </div>
+
+      {/* Pie de sección */}
+      <div className="border-t border-gray-200 px-5 py-3 bg-white">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-brand-500"></div>
+            <p className="text-xs text-gray-500">
+              Información personal del paciente
+            </p>
+          </div>
+          {hasEmergencyInfo && (
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+              <span className="text-xs text-amber-600">Contacto emergencia disponible</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
   );
 };

@@ -22,6 +22,7 @@ interface CalendarHeaderProps {
   onOdontologoChange: (odontologoId: string) => void;
   citas?: ICita[];
   userRole?: string;
+  canFilterByOdontologo?: boolean;
 }
 
 const CalendarHeader = ({

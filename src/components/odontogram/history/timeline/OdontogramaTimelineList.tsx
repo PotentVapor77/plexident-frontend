@@ -3,7 +3,7 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import type { OdontogramaSnapshot } from "../../../../core/types/odontogramaHistory.types";
-import { Calendar, Clock, User, FileText, ChevronDown, ChevronRight } from "lucide-react";
+import { Calendar, Clock, User, FileText, ChevronRight } from "lucide-react";
 
 interface TimelineListProps {
     snapshots: OdontogramaSnapshot[];
@@ -143,6 +143,9 @@ export const OdontogramaTimelineList = ({
                                                 : "text-gray-700 dark:text-gray-200"
                                         }`}>
                                             {snapshot.profesionalNombre}
+                                            <span className="text-xs text-gray-400 dark:text-gray-500 ml-5" >
+                                                Odontólogo
+                                            </span>
                                         </p>
                                         
                                         {/* Información adicional */}
@@ -155,9 +158,7 @@ export const OdontogramaTimelineList = ({
                                                     </span>
                                                 </div>
                                             )}
-                                            <span className="text-xs text-gray-400 dark:text-gray-500">
-                                                Odontólogo
-                                            </span>
+                                            
                                         </div>
                                     </div>
 

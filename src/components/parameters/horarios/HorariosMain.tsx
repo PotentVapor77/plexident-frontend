@@ -1,7 +1,7 @@
 // src/components/parameters/horarios/HorariosMain.tsx
 
 import { useState } from 'react';
-import { Clock, Calendar } from 'lucide-react';
+import { Clock, Calendar, Settings } from 'lucide-react';
 import HorarioTable from './table/HorarioTable';
 import HorarioBulkUpdateModal from './modals/HorarioBulkUpdateModal';
 import { useHorarios } from '../../../hooks/parameters/useParameters';
@@ -17,18 +17,16 @@ const HorariosMain = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <section className="space-y-6 p-4 md:p-6">
+      {/* Header de la sección */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-            <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          </div>
+          
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl font-semibold text-gray-900">
               Horarios de Atención
             </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-500 mt-1">
               Configura los días y horarios de atención de la clínica
             </p>
           </div>
@@ -36,18 +34,17 @@ const HorariosMain = () => {
 
         <button
           onClick={() => setShowBulkUpdateModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white 
-                   rounded-lg hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shadow-theme-sm"
         >
-          <Calendar size={20} />
+          <Calendar className="h-4 w-4" />
           Actualizar Horarios
         </button>
       </div>
 
-      {/* Table */}
+      {/* Tabla de horarios */}
       <HorarioTable horarios={horarios} loading={isLoading} onRefresh={refetch} />
 
-      {/* Modals */}
+      {/* Modal de actualización masiva */}
       {showBulkUpdateModal && (
         <HorarioBulkUpdateModal
           currentHorarios={horarios}
@@ -56,8 +53,14 @@ const HorariosMain = () => {
         />
       )}
 
-      
-    </div>
+      {/* Footer informativo (opcional) */}
+      <div className="flex items-center justify-end gap-4 pt-2">
+        <div className="flex items-center gap-2 text-xs text-gray-400">
+          <Settings className="h-3.5 w-3.5" />
+          <span>Los cambios en horarios afectan la disponibilidad de citas</span>
+        </div>
+      </div>
+    </section>
   );
 };
 

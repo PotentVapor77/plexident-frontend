@@ -934,6 +934,7 @@ if (detailData.examenes_complementarios_data) {
           plan_tratamiento_descripcion: formData.plan_tratamiento_descripcion || undefined,
           plan_tratamiento_sesiones: formData.plan_tratamiento_sesiones || undefined,
           plan_tratamiento_odontograma_id: formData.plan_tratamiento_odontograma_id || undefined,
+          
           examen_estomatognatico: formData.examen_estomatognatico_id || undefined,
           indicadores_salud_bucal: formData.indicadores_salud_bucal_id || undefined,
           indices_caries: formData.indices_caries_id || undefined,

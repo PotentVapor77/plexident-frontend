@@ -646,13 +646,13 @@ const AppointmentDetailModal = ({
                 <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
                   <CalendarIcon className="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-medium text-blue-600 uppercase mb-1">
-                      Fecha
-                    </p>
-                    <p className="text-base font-semibold text-gray-900">
-                      {format(new Date(cita.fecha), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
-                    </p>
-                  </div>
+  <p className="text-xs font-medium text-blue-600 uppercase mb-1">
+    Fecha
+  </p>
+  <p className="text-base font-semibold text-gray-900">
+    {format(new Date(cita.fecha + 'T12:00:00'), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
+  </p>
+</div>
                 </div>
 
                 <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">

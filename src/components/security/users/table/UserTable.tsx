@@ -1,9 +1,5 @@
 // src/components/users/table/UserTable.tsx
-/**
- * ============================================================================
- * COMPONENT: Tabla de Usuarios
- * ============================================================================
- */
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -13,13 +9,28 @@ import {
 import type { IUser } from "../../../../types/user/IUser";
 import { useDebounce } from "../../../../hooks/useDebounce";
 import { useNotification } from "../../../../context/notifications/NotificationContext";
-import { UserPermissionsModal } from "../modals/UserPermissionsModal"; // Nuevo import
+import { UserPermissionsModal } from "../modals/UserPermissionsModal";
+import { 
+  Eye, 
+  Edit, 
+  Trash2, 
+  Key, 
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Users,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Shield,
+  Filter
+} from "lucide-react";
 
 interface UserTableProps {
   onEdit?: (user: IUser) => void;
   onView?: (user: IUser) => void;
   onDelete?: (user: IUser) => void;
-  onPermissions?: (user: IUser) => void; // Nueva prop opcional
+  onPermissions?: (user: IUser) => void;
 }
 
 export function UserTable({ onEdit, onView, onDelete, onPermissions }: UserTableProps) {
@@ -29,7 +40,7 @@ export function UserTable({ onEdit, onView, onDelete, onPermissions }: UserTable
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [search, setSearch] = useState("");
-  const [selectedUserForPermissions, setSelectedUserForPermissions] = useState<IUser | null>(null); // Estado para usuario seleccionado
+  const [selectedUserForPermissions, setSelectedUserForPermissions] = useState<IUser | null>(null);
   
   const debouncedSearch = useDebounce(search, 400);
 
@@ -100,18 +111,59 @@ export function UserTable({ onEdit, onView, onDelete, onPermissions }: UserTable
   };
 
   // ========================================================================
+  // STYLE HELPERS (siguiendo la guía de UI)
+  // ========================================================================
+  const getRoleBadgeStyles = (rol: string) => {
+    switch (rol) {
+      case "Administrador":
+        return "bg-purple-50 text-purple-700 border-purple-200";
+      case "Odontologo":
+        return "bg-blue-50 text-blue-700 border-blue-200";
+      case "Asistente":
+        return "bg-green-50 text-green-700 border-green-200";
+      default:
+        return "bg-gray-50 text-gray-700 border-gray-200";
+    }
+  };
+
+  const getStatusBadgeStyles = (isActive: boolean) => {
+    return isActive
+      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+      : "bg-gray-50 text-gray-700 border-gray-200";
+  };
+
+  // ========================================================================
   // RENDER: LOADING
   // ========================================================================
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+      <section className="space-y-6 p-4 bg-white rounded-lg border border-gray-200 shadow-theme-sm">
+        <div className="border-b border-gray-300 pb-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 border border-blue-100">
+              <Users className="h-4 w-4 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">
+                Gestión de Usuarios
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">
+                Cargando listado de usuarios...
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-200 rounded-full"></div>
+            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <p className="mt-4 text-sm text-gray-600">
             Cargando usuarios...
           </p>
         </div>
-      </div>
+      </section>
     );
   }
 
@@ -120,37 +172,50 @@ export function UserTable({ onEdit, onView, onDelete, onPermissions }: UserTable
   // ========================================================================
   if (isError) {
     return (
-      <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <svg
-              className="h-5 w-5 text-red-400"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
-              Error al cargar usuarios
-            </h3>
-            <p className="mt-2 text-sm text-red-700 dark:text-red-300">
-              {error || "Error desconocido"}
-            </p>
-            <button
-              onClick={() => refetch()}
-              className="mt-3 text-sm font-medium text-red-800 dark:text-red-200 hover:underline"
-            >
-              Reintentar
-            </button>
+      <section className="space-y-6 p-4 bg-white rounded-lg border border-gray-200 shadow-theme-sm">
+        <div className="border-b border-gray-300 pb-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 border border-red-100">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">
+                Gestión de Usuarios
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">
+                Error al cargar los datos
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+
+        <div className="flex flex-col items-center justify-center py-8">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50 border border-red-200 mb-4">
+            <AlertCircle className="h-8 w-8 text-red-600" />
+          </div>
+          <h4 className="text-sm font-medium text-gray-900 mb-2">
+            Error al cargar usuarios
+          </h4>
+          <p className="text-sm text-gray-600 text-center mb-4 max-w-md">
+            {error || "No se pudo cargar la información de usuarios. Intente nuevamente."}
+          </p>
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+
+        <div className="pt-4 border-t border-gray-200">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+            <p className="text-xs text-gray-500">
+              Error en la carga de datos
+            </p>
+          </div>
+        </div>
+      </section>
     );
   }
 
@@ -158,305 +223,328 @@ export function UserTable({ onEdit, onView, onDelete, onPermissions }: UserTable
   // RENDER: MAIN
   // ========================================================================
   return (
-    <div className="space-y-4">
-      {/* Header con buscador */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <div className="w-full sm:flex-1">
-          <input
-            type="text"
-            placeholder="Buscar por nombre, usuario o correo..."
-            value={search}
-            onChange={handleSearch}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-700 dark:text-gray-300">
-            Mostrar
-          </label>
-          <select
-            value={pageSize}
-            onChange={(e) => {
-              setPageSize(Number(e.target.value));
-              setPage(1);
-            }}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-          >
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-          </select>
+    <section className="space-y-6 p-4 bg-white rounded-lg border border-gray-200 shadow-theme-sm">
+      {/* Encabezado de sección - siguiendo el patrón de las otras secciones */}
+      <div className="border-b border-gray-300 pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 border border-blue-100">
+              <Users className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">
+                Gestión de Usuarios del Sistema
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">
+                Administración de usuarios, roles y permisos
+              </p>
+            </div>
+          </div>
+          
+          {/* Estadísticas rápidas - siguiendo patrón de badges */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200">
+              <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+              <span className="text-xs font-medium text-emerald-700">
+                {users.filter(u => u.is_active).length} Activos
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200">
+              <XCircle className="h-3.5 w-3.5 text-gray-600" />
+              <span className="text-xs font-medium text-gray-700">
+                {users.filter(u => !u.is_active).length} Inactivos
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Tabla */}
-      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-800">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Usuario
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Nombre Completo
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Correo
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Teléfono
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Rol
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Estado
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-            {users.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <svg
-                      className="w-12 h-12 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                      />
-                    </svg>
-                    <p className="text-sm">No se encontraron usuarios</p>
+      {/* Barra de búsqueda y filtros - siguiendo patrón UI */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+          <div className="w-full sm:flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Buscar por nombre, usuario o correo..."
+              value={search}
+              onChange={handleSearch}
+              className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
+            />
+          </div>
+          
+          {/* Selector de página - usando el mismo patrón que en las tablas */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-600">Mostrar</span>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(1);
+              }}
+              className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Filtros rápidos - opcional, pero siguiendo el patrón */}
+        {search && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500">Filtro activo:</span>
+            <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 border border-blue-200 rounded-lg">
+              <Filter className="h-3 w-3 text-blue-600" />
+              <span className="text-xs text-blue-700">"{search}"</span>
+              <button
+                onClick={() => setSearch("")}
+                className="ml-1 text-blue-500 hover:text-blue-700"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Tabla de usuarios CON SCROLL PERSONALIZADO */}
+      <div className="border border-gray-200 rounded-lg overflow-hidden">
+        {/* Contenedor con scroll horizontal personalizado */}
+        <div className="overflow-x-auto custom-scrollbar">
+          {/* Contenedor con ancho mínimo para evitar deformación */}
+          <div className="min-w-[1000px] lg:min-w-full">
+            {/* Encabezado de tabla */}
+            <div className="grid grid-cols-12 border-b border-gray-200 bg-gray-50">
+              <div className="col-span-2 p-3">
+                <p className="text-xs font-semibold text-gray-800 uppercase">Usuario</p>
+              </div>
+              <div className="col-span-2 p-3">
+                <p className="text-xs font-semibold text-gray-800 uppercase">Nombre Completo</p>
+              </div>
+              <div className="col-span-2 p-3">
+                <p className="text-xs font-semibold text-gray-800 uppercase">Correo</p>
+              </div>
+              <div className="col-span-1 p-3">
+                <p className="text-xs font-semibold text-gray-800 uppercase">Teléfono</p>
+              </div>
+              <div className="col-span-1 p-3">
+                <p className="text-xs font-semibold text-gray-800 uppercase">Rol</p>
+              </div>
+              <div className="col-span-1 p-3">
+                <p className="text-xs font-semibold text-gray-800 uppercase">Estado</p>
+              </div>
+              <div className="col-span-3 p-3 text-right">
+                <p className="text-xs font-semibold text-gray-800 uppercase">Acciones</p>
+              </div>
+            </div>
+
+            {/* Filas de la tabla */}
+            <div className="divide-y divide-gray-200">
+              {users.length === 0 ? (
+                <div className="p-8">
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-50 border border-gray-200 mb-4">
+                      <Users className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <h4 className="text-sm font-medium text-gray-900 mb-2">
+                      No se encontraron usuarios
+                    </h4>
+                    <p className="text-sm text-gray-500 text-center mb-4">
+                      {search ? "No hay resultados para tu búsqueda" : "No hay usuarios registrados en el sistema"}
+                    </p>
                     {search && (
                       <button
                         onClick={() => setSearch("")}
-                        className="text-sm text-blue-600 hover:underline"
+                        className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                       >
                         Limpiar búsqueda
                       </button>
                     )}
                   </div>
-                </td>
-              </tr>
-            ) : (
-              users.map((user: IUser) => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">
-                          {user.nombres.charAt(0)}
-                          {user.apellidos.charAt(0)}
+                </div>
+              ) : (
+                users.map((user: IUser) => (
+                  <div
+                    key={user.id}
+                    className="grid grid-cols-12 hover:bg-gray-50/50 transition-colors"
+                  >
+                    {/* Usuario */}
+                    <div className="col-span-2 p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-shrink-0 h-9 w-9">
+                          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
+                            {user.nombres.charAt(0)}
+                            {user.apellidos.charAt(0)}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {user.username}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            ID: {user.id.substring(0, 8)}...
+                          </p>
                         </div>
                       </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {user.username}
-                        </div>
-                      </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-gray-100">
-                      {user.nombres} {user.apellidos}
+
+                    {/* Nombre Completo */}
+                    <div className="col-span-2 p-3 flex items-center">
+                      <p className="text-sm text-gray-900">
+                        {user.nombres} {user.apellidos}
+                      </p>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {user.correo}
+
+                    {/* Correo */}
+                    <div className="col-span-2 p-3 flex items-center">
+                      <p className="text-sm text-gray-600">
+                        {user.correo}
+                      </p>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {user.telefono}
+
+                    {/* Teléfono */}
+                    <div className="col-span-1 p-3 flex items-center">
+                      <p className="text-sm text-gray-600">
+                        {user.telefono || "-"}
+                      </p>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.rol === "Administrador"
-                          ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
-                          : user.rol === "Odontologo"
-                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                          : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                      }`}
-                    >
-                      {user.rol}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.is_active
-                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                          : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                      }`}
-                    >
-                      {user.is_active ? "Activo" : "Inactivo"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end gap-2">
-                      {/* Botón Ver */}
+
+                    {/* Rol - usando badge con icono como en el estilo */}
+                    <div className="col-span-1 p-3 flex items-center">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getRoleBadgeStyles(user.rol)}`}
+                      >
+                        {user.rol === "Administrador" && <Shield className="h-3 w-3 mr-1" />}
+                        {user.rol}
+                      </span>
+                    </div>
+
+                    {/* Estado - usando badge con icono y colores semánticos */}
+                    <div className="col-span-1 p-3 flex items-center">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusBadgeStyles(user.is_active)}`}
+                      >
+                        {user.is_active ? (
+                          <>
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Activo
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="h-3 w-3 mr-1" />
+                            Inactivo
+                          </>
+                        )}
+                      </span>
+                    </div>
+
+                    {/* Acciones - con estados hover y disabled */}
+                    <div className="col-span-3 p-3 flex items-center justify-end gap-2">
                       <button
                         onClick={() => handleView(user)}
-                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         title="Ver detalles"
                       >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
-                        </svg>
+                        <Eye className="h-4 w-4" />
                       </button>
                       
-                      {/* Botón Permisos - SIEMPRE VISIBLE pero bloqueado para Admin */} 
-                        <button
-                          onClick={() => handlePermissions(user)}
-                          disabled={user.rol === "Administrador"}
-                          className={`${
-                            user.rol === "Administrador"
-                              ? "text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 cursor-not-allowed"
-                              : "text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
-                          }`}
-                          title={
-                            user.rol === "Administrador"
-                              ? "Administradores no pueden modificar permisos"
-                              : "Gestionar permisos"
-                          }
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                            />
-                          </svg>
-                        </button>
+                      <button
+                        onClick={() => handlePermissions(user)}
+                        disabled={user.rol === "Administrador"}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          user.rol === "Administrador"
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                        }`}
+                        title={
+                          user.rol === "Administrador"
+                            ? "Administradores no pueden modificar permisos"
+                            : "Gestionar permisos"
+                        }
+                      >
+                        <Key className="h-4 w-4" />
+                      </button>
 
-                      
-                      {/* Botón Editar */}
                       <button
                         onClick={() => handleEdit(user)}
-                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                        className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                         title="Editar"
                       >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
+                        <Edit className="h-4 w-4" />
                       </button>
                       
-                      {/* Botón Eliminar */}
-                        <button
-                            onClick={() => handleDeleteClick(user)}
-                            className={`${
-                              !user.is_active
-                                ? "text-red-300 dark:text-red-500 cursor-not-allowed opacity-50"
-                                : "text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                            }`}
-                            title={
-                              !user.is_active
-                                ? "Usuarios inactivos no se pueden eliminar"
-                                : "Eliminar"
-                            }
-                            disabled={!user.is_active || deleteUserMutation.isPending}
-                          >
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                          </button>
+                      <button
+                        onClick={() => handleDeleteClick(user)}
+                        disabled={!user.is_active || deleteUserMutation.isPending}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          !user.is_active || deleteUserMutation.isPending
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-red-600 hover:text-red-700 hover:bg-red-50"
+                        }`}
+                        title={
+                          !user.is_active
+                            ? "Usuarios inactivos no se pueden eliminar"
+                            : "Eliminar"
+                        }
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Paginación */}
+      {/* Paginación - siguiendo el patrón de las tablas */}
       {pagination && pagination.total_pages > 1 && (
-        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-          <div className="text-sm text-gray-700 dark:text-gray-300">
+        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center pt-4 border-t border-gray-200">
+          <div className="text-sm text-gray-600">
             Mostrando página{" "}
-            <span className="font-medium">{pagination.page}</span> de{" "}
-            <span className="font-medium">{pagination.total_pages}</span> (
-            {pagination.count} usuarios totales)
+            <span className="font-medium text-gray-900">{pagination.page}</span> de{" "}
+            <span className="font-medium text-gray-900">{pagination.total_pages}</span> •{" "}
+            <span className="font-medium text-gray-900">{pagination.count}</span> usuarios totales
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setPage(page - 1)}
               disabled={!pagination.has_previous}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
+              <ChevronLeft className="h-4 w-4 mr-1" />
               Anterior
             </button>
             <button
               onClick={() => setPage(page + 1)}
               disabled={!pagination.has_next}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Siguiente
+              <ChevronRight className="h-4 w-4 ml-1" />
             </button>
           </div>
         </div>
       )}
+
+      {/* Pie de sección - siguiendo el patrón de las otras secciones */}
+      <div className="pt-4 border-t border-gray-200">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+            <p className="text-xs text-gray-500">
+              {users.length} usuarios cargados • Última actualización: {new Date().toLocaleDateString()}
+            </p>
+          </div>
+          <span className="text-xs text-gray-400">
+            Total en sistema: {pagination?.count || 0}
+          </span>
+        </div>
+      </div>
 
       {/* Modal de Permisos */}
       {selectedUserForPermissions && (
@@ -466,6 +554,6 @@ export function UserTable({ onEdit, onView, onDelete, onPermissions }: UserTable
           user={selectedUserForPermissions}
         />
       )}
-    </div>
+    </section>
   );
 }

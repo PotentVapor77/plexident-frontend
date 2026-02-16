@@ -99,7 +99,7 @@ const PlanTratamientoSection: React.FC<PlanTratamientoSectionProps> = ({
 
   // Cargar planes disponibles
   useEffect(() => {
-    if (pacienteId && !isReadOnly) {
+    if (pacienteId ) {
       cargarPlanesDisponibles();
     }
   }, [pacienteId, isReadOnly, mode]);
@@ -922,7 +922,7 @@ const PlanTratamientoSection: React.FC<PlanTratamientoSectionProps> = ({
                 </div>
               </div>
               
-              {puedeSeleccionarPlan && !isReadOnly && (
+              {puedeSeleccionarPlan && (
                 <div className="flex gap-2">
                   <Button
                     variant="outline"

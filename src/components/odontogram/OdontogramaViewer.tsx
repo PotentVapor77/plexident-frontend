@@ -1,6 +1,6 @@
 // src/components/odontogram/OdontogramaViewer.tsx
 
-import { useMemo, useRef, useEffect} from "react";
+import { useMemo, useRef, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OdontogramaModel } from "./3d/OdontogramaModel";
 import {
@@ -59,7 +59,7 @@ export const OdontogramaViewer = ({
 }: OdontogramaViewerProps) => {
   // Estado de paciente
   const { pacienteActivo, setPacienteActivo } = usePacienteActivo();
-  
+
 
   const [isPacientePanelCollapsed, setIsPacientePanelCollapsed] = React.useState(true);
   // Hooks odontograma
@@ -147,32 +147,32 @@ export const OdontogramaViewer = ({
 
   // Computed values
   const currentToothData: DatosDiente | null = useMemo(() => {
-  if (!selectedTooth || !categorias) return null;
+    if (!selectedTooth || !categorias) return null;
 
-  const toothData = getToothDiagnoses(selectedTooth);
-  const allEntries = Object.values(toothData).flat() as DiagnosticoEntry[];
-  if (!allEntries.length) return null;
+    const toothData = getToothDiagnoses(selectedTooth);
+    const allEntries = Object.values(toothData).flat() as DiagnosticoEntry[];
+    if (!allEntries.length) return null;
 
-  const diagnosticos: Diagnostico[] = allEntries
-    .map((entry) => {
-      const procConfig = getProcConfigFromCategories(entry.procedimientoId, categorias);
-      if (!procConfig) return null;
+    const diagnosticos: Diagnostico[] = allEntries
+      .map((entry) => {
+        const procConfig = getProcConfigFromCategories(entry.procedimientoId, categorias);
+        if (!procConfig) return null;
 
-      return {
-        id: entry.id,
-        key: entry.key || entry.procedimientoId,           
-        procedimientoId: entry.procedimientoId,            
-        siglas: entry.siglas || procConfig.siglas || '?',  
-        nombre: entry.nombre || procConfig.nombre,
-        prioridadKey: entry.prioridadKey || procConfig.prioridadKey,
-        areasafectadas: entry.areasafectadas,
-        categoria: procConfig.categoria,                  
-      } as Diagnostico;
-    })
-    .filter((d): d is Diagnostico => d !== null);
+        return {
+          id: entry.id,
+          key: entry.key || entry.procedimientoId,
+          procedimientoId: entry.procedimientoId,
+          siglas: entry.siglas || procConfig.siglas || '?',
+          nombre: entry.nombre || procConfig.nombre,
+          prioridadKey: entry.prioridadKey || procConfig.prioridadKey,
+          areasafectadas: entry.areasafectadas,
+          categoria: procConfig.categoria,
+        } as Diagnostico;
+      })
+      .filter((d): d is Diagnostico => d !== null);
 
-  return diagnosticos.length ? { diagnósticos: diagnosticos } : null;
-}, [selectedTooth, getToothDiagnoses, categorias]);
+    return diagnosticos.length ? { diagnósticos: diagnosticos } : null;
+  }, [selectedTooth, getToothDiagnoses, categorias]);
 
   const previewColorHex = useMemo(() => {
     if (!selectedTooth || !previewProcId) return null;
@@ -206,7 +206,7 @@ export const OdontogramaViewer = ({
     };
   }, [freezeResize]);
 
-  
+
 
   return (
     <div
@@ -236,7 +236,7 @@ export const OdontogramaViewer = ({
               position: "absolute",
               top: 16,
               left: 16,
-              zIndex: 50,
+              zIndex: 10,
             }}
           >
             <PacienteInfoPanel
@@ -313,7 +313,7 @@ export const OdontogramaViewer = ({
                 position: "absolute",
                 top: 16,
                 right: 16,
-                zIndex: 30,
+                zIndex: 10,
                 width: 360,
               }}
             >
@@ -326,7 +326,7 @@ export const OdontogramaViewer = ({
 
           {/* INFO DIENTE SELECCIONADO (bottom-center) */}
           {pacienteActivo && selectedTooth && (
-            <div className="absolute bottom-4 left-1/2 z-99 -translate-x-1/2 pointer-events-none">
+            <div className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 pointer-events-none">
               <div
                 className="
         flex items-center gap-3
@@ -369,54 +369,54 @@ export const OdontogramaViewer = ({
           )}
 
 
-          
+
         </div>
 
         {pacienteActivo && (
-  <div className="absolute bottom-4 right-4 z-30 pointer-events-none">
-    <div className="pointer-events-auto">
-      <CPOIndicesTable
-            pacienteId={pacienteActivo.id}
-            odontogramaData={odontogramaData}
-            savedIndices={null} 
-            isSaving={false}
-            compact={true}
-            onRefresh={() => {
-        }}
-          />
-    </div>
-  </div>
-)}
+          <div className="absolute bottom-4 right-4 z-10 pointer-events-none">
+            <div className="pointer-events-auto">
+              <CPOIndicesTable
+                pacienteId={pacienteActivo.id}
+                odontogramaData={odontogramaData}
+                savedIndices={null}
+                isSaving={false}
+                compact={true}
+                onRefresh={() => {
+                }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* BOTÓN FLOTANTE: Carga de archivos */}
 
         {pacienteActivo && onOpenFileUpload && (
-            <button
-              id="clinical-files-toggle-btn"
-  onClick={onOpenFileUpload}
-  className="absolute bottom-4 left-4 z-30 bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 group"
-  title="Adjuntar archivos clínicos"
-            >
-              <Upload className="w-5 h-5" />
-              {pendingFilesCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
-                  {pendingFilesCount}
-                </span>
-              )}
-              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                {pendingFilesCount > 0
-                  ? `${pendingFilesCount} archivo(s) pendiente(s)`
-                  : "Adjuntar "}
+          <button
+            id="clinical-files-toggle-btn"
+            onClick={onOpenFileUpload}
+            className="absolute bottom-4 left-4 z-40 bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 group"
+            title="Adjuntar archivos clínicos"
+          >
+            <Upload className="w-5 h-5" />
+            {pendingFilesCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+                {pendingFilesCount}
               </span>
-            </button>
-          )}
+            )}
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              {pendingFilesCount > 0
+                ? `${pendingFilesCount} archivo(s) pendiente(s)`
+                : "Adjuntar "}
+            </span>
+          </button>
+        )}
 
         {/* BOTÓN FLOTANTE: Selector de paciente
         
         */}
         {!pacienteActivo && (
-  <PacienteFloatingButton onSelectPaciente={handleSelectPaciente} />
-)}
+          <PacienteFloatingButton onSelectPaciente={handleSelectPaciente} />
+        )}
 
 
       </div>

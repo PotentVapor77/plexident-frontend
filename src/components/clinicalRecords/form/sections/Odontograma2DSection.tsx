@@ -153,6 +153,7 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
   refreshSection,
   refreshIndicesCaries,
   isRefreshing = false,
+  
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [odontogramaData, setOdontogramaData] = useState<Form033Data | null>(null);

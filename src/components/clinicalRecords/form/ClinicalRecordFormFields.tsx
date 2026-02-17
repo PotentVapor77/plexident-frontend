@@ -52,6 +52,8 @@ interface ClinicalRecordFormFieldsProps {
   refreshSections: (section: string) => Promise<void>;
   historialId?: string;
   refreshLoadingMap?: Record<string, boolean>;
+  onCaptureOdontograma?: () => Promise<void>;
+
 }
 
 /**
@@ -71,6 +73,7 @@ const ClinicalRecordFormFields: React.FC<ClinicalRecordFormFieldsProps> = ({
   refreshSections,
   historialId,
   refreshLoadingMap = {},
+  onCaptureOdontograma,
 }) => {
   console.log("[HC][FormFields] formData.plan_tratamiento_sesiones:", formData.plan_tratamiento_sesiones);
   console.log("[HC][FormFields] formData.plan_tratamiento_odontograma_id:", formData.plan_tratamiento_odontograma_id);

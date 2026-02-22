@@ -236,31 +236,8 @@ const AppointmentCalendar = () => {
   // =========================================================================
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
-
-      {/* Indicador contextual para el Odontólogo */}
-      {!puedeVerTodas && (
-        <div className="flex items-center gap-2 bg-blue-50 border-b border-blue-100 px-4 py-2 dark:bg-blue-900/20 dark:border-blue-800">
-          <svg
-            className="h-4 w-4 text-blue-500 flex-shrink-0"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <p className="text-xs text-blue-700 dark:text-blue-300">
-            Mostrando únicamente tus citas programadas
-          </p>
-        </div>
-      )}
-
-      {/* Header */}
+    <div className="flex flex-col h-full w-full bg-gray-50 dark:bg-gray-900">
+      {/* Header - fixed height */}
       <CalendarHeader
         currentDate={currentDate}
         selectedView={selectedView}
@@ -274,19 +251,18 @@ const AppointmentCalendar = () => {
         onOdontologoChange={handleOdontologoChange}
         citas={citas}
         userRole={userRole}
-        // Prop para que CalendarHeader sepa si mostrar el selector de odontólogo
         canFilterByOdontologo={puedeVerTodas}
       />
 
-      {/* Vista del calendario */}
-      <div className="flex-1 overflow-auto">
+      {/* Calendar View - takes remaining height with proper scrolling */}
+      <div className="flex-1 min-h-0 w-full overflow-hidden">
         {loading ? (
-          <div className="flex flex-col items-center justify-center h-full bg-white bg-opacity-90 dark:bg-gray-800">
+          <div className="flex flex-col items-center justify-center h-full w-full bg-white bg-opacity-90 dark:bg-gray-800">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mb-4" />
             <p className="text-gray-700 dark:text-gray-300 font-medium">Cargando citas...</p>
           </div>
         ) : citas.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full bg-gray-50 dark:bg-gray-900">
+          <div className="flex flex-col items-center justify-center h-full w-full bg-gray-50 dark:bg-gray-900">
             <div className="text-gray-400 dark:text-gray-600 mb-4">
               <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -313,7 +289,7 @@ const AppointmentCalendar = () => {
             </button>
           </div>
         ) : (
-          <>
+          <div className="h-full w-full overflow-auto">
             {selectedView === 'day' && (
               <DayView
                 date={currentDate}
@@ -341,7 +317,7 @@ const AppointmentCalendar = () => {
                 }}
               />
             )}
-          </>
+          </div>
         )}
       </div>
 
@@ -353,7 +329,6 @@ const AppointmentCalendar = () => {
           onSuccess={handleCreateSuccess}
           initialDate={selectedDate || currentDate}
           initialTime={selectedTime}
-          // Al crear, si es Odontólogo, pre-seleccionar su propio ID
           initialOdontologo={puedeVerTodas ? selectedOdontologo : (user?.id ?? '')}
         />
       )}

@@ -2,12 +2,8 @@ import AppointmentCalendar from "../../components/appointments/AppointmentCalend
 
 export default function AppointmentsPage() {
   return (
-
-<div className="container mx-auto px-1 py-3">
+    <div className="h-screen w-full overflow-hidden bg-gray-50">
       <AppointmentCalendar />
     </div>
-    
-
-    
   );
 }

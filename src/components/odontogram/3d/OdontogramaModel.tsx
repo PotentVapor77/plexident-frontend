@@ -186,8 +186,8 @@ export const OdontogramaModel = ({
     setMaxilarSuperior(superiorGroup);
     setPivotMandibular(pivot);
 
-    const helper = new THREE.AxesHelper(0.2);
-    pivot.add(helper);
+    //const helper = new THREE.AxesHelper(0.2);
+    //pivot.add(helper);
   }, [scene, maxilarSuperior]);
 
   // --- 2. Animación de apertura mandibular ---

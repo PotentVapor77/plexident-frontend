@@ -66,10 +66,11 @@ export function useClinicalRecordPDF(
       if (result.success && result.blob) {
         setState(prev => ({ ...prev, progress: 100 }));
         
-        // Generar nombre de archivo
+        // BUG FIX: los argumentos estaban invertidos.
+        // Firma correcta: generarNombreArchivo(pacienteNombre, numeroHistoria)
         const nombreArchivo = clinicalRecordPDFService.generarNombreArchivo(
-          params.historialId,
-          params.pacienteNombre,
+          params.pacienteNombre,   // ← antes se pasaba historialId aquí
+          params.numeroHistoria,   // ← antes se pasaba pacienteNombre aquí
         );
 
         // Acción según el modo
@@ -99,7 +100,7 @@ export function useClinicalRecordPDF(
       if (showNotifications) {
         notify({
           type: "error",
-          title: "Error",
+          title: "Error al generar PDF",
           message: errorMessage,
         });
       }

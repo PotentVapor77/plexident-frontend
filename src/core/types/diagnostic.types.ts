@@ -113,9 +113,9 @@ export interface UseDiagnosticoPanelManagerReturn {
   handleClearAll: () => void;
 
   // Utilidades
-  addNotification: (options: NotificationOptions) => void;
-  notifications: Notification[];
-  removeNotification: (id: string) => void;
+  //addNotification: (options: NotificationOptions) => void;
+  //notifications: Notification[];
+  //removeNotification: (id: string) => void;
   handleRemoveIndividualSurface: (surfaceId: string) => void;
 }
 

@@ -431,13 +431,13 @@ if (detailData.examenes_complementarios_data) {
           // Campos de texto
           console.log('📌 Cargando campos de texto');
           if (detailData.motivo_consulta) {
-            updateField("motivo_consulta", detailData.motivo_consulta);
+            updateField("motivo_consulta", detailData.motivo_consulta ?? "");
           }
           if (detailData.embarazada) {
             updateField("embarazada", detailData.embarazada);
           }
           if (detailData.enfermedad_actual) {
-            updateField("enfermedad_actual", detailData.enfermedad_actual);
+            updateField("enfermedad_actual", detailData.enfermedad_actual ?? "");
           }
 
           // CAMPOS INSTITUCIONALES
@@ -926,7 +926,7 @@ if (detailData.examenes_complementarios_data) {
         const updatePayload = {
           motivo_consulta: formData.motivo_consulta,
           embarazada: formData.embarazada || undefined,
-          enfermedad_actual: formData.enfermedad_actual || undefined,
+          enfermedad_actual: formData.enfermedad_actual,
           observaciones: formData.observaciones || undefined,
           estado: formData.estado || undefined,
           plan_tratamiento_id: formData.plan_tratamiento_id || undefined,

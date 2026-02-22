@@ -2,7 +2,6 @@
 import React from "react";
 import { Helmet } from "react-helmet-async";
 import TreatmentPlanManagement from "../../components/treatment-plan/TreatmentPlanManagement";
-import { FullScreenLayout } from "../../layout/FullScreenLayout";
 
 /**
  * Página principal del módulo Plan de Tratamiento
@@ -17,7 +16,7 @@ import { FullScreenLayout } from "../../layout/FullScreenLayout";
  */
 const TreatmentPlanPage: React.FC = () => {
   return (
-<FullScreenLayout className="relative bg-white rounded-xl shadow-sm">
+
 <>
       {/* SEO Meta Tags */}
       <Helmet>
@@ -34,8 +33,6 @@ const TreatmentPlanPage: React.FC = () => {
       </div>
     </>
   
-</FullScreenLayout>
-    
 
   );
 };

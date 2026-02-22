@@ -1,9 +1,11 @@
 // src/components/odontograma/DiagnosticoPanel/components/ActionButtons.tsx
+
 import React, { useState } from 'react';
 import { type GroupedDiagnostic } from '../../../../core/utils/groupDiagnostics';
-import type { NotificationOptions } from '../../../../core/types/diagnostic.types';
 import { SaveSuccessOverlay } from '../../3d/SaveSuccessOverlay';
 import type { ResultadoGuardado } from '../../../../services/odontogram/odontogramaService';
+import { useNotification } from '../../../../context/notifications/NotificationContext';
+
 
 // ============================================================================
 // INTERFACES
@@ -59,15 +61,14 @@ interface ActionButtonsProps {
    * Callback para limpiar todos los diagnósticos del diente
    */
   onClearAll: () => void;
+  
   refreshOdontograma: () => void;
   diagnosticosAplicados: GroupedDiagnostic[];
-  addNotification: (options: NotificationOptions) => void;
   
   /**
-   * Nueva prop: Callback para refrescar índices CPO
+   * Callback para refrescar índices CPO
    */
   refreshCPOIndices?: () => Promise<void> | void;
-
 }
 
 // ============================================================================
@@ -85,64 +86,73 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   onCancelDiagnostico,
   onSaveAll,
   onClearAll,
-  addNotification,
   refreshOdontograma,
   refreshCPOIndices,
 }) => {
+  // ============================================================================
+  // HOOK DE NOTIFICACIONES GLOBAL
+  // ============================================================================
+  const { notify } = useNotification(); 
+  
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [isRefreshingCPO, setIsRefreshingCPO] = useState(false);
 
   const handleSaveAll = async () => {
-  if (!canSave) return;
+    if (!canSave) return;
 
-  try {
-    setIsRefreshingCPO(true);
-    
-    // 1. Capturamos la respuesta del servicio
-    const response = await onSaveAll(); 
+    try {
+      setIsRefreshingCPO(true);
+      
+      // 1. Capturamos la respuesta del servicio
+      const response = await onSaveAll(); 
 
-    // Verificar si hubo cambios
-    if (response && response.diagnosticos_guardados === 0) {
-      // Ya no necesitamos la notificación aquí porque useDiagnosticoPanelManager
-      // ya no la muestra. Solo debemos evitar mostrar SaveSuccessOverlay
-      console.log('[ActionButtons] Sin cambios detectados, no se muestra overlay');
-      setIsRefreshingCPO(false);
-      return; // Salimos sin mostrar el SaveSuccessOverlay
-    }
+      // Verificar si hubo cambios
+      if (response && response.diagnosticos_guardados === 0) {
+        // Ya no necesitamos la notificación aquí porque useDiagnosticoPanelManager
+        // ya la maneja. Solo debemos evitar mostrar SaveSuccessOverlay
+        console.log('[ActionButtons] Sin cambios detectados, no se muestra overlay');
+        setIsRefreshingCPO(false);
+        return; // Salimos sin mostrar el SaveSuccessOverlay
+      }
 
-    // Solo mostrar el overlay si hubo cambios reales
-    if (response && response.diagnosticos_guardados > 0) {
-      setShowSaveSuccess(true);
-    }
-    
-    if (refreshCPOIndices) {
-      try {
-        await refreshCPOIndices();
-        // Solo mostrar notificación de CPO si hubo cambios
-        if (response && response.diagnosticos_guardados > 0) {
-          addNotification({
-            type: 'success',
-            title: 'CPO actualizado',
-            message: 'Índices CPO recalculados correctamente.',
+      // Solo mostrar el overlay si hubo cambios reales
+      if (response && response.diagnosticos_guardados > 0) {
+        setShowSaveSuccess(true);
+      }
+      
+      if (refreshCPOIndices) {
+        try {
+          await refreshCPOIndices();
+          // Solo mostrar notificación de CPO si hubo cambios
+          if (response && response.diagnosticos_guardados > 0) {
+            notify({ // 👈 Usar notify global
+              type: 'success',
+              title: 'CPO actualizado',
+              message: 'Índices CPO recalculados correctamente.',
+            });
+          }
+        } catch (cpoError) {
+          console.warn('[ActionButtons] Error al refrescar CPO:', cpoError);
+          notify({ // 👈 Usar notify global
+            type: 'warning',
+            title: 'CPO no actualizado',
+            message: 'El odontograma se guardó pero no se pudieron recalcular los índices CPO.',
           });
         }
-      } catch (cpoError) {
-        console.warn('[ActionButtons] Error al refrescar CPO:', cpoError);
       }
+    } catch (error) {
+      console.error('[ActionButtons] Error al guardar:', error);
+      notify({ // 👈 Usar notify global
+        type: 'error',
+        title: 'Error al guardar',
+        message: error instanceof Error 
+          ? error.message 
+          : 'No se pudo guardar el odontograma.',
+      });
+    } finally {
+      setIsRefreshingCPO(false);
     }
-  } catch (error) {
-    console.error('[ActionButtons] Error al guardar:', error);
-    addNotification({
-      type: 'error',
-      title: 'Error al guardar',
-      message: error instanceof Error 
-        ? error.message 
-        : 'No se pudo guardar el odontograma.',
-    });
-  } finally {
-    setIsRefreshingCPO(false);
-  }
-};
+  };
 
   const handleSuccessComplete = () => {
     setShowSaveSuccess(false);
@@ -166,7 +176,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
       // Solo limpiar el estado local
       onClearAll();
 
-      addNotification({
+      notify({ // 👈 Usar notify global
         type: 'info',
         title: 'Diente limpiado',
         message: `Se eliminaron ${diagnosticosCount} diagnóstico(s) localmente. Presiona "Guardar todo" para confirmar.`,
@@ -174,7 +184,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 
     } catch (error) {
       console.error('[ActionButtons] Error al limpiar diente:', error);
-      addNotification({
+      notify({ // 👈 Usar notify global
         type: 'error',
         title: 'Error al limpiar',
         message: error instanceof Error
@@ -217,10 +227,11 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
           <button
             onClick={onAddDiagnostico}
             disabled={!canAddDiagnostico}
-            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all shadow-theme-sm ${canAddDiagnostico
+            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all shadow-theme-sm ${
+              canAddDiagnostico
                 ? 'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 hover:shadow-focus-ring'
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              }`}
+            }`}
             title={
               !selectedTooth
                 ? 'Selecciona un diente primero'
@@ -242,10 +253,11 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
         <button
           onClick={handleSaveAll}
           disabled={!canSave}
-          className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all shadow-theme-sm ${canSave
+          className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all shadow-theme-sm ${
+            canSave
               ? 'bg-success-600 text-white hover:bg-success-700 active:bg-success-800 hover:shadow-focus-ring'
               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            }`}
+          }`}
           title={
             isSaving ? 'Guardando...' : 
             isRefreshingCPO ? 'Actualizando CPO...' : 
@@ -322,7 +334,6 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
       <SaveSuccessOverlay
         isVisible={showSaveSuccess}
         onComplete={handleSuccessComplete}
-        
       />
     </div>
   );

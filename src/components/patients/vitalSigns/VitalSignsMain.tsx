@@ -843,7 +843,7 @@ export default function VitalSignsMain() {
         </div>
 
         {/* Tabs con estilo unificado */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-1 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-1 mb-1">
           <div className="flex flex-wrap gap-1">
             {tabs.map((tab) => (
               <button
@@ -883,9 +883,8 @@ export default function VitalSignsMain() {
         </div>
       </div>
 
-      <div className="mt-2">{renderTabContent()}</div>
+      <div className="mt-0">{renderTabContent()}</div>
 
-      {/* ✅ Modales para Exámenes Complementarios */}
       {complementaryExamToView && (
         <ComplementaryExamViewModal
           isOpen={isComplementaryExamViewModalOpen}

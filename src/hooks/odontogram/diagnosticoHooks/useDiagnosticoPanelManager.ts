@@ -6,14 +6,15 @@ import type {
   DiagnosticoPanelState,
   PrincipalArea,
   UseDiagnosticoPanelManagerReturn,
-  Notification,
-  NotificationOptions
 } from '../../../core/types/diagnostic.types';
 import { useToothSelection } from './useToothSelection';
 import type { AreaAfectada, OdontoColorKey } from '../../../core/types/odontograma.types';
 import { useGuardarOdontogramaCompleto } from '../useGuardarOdontogramaCompleto';
 import { isToothBlockedByAbsence } from '../../../core/domain/diagnostic/blockingRules';
 import type { DiagnosticoEntry } from '../../../core/types/odontograma.types';
+import { useNotification } from '../../../context/notifications/NotificationContext';
+
+
 // ============================================================================
 // INTERFACES
 // ============================================================================
@@ -53,6 +54,10 @@ export const useDiagnosticoPanelManager = ({
   } = odontogramaDataHook;
 
   // ============================================================================
+  // HOOK DE NOTIFICACIONES DEL SISTEMA
+  // ============================================================================
+  const { notify } = useNotification();
+  // ============================================================================
   // ESTADO LOCAL
   // ============================================================================
 
@@ -60,13 +65,6 @@ export const useDiagnosticoPanelManager = ({
   const [currentArea, setCurrentArea] = useState<PrincipalArea>(null);
   const [selectedSurfaces, setSelectedSurfaces] = useState<string[]>([]);
   const [currentRootGroup, setCurrentRootGroup] = useState<string | null>(null);
-
-  // Estado de guardado
-
-  // Estado de notificaciones
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  // Estado de carga de datos
   const [isLoadingData,] = useState(false);
   const [dataError,] = useState<string | null>(null);
 
@@ -79,27 +77,6 @@ export const useDiagnosticoPanelManager = ({
     odontogramaData,
     currentRootGroup,
   });
-
-
-
-  // ============================================================================
-  // SISTEMA DE NOTIFICACIONES
-  // ============================================================================
-
-  const addNotification = useCallback((options: NotificationOptions) => {
-    const newNotification: Notification = {
-      id: crypto.randomUUID(),
-      timestamp: new Date(),
-      dismissible: true,
-      duration: 5000,
-      ...options,
-    };
-    setNotifications((prev) => [...prev, newNotification]);
-  }, []);
-
-  const removeNotification = useCallback((id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  }, []);
 
   // ============================================================================
   // HANDLERS: Gestión de Diente
@@ -114,7 +91,7 @@ export const useDiagnosticoPanelManager = ({
 
   // ============================================================================
   // HANDLERS: Gestión de Superficie
-  // ============================================================================
+  //=============================================================================
 
   const handleSurfaceSelect = useCallback((surfaces: string[]) => {
     setSelectedSurfaces(surfaces);
@@ -124,7 +101,6 @@ export const useDiagnosticoPanelManager = ({
     const newSurfaces = selectedSurfaces.filter(s => s !== surfaceId);
     setSelectedSurfaces(newSurfaces);
   }, [selectedSurfaces]);
-
 
   const handleAreaChange = useCallback((area: PrincipalArea) => {
     setCurrentArea(area);
@@ -138,6 +114,7 @@ export const useDiagnosticoPanelManager = ({
     },
     [onRootGroupChange]
   );
+
   useEffect(() => {
     console.log('[Manager] Auto-detecting area from surfaces:', selectedSurfaces);
 
@@ -158,13 +135,14 @@ export const useDiagnosticoPanelManager = ({
       setCurrentArea('corona');
     }
   }, [selectedSurfaces]);
+
   // ============================================================================
   // HANDLERS: Gestión de Diagnóstico
   // ============================================================================
 
   const handleAddDiagnostico = useCallback(() => {
     if (!selectedTooth) {
-      addNotification({
+      notify({ 
         type: 'warning',
         title: 'Selección requerida',
         message: 'Debes seleccionar un diente primero',
@@ -173,7 +151,7 @@ export const useDiagnosticoPanelManager = ({
     }
 
     if (isBlocked) {
-      addNotification({
+      notify({ 
         type: 'error',
         title: 'Diente bloqueado',
         message: 'Este diente está marcado como ausente o perdido',
@@ -182,13 +160,12 @@ export const useDiagnosticoPanelManager = ({
     }
 
     setShowDiagnosticoSelect(true);
-  }, [selectedTooth, isBlocked, addNotification]);
+  }, [selectedTooth, isBlocked, notify]);
 
   const handleCancelDiagnostico = useCallback(() => {
     setShowDiagnosticoSelect(false);
     setCurrentArea(null);
     setSelectedSurfaces([]);
-    //setCurrentRootGroup(null);
   }, []);
 
   const handleApplyDiagnostico = useCallback(
@@ -200,7 +177,7 @@ export const useDiagnosticoPanelManager = ({
       areas: AreaAfectada[]
     ) => {
       if (!selectedTooth) {
-        addNotification({
+        notify({
           type: 'error',
           title: 'Error',
           message: 'No hay diente seleccionado',
@@ -224,12 +201,10 @@ export const useDiagnosticoPanelManager = ({
           areas.length === 1 && areas.includes('general');
 
         if (isPureToothLevel) {
-          // General puro → se irá a superficie "general"
           surfacesToApply = ['general'];
         } else {
-          // Debe haber superficies seleccionadas
           if (selectedSurfaces.length === 0) {
-            addNotification({
+            notify({
               type: 'warning',
               title: 'Selección requerida',
               message: 'Debes seleccionar al menos una superficie',
@@ -247,7 +222,7 @@ export const useDiagnosticoPanelManager = ({
           );
 
           if (requiresCorona && !hasCoronaSurface) {
-            addNotification({
+            notify({ 
               type: 'warning',
               title: 'Área requerida',
               message:
@@ -257,7 +232,7 @@ export const useDiagnosticoPanelManager = ({
           }
 
           if (requiresRaiz && !hasRaizSurface) {
-            addNotification({
+            notify({
               type: 'warning',
               title: 'Área requerida',
               message:
@@ -266,8 +241,6 @@ export const useDiagnosticoPanelManager = ({
             return;
           }
 
-          // Aquí SIEMPRE respetamos las superficies marcadas,
-          // aunque el diagnóstico también permita "general"
           surfacesToApply = [...selectedSurfaces];
         }
 
@@ -283,14 +256,14 @@ export const useDiagnosticoPanelManager = ({
         );
 
         if (hasAbsence) {
-          addNotification({
+          notify({
             type: 'info',
             title: 'Diagnóstico de ausencia eliminado',
             message: `Pieza ${toothInfo?.numero}: El estado de "ausente" fue removido automáticamente.`,
             duration: 6000,
           });
         } else {
-          addNotification({
+          notify({ 
             type: 'success',
             title: 'Diagnóstico aplicado',
             message: `Pieza ${toothInfo?.numero} actualizada correctamente.`,
@@ -303,7 +276,7 @@ export const useDiagnosticoPanelManager = ({
           '[DiagnosticoPanelManager] Error al aplicar diagnóstico:',
           error
         );
-        addNotification({
+        notify({ 
           type: 'error',
           title: 'Error al aplicar',
           message:
@@ -316,15 +289,16 @@ export const useDiagnosticoPanelManager = ({
       selectedSurfaces,
       toothInfo,
       odontogramaData,
-      addNotification,
+      notify,
       handleCancelDiagnostico,
+      applyDiagnostico,
     ]
   );
 
   const handleRemoveDiagnostico = useCallback(
     (id: string, superficieId: string) => {
       if (!selectedTooth) {
-        addNotification({
+        notify({
           type: 'error',
           title: 'Error',
           message: 'No hay diente seleccionado',
@@ -333,70 +307,102 @@ export const useDiagnosticoPanelManager = ({
       }
 
       try {
-        removeDiagnostico(selectedTooth, superficieId, id); // ← usa hook
-        addNotification({
+        removeDiagnostico(selectedTooth, superficieId, id);
+        notify({ 
           type: 'success',
           title: 'Diagnóstico eliminado',
           message: 'El diagnóstico ha sido eliminado correctamente',
         });
       } catch (error) {
         console.error('[DiagnosticoPanelManager] Error al eliminar diagnóstico:', error);
-        addNotification({
+        notify({ 
           type: 'error',
           title: 'Error al eliminar',
           message: error instanceof Error ? error.message : 'Error desconocido',
         });
       }
     },
-    [selectedTooth, removeDiagnostico, addNotification]
+    [selectedTooth, removeDiagnostico, notify]
   );
+
   const {
     guardarCompleto,
     isSavingComplete,
     lastCompleteSave: lastCompleteSaveFromHook,
     hasPacienteActivo
   } = useGuardarOdontogramaCompleto();
+
   // ============================================================================
   // HANDLERS: Guardado Completo
   // ============================================================================
 
   const handleGuardarCompleto = useCallback(async () => {
-  if (!odontogramaDataHook || !hasPacienteActivo) {
-    addNotification({
-      type: 'error',
-      title: 'Error de guardado',
-      message: 'No hay paciente activo o datos de odontograma disponibles',
-    });
-    return;
-  }
+    if (!odontogramaDataHook || !hasPacienteActivo) {
+      notify({ 
+        type: 'error',
+        title: 'Error de guardado',
+        message: 'No hay paciente activo o datos de odontograma disponibles',
+      });
+      return;
+    }
 
-  try {
-    // Exportar datos del odontograma
-    const rawData = odontogramaDataHook.exportData
-      ? odontogramaDataHook.exportData()
-      : odontogramaData;
+    try {
+      // Exportar datos del odontograma
+      const rawData = odontogramaDataHook.exportData
+        ? odontogramaDataHook.exportData()
+        : odontogramaData;
 
-    console.log('[SAVE] Guardando odontograma completo...', rawData);
+      console.log('[SAVE] Guardando odontograma completo...', rawData);
 
-    // El hook maneja: mapeo, guardado, recarga de datos, sincronización
-    const resultado = await guardarCompleto(rawData);
+      // El hook maneja: mapeo, guardado, recarga de datos, sincronización
+      const resultado = await guardarCompleto(rawData);
 
-    console.log('[SAVE] Resultado del guardado:', resultado);
+      console.log('[SAVE] Resultado del guardado:', resultado);
 
-    // VERIFICAR SI HUBO CAMBIOS REALES
-    if (resultado.diagnosticos_guardados === 0) {
-      // Mostrar notificación informativa cuando NO hay cambios
-      addNotification({
-        type: 'info',
-        title: 'Sin cambios',
-        message: 'El odontograma ya está actualizado. No se detectaron cambios nuevos.',
+      // VERIFICAR SI HUBO CAMBIOS REALES
+      if (resultado.diagnosticos_guardados === 0) {
+        // Mostrar notificación informativa cuando NO hay cambios
+        notify({ 
+          type: 'info',
+          title: 'Sin cambios',
+          message: 'El odontograma ya está actualizado. No se detectaron cambios nuevos.',
+          duration: 3000,
+        });
+        
+        // Solo notificar si hay errores
+        if (resultado.errores && resultado.errores.length > 0) {
+          resultado.errores.forEach((error) => {
+            notify({ // 👈 Usar notify del sistema
+              type: 'warning',
+              title: 'Advertencia',
+              message: error,
+              duration: 3000,
+            });
+          });
+        }
+        
+        // IMPORTANTE: Retornar para no mostrar notificación de éxito
+        return resultado;
+      }
+
+      // Si hubo cambios reales, mostrar notificación de éxito
+      notify({ // 👈 Usar notify del sistema
+        type: 'success',
+        title: 'Guardado exitoso',
+        message: `${resultado.diagnosticos_guardados} diagnósticos guardados en ${resultado.dientes_procesados.length} dientes`,
         duration: 3000,
       });
+
+      const snapshotId = resultado.snapshot_id;
+
+      if (snapshotId && onCompleteSave) {
+        await onCompleteSave(snapshotId);
+      }
       
-      // Solo notificar si hay errores
+      // Advertencias si existen
       if (resultado.errores && resultado.errores.length > 0) {
         resultado.errores.forEach((error) => {
-          addNotification({
+          notify({
             type: 'warning',
             title: 'Advertencia',
             message: error,
@@ -404,56 +410,26 @@ export const useDiagnosticoPanelManager = ({
           });
         });
       }
-      
-      // IMPORTANTE: Retornar para no mostrar notificación de éxito
+
       return resultado;
-    }
+      
+    } catch (error) {
+      console.error('[SAVE] Error al guardar:', error);
 
-    // Si hubo cambios reales, mostrar notificación de éxito
-    addNotification({
-      type: 'success',
-      title: 'Guardado exitoso',
-      message: `${resultado.diagnosticos_guardados} diagnósticos guardados en ${resultado.dientes_procesados.length} dientes`,
-      duration: 3000,
-    });
-
-    const snapshotId = resultado.snapshot_id;
-
-    if (snapshotId && onCompleteSave) {
-      await onCompleteSave(snapshotId);
-    }
-    
-    // Advertencias si existen
-    if (resultado.errores && resultado.errores.length > 0) {
-      resultado.errores.forEach((error) => {
-        addNotification({
-          type: 'warning',
-          title: 'Advertencia',
-          message: error,
-          duration: 3000,
-        });
+      notify({ 
+        type: 'error',
+        title: 'Error al guardar',
+        message: error instanceof Error ? error.message : 'Error desconocido',
+        duration: 3000,
       });
+      
+      throw error; 
     }
-
-    return resultado;
-    
-  } catch (error) {
-    console.error('[SAVE] Error al guardar:', error);
-
-    addNotification({
-      type: 'error',
-      title: 'Error al guardar',
-      message: error instanceof Error ? error.message : 'Error desconocido',
-      duration: 3000,
-    });
-    
-    throw error; 
-  }
-}, [odontogramaDataHook, guardarCompleto, hasPacienteActivo, addNotification, onCompleteSave, odontogramaData]);
+  }, [odontogramaDataHook, guardarCompleto, hasPacienteActivo, notify, onCompleteSave, odontogramaData]);
 
   const handleClearAll = useCallback(() => {
     if (!selectedTooth) {
-      addNotification({
+      notify({
         type: 'warning',
         title: 'Selección requerida',
         message: 'Debes seleccionar un diente primero',
@@ -462,7 +438,7 @@ export const useDiagnosticoPanelManager = ({
     }
 
     if (diagnosticos.length === 0) {
-      addNotification({
+      notify({
         type: 'info',
         title: 'Sin diagnósticos',
         message: 'Este diente no tiene diagnósticos para limpiar',
@@ -477,20 +453,20 @@ export const useDiagnosticoPanelManager = ({
         });
       });
 
-      addNotification({
+      notify({ // 👈 Usar notify del sistema
         type: 'success',
         title: 'Limpieza completa',
         message: `Se eliminaron ${diagnosticos.length} diagnósticos del diente ${toothInfo?.numero || ''}`,
       });
     } catch (error) {
       console.error('[DiagnosticoPanelManager] Error al limpiar diagnósticos:', error);
-      addNotification({
+      notify({ // 👈 Usar notify del sistema
         type: 'error',
         title: 'Error al limpiar',
         message: error instanceof Error ? error.message : 'Error desconocido',
       });
     }
-  }, [selectedTooth, diagnosticos, toothInfo, removeDiagnostico, addNotification]);
+  }, [selectedTooth, diagnosticos, toothInfo, removeDiagnostico, notify]);
 
   // ============================================================================
   // ESTADO COMPUTADO
@@ -546,10 +522,5 @@ export const useDiagnosticoPanelManager = ({
     handleRootGroupChange,
     handleGuardarCompleto,
     handleClearAll,
-    addNotification,
-    notifications,
-    removeNotification,
   };
 };
-
-

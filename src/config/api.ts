@@ -197,10 +197,11 @@ clinicalRecords: {
       porOdontologo: (odontologoId: string) => `/appointment/horarios/por-odontologo/${odontologoId}/`,
     },
     recordatorios: {
-      base: '/appointment/recordatorio/',
-      byId: (id: string) => `/appointment/recordatorio/${id}/`,
-    },
+    base: '/appointment/recordatorios/',  
+    byId: (id: string) => `/appointment/recordatorios/${id}/`,
+    estadisticas: '/appointment/recordatorios/estadisticas/',  
   },
+},
   dashboard: {
     stats: '/dashboard/stats/',
     overview: '/dashboard/overview/',

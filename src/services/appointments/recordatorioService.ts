@@ -126,35 +126,33 @@ const recordatorioService = {
 
   // Obtener estadísticas de recordatorios
   obtenerEstadisticas: async (): Promise<IRecordatorioEstadisticas> => {
-    try {
-      console.log('📊 obtenerEstadisticas - Solicitando estadísticas...');
-      
-      const response = await api.get<IRecordatorioEstadisticas>(
-        ENDPOINTS.appointment.citas.estadisticasRecordatorios
-      );
-      
-      console.log('✅ obtenerEstadisticas - Respuesta:', response.data);
-      return response.data;
-    } catch (error: unknown) {
-      console.error('❌ obtenerEstadisticas - Error:', error);
-      
-      // Retornar estadísticas vacías en caso de error
-      const estadisticasVacias: IRecordatorioEstadisticas = {
-        total_enviados: 0,
-        exitosos: 0,
-        fallidos: 0,
-        tasa_exito: 0,
-        por_destinatario: {
-          PACIENTE: 0,
-          ODONTOLOGO: 0,
-          AMBOS: 0
-        },
-        ultimos_recordatorios: []
-      };
-      
-      return estadisticasVacias;
-    }
-  },
+  try {
+    console.log('📊 obtenerEstadisticas - Solicitando estadísticas...');
+    const response = await api.get<IRecordatorioEstadisticas>(
+      ENDPOINTS.appointment.recordatorios.estadisticas 
+    );
+    
+    console.log('✅ obtenerEstadisticas - Respuesta:', response.data);
+    return response.data;
+  } catch (error: unknown) {
+    console.error('❌ obtenerEstadisticas - Error:', error);
+    
+    const estadisticasVacias: IRecordatorioEstadisticas = {
+      total_enviados: 0,
+      exitosos: 0,
+      fallidos: 0,
+      tasa_exito: 0,
+      por_destinatario: {
+        PACIENTE: 0,
+        ODONTOLOGO: 0,
+        AMBOS: 0
+      },
+      ultimos_recordatorios: []
+    };
+    
+    return estadisticasVacias;
+  }
+},
 
   // Obtener todos los recordatorios (con filtros opcionales)
   obtenerRecordatorios: async (params?: IRecordatoriosFilters): Promise<IRecordatorioCita[]> => {

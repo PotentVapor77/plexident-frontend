@@ -1,13 +1,14 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { v4 as uuid } from "uuid";
 
-type NotificationType = "success" | "error" | "info" | "warning";
+export type NotificationType = "success" | "error" | "info" | "warning";
 
 export interface Notification {
   id: string;
   type: NotificationType;
   title: string;
   message: string;
+  duration?: number; 
 }
 
 interface NotificationContextValue {
@@ -23,13 +24,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const notify = useCallback((n: Omit<Notification, "id">) => {
     const id = uuid();
-    const notification: Notification = { id, ...n };
+    const notification: Notification = { id, duration: 4000, ...n };
     setNotifications((prev) => [...prev, notification]);
 
-    // Autocerrar después de 4s
+    // Auto-cerrar después de la duración especificada
     setTimeout(() => {
       setNotifications((prev) => prev.filter((item) => item.id !== id));
-    }, 4000);
+    }, notification.duration);
   }, []);
 
   const remove = useCallback((id: string) => {

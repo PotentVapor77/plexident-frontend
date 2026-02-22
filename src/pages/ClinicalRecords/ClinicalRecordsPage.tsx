@@ -3,12 +3,11 @@
 import React from "react";
 import { Helmet } from "react-helmet-async";
 import ClinicalRecordManagement from "../../components/clinicalRecords/ClinicalRecordManagement";
-import { FullScreenLayout } from "../../layout/FullScreenLayout";
+
 
 
 const ClinicalRecordsPage: React.FC = () => {
   return (
-<FullScreenLayout className="relative bg-white rounded-xl shadow-sm">
 <>
       {/* SEO Meta Tags */}
       <Helmet>
@@ -22,7 +21,6 @@ const ClinicalRecordsPage: React.FC = () => {
       <ClinicalRecordManagement />
     </>
 
-</FullScreenLayout>
     
   );
 };

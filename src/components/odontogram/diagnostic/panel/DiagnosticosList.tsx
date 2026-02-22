@@ -1,8 +1,8 @@
 // src/core/types/DiagnosticosList.tsx
 
-import React, { useEffect, useRef, useState, } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { formatGroupedSurfaces, type GroupedDiagnostic } from '../../../../core/utils/groupDiagnostics';
-import type { NotificationOptions } from '../../../../core/types/diagnostic.types';
+import { useNotification } from '../../../../context/notifications/NotificationContext';
 
 // ============================================================================
 // INTERFACES
@@ -11,7 +11,7 @@ import type { NotificationOptions } from '../../../../core/types/diagnostic.type
 interface DiagnosticosListProps {
   diagnosticos: GroupedDiagnostic[];
   onRemove: (id: string, superficieId: string) => void;
-  addNotification: (options: NotificationOptions) => void;
+  // 👇 Eliminamos addNotification de las props
 }
 
 // ============================================================================
@@ -21,12 +21,17 @@ interface DiagnosticosListProps {
 export const DiagnosticosList: React.FC<DiagnosticosListProps> = ({
   diagnosticos,
   onRemove,
-  addNotification,
 }) => {
+  // ============================================================================
+  // HOOK DE NOTIFICACIONES GLOBAL
+  // ============================================================================
+  const { notify } = useNotification();
+
   // ============================================================================
   // ESTADO VACÍO
   // ============================================================================
   const prioridadOrden = ['ALTA', 'ESTRUCTURAL', 'MEDIA', 'BAJA', 'INFORMATIVA'];
+  
   if (diagnosticos.length === 0) {
     return (
       <div className="h-full flex items-center justify-center p-6">
@@ -89,7 +94,7 @@ export const DiagnosticosList: React.FC<DiagnosticosListProps> = ({
               key={diagnostico.groupId}
               diagnostico={diagnostico}
               onRemove={onRemove}
-              addNotification={addNotification}
+              notify={notify} // 👈 Pasar notify en lugar de addNotification
             />
           ))}
       </div>
@@ -104,13 +109,13 @@ export const DiagnosticosList: React.FC<DiagnosticosListProps> = ({
 interface DiagnosticoCardProps {
   diagnostico: GroupedDiagnostic;
   onRemove: (id: string, superficieId: string) => void;
-  addNotification: (options: NotificationOptions) => void;
+  notify: (options: { type: 'success' | 'error' | 'info' | 'warning'; title: string; message: string; duration?: number }) => void;
 }
 
 const DiagnosticoCard: React.FC<DiagnosticoCardProps> = ({
   diagnostico,
   onRemove,
-  addNotification,
+  notify, 
 }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -147,6 +152,7 @@ const DiagnosticoCard: React.FC<DiagnosticoCardProps> = ({
       setTooltipPosition({ top, left, isLeftSide });
     }
   }, [showTooltip]);
+
   // ============================================================================
   // ESTILOS DE PRIORIDAD
   // ============================================================================
@@ -156,6 +162,7 @@ const DiagnosticoCard: React.FC<DiagnosticoCardProps> = ({
       /^\d{13,}-[a-z0-9]+$/i.test(id)
     );
   };
+  
   const priorityColors: Record<string, string> = {
     ALTA: 'bg-error-50 border-error-200 text-error-700',
     ESTRUCTURAL: 'bg-blue-light-50 border-blue-light-200 text-blue-light-700',
@@ -166,6 +173,7 @@ const DiagnosticoCard: React.FC<DiagnosticoCardProps> = ({
 
   const priorityClass = priorityColors[diagnostico.prioridadKey] || priorityColors['INFORMATIVA'];
   const superficiesDisplay = formatGroupedSurfaces(diagnostico);
+  
   // ============================================================================
   // FUNCIONES AUXILIARES PARA TOOLTIP
   // ============================================================================
@@ -177,22 +185,10 @@ const DiagnosticoCard: React.FC<DiagnosticoCardProps> = ({
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
   };
-  //console.log('[DiagnosticoCard] Debug:', {
-    //nombre: diagnostico.nombre,
-   // hasDetallesClinicos,
-   // detallesClinicos,
-   // descripcion: diagnostico.descripcion
-  //});
-
-
-
-
 
   // ============================================================================
   // FORMATEO DE SUPERFICIES
   // ============================================================================
-
-
 
   // Determinar estilo del badge de superficie
   const getSurfaceBadgeStyle = (): string => {
@@ -222,72 +218,69 @@ const DiagnosticoCard: React.FC<DiagnosticoCardProps> = ({
     return 'bg-brand-50 border-brand-200 text-brand-700';
   };
 
-
   // ============================================================================
   // HANDLER: Eliminar diagnóstico
   // ============================================================================
 
   const handleRemove = async () => {
-  const superficiesDisplay = formatGroupedSurfaces(diagnostico);
-  
-  const confirmMessage =
-    diagnostico.superficies.length > 1
-      ? `¿Deseas eliminar este diagnóstico de todas las superficies?\n${superficiesDisplay}\n\n⚠️ Los cambios se aplicarán cuando presiones "Guardar todo".`
-      : `¿Deseas eliminar este diagnóstico?\n${superficiesDisplay}\n\n⚠️ Los cambios se aplicarán cuando presiones "Guardar todo".`;
+    const superficiesDisplay = formatGroupedSurfaces(diagnostico);
+    
+    const confirmMessage =
+      diagnostico.superficies.length > 1
+        ? `¿Deseas eliminar este diagnóstico de todas las superficies?\n${superficiesDisplay}\n\n⚠️ Los cambios se aplicarán cuando presiones "Guardar todo".`
+        : `¿Deseas eliminar este diagnóstico?\n${superficiesDisplay}\n\n⚠️ Los cambios se aplicarán cuando presiones "Guardar todo".`;
 
-  if (!window.confirm(confirmMessage)) return;
+    if (!window.confirm(confirmMessage)) return;
 
-  setIsDeleting(true);
+    setIsDeleting(true);
 
-  try {
-    // ✅ NUEVO: Solo eliminar del estado local, NO del backend
-    // Eliminar del estado local (tanto temporales como persistentes)
-    for (const { id, superficieId } of diagnostico.diagnosticoIds) {
-      onRemove(id, superficieId);
-    }
-
-    // Clasificar para el mensaje
-    const diagnosticosTemporales: Array<{ id: string; superficieId: string }> = [];
-    const diagnosticosPersistentes: Array<{ id: string; superficieId: string }> = [];
-
-    for (const { id, superficieId } of diagnostico.diagnosticoIds) {
-      if (esIdTemporal(id)) {
-        diagnosticosTemporales.push({ id, superficieId });
-      } else {
-        diagnosticosPersistentes.push({ id, superficieId });
+    try {
+      // Eliminar del estado local (tanto temporales como persistentes)
+      for (const { id, superficieId } of diagnostico.diagnosticoIds) {
+        onRemove(id, superficieId);
       }
+
+      // Clasificar para el mensaje
+      const diagnosticosTemporales: Array<{ id: string; superficieId: string }> = [];
+      const diagnosticosPersistentes: Array<{ id: string; superficieId: string }> = [];
+
+      for (const { id, superficieId } of diagnostico.diagnosticoIds) {
+        if (esIdTemporal(id)) {
+          diagnosticosTemporales.push({ id, superficieId });
+        } else {
+          diagnosticosPersistentes.push({ id, superficieId });
+        }
+      }
+
+      // Mensaje adaptado según el tipo de diagnósticos eliminados
+      const mensaje =
+        diagnosticosTemporales.length > 0 && diagnosticosPersistentes.length > 0
+          ? `Eliminado de ${diagnostico.superficies.length} superficie(s). Presiona "Guardar todo" para confirmar (${diagnosticosTemporales.length} temporal(es), ${diagnosticosPersistentes.length} guardado(s)).`
+          : diagnosticosPersistentes.length > 0
+          ? `Eliminado de ${diagnostico.superficies.length} superficie(s). Presiona "Guardar todo" para confirmar.`
+          : `Eliminado de ${diagnostico.superficies.length} superficie(s) (pendiente de guardar).`;
+
+      notify({ // 👈 Usar notify en lugar de addNotification
+        type: 'info',
+        title: 'Diagnóstico eliminado localmente',
+        message: mensaje,
+      });
+      
+    } catch (error) {
+      console.error('[DiagnosticoCard] Error al eliminar:', error);
+      notify({ // 👈 Usar notify en lugar de addNotification
+        type: 'error',
+        title: 'Error al eliminar',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'No se pudo eliminar el diagnóstico. Intenta nuevamente.',
+      });
+    } finally {
+      setIsDeleting(false);
     }
+  };
 
-    // Mensaje adaptado según el tipo de diagnósticos eliminados
-    const mensaje =
-      diagnosticosTemporales.length > 0 && diagnosticosPersistentes.length > 0
-        ? `Eliminado de ${diagnostico.superficies.length} superficie(s). Presiona "Guardar todo" para confirmar (${diagnosticosTemporales.length} temporal(es), ${diagnosticosPersistentes.length} guardado(s)).`
-        : diagnosticosPersistentes.length > 0
-        ? `Eliminado de ${diagnostico.superficies.length} superficie(s). Presiona "Guardar todo" para confirmar.`
-        : `Eliminado de ${diagnostico.superficies.length} superficie(s) (pendiente de guardar).`;
-
-    addNotification({
-      type: 'info',
-      title: 'Diagnóstico eliminado localmente',
-      message: mensaje,
-    });
-  } catch (error) {
-    console.error('[DiagnosticoCard] Error al eliminar:', error);
-    addNotification({
-      type: 'error',
-      title: 'Error al eliminar',
-      message:
-        error instanceof Error
-          ? error.message
-          : 'No se pudo eliminar el diagnóstico. Intenta nuevamente.',
-    });
-  } finally {
-    setIsDeleting(false);
-  }
-};
-
-  //const secondaryOptions = getSecondaryOptions();
-  //const hasSecondaryOptions = secondaryOptions && Object.keys(secondaryOptions).length > 0;
   // ============================================================================
   // RENDER
   // ============================================================================
@@ -311,16 +304,18 @@ const DiagnosticoCard: React.FC<DiagnosticoCardProps> = ({
         >
           {/* Flecha del tooltip */}
           <div
-            className={`absolute top-1/2 -translate-y-1/2 w-0 h-0 ${tooltipPosition.isLeftSide
+            className={`absolute top-1/2 -translate-y-1/2 w-0 h-0 ${
+              tooltipPosition.isLeftSide
                 ? '-right-[9px] border-t-[8px] border-b-[8px] border-l-[8px] border-transparent border-l-gray-200 dark:border-l-gray-700'
                 : '-left-[9px] border-t-[8px] border-b-[8px] border-r-[8px] border-transparent border-r-gray-200 dark:border-r-gray-700'
-              }`}
+            }`}
           >
             <div
-              className={`absolute top-[-8px] w-0 h-0 border-t-[8px] border-b-[8px] ${tooltipPosition.isLeftSide
+              className={`absolute top-[-8px] w-0 h-0 border-t-[8px] border-b-[8px] ${
+                tooltipPosition.isLeftSide
                   ? 'left-[-10px] border-l-[8px] border-transparent border-l-white dark:border-l-gray-800'
                   : 'right-[-10px] border-r-[8px] border-transparent border-r-white dark:border-r-gray-800'
-                }`}
+              }`}
             ></div>
           </div>
 
@@ -371,7 +366,7 @@ const DiagnosticoCard: React.FC<DiagnosticoCardProps> = ({
               </div>
             </div>
 
-            {/*  DETALLES CLÍNICOS */}
+            {/* DETALLES CLÍNICOS */}
             {hasDetallesClinicos && (
               <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
                 <span className="text-gray-500 dark:text-gray-400 font-medium block mb-1.5">
@@ -392,7 +387,7 @@ const DiagnosticoCard: React.FC<DiagnosticoCardProps> = ({
               </div>
             )}
 
-            {/*  NOTAS ADICIONALES */}
+            {/* NOTAS ADICIONALES */}
             {diagnostico.descripcion && (
               <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
                 <span className="text-gray-500 dark:text-gray-400 font-medium block mb-1.5">

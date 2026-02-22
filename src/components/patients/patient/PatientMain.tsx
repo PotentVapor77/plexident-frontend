@@ -137,7 +137,7 @@ export default function PatientMain() {
       </div>
 
       {/* Tabla de pacientes */}
-      <div className="mt-6">
+      <div className="flex-1 min-h-0">
         <PatientTable
           onView={handleViewPatient}
           onEdit={handleEditPatient}

@@ -1,8 +1,6 @@
 // src/services/clinicalRecord/clinicalRecordPDFService.ts
 
-import axios from "axios";
 import axiosInstance from "../api/axiosInstance";
-import { API_BASE_URL } from "../../config/api";
 import type {
   PDFGenerationParams,
   PDFServiceResponse,
@@ -12,37 +10,26 @@ import type {
 const BASE_URL = "clinical-records";
 
 /**
- * Instancia de axios específica para peticiones de PDF.
+ * Servicio para manejar la generación y descarga de PDFs de historiales clínicos.
  *
- * POR QUÉ es necesaria una instancia separada:
- * ─────────────────────────────────────────────
- * axiosInstance tiene `Content-Type: application/json` en sus defaults.
- * Django REST Framework realiza negociación de contenido basada en el header
- * `Accept` de la petición. Cuando axios no envía un Accept explícito pero sí
- * un Content-Type: application/json, algunos middlewares de DRF (o el
- * DEFAULT_RENDERER_CLASSES) interpretan esto como que el cliente solo acepta
- * JSON, y devuelven 406 Not Acceptable porque el endpoint PDF solo puede
- * servir application/pdf.
+ * ── POR QUÉ usamos axiosInstance con override de headers en lugar de una
+ *    instancia separada ────────────────────────────────────────────────────
  *
- * Esta instancia:
- *  ✅ Hereda baseURL y withCredentials (para autenticación por cookies)
- *  ✅ Envía Accept: application/pdf explícito
- *  ✅ NO envía Content-Type: application/json
- *  ✅ NO pasa por los interceptores de response de axiosInstance
- *     (que envuelven errores con createApiError y complican el manejo del blob)
- */
-const pdfAxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 60_000,
-  withCredentials: true,   // necesario para enviar la cookie de sesión/JWT
-  headers: {
-    Accept: "application/pdf",
-    // NO incluir Content-Type aquí
-  },
-});
-
-/**
- * Servicio para manejar la generación y descarga de PDFs de historiales clínicos
+ * En producción con Nginx como proxy reverso, crear una instancia axios nueva
+ * con `baseURL: API_BASE_URL` puede fallar si la variable de entorno de Vite
+ * tiene trailing slash, el path `/api` ya incluido, o el dominio no coincide
+ * exactamente con el que espera el servidor.
+ *
+ * La solución más robusta es reutilizar axiosInstance (que ya funciona para
+ * todos los demás endpoints) y sobreescribir SOLO el header `Accept` en la
+ * petición individual usando el parámetro `headers` de axios.get().
+ *
+ * Axios permite que los headers de la llamada individual tengan precedencia
+ * sobre los defaults de la instancia. De esta forma:
+ *   ✅ Misma baseURL que funciona en prod
+ *   ✅ Mismas cookies de sesión (withCredentials)
+ *   ✅ Mismos interceptores de auth (token refresh)
+ *   ✅ Accept: application/pdf sobreescribe al Accept de la instancia
  */
 class ClinicalRecordPDFService {
   /**
@@ -65,26 +52,38 @@ class ClinicalRecordPDFService {
 
       console.log(`[PDF Service] Solicitando PDF: ${url}`);
 
-      const response = await pdfAxiosInstance.get(url, {
+      const response = await axiosInstance.get(url, {
         responseType: "blob",
+        // Sobreescribir headers específicamente para esta petición.
+        // En axios, los headers pasados aquí tienen mayor prioridad que
+        // los defaults de la instancia (se hace deep merge, con el request
+        // ganando sobre los defaults).
+        headers: {
+          Accept: "application/pdf",
+          // Eliminar Content-Type para esta petición (no aplica a GET con blob)
+          "Content-Type": undefined,
+        },
+        // Desactivar el transformResponse por defecto que podría interferir con el blob
+        transformResponse: [(data) => data],
       });
 
       // Verificar Content-Type de la respuesta
       const contentType: string =
         response.headers["content-type"] ||
-        (response.data as Blob).type ||
+        (response.data instanceof Blob ? response.data.type : "") ||
         "";
 
       if (!contentType.includes("application/pdf")) {
-        const text = await (response.data as Blob).text();
+        // El backend devolvió algo inesperado — intentar leer el mensaje de error
+        const text =
+          response.data instanceof Blob
+            ? await response.data.text()
+            : String(response.data);
         try {
           const errorData = JSON.parse(text);
           return {
             success: false,
-            error:
-              errorData.detail ||
-              errorData.message ||
-              "Error al generar el PDF",
+            error: errorData.detail || errorData.message || "Error al generar el PDF",
           };
         } catch {
           return {
@@ -100,14 +99,14 @@ class ClinicalRecordPDFService {
 
       let errorMessage = "Error al generar el PDF";
 
-      // El response.data llega como Blob cuando responseType: 'blob'
+      // response.data llega como Blob cuando responseType: 'blob'
       if (error.response?.data instanceof Blob) {
         try {
-          const text = await (error.response.data as Blob).text();
+          const text = await error.response.data.text();
           const errorData = JSON.parse(text);
           errorMessage = errorData.detail || errorData.message || errorMessage;
         } catch {
-          errorMessage = error.response.statusText || errorMessage;
+          errorMessage = error.response?.statusText || errorMessage;
         }
       } else if (error.response?.data?.detail) {
         errorMessage = error.response.data.detail;
@@ -120,7 +119,7 @@ class ClinicalRecordPDFService {
   }
 
   /**
-   * Obtiene las secciones disponibles — usa axiosInstance normal (JSON)
+   * Obtiene las secciones disponibles para el PDF (respuesta JSON normal).
    */
   async obtenerSeccionesDisponibles(): Promise<SeccionesDisponiblesResponse> {
     try {
@@ -147,7 +146,6 @@ class ClinicalRecordPDFService {
     document.body.appendChild(link);
     link.click();
 
-    // Pequeño delay para que el browser procese el clic antes de limpiar
     setTimeout(() => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
@@ -156,18 +154,13 @@ class ClinicalRecordPDFService {
 
   /**
    * Abre el PDF en una nueva pestaña del navegador.
-   * 60 s de timeout para que el browser cargue el blob antes de revocar la URL.
    */
   previsualizarPDF(blob: Blob): void {
     const url = window.URL.createObjectURL(blob);
     const nuevaPestana = window.open(url, "_blank");
 
-    const timeoutId = setTimeout(
-      () => window.URL.revokeObjectURL(url),
-      60_000
-    );
+    const timeoutId = setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
 
-    // Si el popup fue bloqueado por el navegador, limpiar inmediatamente
     if (!nuevaPestana) {
       clearTimeout(timeoutId);
       window.URL.revokeObjectURL(url);
@@ -181,11 +174,8 @@ class ClinicalRecordPDFService {
    * @param pacienteNombre  Nombre completo del paciente
    * @param numeroHistoria  Número de historia clínica (ej: HC-2026000001)
    */
-  generarNombreArchivo(
-    pacienteNombre?: string,
-    numeroHistoria?: string
-  ): string {
-    const timestamp = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  generarNombreArchivo(pacienteNombre?: string, numeroHistoria?: string): string {
+    const timestamp = new Date().toISOString().split("T")[0];
     const base = pacienteNombre
       ? pacienteNombre.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase()
       : "historial";

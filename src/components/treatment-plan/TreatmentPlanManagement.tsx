@@ -6,8 +6,18 @@ import { useModal } from "../../hooks/useModal";
 import type { PlanTratamientoDetailResponse, PlanTratamientoListResponse, SesionTratamientoListResponse } from "../../types/treatmentPlan/typeBackendTreatmentPlan";
 import { useDeletePlanTratamiento, usePlanesTratamiento, usePlanTratamiento } from "../../hooks/treatmentPlan/useTreatmentPlan";
 import { useDeleteSesionTratamiento, useSesionesTratamiento } from "../../hooks/treatmentPlan/useTreatmentSession";
-import { ArrowLeft, Calendar, FileText, Plus, User, Users } from "lucide-react";
-import Button from "../ui/button/Button";
+import { 
+  ArrowLeft, 
+  Calendar, 
+  FileText, 
+  Plus, 
+  User, 
+  Users,
+  Activity,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react";
 import TreatmentPlanTable from "./table/TreatmentPlanTable";
 import SessionTable from "./table/SessionTable";
 import TreatmentPlanCreateEditModal from "./modals/TreatmentPlanCreateEditModal";
@@ -19,7 +29,7 @@ import SessionViewModal from "./modals/SessionViewModal";
 import { usePacienteActivo } from "../../context/PacienteContext";
 
 // ============================================================================
-// COMPONENT
+// COMPONENT - Adaptado al estilo de IndicatorsMain
 // ============================================================================
 
 export default function TreatmentPlanManagement() {
@@ -119,11 +129,53 @@ export default function TreatmentPlanManagement() {
 
     const deleteSesionMutation = useDeleteSesionTratamiento(planSeleccionadoId || "");
 
+    // Normalizar paginación para planes
+    const paginationPlanesNormalized = paginationPlanes ? {
+        count: paginationPlanes.count,
+        page: paginationPlanes.page,
+        pageSize: paginationPlanes.page_size,
+        totalPages: paginationPlanes.total_pages,
+        hasNext: paginationPlanes.has_next,
+        hasPrevious: paginationPlanes.has_previous,
+    } : {
+        count: 0,
+        page: pagePlanes,
+        pageSize,
+        totalPages: 1,
+        hasNext: false,
+        hasPrevious: false,
+    };
+
+    // Normalizar paginación para sesiones
+    const paginationSesionesNormalized = paginationSesiones ? {
+        count: paginationSesiones.count,
+        page: paginationSesiones.page,
+        pageSize: paginationSesiones.page_size,
+        totalPages: paginationSesiones.total_pages,
+        hasNext: paginationSesiones.has_next,
+        hasPrevious: paginationSesiones.has_previous,
+    } : {
+        count: 0,
+        page: pageSesiones,
+        pageSize: pageSizeSesiones,
+        totalPages: 1,
+        hasNext: false,
+        hasPrevious: false,
+    };
+
     // ============================================================================
     // HANDLERS - PLANES
     // ============================================================================
 
     const handleCreatePlanClick = () => {
+        if (!pacienteActivo) {
+            notify({
+                type: "warning",
+                title: "Paciente no fijado",
+                message: "Para crear un plan de tratamiento, primero debe fijar un paciente desde la vista principal de Gestión de Pacientes.",
+            });
+            return;
+        }
         setSelectedPlan(null);
         openCreatePlanModal();
     };
@@ -173,6 +225,10 @@ export default function TreatmentPlanManagement() {
         setPlanSeleccionadoId(plan.id);
         setVistaActual("sesiones");
         setPageSesiones(1);
+    };
+
+    const handlePagePlanesChange = (newPage: number) => {
+        setPagePlanes(newPage);
     };
 
     // ============================================================================
@@ -232,118 +288,192 @@ export default function TreatmentPlanManagement() {
         setSelectedSesion(null);
     };
 
+    const handlePageSesionesChange = (newPage: number) => {
+        setPageSesiones(newPage);
+    };
+
+    // ============================================================================
+    // COMPONENTE PARA PACIENTE FIJADO (estilo IndicatorsMain)
+    // ============================================================================
+    const PacienteFijadoInfo = () => {
+        if (!pacienteActivo) return null;
+
+        return (
+            <div className="rounded-lg border p-3 mb-4 bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-800/30 text-blue-600 dark:text-blue-400">
+                            <Activity className="h-4 w-4" />
+                        </div>
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                                <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                                    Mostrando planes del paciente:
+                                </p>
+                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
+                                    <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                    Filtrado
+                                </span>
+                            </div>
+                            <div className="mt-1">
+                                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                    {pacienteActivo.nombres} {pacienteActivo.apellidos}
+                                </p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                                        CI: {pacienteActivo.cedula_pasaporte}
+                                    </span>
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">•</span>
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                                        {pacienteActivo.sexo === "M" ? "♂" : "♀"}
+                                    </span>
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">•</span>
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                                        Edad: {pacienteActivo.edad}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Total: {planes.length} {planes.length === 1 ? 'plan' : 'planes'}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // ============================================================================
+    // ALERTA SIN PACIENTE (estilo IndicatorsMain)
+    // ============================================================================
+    const SinPacienteAlerta = () => (
+        <div className="rounded-lg bg-warning-50 dark:bg-warning-900/20 p-4 border border-warning-200 dark:border-warning-800 mb-6">
+            <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-warning-500 flex-shrink-0 mt-0.5" />
+                <div>
+                    <p className="text-sm font-medium text-warning-800 dark:text-warning-200">
+                        Atención requerida
+                    </p>
+                    <p className="mt-1 text-sm text-warning-700 dark:text-warning-300">
+                        <strong>Nota:</strong> Para crear o gestionar planes de tratamiento, primero debe fijar un paciente desde la vista principal de 'Gestión de Pacientes'.
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+
     // ============================================================================
     // RENDER
     // ============================================================================
 
     return (
-        <div className="treatment-plan-management-container">
+        <div className="mb-8">
             {/* ======================================================================
             VISTA DE PLANES
             ====================================================================== */}
             {vistaActual === "planes" && (
                 <>
-                    {/* Header */}
-                    <div className="mb-8">
-                        <div className="flex items-start justify-between gap-4">
-                            {/* Título + descripciones */}
-                            <div className="flex items-start gap-4">
-                                {/* <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
-                                    <FileText className="h-6 w-6" />
-                                </div> */}
-                                <div>
-                                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                        Planes de Tratamiento
-                                    </h1>
-                                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                        {pacienteActivo
-                                            ? `Gestión de planes para ${pacienteNombreCompleto}`
-                                            : "Administra los planes de tratamiento de todos los pacientes"}
-                                    </p>
-                                    
-                                    {pacienteActivo && (
-                                        <div className="mt-3 flex items-center gap-2 text-xs text-brand-600 dark:text-brand-400">
-                                            <User className="h-3 w-3" />
-                                            <span>Paciente activo seleccionado</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="flex items-start">
-                                <Button 
-                                    variant="primary" 
-                                    onClick={handleCreatePlanClick}
-                                    className="inline-flex items-center gap-2"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                    Crear plan
-                                </Button>
-                            </div>
+                    {/* Header - Estilo IndicatorsMain */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                                Planes de Tratamiento
+                            </h1>
+                            <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">
+                                Administra los planes de tratamiento y sus sesiones asociadas
+                            </p>
                         </div>
 
-                        {pacienteActivo && (
-                            <div className="mt-4 p-3 rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20">
-                                <p className="text-sm text-blue-800 dark:text-blue-200">
-                                    <span className="font-medium">Nota:</span> Solo se muestran planes del paciente activo. 
-                                    Haga clic en <span className="font-semibold">"Sesiones"</span> para gestionar 
-                                    las sesiones de tratamiento de cada plan.
-                                </p>
-                            </div>
-                        )}
+                        <button
+                            onClick={handleCreatePlanClick}
+                            className="inline-flex items-center px-4 py-2 rounded-lg text-white font-medium transition-colors bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={!pacienteActivo}
+                        >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Crear Plan
+                        </button>
                     </div>
 
-                    {/* Contenido */}
-                    {isLoadingPlanes ? (
-                        <div className="flex flex-col items-center justify-center rounded-lg border border-gray-200 py-12 dark:border-gray-700">
-                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600"></div>
-                            <span className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-                                Cargando planes de tratamiento...
-                            </span>
-                        </div>
-                    ) : isErrorPlanes ? (
-                        <div className="rounded-lg border border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20">
-                            <p className="font-semibold text-red-800 dark:text-red-200">
-                                Error al cargar los planes
-                            </p>
-                            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
-                                {errorPlanes || "Error desconocido"}
-                            </p>
-                        </div>
-                    ) : (
-                        <>
-                            <TreatmentPlanTable
-                                planes={planes}
-                                onViewClick={handleViewPlanClick}
-                                onEditClick={handleEditPlanClick}
-                                onDeleteClick={handleDeletePlanClick}
-                                onViewSessionsClick={handleVerSesionesClick}
-                            />
+                    {/* Información del paciente fijado */}
+                    {pacienteActivo && <PacienteFijadoInfo />}
+                    
+                    {/* Alerta si no hay paciente fijado */}
+                    {!pacienteActivo && <SinPacienteAlerta />}
 
-                            {paginationPlanes && paginationPlanes.total_pages > 1 && (
-                                <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-4 dark:border-gray-700">
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                        Mostrando página <span className="font-semibold">{paginationPlanes.page}</span>{" "}
-                                        de <span className="font-semibold">{paginationPlanes.total_pages}</span>,{" "}
-                                        <span className="font-semibold">{paginationPlanes.count}</span> registros totales
+                    {/* Loading State */}
+                    {isLoadingPlanes && (
+                        <div className="flex items-center justify-center py-12">
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="h-8 w-8 rounded-full border-4 border-brand-600 border-t-transparent animate-spin" />
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    Cargando planes de tratamiento...
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Error State */}
+                    {isErrorPlanes && (
+                        <div className="rounded-lg bg-error-50 dark:bg-error-900/20 p-4 border border-error-200 dark:border-error-800">
+                            <div className="flex">
+                                <div className="flex-shrink-0">
+                                    <AlertCircle className="h-5 w-5 text-error-400" />
+                                </div>
+                                <div className="ml-3">
+                                    <h3 className="text-sm font-medium text-error-800 dark:text-error-200">
+                                        Error al cargar planes
+                                    </h3>
+                                    <p className="mt-2 text-sm text-error-700 dark:text-error-300">
+                                        {errorPlanes || "Error desconocido"}
                                     </p>
-                                    <div className="flex gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setPagePlanes(pagePlanes - 1)}
-                                            disabled={!paginationPlanes.has_previous}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Tabla de Planes */}
+                    {!isLoadingPlanes && !isErrorPlanes && (
+                        <>
+                            <div className="mt-4">
+                                <TreatmentPlanTable
+                                    planes={planes}
+                                    onViewClick={handleViewPlanClick}
+                                    onEditClick={handleEditPlanClick}
+                                    onDeleteClick={handleDeletePlanClick}
+                                    onViewSessionsClick={handleVerSesionesClick}
+                                />
+                            </div>
+
+                            {/* Paginación - Estilo IndicatorsTable */}
+                            {paginationPlanesNormalized.totalPages > 1 && (
+                                <div className="mt-4 flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+                                    <div className="text-sm text-gray-700 dark:text-gray-300">
+                                        Página <span className="font-medium">{paginationPlanesNormalized.page}</span> de{" "}
+                                        <span className="font-medium">{paginationPlanesNormalized.totalPages}</span> • Total: {paginationPlanesNormalized.count}
+                                    </div>
+                                    <div className="flex gap-1">
+                                        <button
+                                            onClick={() => handlePagePlanesChange(pagePlanes - 1)}
+                                            disabled={!paginationPlanesNormalized.hasPrevious || isLoadingPlanes}
+                                            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         >
+                                            <ChevronLeft className="h-4 w-4" />
                                             Anterior
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setPagePlanes(pagePlanes + 1)}
-                                            disabled={!paginationPlanes.has_next}
+                                        </button>
+                                        <button
+                                            onClick={() => handlePagePlanesChange(pagePlanes + 1)}
+                                            disabled={!paginationPlanesNormalized.hasNext || isLoadingPlanes}
+                                            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         >
                                             Siguiente
-                                        </Button>
+                                            <ChevronRight className="h-4 w-4" />
+                                        </button>
                                     </div>
                                 </div>
                             )}
@@ -357,116 +487,111 @@ export default function TreatmentPlanManagement() {
             ====================================================================== */}
             {vistaActual === "sesiones" && (
                 <>
-                    {/* Header */}
-                    <div className="mb-8">
-                        {/* Botón volver */}
-                        <div className="mb-4">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleVolverAPlanes}
-                                className="inline-flex items-center gap-2"
+                    {/* Header con botón volver */}
+                    <div className="mb-6">
+                        <button
+                            onClick={handleVolverAPlanes}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 mb-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:text-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            Volver a planes
+                        </button>
+
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                            <div>
+                                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                                    Sesiones de Tratamiento
+                                </h1>
+                                <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">
+                                    {planDetalle
+                                        ? `Plan: "${planDetalle.titulo}"`
+                                        : "Gestión de sesiones del plan seleccionado"}
+                                </p>
+                                {pacienteActivo && (
+                                    <div className="mt-2 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                        <User className="h-3 w-3" />
+                                        <span>{pacienteNombreCompleto}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={handleCreateSesionClick}
+                                className="inline-flex items-center px-4 py-2 rounded-lg text-white font-medium transition-colors bg-blue-600 hover:bg-blue-700"
                             >
-                                <ArrowLeft className="h-4 w-4" />
-                                Volver a planes
-                            </Button>
-                        </div>
-
-                        {/* Título + texto + botón Crear sesión */}
-                        <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-start gap-4">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
-                                    <Calendar className="h-6 w-6" />
-                                </div>
-                                <div>
-                                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                        Sesiones de Tratamiento
-                                    </h1>
-                                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                        {planDetalle
-                                            ? `Plan: "${planDetalle.titulo}"`
-                                            : "Gestión de sesiones del plan seleccionado"}
-                                    </p>
-                                    {pacienteActivo && (
-                                        <div className="mt-2 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                                            <Users className="h-3 w-3" />
-                                            <span>{pacienteNombreCompleto}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="flex items-start">
-                                <Button 
-                                    variant="primary" 
-                                    onClick={handleCreateSesionClick}
-                                    className="inline-flex items-center gap-2"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                    Crear sesión
-                                </Button>
-                            </div>
-                        </div>
-
-                        <div className="mt-4 p-3 rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20">
-                            <p className="text-sm text-blue-800 dark:text-blue-200">
-                                <span className="font-medium">Nota:</span> Las sesiones representan las visitas o procedimientos programados
-                                dentro del plan de tratamiento seleccionado.
-                            </p>
+                                <Plus className="h-4 w-4 mr-2" />
+                                Crear Sesión
+                            </button>
                         </div>
                     </div>
 
-                    {/* Contenido */}
-                    {isLoadingSesiones ? (
-                        <div className="flex flex-col items-center justify-center rounded-lg border border-gray-200 py-12 dark:border-gray-700">
-                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600"></div>
-                            <span className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-                                Cargando sesiones...
-                            </span>
+                    {/* Loading State */}
+                    {isLoadingSesiones && (
+                        <div className="flex items-center justify-center py-12">
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="h-8 w-8 rounded-full border-4 border-brand-600 border-t-transparent animate-spin" />
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    Cargando sesiones...
+                                </p>
+                            </div>
                         </div>
-                    ) : isErrorSesiones ? (
-                        <div className="rounded-lg border border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20">
-                            <p className="font-semibold text-red-800 dark:text-red-200">
-                                Error al cargar las sesiones
-                            </p>
-                            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
-                                {errorSesiones || "Error desconocido"}
-                            </p>
-                        </div>
-                    ) : (
-                        <>
-                            <SessionTable
-                                sesiones={sesiones}
-                                onViewClick={handleViewSesionClick}
-                                onEditClick={handleEditSesionClick}
-                                onDeleteClick={handleDeleteSesionClick}
-                            />
+                    )}
 
-                            {paginationSesiones && paginationSesiones.total_pages > 1 && (
-                                <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-4 dark:border-gray-700">
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                        Mostrando página{" "}
-                                        <span className="font-semibold">{paginationSesiones.page}</span> de{" "}
-                                        <span className="font-semibold">{paginationSesiones.total_pages}</span>,{" "}
-                                        <span className="font-semibold">{paginationSesiones.count}</span> registros totales
+                    {/* Error State */}
+                    {isErrorSesiones && (
+                        <div className="rounded-lg bg-error-50 dark:bg-error-900/20 p-4 border border-error-200 dark:border-error-800">
+                            <div className="flex">
+                                <div className="flex-shrink-0">
+                                    <AlertCircle className="h-5 w-5 text-error-400" />
+                                </div>
+                                <div className="ml-3">
+                                    <h3 className="text-sm font-medium text-error-800 dark:text-error-200">
+                                        Error al cargar sesiones
+                                    </h3>
+                                    <p className="mt-2 text-sm text-error-700 dark:text-error-300">
+                                        {errorSesiones || "Error desconocido"}
                                     </p>
-                                    <div className="flex gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setPageSesiones(pageSesiones - 1)}
-                                            disabled={!paginationSesiones.has_previous}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Tabla de Sesiones */}
+                    {!isLoadingSesiones && !isErrorSesiones && (
+                        <>
+                            <div className="mt-4">
+                                <SessionTable
+                                    sesiones={sesiones}
+                                    onViewClick={handleViewSesionClick}
+                                    onEditClick={handleEditSesionClick}
+                                    onDeleteClick={handleDeleteSesionClick}
+                                />
+                            </div>
+
+                            {/* Paginación - Estilo IndicatorsTable */}
+                            {paginationSesionesNormalized.totalPages > 1 && (
+                                <div className="mt-4 flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+                                    <div className="text-sm text-gray-700 dark:text-gray-300">
+                                        Página <span className="font-medium">{paginationSesionesNormalized.page}</span> de{" "}
+                                        <span className="font-medium">{paginationSesionesNormalized.totalPages}</span> • Total: {paginationSesionesNormalized.count}
+                                    </div>
+                                    <div className="flex gap-1">
+                                        <button
+                                            onClick={() => handlePageSesionesChange(pageSesiones - 1)}
+                                            disabled={!paginationSesionesNormalized.hasPrevious || isLoadingSesiones}
+                                            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         >
+                                            <ChevronLeft className="h-4 w-4" />
                                             Anterior
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setPageSesiones(pageSesiones + 1)}
-                                            disabled={!paginationSesiones.has_next}
+                                        </button>
+                                        <button
+                                            onClick={() => handlePageSesionesChange(pageSesiones + 1)}
+                                            disabled={!paginationSesionesNormalized.hasNext || isLoadingSesiones}
+                                            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         >
                                             Siguiente
-                                        </Button>
+                                            <ChevronRight className="h-4 w-4" />
+                                        </button>
                                     </div>
                                 </div>
                             )}

@@ -1,7 +1,18 @@
 // src/components/clinicalRecord/ClinicalRecordManagement.tsx
 
 import React, { useState, useEffect, useMemo } from "react";
-import { FileText, Search, Filter, Calendar, X } from "lucide-react";
+import { 
+  FileText, 
+  Search, 
+  Filter, 
+  Calendar, 
+  X,
+  AlertCircle,
+  Activity,
+  User,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react";
 import ClinicalRecordTable from "./table/ClinicalRecordTable";
 import ClinicalRecordViewModal from "./modals/ClinicalRecordViewModal";
 import ClinicalRecordCreateEditModal from "./modals/ClinicalRecordCreateEditModal";
@@ -10,14 +21,12 @@ import ClinicalRecordCloseModal from "./modals/ClinicalRecordCloseModal";
 import { usePacienteActivo } from "../../context/PacienteContext";
 import { useNotification } from "../../context/notifications/NotificationContext";
 import type { ClinicalRecordListResponse } from "../../types/clinicalRecords/typeBackendClinicalRecord";
-import { 
-    useClinicalRecords, 
+import {
+    useClinicalRecords,
     useClinicalRecordsByPaciente,
-    useDeleteClinicalRecord 
+    useDeleteClinicalRecord
 } from "../../hooks/clinicalRecord/useClinicalRecords";
-import Button from "../ui/button/Button";
 import { useDebounce } from "../../hooks/useDebounce";
-
 
 /**
  * ============================================================================
@@ -33,7 +42,7 @@ const ClinicalRecordManagement: React.FC = () => {
     // ESTADOS LOCALES
     // ==========================================================================
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize] = useState(35); 
+    const [pageSize] = useState(35);
     const [searchTerm, setSearchTerm] = useState("");
     const [estadoFilter, setEstadoFilter] = useState<string>("");
     const [fechaDesde, setFechaDesde] = useState<string>("");
@@ -88,6 +97,23 @@ const ClinicalRecordManagement: React.FC = () => {
     const error = pacienteActivo ? errorPaciente : errorGeneral;
     const refetch = pacienteActivo ? refetchPaciente : refetchGeneral;
 
+    // Normalizar paginación
+    const paginationNormalized = pagination ? {
+        count: pagination.count,
+        page: pagination.page,
+        pageSize: pagination.page_size,
+        totalPages: pagination.total_pages,
+        hasNext: pagination.has_next,
+        hasPrevious: pagination.has_previous,
+    } : {
+        count: 0,
+        page: currentPage,
+        pageSize,
+        totalPages: 1,
+        hasNext: false,
+        hasPrevious: false,
+    };
+
     // ==========================================================================
     // FILTROS ACTIVOS
     // ==========================================================================
@@ -99,7 +125,7 @@ const ClinicalRecordManagement: React.FC = () => {
         let count = 0;
         if (searchTerm) count++;
         if (estadoFilter) count++;
-        if (fechaDesde || fechaHasta) count++; 
+        if (fechaDesde || fechaHasta) count++;
         return count;
     }, [searchTerm, estadoFilter, fechaDesde, fechaHasta]);
 
@@ -152,7 +178,7 @@ const ClinicalRecordManagement: React.FC = () => {
 
         try {
             await deleteMutation.mutateAsync(selectedRecord.id);
-            
+
             notify({
                 type: "success",
                 title: "Historial eliminado",
@@ -162,7 +188,7 @@ const ClinicalRecordManagement: React.FC = () => {
             handleSuccess();
         } catch (err: any) {
             let errorMessage = "Error al eliminar el historial clínico";
-            
+
             if (err?.response?.data?.message) {
                 errorMessage = err.response.data.message;
             } else if (err?.message) {
@@ -185,296 +211,338 @@ const ClinicalRecordManagement: React.FC = () => {
         setCurrentPage(1);
     };
 
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+    };
+
+    const handlePageSizeChange = (newPageSize: number) => {
+        // Como pageSize es constante, no hacemos nada
+        console.log("Page size change requested:", newPageSize);
+    };
+
     useEffect(() => {
         setCurrentPage(1);
     }, [debouncedSearchTerm, estadoFilter, fechaDesde, fechaHasta]);
 
     // ==========================================================================
-    // RENDER - LOADING STATE
+    // LOADING STATE UNIFICADO
     // ==========================================================================
     if (isLoading && !historiales.length) {
         return (
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
-                <p className="ml-4 text-gray-600 dark:text-gray-300">
-                    Cargando historiales clínicos...
-                </p>
+            <div className="flex items-center justify-center py-12">
+                <div className="flex flex-col items-center gap-2">
+                    <div className="h-8 w-8 rounded-full border-4 border-brand-600 border-t-transparent animate-spin" />
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Cargando historiales clínicos...
+                    </p>
+                </div>
             </div>
         );
     }
 
     // ==========================================================================
-    // RENDER - ERROR STATE
+    // ERROR STATE UNIFICADO
     // ==========================================================================
     if (error && !historiales.length) {
         return (
-            <div className="bg-error-50 border border-error-200 text-error-700 p-6 rounded-lg dark:bg-error-900/20 dark:border-error-800 dark:text-error-400">
-                <h3 className="font-semibold text-lg mb-2">
-                    Error al cargar los historiales
-                </h3>
-                <p className="text-sm mb-4">{error}</p>
-                <Button
-                    onClick={() => refetch()}
-                    variant="outline"
-                    size="sm"
-                >
-                    Reintentar
-                </Button>
+            <div className="rounded-lg bg-error-50 dark:bg-error-900/20 p-4 border border-error-200 dark:border-error-800">
+                <div className="flex">
+                    <div className="flex-shrink-0">
+                        <AlertCircle className="h-5 w-5 text-error-400" />
+                    </div>
+                    <div className="ml-3">
+                        <h3 className="text-sm font-medium text-error-800 dark:text-error-200">
+                            Error al cargar historiales clínicos
+                        </h3>
+                        <p className="mt-2 text-sm text-error-700 dark:text-error-300">
+                            {error}
+                        </p>
+                        <button
+                            onClick={() => refetch()}
+                            className="mt-3 text-sm text-error-700 dark:text-error-300 underline hover:no-underline"
+                        >
+                            Reintentar
+                        </button>
+                    </div>
+                </div>
             </div>
         );
     }
 
     // ==========================================================================
-    // RENDER - MAIN CONTENT
+    // COMPONENTE PARA PACIENTE FIJADO (adaptado del IndicatorsMain)
     // ==========================================================================
-    return (
-        <div className="space-y-6.5 pt-7 pb-18 px-18">
-            {/* ====================================================================
-          HEADER
-      ==================================================================== */}
-            <div className="flex items-center justify-between flex-wrap gap-4">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        Historiales Clínicos
-                    </h2>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {pacienteActivo
-                            ? `Historiales del paciente: ${pacienteActivo.nombres} ${pacienteActivo.apellidos}`
-                            : "Administra todos los historiales clínicos del sistema"}
-                    </p>
-                </div>
-                <div className="flex gap-3">
-                    {!pacienteActivo && (
-                        <Button 
-                            onClick={() => setShowFilters(!showFilters)} 
-                            variant="outline"
-                            size="md"
-                        >
-                            <Filter className="w-4 h-4 mr-2" />
-                            Filtros
-                            {activeFiltersCount > 0 && (
-                                <span className="ml-2 bg-brand-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                                    {activeFiltersCount}
+    const PacienteFijadoInfo = () => {
+        if (!pacienteActivo) return null;
+
+        return (
+            <div className="rounded-lg border p-3 mb-4 bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-800/30 text-blue-600 dark:text-blue-400">
+                            <Activity className="h-4 w-4" />
+                        </div>
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                                <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                                    Mostrando historiales del paciente:
+                                </p>
+                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
+                                    <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                    Filtrado
                                 </span>
-                            )}
-                        </Button>
-                    )}
-                    <Button onClick={handleCreateClick} size="md">
-                        <FileText className="w-4 h-4 mr-2" />
-                        Nuevo Historial
-                    </Button>
+                            </div>
+                            <div className="mt-1">
+                                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                    {pacienteActivo.nombres} {pacienteActivo.apellidos}
+                                </p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                                        CI: {pacienteActivo.cedula_pasaporte}
+                                    </span>
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">•</span>
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                                        {pacienteActivo.sexo === "M" ? "♂" : "♀"}
+                                    </span>
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">•</span>
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                                        Edad: {pacienteActivo.edad}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Total: {historiales.length} {historiales.length === 1 ? 'historial' : 'historiales'}
+                    </div>
                 </div>
             </div>
+        );
+    };
 
-            {/* ====================================================================
-          FILTROS MEJORADOS (Solo cuando NO hay paciente activo)
-      ==================================================================== */}
-            {!pacienteActivo && showFilters && (
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                    <div className="space-y-4">
-                        {/* Fila 1: Búsqueda */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Búsqueda general
-                            </label>
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                <input
-                                    type="text"
-                                    placeholder="Buscar por paciente, CI, motivo de consulta, odontólogo..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-700 dark:text-white"
-                                />
-                                {searchTerm && (
-                                    <button
-                                        onClick={() => setSearchTerm("")}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                    >
-                                        <X className="w-4 h-4" />
-                                    </button>
+    // ==========================================================================
+    // ALERTA SIN PACIENTE (adaptado del IndicatorsMain)
+    // ==========================================================================
+    const SinPacienteAlerta = () => (
+        <div className="rounded-lg bg-warning-50 dark:bg-warning-900/20 p-4 border border-warning-200 dark:border-warning-800 mb-6">
+            <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-warning-500 flex-shrink-0 mt-0.5" />
+                <div>
+                    <p className="text-sm font-medium text-warning-800 dark:text-warning-200">
+                        Atención requerida
+                    </p>
+                    <p className="mt-1 text-sm text-warning-700 dark:text-warning-300">
+                        <strong>Nota:</strong> Para gestionar historiales clínicos, puede fijar un paciente desde la vista principal de 'Gestión de Pacientes' o trabajar en modo global.
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+
+    // ==========================================================================
+    // RENDER PRINCIPAL UNIFICADO
+    // ==========================================================================
+    return (
+        <>
+            <div className="mb-8">
+                {/* Header - Estilo IndicatorsMain */}
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                            Historiales Clínicos
+                        </h1>
+                        <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">
+                            Administra los historiales clínicos y el Formulario 033 de los pacientes
+                        </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                        {!pacienteActivo && (
+                            <button
+                                onClick={() => setShowFilters(!showFilters)}
+                                className="inline-flex items-center px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                            >
+                                <Filter className="h-4 w-4 mr-2" />
+                                Filtros
+                                {activeFiltersCount > 0 && (
+                                    <span className="ml-2 bg-brand-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                        {activeFiltersCount}
+                                    </span>
                                 )}
+                            </button>
+                        )}
+                        <button
+                            onClick={handleCreateClick}
+                            className="inline-flex items-center px-4 py-2 rounded-lg text-white font-medium transition-colors bg-blue-600 hover:bg-blue-700"
+                        >
+                            <FileText className="h-4 w-4 mr-2" />
+                            Nuevo Historial
+                        </button>
+                    </div>
+                </div>
+
+                {/* Información del paciente fijado (estilo IndicatorsMain) */}
+                {pacienteActivo && <PacienteFijadoInfo />}
+                
+                {/* Alerta si no hay paciente fijado (estilo IndicatorsMain) */}
+                {!pacienteActivo && <SinPacienteAlerta />}
+
+                {/* Filtros (solo cuando NO hay paciente activo) - Estilo mejorado */}
+                {!pacienteActivo && showFilters && (
+                    <div className="mb-6 p-5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div className="space-y-4">
+                            {/* Búsqueda */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Búsqueda general
+                                </label>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar por paciente, CI, motivo de consulta, odontólogo..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 focus:border-transparent focus:ring-2 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                                    />
+                                    {searchTerm && (
+                                        <button
+                                            onClick={() => setSearchTerm("")}
+                                            className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                                        >
+                                            <X className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
-                            {searchTerm && (
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Buscando en tiempo real...
-                                </p>
+
+                            {/* Estado y Fechas */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* Estado */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Estado
+                                    </label>
+                                    <select
+                                        value={estadoFilter}
+                                        onChange={(e) => setEstadoFilter(e.target.value)}
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 focus:border-transparent focus:ring-2 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                                    >
+                                        <option value="">Todos los estados</option>
+                                        <option value="BORRADOR">Borrador</option>
+                                        <option value="ABIERTO">Abierto</option>
+                                        <option value="CERRADO">Cerrado</option>
+                                    </select>
+                                </div>
+
+                                {/* Fecha desde */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Desde
+                                    </label>
+                                    <div className="relative">
+                                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                        <input
+                                            type="date"
+                                            value={fechaDesde}
+                                            onChange={(e) => setFechaDesde(e.target.value)}
+                                            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 focus:border-transparent focus:ring-2 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Fecha hasta */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Hasta
+                                    </label>
+                                    <div className="relative">
+                                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                        <input
+                                            type="date"
+                                            value={fechaHasta}
+                                            onChange={(e) => setFechaHasta(e.target.value)}
+                                            min={fechaDesde || undefined}
+                                            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 focus:border-transparent focus:ring-2 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Acciones de filtros */}
+                            {hasActiveFilters && (
+                                <div className="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-700">
+                                    <button
+                                        onClick={handleClearFilters}
+                                        className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:text-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
+                                    >
+                                        <X className="h-3.5 w-3.5 mr-1.5" />
+                                        Limpiar filtros
+                                    </button>
+                                </div>
                             )}
                         </div>
+                    </div>
+                )}
 
-                        {/* Fila 2: Estado y Fechas */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {/* Estado */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Estado
-                                </label>
-                                <select
-                                    value={estadoFilter}
-                                    onChange={(e) => setEstadoFilter(e.target.value)}
-                                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-700 dark:text-white"
-                                >
-                                    <option value="">Todos los estados</option>
-                                    <option value="BORRADOR">Borrador</option>
-                                    <option value="ABIERTO">Abierto</option>
-                                    <option value="CERRADO">Cerrado</option>
-                                </select>
-                            </div>
+                {/* Tabla */}
+                <div className="mt-4">
+                    <ClinicalRecordTable
+                        historiales={historiales}
+                        onViewClick={handleViewClick}
+                        onEditClick={handleEditClick}
+                        onDeleteClick={handleDeleteClick}
+                        onCloseClick={handleCloseClick}
+                    />
+                </div>
 
-                            {/* Fecha desde */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Desde
-                                </label>
-                                <div className="relative">
-                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                    <input
-                                        type="date"
-                                        value={fechaDesde}
-                                        onChange={(e) => setFechaDesde(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-700 dark:text-white"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Fecha hasta */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Hasta
-                                </label>
-                                <div className="relative">
-                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                    <input
-                                        type="date"
-                                        value={fechaHasta}
-                                        onChange={(e) => setFechaHasta(e.target.value)}
-                                        min={fechaDesde || undefined}
-                                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-700 dark:text-white"
-                                    />
-                                </div>
-                            </div>
+                {/* Paginación (solo para vista general) - Estilo IndicatorsTable */}
+                {!pacienteActivo && paginationNormalized.totalPages > 1 && (
+                    <div className="mt-4 flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                            Página <span className="font-medium">{paginationNormalized.page}</span> de{" "}
+                            <span className="font-medium">{paginationNormalized.totalPages}</span> • Total: {paginationNormalized.count}
                         </div>
-
-                        {/* Fila 3: Acciones */}
-                        {hasActiveFilters && (
-                            <div className="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-700">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleClearFilters}
-                                >
-                                    <X className="w-4 h-4 mr-2" />
-                                    Limpiar filtros
-                                </Button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* ====================================================================
-          INDICADOR DE BÚSQUEDA ACTIVA
-      ==================================================================== */}
-            {hasActiveFilters && !pacienteActivo && (
-                <div className="bg-blue-light-50 border border-blue-light-200 text-blue-light-700 p-3 rounded-lg dark:bg-blue-light-900/20 dark:border-blue-light-800 dark:text-blue-light-400">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Filter className="w-4 h-4" />
-                            <span className="text-sm font-medium">
-                                Filtros activos: {activeFiltersCount}
-                            </span>
+                        <div className="flex gap-1">
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={!paginationNormalized.hasPrevious || isLoading}
+                                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                                Anterior
+                            </button>
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={!paginationNormalized.hasNext || isLoading}
+                                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Siguiente
+                                <ChevronRight className="h-4 w-4" />
+                            </button>
                         </div>
-                        {isLoading && (
-                            <div className="flex items-center gap-2">
-                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-light-600 border-t-transparent"></div>
-                                <span className="text-xs">Buscando...</span>
-                            </div>
-                        )}
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
-            {/* ====================================================================
-          TABLA DE HISTORIALES
-      ==================================================================== */}
-            <ClinicalRecordTable
-                historiales={historiales}
-                onViewClick={handleViewClick}
-                onEditClick={handleEditClick}
-                onDeleteClick={handleDeleteClick}
-                onCloseClick={handleCloseClick}
-            />
-
-            {/* ====================================================================
-          PAGINACIÓN (Solo para vista general)
-      ==================================================================== */}
-            {!pacienteActivo && pagination.total_pages > 1 && (
-                <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                    <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Página {pagination.page} de {pagination.total_pages}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                            {pagination.count} registro{pagination.count !== 1 ? 's' : ''} en total
-                            {historiales.length > 0 && ` • Mostrando ${historiales.length} en esta página`}
-                        </p>
-                    </div>
-                    <div className="flex gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                            disabled={!pagination.has_previous || isLoading}
-                        >
-                            Anterior
-                        </Button>
-                        <div className="flex items-center px-3 text-sm text-gray-700 dark:text-gray-300">
-                            {currentPage}
-                        </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage((p) => p + 1)}
-                            disabled={!pagination.has_next || isLoading}
-                        >
-                            Siguiente
-                        </Button>
-                    </div>
-                </div>
-            )}
-
-            {/* ====================================================================
-          INFORMACIÓN DEL PACIENTE ACTIVO
-      ==================================================================== */}
-            {pacienteActivo && (
-                <div className="bg-blue-light-50 border border-blue-light-200 text-blue-light-700 p-4 rounded-lg dark:bg-blue-light-900/20 dark:border-blue-light-800 dark:text-blue-light-400">
-                    <p className="text-sm">
-                        <strong>Mostrando historiales del paciente activo:</strong>{" "}
-                        {pacienteActivo.nombres} {pacienteActivo.apellidos} (CI:{" "}
-                        {pacienteActivo.cedula_pasaporte})
-                    </p>
-                    <p className="text-xs mt-1">
-                        Total de historiales: {historiales.length}
-                    </p>
-                </div>
-            )}
-
-            {/* ====================================================================
-          MODALES
-      ==================================================================== */}
-            {/* Modal Ver Detalle */}
+            {/* Modales */}
             <ClinicalRecordViewModal
                 isOpen={viewModalOpen}
-                onClose={handleModalClose} 
-                selectedRecord={selectedRecord} 
+                onClose={handleModalClose}
+                selectedRecord={selectedRecord}
             />
 
-            {/* Modal Crear/Editar */}
             <ClinicalRecordCreateEditModal
                 isOpen={editModalOpen}
                 onClose={handleModalClose}
-                mode={selectedRecord ? "edit" : "create"} 
-                recordId={selectedRecord?.id}             
+                mode={selectedRecord ? "edit" : "create"}
+                recordId={selectedRecord?.id}
                 pacienteId={pacienteActivo?.id || selectedRecord?.paciente || null}
                 pacienteNombreCompleto={
                     pacienteActivo
@@ -484,25 +552,23 @@ const ClinicalRecordManagement: React.FC = () => {
                 onSuccess={handleSuccess}
             />
 
-            {/* Modal Eliminar */}
             {selectedRecord && (
                 <ClinicalRecordDeleteModal
                     isOpen={deleteModalOpen}
                     onClose={handleModalClose}
-                    record={selectedRecord} 
+                    record={selectedRecord}
                     onConfirm={handleDeleteConfirm}
                     isDeleting={deleteMutation.isPending}
                 />
             )}
 
-            {/* Modal Cerrar */}
             <ClinicalRecordCloseModal
                 isOpen={closeModalOpen}
                 onClose={handleModalClose}
                 recordId={selectedRecord?.id || ""}
                 onSuccess={handleSuccess}
             />
-        </div>
+        </>
     );
 };
 

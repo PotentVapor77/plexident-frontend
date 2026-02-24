@@ -30,7 +30,7 @@ import {
   BatteryFull,
   AlertOctagon
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { BackendIndicadoresSaludBucal } from "../../../types/odontogram/typeBackendOdontograma";
 
 interface IndicatorsTableProps {
@@ -43,7 +43,7 @@ interface IndicatorsTableProps {
   onRestore?: (registro: BackendIndicadoresSaludBucal) => void;
   search?: string;
   onSearchChange?: (value: string) => void;
-  // Propiedades de paginación para unificación
+  // Propiedades de paginación
   page?: number;
   pageSize?: number;
   totalPages?: number;
@@ -71,6 +71,11 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
 }) => {
   const [localSearch, setLocalSearch] = useState(search);
 
+  // Sincronizar el estado local con la prop search cuando cambie externamente
+  useEffect(() => {
+    setLocalSearch(search);
+  }, [search]);
+
   // ============================================================================
   // HELPERS PARA FORMATEAR VALORES
   // ============================================================================
@@ -95,7 +100,7 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
   };
 
   // ============================================================================
-  // BADGES DE ESTADO - ESTILO UNIFICADO CON ICONOS DE SERIEDAD
+  // BADGES DE ESTADO
   // ============================================================================
 
   const getEstadoColor = (activo: boolean) => {
@@ -113,7 +118,7 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
     );
   };
 
-  // ENFERMEDAD PERIODONTAL con iconos de seriedad
+  // ENFERMEDAD PERIODONTAL
   const getPeriodontalBadge = (value: string | null) => {
     if (!value) return (
       <div className="flex items-center gap-1.5">
@@ -191,7 +196,7 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
     );
   };
 
-  // OCLUSIÓN con iconos de seriedad
+  // OCLUSIÓN
   const getOclusionBadge = (value: string | null) => {
     if (!value) return (
       <div className="flex items-center gap-1.5">
@@ -247,7 +252,6 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
             {badge.text}
           </span>
         </span>
-        {/* Indicador de nivel de severidad */}
         <div className="flex flex-col items-center">
           {badge.severity === 'low' && (
             <BatteryLow className="h-3.5 w-3.5 text-success-500" />
@@ -263,7 +267,7 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
     );
   };
 
-  // FLUOROSIS con iconos de seriedad y escala visual
+  // FLUOROSIS
   const getFluorosisBadge = (value: string | null) => {
     if (!value) return (
       <div className="flex items-center gap-1.5">
@@ -277,7 +281,7 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
       color: string; 
       icon: React.ReactNode;
       severity: 'none' | 'very-low' | 'low' | 'medium' | 'high' | 'very-high';
-      level: number; // 0-5 para escala visual
+      level: number;
     }> = {
       NORMAL: {
         text: "Normal",
@@ -331,29 +335,6 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
       level: 0
     };
 
-    const getFluorosisIndicator = (level: number) => {
-      return (
-        <div className="flex items-center gap-0.5">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div
-              key={i}
-              className={`w-1.5 h-1.5 rounded-full ${
-                i <= level
-                  ? level <= 2 
-                    ? 'bg-emerald-500' 
-                    : level <= 3 
-                    ? 'bg-warning-500' 
-                    : level <= 4 
-                    ? 'bg-orange-500' 
-                    : 'bg-error-500'
-                  : 'bg-gray-200 dark:bg-gray-700'
-              }`}
-            />
-          ))}
-        </div>
-      );
-    };
-
     return (
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-1.5">
@@ -364,13 +345,6 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
             </span>
           </span>
         </div>
-        {/* Escala visual de fluorosis */}
-        {/* <div className="flex items-center justify-between">
-          {getFluorosisIndicator(badge.level)}
-          <span className="text-[10px] text-gray-500 dark:text-gray-400">
-            Nivel {badge.level}/5
-          </span>
-        </div> */}
       </div>
     );
   };
@@ -409,90 +383,7 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
   }
 
   // ============================================================================
-  // EMPTY STATE - ESTILO UNIFICADO
-  // ============================================================================
-
-  if (!registros || registros.length === 0) {
-    return (
-      <div className="space-y-4">
-        {/* Header con buscador - Estilo unificado */}
-        {onSearchChange && (
-          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-            <div className="w-full sm:flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Buscar por fecha, enfermedad periodontal, oclusión..."
-                value={localSearch}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 focus:border-transparent focus:ring-2 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-              />
-              {localSearch && (
-                <button
-                  onClick={handleClearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                >
-                  <X className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
-                </button>
-              )}
-            </div>
-            {onPageSizeChange && (
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-700 dark:text-gray-300">
-                  Mostrar:
-                </label>
-                <div className="relative">
-                  <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                  <select
-                    value={pageSize}
-                    onChange={(e) => {
-                      onPageSizeChange?.(Number(e.target.value));
-                      onPageChange?.(1);
-                    }}
-                    className="pl-10 pr-8 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 appearance-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                  >
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                  </select>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Empty state unificado */}
-        <div className="relative overflow-hidden rounded-lg border border-gray-200 shadow-sm dark:border-gray-700">
-          <div className="flex flex-col items-center justify-center py-12 px-6">
-            <div className="rounded-full bg-gray-100 p-3 dark:bg-gray-800">
-              <FileText className="h-8 w-8 text-gray-400" />
-            </div>
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-              No se encontraron indicadores de salud bucal
-            </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {localSearch ? 'Intenta con otros términos de búsqueda' : 'No hay indicadores registrados'}
-            </p>
-            {localSearch && (
-              <button
-                onClick={handleClearSearch}
-                className="mt-3 text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
-              >
-                Limpiar búsqueda
-              </button>
-            )}
-          </div>
-          <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 text-xs font-medium text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
-            Mostrando 0 de {totalCount} registros
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ============================================================================
-  // TABLA CON DATOS - ESTILO UNIFICADO CON ICONOS DE SERIEDAD
+  // RENDER PRINCIPAL
   // ============================================================================
 
   return (
@@ -506,7 +397,7 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
             placeholder="Buscar por fecha, enfermedad periodontal, oclusión..."
             value={localSearch}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 focus:border-transparent focus:ring-2 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+            className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 focus:border-transparent focus:ring-2 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
           />
           {localSearch && (
             <button
@@ -542,193 +433,215 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
         )}
       </div>
 
-      {/* Tabla - Estilo unificado */}
+      {/* Tabla */}
       <div className="relative overflow-hidden rounded-lg border border-gray-200 shadow-sm dark:border-gray-700">
-        <div className="overflow-x-auto custom-scrollbar max-h-[calc(90vh-20rem)]">
-          <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400 min-w-[1100px]">
-            <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400 sticky top-0 z-10">
-              <tr>
-                <th scope="col" className="px-6 py-3 font-medium min-w-[120px]">Fecha</th>
-                
-                {showPatientColumn && (
-                  <th scope="col" className="px-6 py-3 font-medium min-w-[180px]">Paciente</th>
-                )}
-
-                {showInactivos && (
-                  <th scope="col" className="px-6 py-3 font-medium min-w-[100px]">Estado</th>
-                )}
-
-                <th scope="col" className="px-6 py-3 font-medium min-w-[180px]">
-                  <div className="flex items-center gap-2">
-                    <ActivityIcon className="h-3.5 w-3.5" />
-                    Enf. Periodontal
-                  </div>
-                </th>
-                <th scope="col" className="px-6 py-3 font-medium min-w-[160px]">
-                  <div className="flex items-center gap-2">
-                    <Brain className="h-3.5 w-3.5" />
-                    Oclusión
-                  </div>
-                </th>
-                <th scope="col" className="px-6 py-3 font-medium min-w-[180px]">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-3.5 w-3.5" />
-                    Fluorosis
-                  </div>
-                </th>
-                <th scope="col" className="px-6 py-3 font-medium min-w-[100px]">OHI Placa</th>
-                <th scope="col" className="px-6 py-3 font-medium min-w-[100px]">OHI Cálculo</th>
-                <th scope="col" className="px-6 py-3 font-medium min-w-[100px]">OHI Gingivitis</th>
-
-                <th scope="col" className="px-6 py-3 text-right font-medium min-w-[140px]">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
-              {registros.map((registro) => (
-                <tr
-                  key={registro.id}
-                  className="group hover:bg-gray-50 dark:hover:bg-gray-800/50"
+        <div className="overflow-x-auto custom-scrollbar">
+          {registros.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 px-6 bg-white dark:bg-gray-900">
+              <div className="rounded-full bg-gray-100 p-3 dark:bg-gray-800">
+                <FileText className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+                No se encontraron indicadores de salud bucal
+              </h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {localSearch ? 'Intenta con otros términos de búsqueda' : 'No hay indicadores registrados'}
+              </p>
+              {localSearch && (
+                <button
+                  onClick={handleClearSearch}
+                  className="mt-3 text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
                 >
-                  {/* Fecha */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                      <Calendar className="h-3.5 w-3.5" />
-                      {formatDate(registro.fecha)}
-                    </div>
-                  </td>
-
-                  {/* Paciente (opcional) */}
+                  Limpiar búsqueda
+                </button>
+              )}
+            </div>
+          ) : (
+            <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400 min-w-[1100px]">
+              <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400 sticky top-0 z-10">
+                <tr>
+                  <th scope="col" className="px-6 py-3 font-medium min-w-[120px]">Fecha</th>
+                  
                   {showPatientColumn && (
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
-                          {(registro.paciente_nombre?.charAt(0) || "P")}
-                          {(registro.paciente_apellido?.charAt(0) || "")}
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {registro.paciente_nombre || "Paciente"} {registro.paciente_apellido || ""}
-                          </span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            CI: {registro.paciente_cedula || "N/A"}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
+                    <th scope="col" className="px-6 py-3 font-medium min-w-[180px]">Paciente</th>
                   )}
 
-                  {/* Estado (opcional) */}
                   {showInactivos && (
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getActivoBadge(registro.activo)}
-                    </td>
+                    <th scope="col" className="px-6 py-3 font-medium min-w-[100px]">Estado</th>
                   )}
 
-                  {/* Enfermedad Periodontal */}
-                  <td className="px-6 py-4">
-                    {getPeriodontalBadge(registro.enfermedad_periodontal)}
-                  </td>
-
-                  {/* Oclusión */}
-                  <td className="px-6 py-4">
-                    {getOclusionBadge(registro.tipo_oclusion)}
-                  </td>
-
-                  {/* Fluorosis */}
-                  <td className="px-6 py-4">
-                    {getFluorosisBadge(registro.nivel_fluorosis)}
-                  </td>
-
-                  {/* OHI Placa */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-1">
-                      <Thermometer className="h-3.5 w-3.5 text-gray-400" />
-                      <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {formatValue(registro.ohi_promedio_placa)}
-                      </div>
+                  <th scope="col" className="px-6 py-3 font-medium min-w-[180px]">
+                    <div className="flex items-center gap-2">
+                      <ActivityIcon className="h-3.5 w-3.5" />
+                      Enf. Periodontal
                     </div>
-                  </td>
-
-                  {/* OHI Cálculo */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-1">
-                      <Zap className="h-3.5 w-3.5 text-gray-400" />
-                      <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {formatValue(registro.ohi_promedio_calculo)}
-                      </div>
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium min-w-[160px]">
+                    <div className="flex items-center gap-2">
+                      <Brain className="h-3.5 w-3.5" />
+                      Oclusión
                     </div>
-                  </td>
-
-                  {/* OHI Gingivitis */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-1">
-                      <Heart className="h-3.5 w-3.5 text-gray-400" />
-                      <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {formatValue(registro.gi_promedio_gingivitis)}
-                      </div>
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium min-w-[180px]">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-3.5 w-3.5" />
+                      Fluorosis
                     </div>
-                  </td>
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium min-w-[100px]">OHI Placa</th>
+                  <th scope="col" className="px-6 py-3 font-medium min-w-[100px]">OHI Cálculo</th>
+                  <th scope="col" className="px-6 py-3 font-medium min-w-[100px]">OHI Gingivitis</th>
 
-                  {/* Acciones */}
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end gap-1">
-                      {/* Ver */}
-                      {onView && (
-                        <button
-                          onClick={() => onView(registro)}
-                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:bg-brand-50 hover:text-brand-600 dark:text-gray-400 dark:hover:bg-brand-500/10 dark:hover:text-brand-300 transition-colors"
-                          title="Ver detalles"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
-                      )}
-
-                      {/* Editar - Solo si está activo */}
-                      {onEdit && registro.activo && (
-                        <button
-                          onClick={() => onEdit(registro)}
-                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:bg-orange-50 hover:text-orange-600 dark:text-gray-400 dark:hover:bg-orange-500/10 dark:hover:text-orange-300 transition-colors"
-                          title="Editar"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </button>
-                      )}
-
-                      {/* Eliminar - Solo si está activo */}
-                      {onDelete && registro.activo && (
-                        <button
-                          onClick={() => onDelete(registro)}
-                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:bg-error-50 hover:text-error-600 dark:text-gray-400 dark:hover:bg-error-500/10 dark:hover:text-error-300 transition-colors"
-                          title="Eliminar"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      )}
-
-                      {/* Restaurar - Solo si está inactivo */}
-                      {onRestore && !registro.activo && (
-                        <button
-                          onClick={() => onRestore(registro)}
-                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:bg-success-50 hover:text-success-600 dark:text-gray-400 dark:hover:bg-success-500/10 dark:hover:text-success-300 transition-colors"
-                          title="Restaurar"
-                        >
-                          <RotateCcw className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
+                  <th scope="col" className="px-6 py-3 text-right font-medium min-w-[140px]">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
+                {registros.map((registro) => (
+                  <tr
+                    key={registro.id}
+                    className="group hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                  >
+                    {/* Fecha */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {formatDate(registro.fecha)}
+                      </div>
+                    </td>
+
+                    {/* Paciente (opcional) */}
+                    {showPatientColumn && (
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
+                            {(registro.paciente_nombre?.charAt(0) || "P")}
+                            {(registro.paciente_apellido?.charAt(0) || "")}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {registro.paciente_nombre || "Paciente"} {registro.paciente_apellido || ""}
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              CI: {registro.paciente_cedula || "N/A"}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                    )}
+
+                    {/* Estado (opcional) */}
+                    {showInactivos && (
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getActivoBadge(registro.activo)}
+                      </td>
+                    )}
+
+                    {/* Enfermedad Periodontal */}
+                    <td className="px-6 py-4">
+                      {getPeriodontalBadge(registro.enfermedad_periodontal)}
+                    </td>
+
+                    {/* Oclusión */}
+                    <td className="px-6 py-4">
+                      {getOclusionBadge(registro.tipo_oclusion)}
+                    </td>
+
+                    {/* Fluorosis */}
+                    <td className="px-6 py-4">
+                      {getFluorosisBadge(registro.nivel_fluorosis)}
+                    </td>
+
+                    {/* OHI Placa */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <Thermometer className="h-3.5 w-3.5 text-gray-400" />
+                        <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {formatValue(registro.ohi_promedio_placa)}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* OHI Cálculo */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <Zap className="h-3.5 w-3.5 text-gray-400" />
+                        <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {formatValue(registro.ohi_promedio_calculo)}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* OHI Gingivitis */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <Heart className="h-3.5 w-3.5 text-gray-400" />
+                        <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {formatValue(registro.gi_promedio_gingivitis)}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Acciones */}
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end gap-1">
+                        {/* Ver */}
+                        {onView && (
+                          <button
+                            onClick={() => onView(registro)}
+                            className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:bg-brand-50 hover:text-brand-600 dark:text-gray-400 dark:hover:bg-brand-500/10 dark:hover:text-brand-300 transition-colors"
+                            title="Ver detalles"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+                        )}
+
+                        {/* Editar - Solo si está activo */}
+                        {onEdit && registro.activo && (
+                          <button
+                            onClick={() => onEdit(registro)}
+                            className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:bg-orange-50 hover:text-orange-600 dark:text-gray-400 dark:hover:bg-orange-500/10 dark:hover:text-orange-300 transition-colors"
+                            title="Editar"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                        )}
+
+                        {/* Eliminar - Solo si está activo */}
+                        {onDelete && registro.activo && (
+                          <button
+                            onClick={() => onDelete(registro)}
+                            className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:bg-error-50 hover:text-error-600 dark:text-gray-400 dark:hover:bg-error-500/10 dark:hover:text-error-300 transition-colors"
+                            title="Eliminar"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+
+                        {/* Restaurar - Solo si está inactivo */}
+                        {onRestore && !registro.activo && (
+                          <button
+                            onClick={() => onRestore(registro)}
+                            className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:bg-success-50 hover:text-success-600 dark:text-gray-400 dark:hover:bg-success-500/10 dark:hover:text-success-300 transition-colors"
+                            title="Restaurar"
+                          >
+                            <RotateCcw className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
         <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 text-xs font-medium text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 sticky bottom-0">
           Mostrando {registros.length} de {totalCount} indicadores de salud bucal
         </div>
       </div>
 
-      {/* Paginación - Estilo unificado */}
-      {onPageChange && totalPages > 1 && (
+      {/* Paginación - Solo una instancia */}
+      {onPageChange && totalPages > 1 && registros.length > 0 && (
         <div className="flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
           <div className="text-sm text-gray-700 dark:text-gray-300">
             Página <span className="font-medium">{page}</span> de{" "}

@@ -350,8 +350,8 @@ export function BackgroundsTable({
       </div>
 
       {/* Tabla */}
-      <div className="relative overflow-hidden rounded-lg border border-gray-200 shadow-sm dark:border-gray-700">
-        <div className="overflow-x-auto custom-scrollbar max-h-[calc(90vh-20rem)]">
+      <div className="relative rounded-lg border border-gray-200 shadow-sm dark:border-gray-700 w-full h-full flex flex-col">
+        <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400 min-w-[1000px]">
             <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400 sticky top-0 z-10">
               <tr>

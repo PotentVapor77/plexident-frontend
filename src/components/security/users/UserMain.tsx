@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserTable } from "./table/UserTable";
 import { UserViewModal } from "./modals/UserViewModal";
+import { UserPermissionsModal } from "./modals/UserPermissionsModal"; // 👈 Importar el modal
 import UserForm from "./forms/UserForm";
 import type { IUser } from "../../../types/user/IUser";
 import { useModal } from "../../../hooks/useModal";
@@ -17,6 +18,7 @@ export default function UserMain() {
   const [userToView, setUserToView] = useState<IUser | null>(null);
   const [userToEdit, setUserToEdit] = useState<IUser | null>(null);
   const [userToDelete, setUserToDelete] = useState<IUser | null>(null);
+  const [userForPermissions, setUserForPermissions] = useState<IUser | null>(null); 
 
   const {
     isOpen: isViewModalOpen,
@@ -42,6 +44,12 @@ export default function UserMain() {
     closeModal: closeDeleteModal,
   } = useModal();
 
+  const {
+    isOpen: isPermissionsModalOpen,
+    openModal: openPermissionsModal,
+    closeModal: closePermissionsModal,
+  } = useModal(); 
+
   // -------------------------------------
 
   const handleViewUser = (user: IUser) => {
@@ -59,12 +67,16 @@ export default function UserMain() {
     openDeleteModal();
   };
 
-  // ✅ Solo cierra el modal - La notificación se muestra en UserForm cuando es exitoso
+  // 👇 NUEVO HANDLER PARA PERMISOS
+  const handlePermissionsUser = (user: IUser) => {
+    setUserForPermissions(user);
+    openPermissionsModal();
+  };
+
   const handleUserCreated = () => {
     closeCreateModal();
   };
 
-  // ✅ Solo cierra modal y limpia estado - La notificación se muestra en UserForm cuando es exitoso
   const handleCloseEditModal = () => {
     closeEditModal();
     setUserToEdit(null);
@@ -80,10 +92,14 @@ export default function UserMain() {
     }
   };
 
-  // ✅ Solo cierra modal y limpia estado - La notificación se muestra en UserDeleteModal cuando es exitoso
   const handleDeleteFinished = () => {
     closeDeleteModal();
     setUserToDelete(null);
+  };
+
+  const handlePermissionsClosed = () => {
+    closePermissionsModal();
+    setUserForPermissions(null);
   };
 
   return (
@@ -101,7 +117,6 @@ export default function UserMain() {
           </div>
 
           <div className="flex gap-3">
-            {/* Botón crear */}
             <button
               onClick={openCreateModal}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
@@ -112,11 +127,12 @@ export default function UserMain() {
         </div>
       </div>
 
-      {/* Tabla principal */}
+      {/* Tabla principal - AHORA CON onPermissions */}
       <UserTable
         onEdit={handleEditUser}
         onView={handleViewUser}
         onDelete={handleOpenDeleteUser}
+        onPermissions={handlePermissionsUser} 
       />
 
       {/* Ver usuario */}
@@ -145,7 +161,6 @@ export default function UserMain() {
             </p>
           </div>
           <div className="px-6 pb-6">
-            {/* ✅ Pasa notify para que muestre la notificación solo si es exitoso */}
             <UserForm 
               mode="create" 
               onUserCreated={handleUserCreated}
@@ -172,7 +187,6 @@ export default function UserMain() {
               </p>
             </div>
             <div className="px-6 pb-6">
-              {/* ✅ Pasa notify para que muestre la notificación solo si es exitoso */}
               <UserForm
                 mode="edit"
                 initialData={userToEdit}
@@ -192,7 +206,14 @@ export default function UserMain() {
           onClose={closeDeleteModal}
           user={userToDelete}
           onDeleted={handleDeleteFinished}
-          notify={notify} // ✅ Pasa notify para que muestre la notificación solo si es exitoso
+        />
+      )}
+
+      {userForPermissions && (
+        <UserPermissionsModal
+          isOpen={isPermissionsModalOpen}
+          onClose={handlePermissionsClosed}
+          user={userForPermissions}
         />
       )}
     </>

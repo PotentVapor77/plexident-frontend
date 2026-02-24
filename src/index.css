@@ -1264,3 +1264,14 @@ html, body, #root {
   height: auto !important;
   max-height: none !important;
 }
+
+#layout-content.fullscreen-layout-active {
+    overflow: hidden !important;
+    padding: 0 !important;
+    height: calc(100vh - 5.3rem) !important;
+}
+
+html.fullscreen-no-scroll,
+body.fullscreen-no-scroll {
+    overflow: hidden !important;
+}

@@ -380,34 +380,6 @@ export const IndicatorsMain: React.FC = () => {
             onPageSizeChange={handlePageSizeChange}
           />
         </div>
-
-        {/* Paginación adicional (por si se necesita fuera de la tabla) */}
-        {pagination && pagination.totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg mt-4">
-            <div className="text-sm text-gray-700 dark:text-gray-300">
-              Página <span className="font-medium">{pagination.page}</span> de{" "}
-              <span className="font-medium">{pagination.totalPages}</span> • Total: {pagination.count}
-            </div>
-            <div className="flex gap-1">
-              <button
-                onClick={() => setPage(page - 1)}
-                disabled={!pagination.hasPrevious}
-                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Anterior
-              </button>
-              <button
-                onClick={() => setPage(page + 1)}
-                disabled={!pagination.hasNext}
-                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Siguiente
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Modales */}

@@ -1,5 +1,9 @@
 // src/pages/Odontogram/OdontogramaPage.tsx
-import { useEffect, useState } from "react";
+//
+// CAMBIO: Eliminado el useEffect que manipulaba #layout-content directamente.
+// Eso lo maneja FullScreenLayout via fullscreenLock para evitar condiciones de carrera.
+
+import { useState } from "react";
 import { OdontogramaViewer } from "../../components/odontogram";
 import { PacienteProvider } from "../../context/PacienteContext";
 import { useClinicalFiles } from "../../hooks/clinicalFiles/useClinicalFiles";
@@ -11,30 +15,7 @@ const OdontogramaInner = () => {
     const [selectedTooth, setSelectedTooth] = useState<string | null>(null);
     const [isFilePanelOpen, setIsFilePanelOpen] = useState(false);
 
-    const {
-        pendingFiles,
-    } = useClinicalFiles();
-
-    useEffect(() => {
-        const el = document.getElementById("layout-content");
-        if (!el) return;
-
-        const prev = {
-            padding: el.style.padding,
-            maxWidth: el.style.maxWidth,
-            overflow: el.style.overflow,
-        };
-
-        el.style.padding = "0";
-        el.style.maxWidth = "100%";
-        el.style.overflow = "hidden";
-
-        return () => {
-            el.style.padding = prev.padding;
-            el.style.maxWidth = prev.maxWidth;
-            el.style.overflow = prev.overflow;
-        };
-    }, []);
+    const { pendingFiles } = useClinicalFiles();
 
     return (
         <FullScreenLayout className="relative bg-white rounded-xl shadow-sm">
@@ -59,7 +40,6 @@ const OdontogramaPage = () => {
             <ClinicalFilesProvider>
                 <OdontogramaInner />
             </ClinicalFilesProvider>
-
         </PacienteProvider>
     );
 };

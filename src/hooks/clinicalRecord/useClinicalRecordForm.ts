@@ -39,7 +39,6 @@ export function useClinicalRecordForm(
     plan_tratamiento_id: null,
     examenes_complementarios_data: null,
     examenes_complementarios_id: null
-    
   };
 
   // Usar useCallback para evitar recrear la función en cada render
@@ -82,14 +81,33 @@ export function useClinicalRecordForm(
   // Refs para controlar ciclos
   const isInitializingRef = useRef(false);
   const previousFormDataRef = useRef<ClinicalRecordFormData>(formData);
+  const updateSectionDataRef = useRef<Set<string>>(new Set());
 
-  // Función para comparar objetos profundamente
+  // Función para comparar objetos profundamente de manera más eficiente
   const deepCompare = useCallback((obj1: any, obj2: any): boolean => {
-    return JSON.stringify(obj1) === JSON.stringify(obj2);
+    if (obj1 === obj2) return true;
+    if (obj1 == null || obj2 == null) return obj1 === obj2;
+    if (typeof obj1 !== 'object' || typeof obj2 !== 'object') return obj1 === obj2;
+    
+    // Para arrays
+    if (Array.isArray(obj1) && Array.isArray(obj2)) {
+      if (obj1.length !== obj2.length) return false;
+      return obj1.every((item, index) => deepCompare(item, obj2[index]));
+    }
+    
+    // Para objetos
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+    
+    if (keys1.length !== keys2.length) return false;
+    
+    return keys1.every(key => 
+      Object.prototype.hasOwnProperty.call(obj2, key) && 
+      deepCompare(obj1[key], obj2[key])
+    );
   }, []);
 
   // Actualizar cuando cambia initialData (ej: carga asíncrona)
-  // FIXED: Evitar ciclos infinitos con comparaciones profundas
   useEffect(() => {
     if (initialData && !isInitializingRef.current) {
       const { _dates, ...dataValues } = initialData;
@@ -113,7 +131,8 @@ export function useClinicalRecordForm(
         // Resetear flag después de un ciclo
         setTimeout(() => {
           isInitializingRef.current = false;
-        }, 0);
+          updateSectionDataRef.current.clear(); // Limpiar el registro de actualizaciones
+        }, 100);
       }
     }
   }, [initialData, mergeData, formData, deepCompare]);
@@ -162,6 +181,7 @@ export function useClinicalRecordForm(
     setValidationErrors({});
     previousFormDataRef.current = defaultValues;
     isInitializingRef.current = false;
+    updateSectionDataRef.current.clear();
   }, [defaultValues]);
 
   const validate = useCallback((): boolean => {
@@ -192,7 +212,7 @@ export function useClinicalRecordForm(
     );
   }, [formData]);
 
-  // FIXED: updateSectionData optimizado para prevenir ciclos
+  // Versión mejorada de updateSectionData
   const updateSectionData = useCallback(<
     T extends
       | "antecedentes_personales_data"
@@ -203,8 +223,6 @@ export function useClinicalRecordForm(
       | "indices_caries_data"
       | "diagnosticos_cie_data"
       | "examenes_complementarios_data"
-      
-      
   >(
     section: T,
     data: ClinicalRecordFormData[T]
@@ -212,6 +230,26 @@ export function useClinicalRecordForm(
     setFormData((prev) => {
       // Verificar si el nuevo valor es realmente diferente
       const currentValue = prev[section];
+      
+      // Para diagnosticos_cie_data, siempre considerar cambios si es una actualización del usuario
+      if (section === 'diagnosticos_cie_data' && !isInitializingRef.current) {
+        // Comparación simple para ver si realmente cambió
+        const currentJson = JSON.stringify(currentValue);
+        const newJson = JSON.stringify(data);
+        
+        if (currentJson === newJson) {
+          console.log(`[useClinicalRecordForm] No changes detected for ${section}, skipping update`);
+          return prev;
+        }
+        
+        console.log(`[useClinicalRecordForm] Updating ${section} with new data`);
+        return {
+          ...prev,
+          [section]: data,
+        };
+      }
+      
+      // Para otras secciones, usar comparación profunda
       const isSame = deepCompare(currentValue, data);
       
       if (isSame) {
@@ -226,8 +264,6 @@ export function useClinicalRecordForm(
       };
     });
   }, [deepCompare]);
-
-  
 
   return {
     formData,
@@ -245,6 +281,5 @@ export function useClinicalRecordForm(
     validationErrors,
     initialDates,
     setInitialDates,
-    
   };
 }

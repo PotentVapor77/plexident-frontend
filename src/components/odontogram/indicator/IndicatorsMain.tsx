@@ -34,7 +34,7 @@ export const IndicatorsMain: React.FC = () => {
   const { pacienteActivo } = usePacienteActivo();
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(5);
   const [search, setSearch] = useState("");
 
   const pacienteId = pacienteActivo?.id || null;
@@ -372,6 +372,7 @@ export const IndicatorsMain: React.FC = () => {
             onDelete={handleDelete}
             search={search}
             onSearchChange={handleSearch}
+            isLoading={isLoading}
             page={page}
             pageSize={pageSize}
             totalPages={pagination.totalPages}

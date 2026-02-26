@@ -417,17 +417,17 @@ const ClinicalRecordForm: React.FC<ClinicalRecordFormProps> = ({
               setSelectedOdontologo(odontologoUser);
             }
           }
-if (detailData.examenes_complementarios_data) {
-  console.log('📌 Cargando exámenes complementarios:', detailData.examenes_complementarios_data);
-  updateSectionData("examenes_complementarios_data", detailData.examenes_complementarios_data);
-  if (detailData.examenes_complementarios_data.id) {
-    updateField("examenes_complementarios_id", detailData.examenes_complementarios_data.id);
-  }
-  setInitialDates(prev => ({
-    ...prev,
-    examenes_complementarios: detailData.examenes_complementarios_data?.fecha_creacion || null,
-  }));
-}
+          if (detailData.examenes_complementarios_data) {
+            console.log('📌 Cargando exámenes complementarios:', detailData.examenes_complementarios_data);
+            updateSectionData("examenes_complementarios_data", detailData.examenes_complementarios_data);
+            if (detailData.examenes_complementarios_data.id) {
+              updateField("examenes_complementarios_id", detailData.examenes_complementarios_data.id);
+            }
+            setInitialDates(prev => ({
+              ...prev,
+              examenes_complementarios: detailData.examenes_complementarios_data?.fecha_creacion || null,
+            }));
+          }
           // Campos de texto
           console.log('📌 Cargando campos de texto');
           if (detailData.motivo_consulta) {
@@ -875,14 +875,33 @@ if (detailData.examenes_complementarios_data) {
           try {
             setIsSavingDiagnosticos(true);
             console.log("Guardando diagnósticos CIE en historial recién creado...");
+            console.log("diagnosticos_cie_data completo:", formData.diagnosticos_cie_data);
 
             const diagnosticosPayload = {
-              diagnosticos_finales: formData.diagnosticos_cie_data.diagnosticos.map((diag) => ({
-                diagnostico_dental_id: diag.diagnostico_dental_id,
-                tipo_cie: diag.tipo_cie || "PRE",
-              })),
+              diagnosticos_finales: formData.diagnosticos_cie_data.diagnosticos.map((diag: any) => {
+
+                const codigoAEnviar = diag.codigo_cie_personalizado || diag.codigo_cie;
+                const esPersonalizado = diag.tiene_codigo_personalizado ||
+                  (diag.codigo_cie_original && codigoAEnviar !== diag.codigo_cie_original);
+
+                const payload: any = {
+                  diagnostico_dental_id: diag.diagnostico_dental_id || diag.id,
+                  tipo_cie: diag.tipo_cie || "PRE",
+                };
+
+                if (codigoAEnviar) {
+                  payload.codigo_cie_personalizado = codigoAEnviar;
+                  payload.tiene_codigo_personalizado = esPersonalizado;
+
+                  console.log(`Payload preparado para ${payload.diagnostico_dental_id}:`, payload);
+                }
+
+                return payload;
+              }),
               tipo_carga: formData.diagnosticos_cie_data.tipo_carga || "nuevos",
             };
+
+            console.log("Payload de diagnósticos con códigos personalizados:", JSON.stringify(diagnosticosPayload, null, 2));
 
             const diagnosticosResult = await clinicalRecordService.syncDiagnosticsInRecord(
               historialCreado.id,
@@ -891,27 +910,23 @@ if (detailData.examenes_complementarios_data) {
 
             console.log("Diagnósticos CIE guardados:", diagnosticosResult);
           } catch (diagnosticosError) {
-            console.warn(
-              "Error guardando diagnósticos CIE (historial creado correctamente):",
-              diagnosticosError
-            );
+            console.error("Error guardando diagnósticos CIE:", diagnosticosError);
             notify({
               type: "warning",
               title: "Diagnósticos no guardados",
-              message:
-                "El historial se creó correctamente, pero algunos diagnósticos CIE no se pudieron guardar.",
+              message: "El historial se creó correctamente, pero algunos diagnósticos CIE no se pudieron guardar.",
             });
           } finally {
             setIsSavingDiagnosticos(false);
           }
         }
 
+
         notify({
           type: "success",
           title: "Historial creado",
           message: "El historial clínico se ha creado exitosamente.",
         });
-
       } else if (mode === "edit" && recordId) {
         // ============================================
         // ACTUALIZAR HISTORIAL
@@ -934,7 +949,7 @@ if (detailData.examenes_complementarios_data) {
           plan_tratamiento_descripcion: formData.plan_tratamiento_descripcion || undefined,
           plan_tratamiento_sesiones: formData.plan_tratamiento_sesiones || undefined,
           plan_tratamiento_odontograma_id: formData.plan_tratamiento_odontograma_id || undefined,
-          
+
           examen_estomatognatico: formData.examen_estomatognatico_id || undefined,
           indicadores_salud_bucal: formData.indicadores_salud_bucal_id || undefined,
           indices_caries: formData.indices_caries_id || undefined,
@@ -990,14 +1005,23 @@ if (detailData.examenes_complementarios_data) {
 
             // Preparar el payload exactamente como lo espera el backend
             const diagnosticosPayload: SincronizarDiagnosticosPayload = {
-              diagnosticos_finales: formData.diagnosticos_cie_data.diagnosticos.map((diag: any) => ({
-                diagnostico_dental_id: diag.diagnostico_dental_id,
-                tipo_cie: diag.tipo_cie || "PRE",
-              })),
+              diagnosticos_finales: formData.diagnosticos_cie_data.diagnosticos.map((diag: any) => {
+                const payload: any = {
+                  diagnostico_dental_id: diag.diagnostico_dental_id,
+                  tipo_cie: diag.tipo_cie || "PRE",
+                };
+
+                // Incluir código personalizado si existe
+                if (diag.codigo_cie_personalizado && diag.tiene_codigo_personalizado) {
+                  payload.codigo_cie_personalizado = diag.codigo_cie_personalizado;
+                }
+
+                return payload;
+              }),
               tipo_carga: formData.diagnosticos_cie_data.tipo_carga || "todos",
             };
 
-            console.log(" Payload para sincronizar:", {
+            console.log("Payload para sincronizar (con códigos personalizados):", {
               historialId: recordId,
               cantidad: diagnosticosPayload.diagnosticos_finales.length,
               tipo_carga: diagnosticosPayload.tipo_carga,
@@ -1025,7 +1049,6 @@ if (detailData.examenes_complementarios_data) {
               title: "Error en diagnósticos",
               message: `No se pudieron guardar los cambios en los diagnósticos CIE-10: ${diagnosticosError.message}`,
             });
-
           } finally {
             setIsSavingDiagnosticos(false);
           }

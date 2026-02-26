@@ -197,13 +197,21 @@ const ClinicalRecordFormFields: React.FC<ClinicalRecordFormFieldsProps> = ({
 
       <DiagnosticosCieSection
         modo={mode === "create" ? "crear" : "editar"}
+        estadoHistorial={
+          mode === "create"
+            ? "BORRADOR"
+            : (formData.estado as "BORRADOR" | "ABIERTO" | "CERRADO")
+        }
         pacienteId={selectedPaciente?.id ?? null}
         historialId={historialId ?? null}
         onChangeDiagnosticosSeleccionados={(diagnosticos) =>
           updateSectionData("diagnosticos_cie_data", {
-            diagnosticos: diagnosticos.map((d) => ({
+            diagnosticos: diagnosticos.map((d: any) => ({
               diagnostico_dental_id: d.diagnostico_dental_id,
               tipo_cie: d.tipo_cie || "PRE",
+              ...(d.codigo_cie_personalizado
+                ? { codigo_cie_personalizado: d.codigo_cie_personalizado }
+                : {}),
             })),
             tipo_carga: mode === "create" ? "nuevos" : "todos",
           } as any)

@@ -1,17 +1,13 @@
 // src/components/clinicalRecord/ClinicalRecordManagement.tsx
 
 import React, { useState, useEffect, useMemo } from "react";
-import { 
-  FileText, 
-  Search, 
-  Filter, 
-  Calendar, 
-  X,
-  AlertCircle,
-  Activity,
-  User,
-  ChevronLeft,
-  ChevronRight
+import {
+    FileText,
+    Filter,
+    Calendar,
+    X,
+    AlertCircle,
+    Activity,
 } from "lucide-react";
 import ClinicalRecordTable from "./table/ClinicalRecordTable";
 import ClinicalRecordViewModal from "./modals/ClinicalRecordViewModal";
@@ -24,7 +20,7 @@ import type { ClinicalRecordListResponse } from "../../types/clinicalRecords/typ
 import {
     useClinicalRecords,
     useClinicalRecordsByPaciente,
-    useDeleteClinicalRecord
+    useDeleteClinicalRecord,
 } from "../../hooks/clinicalRecord/useClinicalRecords";
 import { useDebounce } from "../../hooks/useDebounce";
 
@@ -33,7 +29,6 @@ import { useDebounce } from "../../hooks/useDebounce";
  * COMPONENT - CLINICAL RECORD MANAGEMENT
  * ============================================================================
  */
-
 const ClinicalRecordManagement: React.FC = () => {
     const { pacienteActivo } = usePacienteActivo();
     const { notify } = useNotification();
@@ -42,14 +37,14 @@ const ClinicalRecordManagement: React.FC = () => {
     // ESTADOS LOCALES
     // ==========================================================================
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize] = useState(35);
+    const [pageSize, setPageSize] = useState(5);
     const [searchTerm, setSearchTerm] = useState("");
     const [estadoFilter, setEstadoFilter] = useState<string>("");
     const [fechaDesde, setFechaDesde] = useState<string>("");
     const [fechaHasta, setFechaHasta] = useState<string>("");
     const [showFilters, setShowFilters] = useState(false);
 
-    // Estados de modales
+    // Modales
     const [viewModalOpen, setViewModalOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -57,12 +52,11 @@ const ClinicalRecordManagement: React.FC = () => {
     const [selectedRecord, setSelectedRecord] =
         useState<ClinicalRecordListResponse | null>(null);
 
-    const debouncedSearchTerm = useDebounce(searchTerm, 500);
+    const debouncedSearchTerm = useDebounce(searchTerm, 400);
 
     // ==========================================================================
     // HOOKS DE DATOS
     // ==========================================================================
-
     const {
         historiales: historialesPaciente,
         isLoading: isLoadingPaciente,
@@ -86,40 +80,116 @@ const ClinicalRecordManagement: React.FC = () => {
         ...(fechaHasta && { fecha_hasta: fechaHasta }),
     });
 
-    // Hook de mutación para eliminar
     const deleteMutation = useDeleteClinicalRecord(pacienteActivo?.id || null);
 
     // ==========================================================================
-    //  SELECCIÓN DE DATOS
+    // FILTRADO Y PAGINACIÓN LOCAL (modo paciente fijado)
     // ==========================================================================
-    const historiales = pacienteActivo ? historialesPaciente : historialesGeneral;
+    const historialesPacienteFiltrados = useMemo(() => {
+        if (!pacienteActivo) return historialesPaciente;
+
+        let result = [...historialesPaciente] as any[];
+
+        // Búsqueda
+        if (debouncedSearchTerm) {
+            const q = debouncedSearchTerm.toLowerCase();
+            result = result.filter((r) => {
+                const fields = [
+                    r.motivo_consulta,
+                    r.enfermedad_actual,
+                    r.observaciones,
+                    r.numero_historia_clinica_unica,
+                    r.numero_archivo,
+                    r.odontologo_nombre,
+                    r.odontologo_nombres,
+                    r.odontologo_apellidos,
+                ].map((v) => (v || "").toString().toLowerCase());
+                return fields.some((f) => f.includes(q));
+            });
+        }
+
+        // Filtro estado
+        if (estadoFilter) {
+            result = result.filter((r) => r.estado === estadoFilter);
+        }
+
+        // Filtro fecha desde
+        if (fechaDesde) {
+            result = result.filter(
+                (r) => r.fecha_atencion && r.fecha_atencion >= fechaDesde
+            );
+        }
+
+        // Filtro fecha hasta
+        if (fechaHasta) {
+            result = result.filter(
+                (r) => r.fecha_atencion && r.fecha_atencion <= fechaHasta
+            );
+        }
+
+        return result;
+    }, [
+        pacienteActivo,
+        historialesPaciente,
+        debouncedSearchTerm,
+        estadoFilter,
+        fechaDesde,
+        fechaHasta,
+    ]);
+
+    // Paginación local para modo paciente fijado
+    const paginacionLocal = useMemo(() => {
+        if (!pacienteActivo) return null;
+        const total = historialesPacienteFiltrados.length;
+        const totalPages = Math.max(1, Math.ceil(total / pageSize));
+        const safePage = Math.min(currentPage, totalPages);
+        const start = (safePage - 1) * pageSize;
+        const items = historialesPacienteFiltrados.slice(start, start + pageSize);
+        return {
+            items,
+            pagination: {
+                count: total,
+                page: safePage,
+                pageSize,
+                totalPages,
+                hasNext: safePage < totalPages,
+                hasPrevious: safePage > 1,
+            },
+        };
+    }, [pacienteActivo, historialesPacienteFiltrados, currentPage, pageSize]);
+
+    // ==========================================================================
+    // SELECCIÓN DE DATOS SEGÚN MODO
+    // ==========================================================================
+    const historiales = pacienteActivo
+        ? (paginacionLocal?.items ?? [])
+        : historialesGeneral;
+
     const isLoading = pacienteActivo ? isLoadingPaciente : isLoadingGeneral;
     const error = pacienteActivo ? errorPaciente : errorGeneral;
     const refetch = pacienteActivo ? refetchPaciente : refetchGeneral;
 
-    // Normalizar paginación
-    const paginationNormalized = pagination ? {
-        count: pagination.count,
-        page: pagination.page,
-        pageSize: pagination.page_size,
-        totalPages: pagination.total_pages,
-        hasNext: pagination.has_next,
-        hasPrevious: pagination.has_previous,
-    } : {
-        count: 0,
-        page: currentPage,
-        pageSize,
-        totalPages: 1,
-        hasNext: false,
-        hasPrevious: false,
-    };
+    // Paginación unificada
+    const paginationNormalized = pacienteActivo
+        ? paginacionLocal?.pagination
+        : pagination
+        ? {
+              count: pagination.count,
+              page: pagination.page,
+              pageSize: pagination.page_size,
+              totalPages: pagination.total_pages,
+              hasNext: pagination.has_next,
+              hasPrevious: pagination.has_previous,
+          }
+        : undefined;
 
     // ==========================================================================
     // FILTROS ACTIVOS
     // ==========================================================================
-    const hasActiveFilters = useMemo(() => {
-        return !!(searchTerm || estadoFilter || fechaDesde || fechaHasta);
-    }, [searchTerm, estadoFilter, fechaDesde, fechaHasta]);
+    const hasActiveFilters = useMemo(
+        () => !!(searchTerm || estadoFilter || fechaDesde || fechaHasta),
+        [searchTerm, estadoFilter, fechaDesde, fechaHasta]
+    );
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -129,8 +199,22 @@ const ClinicalRecordManagement: React.FC = () => {
         return count;
     }, [searchTerm, estadoFilter, fechaDesde, fechaHasta]);
 
+    // Reiniciar página al cambiar filtros
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedSearchTerm, estadoFilter, fechaDesde, fechaHasta, pageSize]);
+
+    // Reiniciar página al cambiar de modo (paciente fijado / global)
+    useEffect(() => {
+        setCurrentPage(1);
+        setSearchTerm("");
+        setEstadoFilter("");
+        setFechaDesde("");
+        setFechaHasta("");
+    }, [pacienteActivo?.id]);
+
     // ==========================================================================
-    // HANDLERS
+    // HANDLERS - MODALES
     // ==========================================================================
     const handleViewClick = (record: ClinicalRecordListResponse) => {
         setSelectedRecord(record);
@@ -170,37 +254,49 @@ const ClinicalRecordManagement: React.FC = () => {
         handleModalClose();
     };
 
-    /**
-     * HANDLER DE CONFIRMACIÓN DE ELIMINACIÓN
-     */
+    // ==========================================================================
+    // HANDLER - ELIMINACIÓN
+    // ==========================================================================
     const handleDeleteConfirm = async () => {
         if (!selectedRecord) return;
 
         try {
             await deleteMutation.mutateAsync(selectedRecord.id);
-
             notify({
                 type: "success",
                 title: "Historial eliminado",
                 message: "El historial clínico se eliminó correctamente del sistema.",
             });
-
             handleSuccess();
         } catch (err: any) {
-            let errorMessage = "Error al eliminar el historial clínico";
-
-            if (err?.response?.data?.message) {
-                errorMessage = err.response.data.message;
-            } else if (err?.message) {
-                errorMessage = err.message;
-            }
-
+            const errorMessage =
+                err?.response?.data?.message ||
+                err?.message ||
+                "Error al eliminar el historial clínico";
             notify({
                 type: "error",
                 title: "Error al eliminar",
                 message: errorMessage,
             });
         }
+    };
+
+    // ==========================================================================
+    // HANDLERS - BÚSQUEDA Y PAGINACIÓN
+    // ==========================================================================
+    const handleSearchChange = (value: string) => {
+        setSearchTerm(value);
+        setCurrentPage(1);
+    };
+
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const handlePageSizeChange = (newSize: number) => {
+        setPageSize(newSize);
+        setCurrentPage(1);
     };
 
     const handleClearFilters = () => {
@@ -211,21 +307,8 @@ const ClinicalRecordManagement: React.FC = () => {
         setCurrentPage(1);
     };
 
-    const handlePageChange = (newPage: number) => {
-        setCurrentPage(newPage);
-    };
-
-    const handlePageSizeChange = (newPageSize: number) => {
-        // Como pageSize es constante, no hacemos nada
-        console.log("Page size change requested:", newPageSize);
-    };
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [debouncedSearchTerm, estadoFilter, fechaDesde, fechaHasta]);
-
     // ==========================================================================
-    // LOADING STATE UNIFICADO
+    // LOADING STATE
     // ==========================================================================
     if (isLoading && !historiales.length) {
         return (
@@ -241,7 +324,7 @@ const ClinicalRecordManagement: React.FC = () => {
     }
 
     // ==========================================================================
-    // ERROR STATE UNIFICADO
+    // ERROR STATE
     // ==========================================================================
     if (error && !historiales.length) {
         return (
@@ -270,11 +353,10 @@ const ClinicalRecordManagement: React.FC = () => {
     }
 
     // ==========================================================================
-    // COMPONENTE PARA PACIENTE FIJADO (adaptado del IndicatorsMain)
+    // SUB-COMPONENTES LOCALES
     // ==========================================================================
     const PacienteFijadoInfo = () => {
         if (!pacienteActivo) return null;
-
         return (
             <div className="rounded-lg border p-3 mb-4 bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800">
                 <div className="flex items-center justify-between">
@@ -319,16 +401,15 @@ const ClinicalRecordManagement: React.FC = () => {
                         </div>
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                        Total: {historiales.length} {historiales.length === 1 ? 'historial' : 'historiales'}
+                        Total:{" "}
+                        {historialesPacienteFiltrados.length}{" "}
+                        {historialesPacienteFiltrados.length === 1 ? "historial" : "historiales"}
                     </div>
                 </div>
             </div>
         );
     };
 
-    // ==========================================================================
-    // ALERTA SIN PACIENTE (adaptado del IndicatorsMain)
-    // ==========================================================================
     const SinPacienteAlerta = () => (
         <div className="rounded-lg bg-warning-50 dark:bg-warning-900/20 p-4 border border-warning-200 dark:border-warning-800 mb-6">
             <div className="flex items-start gap-3">
@@ -338,7 +419,9 @@ const ClinicalRecordManagement: React.FC = () => {
                         Atención requerida
                     </p>
                     <p className="mt-1 text-sm text-warning-700 dark:text-warning-300">
-                        <strong>Nota:</strong> Para gestionar historiales clínicos, puede fijar un paciente desde la vista principal de 'Gestión de Pacientes' o trabajar en modo global.
+                        <strong>Nota:</strong> Para gestionar historiales clínicos, puede
+                        fijar un paciente desde la vista principal de 'Gestión de Pacientes'
+                        o trabajar en modo global.
                     </p>
                 </div>
             </div>
@@ -346,37 +429,38 @@ const ClinicalRecordManagement: React.FC = () => {
     );
 
     // ==========================================================================
-    // RENDER PRINCIPAL UNIFICADO
+    // RENDER PRINCIPAL
     // ==========================================================================
     return (
         <>
             <div className="mb-8">
-                {/* Header - Estilo IndicatorsMain */}
+                {/* ── Header ── */}
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                             Historiales Clínicos
                         </h1>
                         <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">
-                            Administra los historiales clínicos y el Formulario 033 de los pacientes
+                            Administra los historiales clínicos y el Formulario 033 de los
+                            pacientes
                         </p>
                     </div>
 
                     <div className="flex gap-3">
-                        {!pacienteActivo && (
-                            <button
-                                onClick={() => setShowFilters(!showFilters)}
-                                className="inline-flex items-center px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                            >
-                                <Filter className="h-4 w-4 mr-2" />
-                                Filtros
-                                {activeFiltersCount > 0 && (
-                                    <span className="ml-2 bg-brand-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                                        {activeFiltersCount}
-                                    </span>
-                                )}
-                            </button>
-                        )}
+                        {/* Botón de filtros avanzados — siempre visible */}
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            className="inline-flex items-center px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                        >
+                            <Filter className="h-4 w-4 mr-2" />
+                            Filtros
+                            {activeFiltersCount > 0 && (
+                                <span className="ml-2 bg-brand-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                    {activeFiltersCount}
+                                </span>
+                            )}
+                        </button>
+
                         <button
                             onClick={handleCreateClick}
                             className="inline-flex items-center px-4 py-2 rounded-lg text-white font-medium transition-colors bg-blue-600 hover:bg-blue-700"
@@ -387,42 +471,14 @@ const ClinicalRecordManagement: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Información del paciente fijado (estilo IndicatorsMain) */}
+                {/* Paciente fijado / alerta */}
                 {pacienteActivo && <PacienteFijadoInfo />}
-                
-                {/* Alerta si no hay paciente fijado (estilo IndicatorsMain) */}
                 {!pacienteActivo && <SinPacienteAlerta />}
 
-                {/* Filtros (solo cuando NO hay paciente activo) - Estilo mejorado */}
-                {!pacienteActivo && showFilters && (
+                {/* ── Filtros avanzados (estado + fechas) — siempre disponible ── */}
+                {showFilters && (
                     <div className="mb-6 p-5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                         <div className="space-y-4">
-                            {/* Búsqueda */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Búsqueda general
-                                </label>
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        placeholder="Buscar por paciente, CI, motivo de consulta, odontólogo..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 focus:border-transparent focus:ring-2 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                                    />
-                                    {searchTerm && (
-                                        <button
-                                            onClick={() => setSearchTerm("")}
-                                            className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                                        >
-                                            <X className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Estado y Fechas */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {/* Estado */}
                                 <div>
@@ -475,7 +531,7 @@ const ClinicalRecordManagement: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Acciones de filtros */}
+                            {/* Limpiar filtros avanzados */}
                             {hasActiveFilters && (
                                 <div className="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-700">
                                     <button
@@ -491,7 +547,7 @@ const ClinicalRecordManagement: React.FC = () => {
                     </div>
                 )}
 
-                {/* Tabla */}
+                {/* ── Tabla con búsqueda y paginación integradas (siempre activas) ── */}
                 <div className="mt-4">
                     <ClinicalRecordTable
                         historiales={historiales}
@@ -499,39 +555,21 @@ const ClinicalRecordManagement: React.FC = () => {
                         onEditClick={handleEditClick}
                         onDeleteClick={handleDeleteClick}
                         onCloseClick={handleCloseClick}
+                        // Búsqueda — siempre habilitada
+                        searchTerm={searchTerm}
+                        onSearchChange={handleSearchChange}
+                        // Paginación — siempre habilitada
+                        pagination={paginationNormalized}
+                        pageSize={pageSize}
+                        onPageChange={handlePageChange}
+                        onPageSizeChange={handlePageSizeChange}
+                        isLoading={isLoading}
+                        showPaginationControls={true}
                     />
                 </div>
-
-                {/* Paginación (solo para vista general) - Estilo IndicatorsTable */}
-                {!pacienteActivo && paginationNormalized.totalPages > 1 && (
-                    <div className="mt-4 flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-                        <div className="text-sm text-gray-700 dark:text-gray-300">
-                            Página <span className="font-medium">{paginationNormalized.page}</span> de{" "}
-                            <span className="font-medium">{paginationNormalized.totalPages}</span> • Total: {paginationNormalized.count}
-                        </div>
-                        <div className="flex gap-1">
-                            <button
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={!paginationNormalized.hasPrevious || isLoading}
-                                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                                Anterior
-                            </button>
-                            <button
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={!paginationNormalized.hasNext || isLoading}
-                                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                                Siguiente
-                                <ChevronRight className="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
-                )}
             </div>
 
-            {/* Modales */}
+            {/* ── Modales ── */}
             <ClinicalRecordViewModal
                 isOpen={viewModalOpen}
                 onClose={handleModalClose}

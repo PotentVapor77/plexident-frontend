@@ -73,7 +73,11 @@ export interface PaginationParams {
     search?: string;
 }
 
-export interface SessionPaginationParams extends PaginationParams {
-    plan_id?: string;
+export interface SessionPaginationParams {
+    page?: number;
+    page_size?: number;
+    plan_id?: string | null;
+    paciente_id?: string;
     estado?: EstadoSesion;
+    search?: string;    
 }

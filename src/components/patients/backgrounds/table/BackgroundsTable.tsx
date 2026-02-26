@@ -6,8 +6,6 @@ import { useAntecedentes } from '../../../../hooks/backgrounds/useBackgrounds';
 import type { IPaciente } from '../../../../types/patient/IPatient';
 import { useAuth } from '../../../../hooks/auth/useAuth';
 import {
-  Search,
-  Filter,
   Eye,
   Edit2,
   Trash2,
@@ -17,10 +15,11 @@ import {
   AlertCircle,
   Heart,
   Activity,
-  ChevronLeft,
-  ChevronRight,
   FileText,
 } from 'lucide-react';
+import { SearchBar, Pagination } from '../../../ui/pagination';
+import type { PaginationState } from '../../../ui/pagination';
+import { useDebounce } from '../../../../hooks/useDebounce';
 
 interface BackgroundsTableProps {
   pacienteId?: string;
@@ -47,29 +46,61 @@ export function BackgroundsTable({
   onView,
   onDelete,
 }: BackgroundsTableProps) {
-  const [page, setPage] = useState(1);
+  // Estados de paginación y búsqueda
+  const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const [searchInput, setSearchInput] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const { user } = useAuth();
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  const debouncedSearch = useDebounce(searchTerm, 400);
+  const { user } = useAuth(); 
 
   const isAdmin = user?.rol === 'Administrador';
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchInput);
-      setPage(1);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchInput]);
-
-  const { antecedentes, pagination, isLoading, isError, error } = useAntecedentes({
+  const { 
+    antecedentes, 
+    pagination: bgPagination, 
+    isLoading, 
+    isError, 
+    error,
+  } = useAntecedentes({
     paciente: pacienteId,
-    page,
+    page: currentPage,
     page_size: pageSize,
     search: debouncedSearch,
   });
+
+  // Resetear página cuando cambia la búsqueda o el pageSize
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, pageSize]);
+
+  // Normalizar la paginación para que coincida con PaginationState
+  const paginationNormalized = useMemo((): PaginationState | undefined => {
+    if (!bgPagination) return undefined;
+
+    return {
+      count: bgPagination.total_count,
+      page: bgPagination.current_page,
+      pageSize: bgPagination.page_size,
+      totalPages: bgPagination.total_pages,
+      hasNext: bgPagination.current_page < bgPagination.total_pages,
+      hasPrevious: bgPagination.current_page > 1,
+    };
+  }, [bgPagination]);
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Función para reintentar
+  const handleRetry = () => {
+    window.location.reload();
+  };
 
   const isPacienteObject = useCallback((obj: unknown): obj is IPaciente => {
     if (!obj || typeof obj !== 'object') return false;
@@ -137,10 +168,10 @@ export function BackgroundsTable({
     if (typeof background.paciente === 'string') {
       return background.paciente;
     }
-   
     return 'unknown';
   }, []);
 
+  // Agrupar antecedentes por paciente
   const antecedentesAgrupados = useMemo(() => {
     if (!antecedentes) return [];
     
@@ -187,8 +218,7 @@ export function BackgroundsTable({
       const month = (date.getMonth() + 1).toString().padStart(2, '0');
       const year = date.getFullYear();
       return `${day}/${month}/${year}`;
-    } catch (error) {
-      console.error("Error al formatear fecha:", error);
+    } catch {
       return "Fecha inválida";
     }
   };
@@ -252,7 +282,7 @@ export function BackgroundsTable({
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !antecedentes.length) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="flex flex-col items-center gap-2">
@@ -263,7 +293,7 @@ export function BackgroundsTable({
     );
   }
 
-  if (isError) {
+  if (isError && !antecedentes.length) {
     return (
       <div className="rounded-lg bg-error-50 dark:bg-error-900/20 p-4 border border-error-200 dark:border-error-800">
         <div className="flex">
@@ -277,6 +307,12 @@ export function BackgroundsTable({
             <p className="mt-2 text-sm text-error-700 dark:text-error-300">
               {error?.toString() || 'Error desconocido'}
             </p>
+            <button
+              onClick={handleRetry}
+              className="mt-3 text-sm text-error-700 dark:text-error-300 underline hover:no-underline"
+            >
+              Reintentar
+            </button>
           </div>
         </div>
       </div>
@@ -290,18 +326,18 @@ export function BackgroundsTable({
           <FileText className="h-6 w-6 text-gray-400" />
         </div>
         <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-          {searchInput ? 'No se encontraron resultados' : 'No hay antecedentes registrados'}
+          {searchTerm ? 'No se encontraron resultados' : 'No hay antecedentes registrados'}
         </h3>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          {searchInput
+          {searchTerm
             ? 'Intenta con otra búsqueda por nombre o cédula.'
             : pacienteId
               ? 'Este paciente no tiene antecedentes registrados.'
               : 'Comience creando los antecedentes médicos de los pacientes.'}
         </p>
-        {searchInput && (
+        {searchTerm && (
           <button
-            onClick={() => setSearchInput('')}
+            onClick={() => handleSearchChange("")}
             className="mt-3 text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
           >
             Limpiar búsqueda
@@ -313,41 +349,12 @@ export function BackgroundsTable({
 
   return (
     <div className="space-y-4">
-      {/* Header con buscador */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <div className="w-full sm:flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Buscar por paciente, cédula..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-700 dark:text-gray-300">
-            Mostrar:
-          </label>
-          <div className="relative">
-            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
-              className="pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-          </div>
-        </div>
-      </div>
+      {/* Barra de búsqueda */}
+      <SearchBar
+        value={searchTerm}
+        onChange={handleSearchChange}
+        placeholder="Buscar por paciente, cédula..."
+      />
 
       {/* Tabla */}
       <div className="relative rounded-lg border border-gray-200 shadow-sm dark:border-gray-700 w-full h-full flex flex-col">
@@ -518,7 +525,6 @@ export function BackgroundsTable({
                     {/* Acciones */}
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-1">
-                        {/* Ver */}
                         {onView && (
                           <button
                             onClick={() => handleView(agrupado)}
@@ -529,7 +535,6 @@ export function BackgroundsTable({
                           </button>
                         )}
 
-                        {/* Editar */}
                         <button
                           onClick={() => handleEdit(agrupado)}
                           className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:bg-orange-50 hover:text-orange-600 dark:text-gray-400 dark:hover:bg-orange-500/10 dark:hover:text-orange-300 transition-colors"
@@ -538,7 +543,6 @@ export function BackgroundsTable({
                           <Edit2 className="h-4 w-4" />
                         </button>
 
-                        {/* Eliminar */}
                         <button
                           onClick={() => handleDeleteClick(agrupado)}
                           disabled={!isActivo}
@@ -560,36 +564,20 @@ export function BackgroundsTable({
           </table>
         </div>
         <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 text-xs font-medium text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 sticky bottom-0">
-          Mostrando {antecedentesAgrupados.length} de {pagination?.total_count || 0} antecedentes
+          Mostrando {antecedentesAgrupados.length} de {bgPagination?.total_count || 0} antecedentes
         </div>
       </div>
 
       {/* Paginación */}
-      {pagination && pagination.total_pages > 1 && (
-        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-          <div className="text-sm text-gray-700 dark:text-gray-300">
-            Página <span className="font-medium">{page}</span> de{" "}
-            <span className="font-medium">{pagination.total_pages}</span> • Total: {pagination.total_count || 0}
-          </div>
-          <div className="flex gap-1">
-            <button
-              onClick={() => setPage(page - 1)}
-              disabled={page === 1}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Anterior
-            </button>
-            <button
-              onClick={() => setPage(page + 1)}
-              disabled={page === pagination.total_pages}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              Siguiente
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+      {paginationNormalized && (
+        <Pagination
+          pagination={paginationNormalized}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={setPageSize}
+          isLoading={isLoading}
+          entityLabel="pacientes"
+        />
       )}
     </div>
   );

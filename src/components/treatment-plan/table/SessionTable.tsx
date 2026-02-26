@@ -19,6 +19,7 @@ import Button from "../../ui/button/Button";
 
 interface SessionTableProps {
   sesiones: SesionTratamientoListResponse[];
+  totalCount?: number;
   onViewClick?: (sesion: SesionTratamientoListResponse) => void;
   onEditClick?: (sesion: SesionTratamientoListResponse) => void;
   onDeleteClick?: (sesion: SesionTratamientoListResponse) => void;
@@ -26,6 +27,7 @@ interface SessionTableProps {
 
 const SessionTable: React.FC<SessionTableProps> = ({
   sesiones,
+  totalCount,
   onViewClick,
   onEditClick,
   onDeleteClick,
@@ -247,17 +249,17 @@ const SessionTable: React.FC<SessionTableProps> = ({
         </table>
       </div>
       <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 text-xs font-medium text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 sticky bottom-0">
-        Total de sesiones: {sesiones.length}
+        Mostrando {sesiones.length} de {totalCount ?? sesiones.length} sesiones
       </div>
     </div>
   );
 };
 
-// Memo con comparación personalizada
 export default React.memo(
   SessionTable,
   (prev, next) =>
     prev.sesiones === next.sesiones &&
+    prev.totalCount === next.totalCount &&
     prev.onViewClick === next.onViewClick &&
     prev.onEditClick === next.onEditClick &&
     prev.onDeleteClick === next.onDeleteClick

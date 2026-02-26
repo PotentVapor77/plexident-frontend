@@ -5,16 +5,8 @@ import {
   Edit2, 
   Trash2, 
   RotateCcw, 
-  Search, 
-  X, 
-  Filter, 
   FileText, 
-  AlertCircle, 
   Calendar,
-  Activity,
-  ChevronLeft,
-  ChevronRight,
-  User,
   CheckCircle,
   AlertTriangle,
   XCircle,
@@ -24,14 +16,14 @@ import {
   Activity as ActivityIcon,
   Heart,
   Zap,
-  Battery,
   BatteryLow,
   BatteryMedium,
   BatteryFull,
   AlertOctagon
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { BackendIndicadoresSaludBucal } from "../../../types/odontogram/typeBackendOdontograma";
+import { Pagination, SearchBar, type PaginationState } from "../../ui/pagination";
 
 interface IndicatorsTableProps {
   registros: BackendIndicadoresSaludBucal[];
@@ -43,6 +35,7 @@ interface IndicatorsTableProps {
   onRestore?: (registro: BackendIndicadoresSaludBucal) => void;
   search?: string;
   onSearchChange?: (value: string) => void;
+  isLoading?: boolean;
   // Propiedades de paginación
   page?: number;
   pageSize?: number;
@@ -62,8 +55,9 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
   onRestore,
   search = "",
   onSearchChange,
+  isLoading = false,
   page = 1,
-  pageSize = 10,
+  pageSize = 5,
   totalPages = 1,
   totalCount = 0,
   onPageChange,
@@ -71,10 +65,22 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
 }) => {
   const [localSearch, setLocalSearch] = useState(search);
 
-  // Sincronizar el estado local con la prop search cuando cambie externamente
   useEffect(() => {
     setLocalSearch(search);
   }, [search]);
+
+  // Normalizar paginación para el componente global Pagination
+  const paginationNormalized = useMemo((): PaginationState | undefined => {
+    if (!totalCount && !totalPages) return undefined;
+    return {
+      count: totalCount,
+      page,
+      pageSize,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrevious: page > 1,
+    };
+  }, [totalCount, page, pageSize, totalPages]);
 
   // ============================================================================
   // HELPERS PARA FORMATEAR VALORES
@@ -356,82 +362,18 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
     }
   };
 
-  const handleClearSearch = () => {
-    setLocalSearch("");
-    if (onSearchChange) {
-      onSearchChange("");
-    }
-  };
-
-  // ============================================================================
-  // LOADING STATE
-  // ============================================================================
-
-  const isLoading = false; // Puedes agregar una prop para esto si es necesario
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="flex flex-col items-center gap-2">
-          <div className="h-8 w-8 rounded-full border-4 border-brand-600 border-t-transparent animate-spin" />
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Cargando indicadores de salud bucal...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   // ============================================================================
   // RENDER PRINCIPAL
   // ============================================================================
 
   return (
     <div className="space-y-4">
-      {/* Header con buscador - Estilo unificado */}
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="w-full sm:flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Buscar por fecha, enfermedad periodontal, oclusión..."
-            value={localSearch}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 focus:border-transparent focus:ring-2 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-          />
-          {localSearch && (
-            <button
-              onClick={handleClearSearch}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2"
-            >
-              <X className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
-            </button>
-          )}
-        </div>
-        {onPageSizeChange && (
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-700 dark:text-gray-300">
-              Mostrar:
-            </label>
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-              <select
-                value={pageSize}
-                onChange={(e) => {
-                  onPageSizeChange?.(Number(e.target.value));
-                  onPageChange?.(1);
-                }}
-                className="pl-10 pr-8 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 appearance-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-              </select>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* SearchBar global - mismo patrón que VitalSignsTable */}
+      <SearchBar
+        value={localSearch}
+        onChange={handleSearch}
+        placeholder="Buscar por fecha, enfermedad periodontal, oclusión..."
+      />
 
       {/* Tabla */}
       <div className="relative overflow-hidden rounded-lg border border-gray-200 shadow-sm dark:border-gray-700">
@@ -449,7 +391,7 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
               </p>
               {localSearch && (
                 <button
-                  onClick={handleClearSearch}
+                  onClick={() => handleSearch("")}
                   className="mt-3 text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
                 >
                   Limpiar búsqueda
@@ -640,32 +582,19 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
         </div>
       </div>
 
-      {/* Paginación - Solo una instancia */}
-      {onPageChange && totalPages > 1 && registros.length > 0 && (
-        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-          <div className="text-sm text-gray-700 dark:text-gray-300">
-            Página <span className="font-medium">{page}</span> de{" "}
-            <span className="font-medium">{totalPages}</span> • Total: {totalCount}
-          </div>
-          <div className="flex gap-1">
-            <button
-              onClick={() => onPageChange(page - 1)}
-              disabled={page <= 1}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Anterior
-            </button>
-            <button
-              onClick={() => onPageChange(page + 1)}
-              disabled={page >= totalPages}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              Siguiente
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+      {/* Paginación global - mismo patrón que VitalSignsTable */}
+      {paginationNormalized && (
+        <Pagination
+          pagination={paginationNormalized}
+          pageSize={pageSize}
+          onPageChange={(newPage) => {
+            onPageChange?.(newPage);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          onPageSizeChange={onPageSizeChange}
+          isLoading={isLoading}
+          entityLabel="indicadores"
+        />
       )}
     </div>
   );

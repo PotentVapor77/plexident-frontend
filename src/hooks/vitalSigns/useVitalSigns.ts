@@ -26,6 +26,7 @@ export const VITALSIGNS_QUERY_KEYS = {
     params?.pageSize ?? 20,
     params?.search ?? '',
     params?.paciente ?? '',
+    params?.activo ?? null,
   ] as const,
   details: (id: string) => [...VITALSIGNS_QUERY_KEYS.all, 'detail', id] as const,
   byPaciente: (pacienteId: string) => [...VITALSIGNS_QUERY_KEYS.all, 'paciente', pacienteId] as const,
@@ -45,6 +46,7 @@ export interface UseVitalSignsParams {
   pageSize?: number;
   search?: string;
   paciente?: string;
+  activo?: boolean;
 }
 
 export interface UseVitalSignsReturn {
@@ -72,7 +74,13 @@ export const useVitalSigns = (params?: UseVitalSignsParams): UseVitalSignsReturn
   const queryClient = useQueryClient();
   const query = useQuery<IVitalSignsListResponse>({
     queryKey: VITALSIGNS_QUERY_KEYS.lists(params),
-    queryFn: () => getVitalSigns(params),
+    queryFn: () => getVitalSigns({
+      page: params?.page,
+      page_size: params?.pageSize,  
+      search: params?.search,
+      paciente: params?.paciente,
+      ...(params?.activo !== undefined && { activo: params.activo }),
+    } as Parameters<typeof getVitalSigns>[0]),
     staleTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
   });

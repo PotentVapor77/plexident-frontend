@@ -1,6 +1,6 @@
 // src/components/clinicalRecords/form/sections/DiagnosticosCieSection.tsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, Filter, Pencil, RotateCcw, Search } from "lucide-react";
+import { AlertCircle, Filter, Pencil, RotateCcw, Save, Search } from "lucide-react";
 import type {
   DiagnosticoCIEData,
   SincronizarDiagnosticosPayload,
@@ -52,6 +52,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
   pacienteId,
   historialId,
   onChangeDiagnosticosSeleccionados,
+  refreshSection,
 }) => {
   const { notify } = useNotification();
 
@@ -64,6 +65,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
   });
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
   const [tipoCargaActual, setTipoCargaActual] = useState<"nuevos" | "todos">("nuevos");
+  const [isSaving, setIsSaving] = useState(false);
   const isInitialLoad = useRef(true);
 
   // Estado de edición inline de códigos CIE-10
@@ -199,12 +201,21 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
   };
 
   const cambiarTipo = (diag: DiagnosticoCIEData, tipo: "PRE" | "DEF") => {
-    const key = getKey(diag);
-    setSeleccionados((prev) => {
-      if (!prev[key]) return prev;
-      return { ...prev, [key]: { ...prev[key], tipo_cie: tipo, tipo_cie_display: tipo === "PRE" ? "Presuntivo" : "Definitivo" } };
-    });
-  };
+  const key = getKey(diag);
+  setSeleccionados((prev) => {
+    if (!prev[key]) return prev;
+    const updated = { 
+      ...prev, 
+      [key]: { 
+        ...prev[key], 
+        tipo_cie: tipo, 
+        tipo_cie_display: tipo === "PRE" ? "Presuntivo" : "Definitivo" 
+      } 
+    };
+    onChangeDiagnosticosSeleccionados(Object.values(updated));
+    return updated;
+  });
+};
 
   const cambiarTipoTodos = (tipo: "PRE" | "DEF") => {
     setSeleccionados((prev) => {
@@ -252,45 +263,107 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
   }, []);
 
   const confirmarEdicion = useCallback((diag: any, key: string) => {
-    const valor = (editandoCodigo[key] ?? "").trim();
+  const valor = (editandoCodigo[key] ?? "").trim();
 
-    if (valor === "") {
-      // Restaurar al catálogo
-      setSeleccionados((prev) => {
-        if (!prev[key]) return prev;
-        return {
-          ...prev,
-          [key]: { ...prev[key], codigo_cie: diag.codigo_cie_original ?? diag.codigo_cie, codigo_cie_personalizado: null, tiene_codigo_personalizado: false },
-        };
-      });
-      cancelarEdicion(key);
-      return;
-    }
-
-    if (!esCodigoCieValido(valor)) {
-      setErroresCodigo((p) => ({ ...p, [key]: "Formato inválido. Ej: K08 o K08.1 (letra + 2 dígitos + decimales opcionales)" }));
-      return;
-    }
-
-    const final = valor.toUpperCase();
+  if (valor === "") {
+    // Restaurar al catálogo
     setSeleccionados((prev) => {
       if (!prev[key]) return prev;
-      return { ...prev, [key]: { ...prev[key], codigo_cie: final, codigo_cie_personalizado: final, tiene_codigo_personalizado: true } };
+      const updated = {
+        ...prev,
+        [key]: { 
+          ...prev[key], 
+          codigo_cie: diag.codigo_cie_original ?? diag.codigo_cie, 
+          codigo_cie_personalizado: null, 
+          tiene_codigo_personalizado: false 
+        }
+      };
+      // Notificar cambios inmediatamente
+      onChangeDiagnosticosSeleccionados(Object.values(updated));
+      return updated;
     });
     cancelarEdicion(key);
-    notify({ type: "success", title: "Código actualizado", message: `CIE-10 cambiado a ${final}. Se persistirá al guardar.` });
-  }, [editandoCodigo, cancelarEdicion, notify]);
+    return;
+  }
+
+  if (!esCodigoCieValido(valor)) {
+    setErroresCodigo((p) => ({ ...p, [key]: "Formato inválido. Ej: K08 o K08.1 (letra + 2 dígitos + decimales opcionales)" }));
+    return;
+  }
+
+  const final = valor.toUpperCase();
+  setSeleccionados((prev) => {
+    if (!prev[key]) return prev;
+    const updated = { 
+      ...prev, 
+      [key]: { 
+        ...prev[key], 
+        codigo_cie: final, 
+        codigo_cie_personalizado: final, 
+        tiene_codigo_personalizado: true 
+      } 
+    };
+    // Notificar cambios inmediatamente
+    onChangeDiagnosticosSeleccionados(Object.values(updated));
+    return updated;
+  });
+  cancelarEdicion(key);
+  notify({ type: "success", title: "Código actualizado", message: `CIE-10 cambiado a ${final}. Se persistirá al guardar.` });
+}, [editandoCodigo, cancelarEdicion, notify, onChangeDiagnosticosSeleccionados]);
 
   const restaurarCatalogo = useCallback((diag: any, key: string) => {
-    if (!puedeEditarCodigo) return;
-    const original = diag.codigo_cie_original ?? diag.codigo_cie;
-    setSeleccionados((prev) => {
-      if (!prev[key]) return prev;
-      return { ...prev, [key]: { ...prev[key], codigo_cie: original, codigo_cie_personalizado: null, tiene_codigo_personalizado: false } };
-    });
-    cancelarEdicion(key);
-    notify({ type: "info", title: "Código restaurado", message: `Usando código del catálogo: ${original}` });
-  }, [puedeEditarCodigo, cancelarEdicion, notify]);
+  if (!puedeEditarCodigo) return;
+  const original = diag.codigo_cie_original ?? diag.codigo_cie;
+  setSeleccionados((prev) => {
+    if (!prev[key]) return prev;
+    const updated = { 
+      ...prev, 
+      [key]: { 
+        ...prev[key], 
+        codigo_cie: original, 
+        codigo_cie_personalizado: null, 
+        tiene_codigo_personalizado: false 
+      } 
+    };
+    // Notificar cambios inmediatamente
+    onChangeDiagnosticosSeleccionados(Object.values(updated));
+    return updated;
+  });
+  cancelarEdicion(key);
+  notify({ type: "info", title: "Código restaurado", message: `Usando código del catálogo: ${original}` });
+}, [puedeEditarCodigo, cancelarEdicion, notify, onChangeDiagnosticosSeleccionados]);
+
+  // ---------------------------------------------------------------------------
+  // Guardar cambios (para modo crear)
+  // ---------------------------------------------------------------------------
+
+  const handleGuardarCambios = async () => {
+    if (modo !== "crear") return;
+
+    setIsSaving(true);
+    try {
+      // En modo crear, simplemente notificamos que los cambios están listos
+      // El padre (ClinicalRecordForm) se encargará de guardar al hacer submit
+      notify({
+        type: "success",
+        title: "Cambios aplicados",
+        message: `${Object.keys(seleccionados).length} diagnósticos seleccionados. Se guardarán al crear el historial.`
+      });
+
+      // Llamar a refreshSection si existe para actualizar la UI
+      if (refreshSection) {
+        refreshSection();
+      }
+    } catch (error) {
+      notify({
+        type: "error",
+        title: "Error",
+        message: "No se pudieron aplicar los cambios."
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // ---------------------------------------------------------------------------
   // Sincronizar (modo editar)
@@ -298,8 +371,10 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
 
   const handleSincronizar = async () => {
     if (modo !== "editar" || !historialId) return;
+
+    setIsSaving(true);
     try {
-      const payload = {
+      const payload: SincronizarDiagnosticosPayload = {
         diagnosticos_finales: Object.values(seleccionados).map((d: any) => ({
           diagnostico_dental_id: d.diagnostico_dental_id,
           tipo_cie: d.tipo_cie,
@@ -307,11 +382,25 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
         })),
         tipo_carga: tipoCargaActual,
       };
-      await syncMutation.mutateAsync(payload as any);
-      notify({ type: "success", title: "Diagnósticos guardados", message: `${Object.keys(seleccionados).length} diagnósticos sincronizados.` });
-      refetchEnHistorial();
-    } catch {
-      notify({ type: "error", title: "Error al guardar", message: "No se pudieron sincronizar los diagnósticos." });
+
+      await syncMutation.mutateAsync(payload);
+      notify({
+        type: "success",
+        title: "Diagnósticos guardados",
+        message: `${Object.keys(seleccionados).length} diagnósticos sincronizados.`
+      });
+
+      await refetchEnHistorial();
+      if (refreshSection) refreshSection();
+
+    } catch (error) {
+      notify({
+        type: "error",
+        title: "Error al guardar",
+        message: "No se pudieron sincronizar los diagnósticos."
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -374,27 +463,50 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex rounded-lg border border-slate-200 overflow-hidden text-xs">
-            {(["nuevos", "todos"] as const).map((tipo) => (
-              <button key={tipo} type="button" onClick={() => handleCambiarTipoCarga(tipo)}
-                className={`px-3 py-1.5 ${tipoCargaActual === tipo ? "bg-blue-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}>
-                {tipo === "nuevos" ? "Solo nuevos" : "Todos"}
-              </button>
-            ))}
-          </div>
-          <button type="button" onClick={() => setMostrarFiltros((v) => !v)}
-            className={`p-1.5 rounded-lg border ${mostrarFiltros ? "border-blue-300 bg-blue-50 text-blue-600" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}
-            title="Filtros">
-            <Filter className="h-4 w-4" />
-          </button>
-          <RefreshButton onClick={() => modo === "editar" ? refetchEnHistorial() : refetchDisponibles()} size="sm" />
-          {modo === "editar" && (
-            <button type="button" onClick={handleSincronizar} disabled={syncMutation.isPending}
-              className="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50">
-              {syncMutation.isPending ? "Guardando..." : "Guardar cambios"}
-            </button>
-          )}
-        </div>
+  <div className="flex rounded-lg border border-slate-200 overflow-hidden text-xs">
+    {(["nuevos", "todos"] as const).map((tipo) => (
+      <button
+        key={tipo}
+        type="button"
+        onClick={() => handleCambiarTipoCarga(tipo)}
+        className={`px-3 py-1.5 ${tipoCargaActual === tipo ? "bg-blue-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}
+      >
+        {tipo === "nuevos" ? "Solo nuevos" : "Todos"}
+      </button>
+    ))}
+  </div>
+          <button
+    type="button"
+    onClick={() => setMostrarFiltros((v) => !v)}
+    className={`p-1.5 rounded-lg border ${mostrarFiltros ? "border-blue-300 bg-blue-50 text-blue-600" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}
+    title="Filtros"
+  >
+    <Filter className="h-4 w-4" />
+  </button>
+
+          <RefreshButton
+    onClick={() => modo === "editar" ? refetchEnHistorial() : refetchDisponibles()}
+    size="sm"
+  />
+
+          {/* Botón de guardar SOLO en modo editar */}
+          <button
+    type="button"
+    onClick={modo === "editar" ? handleSincronizar : handleGuardarCambios}
+    disabled={modo === "editar" && syncMutation.isPending}
+    className={`text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors ${
+      modo === "editar" 
+        ? "bg-blue-600 hover:bg-blue-700 text-white" 
+        : "bg-emerald-600 hover:bg-emerald-700 text-white"
+    } disabled:opacity-50`}
+  >
+    <Save className="h-3.5 w-3.5" />
+    {modo === "editar" 
+      ? (syncMutation.isPending ? "Guardando..." : "Guardar en Servidor") 
+      : "Aplicar cambios"}
+  </button>
+</div>
+        
       </div>
 
       {/* ── Aviso edición códigos ── */}
@@ -412,7 +524,9 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
       {/* ── Búsqueda ── */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-        <input type="text" placeholder="Buscar por diagnóstico, código, diente..."
+        <input
+          type="text"
+          placeholder="Buscar por diagnóstico, código, diente..."
           value={filtros.texto}
           onChange={(e) => setFiltros((p) => ({ ...p, texto: e.target.value }))}
           className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
@@ -424,8 +538,11 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
         <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 grid grid-cols-2 md:grid-cols-3 gap-3">
           <div>
             <label className="text-[10px] text-slate-500 font-medium uppercase tracking-wide mb-1 block">Tipo CIE</label>
-            <select value={filtros.tipoCIE} onChange={(e) => setFiltros((p) => ({ ...p, tipoCIE: e.target.value as any }))}
-              className="w-full text-xs border border-slate-200 rounded px-2 py-1.5">
+            <select
+              value={filtros.tipoCIE}
+              onChange={(e) => setFiltros((p) => ({ ...p, tipoCIE: e.target.value as any }))}
+              className="w-full text-xs border border-slate-200 rounded px-2 py-1.5"
+            >
               <option value="todos">Todos</option>
               <option value="PRE">Presuntivos</option>
               <option value="DEF">Definitivos</option>
@@ -433,35 +550,77 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
           </div>
           <div>
             <label className="text-[10px] text-slate-500 font-medium uppercase tracking-wide mb-1 block">Diente FDI</label>
-            <select value={filtros.dienteFDI} onChange={(e) => setFiltros((p) => ({ ...p, dienteFDI: e.target.value }))}
-              className="w-full text-xs border border-slate-200 rounded px-2 py-1.5">
+            <select
+              value={filtros.dienteFDI}
+              onChange={(e) => setFiltros((p) => ({ ...p, dienteFDI: e.target.value }))}
+              className="w-full text-xs border border-slate-200 rounded px-2 py-1.5"
+            >
               <option value="">Todos</option>
               {dientesUnicos.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
           <div className="flex items-end">
             <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
-              <input type="checkbox" checked={filtros.mostrarInactivos}
+              <input
+                type="checkbox"
+                checked={filtros.mostrarInactivos}
                 onChange={(e) => setFiltros((p) => ({ ...p, mostrarInactivos: e.target.checked }))}
-                className="h-3.5 w-3.5 rounded border-slate-300" />
+                className="h-3.5 w-3.5 rounded border-slate-300"
+              />
               Mostrar inactivos
             </label>
           </div>
           <div className="col-span-full flex justify-between items-center">
             <span className="text-xs text-slate-500">Mostrando {diagnosticosFiltrados.length} de {diagnosticosFuente.length}</span>
-            <button type="button" onClick={resetearFiltros} className="text-xs px-3 py-1 border border-slate-300 rounded hover:bg-slate-100">Limpiar filtros</button>
+            <button
+              type="button"
+              onClick={resetearFiltros}
+              className="text-xs px-3 py-1 border border-slate-300 rounded hover:bg-slate-100"
+            >
+              Limpiar filtros
+            </button>
           </div>
         </div>
       )}
 
       {/* ── Acciones rápidas ── */}
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={seleccionarTodos} className="text-xs px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg border border-blue-300">Seleccionar todos</button>
-        <button type="button" onClick={seleccionarSoloActivos} className="text-xs px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg border border-emerald-300">Solo activos</button>
-        <button type="button" onClick={deseleccionarTodos} className="text-xs px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-300">Deseleccionar todos</button>
+        <button
+          type="button"
+          onClick={seleccionarTodos}
+          className="text-xs px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg border border-blue-300"
+        >
+          Seleccionar todos
+        </button>
+        <button
+          type="button"
+          onClick={seleccionarSoloActivos}
+          className="text-xs px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg border border-emerald-300"
+        >
+          Solo activos
+        </button>
+        <button
+          type="button"
+          onClick={deseleccionarTodos}
+          className="text-xs px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-300"
+        >
+          Deseleccionar todos
+        </button>
         <div className="flex gap-2 ml-auto">
-          <button type="button" onClick={() => cambiarTipoTodos("PRE")} className="text-xs px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg border border-amber-300">Cambiar todos a PRE</button>
-          <button type="button" onClick={() => cambiarTipoTodos("DEF")} className="text-xs px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg border border-indigo-300">Cambiar todos a DEF</button>
+          <button
+            type="button"
+            onClick={() => cambiarTipoTodos("PRE")}
+            className="text-xs px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg border border-amber-300"
+          >
+            Cambiar todos a PRE
+          </button>
+          <button
+            type="button"
+            onClick={() => cambiarTipoTodos("DEF")}
+            className="text-xs px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg border border-indigo-300"
+          >
+            Cambiar todos a DEF
+          </button>
         </div>
       </div>
 
@@ -497,8 +656,10 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
               const codigoOriginal = diagExt.codigo_cie_original ?? diag.codigo_cie;
 
               return (
-                <tr key={key}
-                  className={`border-t border-slate-100 ${seleccionado ? "bg-blue-50 hover:bg-blue-100" : "hover:bg-slate-50"} ${!diag.activo ? "opacity-60" : ""}`}>
+                <tr
+                  key={key}
+                  className={`border-t border-slate-100 ${seleccionado ? "bg-blue-50 hover:bg-blue-100" : "hover:bg-slate-50"} ${!diag.activo ? "opacity-60" : ""}`}
+                >
 
                   {/* Estado */}
                   <td className="px-3 py-2">
@@ -507,7 +668,8 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
 
                   {/* Checkbox */}
                   <td className="px-3 py-2">
-                    <input type="checkbox"
+                    <input
+                      type="checkbox"
                       className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                       checked={seleccionado}
                       onChange={() => toggleSeleccion(diag)}
@@ -534,7 +696,8 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
                     {estaEditando ? (
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-1">
-                          <input type="text"
+                          <input
+                            type="text"
                             value={editandoCodigo[key]}
                             onChange={(e) => setEditandoCodigo((p) => ({ ...p, [key]: e.target.value }))}
                             onKeyDown={(e) => {
@@ -546,31 +709,52 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
                             autoFocus
                             className={`w-24 px-2 py-0.5 border rounded font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 ${errorCodigo ? "border-rose-400 bg-rose-50" : "border-slate-300"}`}
                           />
-                          <button type="button" onClick={() => confirmarEdicion(diagExt, key)}
-                            className="px-2 py-0.5 bg-blue-600 text-white rounded text-[10px] hover:bg-blue-700" title="Confirmar (Enter)">✓</button>
-                          <button type="button" onClick={() => cancelarEdicion(key)}
-                            className="px-2 py-0.5 bg-slate-200 text-slate-700 rounded text-[10px] hover:bg-slate-300" title="Cancelar (Esc)">✗</button>
+                          <button
+                            type="button"
+                            onClick={() => confirmarEdicion(diagExt, key)}
+                            className="px-2 py-0.5 bg-blue-600 text-white rounded text-[10px] hover:bg-blue-700"
+                            title="Confirmar (Enter)"
+                          >
+                            ✓
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => cancelarEdicion(key)}
+                            className="px-2 py-0.5 bg-slate-200 text-slate-700 rounded text-[10px] hover:bg-slate-300"
+                            title="Cancelar (Esc)"
+                          >
+                            ✗
+                          </button>
                         </div>
                         {errorCodigo && <p className="text-[10px] text-rose-600">{errorCodigo}</p>}
                         <p className="text-[10px] text-slate-400">Original: <code>{codigoOriginal}</code> · Vacío=restaurar</p>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1 flex-wrap">
-                        <code className={`px-1.5 py-0.5 rounded font-mono ${tienePersonalizado ? "bg-amber-100 ring-1 ring-amber-300 text-amber-900" : "bg-slate-100 text-slate-700"}`}
-                          title={tienePersonalizado ? `Personalizado · original: ${codigoOriginal}` : "Código del catálogo"}>
+                        <code
+                          className={`px-1.5 py-0.5 rounded font-mono ${tienePersonalizado ? "bg-amber-100 ring-1 ring-amber-300 text-amber-900" : "bg-slate-100 text-slate-700"}`}
+                          title={tienePersonalizado ? `Personalizado · original: ${codigoOriginal}` : "Código del catálogo"}
+                        >
                           {codigoMostrado}
                         </code>
 
                         {puedeEditarCodigo && (
                           <>
-                            <button type="button" onClick={() => iniciarEdicionCodigo(diagExt)}
-                              className="p-0.5 text-slate-400 hover:text-blue-600 rounded transition-colors" title="Editar código CIE-10">
+                            <button
+                              type="button"
+                              onClick={() => iniciarEdicionCodigo(diagExt)}
+                              className="p-0.5 text-slate-400 hover:text-blue-600 rounded transition-colors"
+                              title="Editar código CIE-10"
+                            >
                               <Pencil className="h-3 w-3" />
                             </button>
                             {tienePersonalizado && (
-                              <button type="button" onClick={() => restaurarCatalogo(diagExt, key)}
+                              <button
+                                type="button"
+                                onClick={() => restaurarCatalogo(diagExt, key)}
                                 className="p-0.5 text-amber-500 hover:text-slate-600 rounded transition-colors"
-                                title={`Restaurar código del catálogo (${codigoOriginal})`}>
+                                title={`Restaurar código del catálogo (${codigoOriginal})`}
+                              >
                                 <RotateCcw className="h-3 w-3" />
                               </button>
                             )}
@@ -591,8 +775,11 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${tipoActual === "PRE" ? "bg-amber-100 text-amber-800" : "bg-indigo-100 text-indigo-800"}`}>
                           {tipoActual === "PRE" ? "Presuntivo" : "Definitivo"}
                         </span>
-                        <select value={tipoActual} onChange={(e) => cambiarTipo(diag, e.target.value as "PRE" | "DEF")}
-                          className="text-xs border border-slate-300 rounded px-1 py-0.5 ml-1">
+                        <select
+                          value={tipoActual}
+                          onChange={(e) => cambiarTipo(diag, e.target.value as "PRE" | "DEF")}
+                          className="text-xs border border-slate-300 rounded px-1 py-0.5 ml-1"
+                        >
                           <option value="PRE">Presuntivo</option>
                           <option value="DEF">Definitivo</option>
                         </select>

@@ -52,7 +52,7 @@ export const treatmentPlanService = {
   async getPlanes(
     params: PaginationParams = {}
   ): Promise<PaginatedResponse<PlanTratamientoListResponse>> {
-    const { page = 1, page_size = 10, paciente_id, search } = params;
+    const { page = 1, page_size = 5, paciente_id, search } = params;
 
     const queryParams = buildQueryParams({
       page,
@@ -135,15 +135,16 @@ export const sessionService = {
   // --------------------------------------------------------------------------
   async getSessions(
     params: SessionPaginationParams = {}
-  ): Promise<PaginatedResponse<SesionTratamientoListResponse>> {
-    const { page = 1, page_size = 20, plan_id, paciente_id, estado } = params;
+): Promise<PaginatedResponse<SesionTratamientoListResponse>> {
+    const { page = 1, page_size = 20, plan_id, paciente_id, estado, search } = params;
 
     const queryParams = buildQueryParams({
-      page,
-      page_size,
-      plan_id,
-      paciente_id,
-      estado,
+        page,
+        page_size,
+        plan_id,
+        paciente_id,
+        estado,
+        search,      
     });
 
     const response = await api.get<

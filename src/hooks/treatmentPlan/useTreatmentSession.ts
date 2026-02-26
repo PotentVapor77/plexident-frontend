@@ -19,10 +19,10 @@ import type {
 const sesionKeys = {
   all: ['sesiones-tratamiento'] as const,
   lists: () => [...sesionKeys.all, 'list'] as const,
-  list: (planId: string | null, page: number, pageSize: number, pacienteId?: string, estado?: EstadoSesion) =>
-    [...sesionKeys.lists(), planId || 'all', page, pageSize, pacienteId || 'all', estado || 'all'] as const,
+  list: (planId: string | null, page: number, pageSize: number, pacienteId?: string, estado?: EstadoSesion, search?: string) =>
+    [...sesionKeys.lists(), planId || 'all', page, pageSize, pacienteId || 'all', estado || 'all', search || ''] as const,
   details: () => [...sesionKeys.all, 'detail'] as const,
-  detail: (id: string | null) => [...sesionKeys.details(), id || 'null'] as const, 
+  detail: (id: string | null) => [...sesionKeys.details(), id || 'null'] as const,
 };
 
 // ============================================================================
@@ -34,27 +34,21 @@ export const useSesionesTratamiento = (
   page: number = 1,
   pageSize: number = 20,
   pacienteId?: string,
-  estado?: EstadoSesion
+  estado?: EstadoSesion,
+  search?: string           
 ) => {
-  console.log('[useSesionesTratamiento] Hook called with:', {
-    planId,
-    page,
-    pageSize,
-    pacienteId,
-    estado,
-  });
-
   const normalizedPlanId = planId ?? null;
-  
+
   const query = useQuery<PaginatedResponse<SesionTratamientoListResponse>>({
-    queryKey: sesionKeys.list(normalizedPlanId, page, pageSize, pacienteId, estado),
+    queryKey: sesionKeys.list(normalizedPlanId, page, pageSize, pacienteId, estado, search), 
     queryFn: () =>
       sessionService.getSessions({
-        plan_id: normalizedPlanId || undefined, 
+        plan_id: normalizedPlanId || undefined,
         paciente_id: pacienteId,
         estado,
         page,
         page_size: pageSize,
+        search,               
       }),
     staleTime: 30000,
   });

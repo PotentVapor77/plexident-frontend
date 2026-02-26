@@ -16,6 +16,7 @@ import Button from "../../ui/button/Button";
 
 interface TreatmentPlanTableProps {
   planes: PlanTratamientoListResponse[];
+  totalCount?: number;
   onViewClick?: (plan: PlanTratamientoListResponse) => void;
   onEditClick?: (plan: PlanTratamientoListResponse) => void;
   onDeleteClick?: (plan: PlanTratamientoListResponse) => void;
@@ -24,6 +25,7 @@ interface TreatmentPlanTableProps {
 
 const TreatmentPlanTable: React.FC<TreatmentPlanTableProps> = ({
   planes,
+  totalCount,
   onViewClick,
   onEditClick,
   onDeleteClick,
@@ -255,7 +257,7 @@ const TreatmentPlanTable: React.FC<TreatmentPlanTableProps> = ({
         </table>
       </div>
       <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 text-xs font-medium text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 sticky bottom-0">
-        Total de registros: {planes.length}
+        Mostrando {planes.length} de {totalCount ?? planes.length} planes de tratamiento
       </div>
     </div>
   );
@@ -265,6 +267,7 @@ export default React.memo(
   TreatmentPlanTable,
   (prev, next) =>
     prev.planes === next.planes &&
+    prev.totalCount === next.totalCount &&
     prev.onViewClick === next.onViewClick &&
     prev.onEditClick === next.onEditClick &&
     prev.onDeleteClick === next.onDeleteClick &&

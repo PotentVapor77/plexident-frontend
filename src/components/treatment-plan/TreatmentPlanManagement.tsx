@@ -1,22 +1,20 @@
 // src/components/odontogram/treatmentPlan/TreatmentPlanManagement.tsx
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNotification } from "../../context/notifications/NotificationContext";
 import { useModal } from "../../hooks/useModal";
 import type { PlanTratamientoDetailResponse, PlanTratamientoListResponse, SesionTratamientoListResponse } from "../../types/treatmentPlan/typeBackendTreatmentPlan";
 import { useDeletePlanTratamiento, usePlanesTratamiento, usePlanTratamiento } from "../../hooks/treatmentPlan/useTreatmentPlan";
 import { useDeleteSesionTratamiento, useSesionesTratamiento } from "../../hooks/treatmentPlan/useTreatmentSession";
-import { 
-  ArrowLeft, 
-  Calendar, 
-  FileText, 
-  Plus, 
-  User, 
-  Users,
-  Activity,
-  AlertCircle,
-  ChevronLeft,
-  ChevronRight
+import {
+    ArrowLeft,
+    Calendar,
+    FileText,
+    Plus,
+    User,
+    Users,
+    Activity,
+    AlertCircle,
 } from "lucide-react";
 import TreatmentPlanTable from "./table/TreatmentPlanTable";
 import SessionTable from "./table/SessionTable";
@@ -27,6 +25,7 @@ import SessionCreateEditModal from "./modals/SessionCreateEditModal";
 import SessionDeleteModal from "./modals/SessionDeleteModal";
 import SessionViewModal from "./modals/SessionViewModal";
 import { usePacienteActivo } from "../../context/PacienteContext";
+import { Pagination, SearchBar, type PaginationState } from "../ui/pagination";
 
 // ============================================================================
 // COMPONENT - Adaptado al estilo de IndicatorsMain
@@ -45,8 +44,28 @@ export default function TreatmentPlanManagement() {
     // Estados de paginación
     const [pagePlanes, setPagePlanes] = useState(1);
     const [pageSesiones, setPageSesiones] = useState(1);
-    const [pageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(5);
+    const [pageSizeSesiones, setPageSizeSesiones] = useState(10);
+    const [searchPlanesInput, setSearchPlanesInput] = useState("");
+    const [searchSesionesInput, setSearchSesionesInput] = useState("");
+    // Estados de búsqueda
+    const [searchPlanes, setSearchPlanes] = useState("");
+    const [searchSesiones, setSearchSesiones] = useState("");
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearchPlanes(searchPlanesInput);
+            setPagePlanes(1);
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [searchPlanesInput]);
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearchSesiones(searchSesionesInput);
+            setPageSesiones(1);
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [searchSesionesInput]);
     // Estados de modales - PLANES
     const {
         isOpen: isCreatePlanModalOpen,
@@ -105,14 +124,13 @@ export default function TreatmentPlanManagement() {
         isError: isErrorPlanes,
         error: errorPlanes,
         refetch: refetchPlanes,
-    } = usePlanesTratamiento(pacienteActivo?.id ?? null, pagePlanes, pageSize, "");
+    } = usePlanesTratamiento(pacienteActivo?.id ?? null, pagePlanes, pageSize, searchPlanes);
 
     const deletePlanMutation = useDeletePlanTratamiento(pacienteId);
 
     // Plan seleccionado
     const { data: planDetalle } = usePlanTratamiento(planSeleccionadoId);
-    const pageSizeSesiones = 10;
-    
+
     // Sesiones del plan seleccionado
     const {
         sesiones,
@@ -125,43 +143,36 @@ export default function TreatmentPlanManagement() {
         pageSesiones,
         pageSizeSesiones,
         pacienteActivo?.id,
+        undefined,         
+        searchSesiones, 
     );
-
     const deleteSesionMutation = useDeleteSesionTratamiento(planSeleccionadoId || "");
 
     // Normalizar paginación para planes
-    const paginationPlanesNormalized = paginationPlanes ? {
-        count: paginationPlanes.count,
-        page: paginationPlanes.page,
-        pageSize: paginationPlanes.page_size,
-        totalPages: paginationPlanes.total_pages,
-        hasNext: paginationPlanes.has_next,
-        hasPrevious: paginationPlanes.has_previous,
-    } : {
-        count: 0,
-        page: pagePlanes,
-        pageSize,
-        totalPages: 1,
-        hasNext: false,
-        hasPrevious: false,
-    };
+    const paginationPlanesNormalized = useMemo((): PaginationState => {
+        if (!paginationPlanes) return { count: 0, page: pagePlanes, pageSize, totalPages: 1, hasNext: false, hasPrevious: false };
+        return {
+            count: paginationPlanes.count,
+            page: paginationPlanes.page,
+            pageSize: paginationPlanes.page_size,
+            totalPages: paginationPlanes.total_pages,
+            hasNext: paginationPlanes.has_next,
+            hasPrevious: paginationPlanes.has_previous,
+        };
+    }, [paginationPlanes, pagePlanes, pageSize]);
 
     // Normalizar paginación para sesiones
-    const paginationSesionesNormalized = paginationSesiones ? {
-        count: paginationSesiones.count,
-        page: paginationSesiones.page,
-        pageSize: paginationSesiones.page_size,
-        totalPages: paginationSesiones.total_pages,
-        hasNext: paginationSesiones.has_next,
-        hasPrevious: paginationSesiones.has_previous,
-    } : {
-        count: 0,
-        page: pageSesiones,
-        pageSize: pageSizeSesiones,
-        totalPages: 1,
-        hasNext: false,
-        hasPrevious: false,
-    };
+    const paginationSesionesNormalized = useMemo((): PaginationState => {
+        if (!paginationSesiones) return { count: 0, page: pageSesiones, pageSize: pageSizeSesiones, totalPages: 1, hasNext: false, hasPrevious: false };
+        return {
+            count: paginationSesiones.count,
+            page: paginationSesiones.page,
+            pageSize: paginationSesiones.page_size,
+            totalPages: paginationSesiones.total_pages,
+            hasNext: paginationSesiones.has_next,
+            hasPrevious: paginationSesiones.has_previous,
+        };
+    }, [paginationSesiones, pageSesiones, pageSizeSesiones]);
 
     // ============================================================================
     // HANDLERS - PLANES
@@ -231,6 +242,26 @@ export default function TreatmentPlanManagement() {
         setPagePlanes(newPage);
     };
 
+    const handlePageSizePlanesChange = (newSize: number) => {
+        setPageSize(newSize);
+        setPagePlanes(1);
+    };
+
+    const handleSearchPlanes = (value: string) => {
+        setSearchPlanesInput(value);
+        // NO resetear página aquí — el useEffect lo hace tras el debounce
+    };
+
+    const handleSearchSesiones = (value: string) => {
+        setSearchSesionesInput(value);
+    };
+
+    const handlePageSizeSesionesChange = (newSize: number) => {
+        setPageSizeSesiones(newSize);
+        setPageSesiones(1);
+    };
+
+
     // ============================================================================
     // HANDLERS - SESIONES
     // ============================================================================
@@ -239,6 +270,8 @@ export default function TreatmentPlanManagement() {
         setVistaActual("planes");
         setPlanSeleccionadoId(null);
         setPageSesiones(1);
+        setSearchSesiones("");
+        setSearchSesionesInput("");
         refetchPlanes();
     };
 
@@ -342,7 +375,7 @@ export default function TreatmentPlanManagement() {
                         </div>
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                        Total: {planes.length} {planes.length === 1 ? 'plan' : 'planes'}
+                        Total: {paginationPlanesNormalized.count} {paginationPlanesNormalized.count === 1 ? 'plan' : 'planes'}
                     </div>
                 </div>
             </div>
@@ -402,7 +435,7 @@ export default function TreatmentPlanManagement() {
 
                     {/* Información del paciente fijado */}
                     {pacienteActivo && <PacienteFijadoInfo />}
-                    
+
                     {/* Alerta si no hay paciente fijado */}
                     {!pacienteActivo && <SinPacienteAlerta />}
 
@@ -438,46 +471,46 @@ export default function TreatmentPlanManagement() {
                     )}
 
                     {/* Tabla de Planes */}
-                    {!isLoadingPlanes && !isErrorPlanes && (
-                        <>
-                            <div className="mt-4">
-                                <TreatmentPlanTable
-                                    planes={planes}
-                                    onViewClick={handleViewPlanClick}
-                                    onEditClick={handleEditPlanClick}
-                                    onDeleteClick={handleDeletePlanClick}
-                                    onViewSessionsClick={handleVerSesionesClick}
-                                />
-                            </div>
-
-                            {/* Paginación - Estilo IndicatorsTable */}
-                            {paginationPlanesNormalized.totalPages > 1 && (
-                                <div className="mt-4 flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-                                    <div className="text-sm text-gray-700 dark:text-gray-300">
-                                        Página <span className="font-medium">{paginationPlanesNormalized.page}</span> de{" "}
-                                        <span className="font-medium">{paginationPlanesNormalized.totalPages}</span> • Total: {paginationPlanesNormalized.count}
-                                    </div>
-                                    <div className="flex gap-1">
-                                        <button
-                                            onClick={() => handlePagePlanesChange(pagePlanes - 1)}
-                                            disabled={!paginationPlanesNormalized.hasPrevious || isLoadingPlanes}
-                                            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            <ChevronLeft className="h-4 w-4" />
-                                            Anterior
-                                        </button>
-                                        <button
-                                            onClick={() => handlePagePlanesChange(pagePlanes + 1)}
-                                            disabled={!paginationPlanesNormalized.hasNext || isLoadingPlanes}
-                                            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            Siguiente
-                                            <ChevronRight className="h-4 w-4" />
-                                        </button>
+                    {!isErrorPlanes && (
+                        <div className="mt-4 space-y-4">
+                            <SearchBar
+                                value={searchPlanesInput}
+                                onChange={handleSearchPlanes}
+                                placeholder="Buscar por título, paciente, odontólogo..."
+                            />
+                            {isLoadingPlanes ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="h-8 w-8 rounded-full border-4 border-brand-600 border-t-transparent animate-spin" />
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                            Cargando planes de tratamiento...
+                                        </p>
                                     </div>
                                 </div>
+                            ) : (
+                                <>
+                                    <TreatmentPlanTable
+                                        planes={planes}
+                                        totalCount={paginationPlanesNormalized.count}
+                                        onViewClick={handleViewPlanClick}
+                                        onEditClick={handleEditPlanClick}
+                                        onDeleteClick={handleDeletePlanClick}
+                                        onViewSessionsClick={handleVerSesionesClick}
+                                    />
+                                    <Pagination
+                                        pagination={paginationPlanesNormalized}
+                                        pageSize={pageSize}
+                                        onPageChange={(newPage) => {
+                                            handlePagePlanesChange(newPage);
+                                            window.scrollTo({ top: 0, behavior: "smooth" });
+                                        }}
+                                        onPageSizeChange={handlePageSizePlanesChange}
+                                        isLoading={isLoadingPlanes}
+                                        entityLabel="planes"
+                                    />
+                                </>
                             )}
-                        </>
+                        </div>
                     )}
                 </>
             )}
@@ -557,45 +590,45 @@ export default function TreatmentPlanManagement() {
                     )}
 
                     {/* Tabla de Sesiones */}
-                    {!isLoadingSesiones && !isErrorSesiones && (
-                        <>
-                            <div className="mt-4">
-                                <SessionTable
-                                    sesiones={sesiones}
-                                    onViewClick={handleViewSesionClick}
-                                    onEditClick={handleEditSesionClick}
-                                    onDeleteClick={handleDeleteSesionClick}
-                                />
-                            </div>
-
-                            {/* Paginación - Estilo IndicatorsTable */}
-                            {paginationSesionesNormalized.totalPages > 1 && (
-                                <div className="mt-4 flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-                                    <div className="text-sm text-gray-700 dark:text-gray-300">
-                                        Página <span className="font-medium">{paginationSesionesNormalized.page}</span> de{" "}
-                                        <span className="font-medium">{paginationSesionesNormalized.totalPages}</span> • Total: {paginationSesionesNormalized.count}
-                                    </div>
-                                    <div className="flex gap-1">
-                                        <button
-                                            onClick={() => handlePageSesionesChange(pageSesiones - 1)}
-                                            disabled={!paginationSesionesNormalized.hasPrevious || isLoadingSesiones}
-                                            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            <ChevronLeft className="h-4 w-4" />
-                                            Anterior
-                                        </button>
-                                        <button
-                                            onClick={() => handlePageSesionesChange(pageSesiones + 1)}
-                                            disabled={!paginationSesionesNormalized.hasNext || isLoadingSesiones}
-                                            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            Siguiente
-                                            <ChevronRight className="h-4 w-4" />
-                                        </button>
+                    {!isErrorSesiones && (
+                        <div className="mt-4 space-y-4">
+                            <SearchBar
+                                value={searchSesionesInput}
+                                onChange={handleSearchSesiones}
+                                placeholder="Buscar por estado, odontólogo, notas..."
+                            />
+                            {isLoadingSesiones ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="h-8 w-8 rounded-full border-4 border-brand-600 border-t-transparent animate-spin" />
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                            Cargando sesiones...
+                                        </p>
                                     </div>
                                 </div>
+                            ) : (
+                                <>
+                                    <SessionTable
+                                        sesiones={sesiones}
+                                        totalCount={paginationSesionesNormalized.count}
+                                        onViewClick={handleViewSesionClick}
+                                        onEditClick={handleEditSesionClick}
+                                        onDeleteClick={handleDeleteSesionClick}
+                                    />
+                                    <Pagination
+                                        pagination={paginationSesionesNormalized}
+                                        pageSize={pageSizeSesiones}
+                                        onPageChange={(newPage) => {
+                                            handlePageSesionesChange(newPage);
+                                            window.scrollTo({ top: 0, behavior: "smooth" });
+                                        }}
+                                        onPageSizeChange={handlePageSizeSesionesChange}
+                                        isLoading={isLoadingSesiones}
+                                        entityLabel="sesiones"
+                                    />
+                                </>
                             )}
-                        </>
+                        </div>
                     )}
                 </>
             )}

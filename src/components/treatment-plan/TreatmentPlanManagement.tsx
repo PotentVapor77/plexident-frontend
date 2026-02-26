@@ -3,16 +3,13 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNotification } from "../../context/notifications/NotificationContext";
 import { useModal } from "../../hooks/useModal";
-import type { PlanTratamientoDetailResponse, PlanTratamientoListResponse, SesionTratamientoListResponse } from "../../types/treatmentPlan/typeBackendTreatmentPlan";
+import type { PlanTratamientoListResponse, SesionTratamientoListResponse } from "../../types/treatmentPlan/typeBackendTreatmentPlan";
 import { useDeletePlanTratamiento, usePlanesTratamiento, usePlanTratamiento } from "../../hooks/treatmentPlan/useTreatmentPlan";
 import { useDeleteSesionTratamiento, useSesionesTratamiento } from "../../hooks/treatmentPlan/useTreatmentSession";
 import {
     ArrowLeft,
-    Calendar,
-    FileText,
     Plus,
     User,
-    Users,
     Activity,
     AlertCircle,
 } from "lucide-react";
@@ -39,7 +36,6 @@ export default function TreatmentPlanManagement() {
     // Estados de navegación
     const [vistaActual, setVistaActual] = useState<"planes" | "sesiones">("planes");
     const [planSeleccionadoId, setPlanSeleccionadoId] = useState<string | null>(null);
-    const [planSeleccionado, setPlanSeleccionado] = useState<PlanTratamientoDetailResponse | null>(null);
 
     // Estados de paginación
     const [pagePlanes, setPagePlanes] = useState(1);

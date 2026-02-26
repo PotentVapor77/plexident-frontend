@@ -23,6 +23,7 @@ import {
     useDeleteClinicalRecord,
 } from "../../hooks/clinicalRecord/useClinicalRecords";
 import { useDebounce } from "../../hooks/useDebounce";
+import { useAuth } from "../../hooks/auth/useAuth"; 
 
 /**
  * ============================================================================
@@ -32,6 +33,7 @@ import { useDebounce } from "../../hooks/useDebounce";
 const ClinicalRecordManagement: React.FC = () => {
     const { pacienteActivo } = usePacienteActivo();
     const { notify } = useNotification();
+    const { user } = useAuth(); // <-- Obtener usuario autenticado
 
     // ==========================================================================
     // ESTADOS LOCALES
@@ -53,6 +55,15 @@ const ClinicalRecordManagement: React.FC = () => {
         useState<ClinicalRecordListResponse | null>(null);
 
     const debouncedSearchTerm = useDebounce(searchTerm, 400);
+
+    // ==========================================================================
+    // VERIFICAR SI EL USUARIO PUEDE CREAR HISTORIALES
+    // ==========================================================================
+    const puedeCrearHistorial = useMemo(() => {
+        // Temporal: solo Odontólogos pueden crear historiales
+        // TODO: Reemplazar con sistema de permisos real cuando esté disponible
+        return user?.rol === 'Odontologo';
+    }, [user]);
 
     // ==========================================================================
     // HOOKS DE DATOS
@@ -461,13 +472,16 @@ const ClinicalRecordManagement: React.FC = () => {
                             )}
                         </button>
 
-                        <button
-                            onClick={handleCreateClick}
-                            className="inline-flex items-center px-4 py-2 rounded-lg text-white font-medium transition-colors bg-blue-600 hover:bg-blue-700"
-                        >
-                            <FileText className="h-4 w-4 mr-2" />
-                            Nuevo Historial
-                        </button>
+                        {/* Botón Nuevo Historial - Solo visible para Odontólogos */}
+                        {puedeCrearHistorial && (
+                            <button
+                                onClick={handleCreateClick}
+                                className="inline-flex items-center px-4 py-2 rounded-lg text-white font-medium transition-colors bg-blue-600 hover:bg-blue-700"
+                            >
+                                <FileText className="h-4 w-4 mr-2" />
+                                Nuevo Historial
+                            </button>
+                        )}
                     </div>
                 </div>
 

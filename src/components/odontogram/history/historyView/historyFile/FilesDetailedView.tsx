@@ -141,7 +141,7 @@ export const FilesDetailedView = ({ files, isLoading }: FilesDetailedViewProps) 
                                             </span>
                                             <span>{formatFileSize(file.file_size_bytes)}</span>
                                             {file.is_Dicom && (
-                                                <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">
+                                                <span className="px-2 py-0.5 bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 rounded">
                                                     DICOM
                                                 </span>
                                             )}

@@ -25,14 +25,14 @@ const AntecedentesPersonalesSection: React.FC<AntecedentesPersonalesSectionProps
     <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
       {/* Barra de progreso sutil superior cuando está cargando */}
       {isRefreshing && (
-        <div className="absolute top-0 left-0 w-full h-1 bg-blue-100 overflow-hidden">
-          <div className="w-full h-full bg-blue-500 animate-progress-buffer origin-left"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-brand-100 overflow-hidden">
+          <div className="w-full h-full bg-brand-500 animate-progress-buffer origin-left"></div>
         </div>
       )}
 
       <div className="flex justify-between items-start">
         <SectionHeader
-          icon={<User className="text-blue-500" />}
+          icon={<User className="text-brand-500" />}
           title="E. Antecedentes Personales"
           subtitle={
             lastUpdated ? `Cargado del: ${lastUpdated}` : "No existen registros previos"
@@ -47,7 +47,7 @@ const AntecedentesPersonalesSection: React.FC<AntecedentesPersonalesSectionProps
           className={`p-2 rounded-lg transition-all ${
             isRefreshing 
               ? "bg-slate-100 cursor-not-allowed" 
-              : "hover:bg-blue-50 text-slate-400 hover:text-blue-600 active:scale-95 border border-transparent hover:border-blue-100"
+              : "hover:bg-brand-50 text-slate-400 hover:text-brand-600 active:scale-95 border border-transparent hover:border-brand-100"
           }`}
           title="Actualizar antecedentes personales"
         >
@@ -86,7 +86,7 @@ const AntecedentesPersonalesSection: React.FC<AntecedentesPersonalesSectionProps
             {/* Alergias */}
             {antecedentes.alergias.length > 0 && (
               <div className="mb-4">
-                <h4 className="text-sm font-bold text-blue-700 uppercase tracking-wider mb-2 flex items-center gap-2">
+                <h4 className="text-sm font-bold text-brand-700 uppercase tracking-wider mb-2 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4" />
                   Alergias
                 </h4>
@@ -94,7 +94,7 @@ const AntecedentesPersonalesSection: React.FC<AntecedentesPersonalesSectionProps
                   {antecedentes.alergias.map((alergia, idx) => (
                     <div
                       key={idx}
-                      className="p-3 bg-blue-50/50 border border-blue-100 rounded-lg"
+                      className="p-3 bg-brand-50/50 border border-brand-100 rounded-lg"
                     >
                       <p className="text-sm text-slate-700">{alergia}</p>
                     </div>

@@ -161,8 +161,8 @@ export const ClinicalFilesContainer: React.FC<ClinicalFilesContainerProps> = ({
       )}
 
       {pendingFiles.length > 0 && (
-        <div className="mx-4 mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-xs text-blue-800">
+        <div className="mx-4 mt-3 p-2 bg-brand-50 border border-brand-200 rounded-lg">
+          <p className="text-xs text-brand-800">
             {pendingFiles.length} / 10 archivos
             {remainingSlots > 0 && ` (puedes agregar ${remainingSlots} más)`}
           </p>

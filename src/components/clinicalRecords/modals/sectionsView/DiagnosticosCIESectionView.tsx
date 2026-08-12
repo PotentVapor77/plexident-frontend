@@ -40,11 +40,11 @@ export const DiagnosticosCIESectionView: React.FC<DiagnosticosCIESectionViewProp
                 };
             case "DEF":
                 return {
-                    bg: "bg-indigo-50",
-                    text: "text-indigo-800",
-                    border: "border-indigo-200",
-                    iconBg: "bg-indigo-100",
-                    icon: <CheckCircle2 className="h-4 w-4 text-indigo-600" />
+                    bg: "bg-brand-50",
+                    text: "text-brand-800",
+                    border: "border-brand-200",
+                    iconBg: "bg-brand-100",
+                    icon: <CheckCircle2 className="h-4 w-4 text-brand-600" />
                 };
             default:
                 return {
@@ -135,18 +135,18 @@ export const DiagnosticosCIESectionView: React.FC<DiagnosticosCIESectionViewProp
                         </div>
                         
                         {/* Definitivos */}
-                        <div className="border border-gray-200 rounded-lg p-4 bg-indigo-50">
+                        <div className="border border-gray-200 rounded-lg p-4 bg-brand-50">
                             <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 flex items-center justify-center rounded-full bg-indigo-100">
-                                    <CheckCircle2 className="h-5 w-5 text-indigo-600" />
+                                <div className="h-10 w-10 flex items-center justify-center rounded-full bg-brand-100">
+                                    <CheckCircle2 className="h-5 w-5 text-brand-600" />
                                 </div>
                                 <div>
-                                    <p className="text-xs font-semibold text-indigo-800 uppercase tracking-wide">
+                                    <p className="text-xs font-semibold text-brand-800 uppercase tracking-wide">
                                         Definitivos (DEF)
                                     </p>
                                     <div className="flex items-baseline gap-1 mt-1">
-                                        <span className="text-2xl font-bold text-indigo-900">{estadisticas.definitivos}</span>
-                                        <span className="text-sm text-indigo-700">
+                                        <span className="text-2xl font-bold text-brand-900">{estadisticas.definitivos}</span>
+                                        <span className="text-sm text-brand-700">
                                             ({estadisticas.total > 0 ? Math.round((estadisticas.definitivos / estadisticas.total) * 100) : 0}%)
                                         </span>
                                     </div>
@@ -182,7 +182,7 @@ export const DiagnosticosCIESectionView: React.FC<DiagnosticosCIESectionViewProp
                     <div className="space-y-6">
                         {/* Encabezado del listado */}
                         <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-4 bg-indigo-600 rounded-full"></div>
+                            <div className="w-1.5 h-4 bg-brand-600 rounded-full"></div>
                             <h4 className="text-sm font-semibold text-gray-800">
                                 Listado de Diagnósticos ({estadisticas.total})
                             </h4>
@@ -297,7 +297,7 @@ export const DiagnosticosCIESectionView: React.FC<DiagnosticosCIESectionViewProp
                                 <p className="text-sm text-gray-700">
                                     <span className="font-semibold">Total:</span> {estadisticas.total} diagnóstico(s) - 
                                     <span className="text-amber-700 font-medium"> {estadisticas.presuntivos} presuntivo(s)</span> • 
-                                    <span className="text-indigo-700 font-medium"> {estadisticas.definitivos} definitivo(s)</span>
+                                    <span className="text-brand-700 font-medium"> {estadisticas.definitivos} definitivo(s)</span>
                                 </p>
                             </div>
                         </div>
@@ -311,7 +311,7 @@ export const DiagnosticosCIESectionView: React.FC<DiagnosticosCIESectionViewProp
             <div className="pt-4 border-t border-gray-200">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                        <div className="w-2 h-2 rounded-full bg-brand-500"></div>
                         <p className="text-xs text-gray-500 font-medium">
                             Sección J {tieneDiagnosticos ? `con ${estadisticas.total} diagnóstico(s)` : 'sin diagnósticos'}
                         </p>

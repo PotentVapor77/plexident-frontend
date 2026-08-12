@@ -128,7 +128,7 @@ export default function PatientMain() {
           <div className="flex gap-3">
             <button
               onClick={openPatientCreateModal}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors font-medium"
             >
               + Crear paciente
             </button>

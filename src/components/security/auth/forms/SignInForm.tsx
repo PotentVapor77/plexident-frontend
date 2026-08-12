@@ -53,8 +53,10 @@ const SignInForm = () => {
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Iniciar sesión</h2>
-        <p className="mt-1 text-sm text-gray-500">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Iniciar sesión
+        </h2>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           ¡Introduce tu Usuario!
         </p>
       </div>
@@ -111,7 +113,7 @@ const SignInForm = () => {
 
           <Link
             to="/forgot-password"
-            className="text-sm font-medium text-primary-600 hover:text-primary-700"
+            className="text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
           >
             ¿Has olvidado tu contraseña?
           </Link>
@@ -133,7 +135,7 @@ const SignInForm = () => {
         ¿No tienes una cuenta?{" "}
         <Link
           to="/sign-up"
-          className="font-medium text-primary-600 hover:text-primary-700"
+          className="font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
         >
           Contáctanos
         </Link>

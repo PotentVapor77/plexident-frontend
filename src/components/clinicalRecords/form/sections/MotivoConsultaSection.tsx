@@ -38,8 +38,8 @@ const MotivoConsultaSection: React.FC<MotivoConsultaSectionProps> = ({
       {/* Header de la sección */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 border border-blue-100">
-            <FileText className="h-5 w-5 text-blue-600" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 border border-brand-100">
+            <FileText className="h-5 w-5 text-brand-600" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">

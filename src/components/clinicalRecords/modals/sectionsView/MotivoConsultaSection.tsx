@@ -58,7 +58,7 @@ export const MotivoConsultaSectionView: React.FC<
                 <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
                     <div className="mb-3">
                         <div className="flex items-center gap-2">
-                            <div className="w-1 h-4 bg-blue-600 rounded-full"></div>
+                            <div className="w-1 h-4 bg-brand-600 rounded-full"></div>
                             <p className="text-xs font-semibold text-gray-800 uppercase">
                                 DESCRIPCIÓN DEL MOTIVO DE CONSULTA
                             </p>
@@ -87,7 +87,7 @@ export const MotivoConsultaSectionView: React.FC<
             <div className="pt-4 border-t border-gray-200">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <div className="w-2 h-2 rounded-full bg-brand-500"></div>
                         <p className="text-xs text-gray-500">
                             Sección B completada
                         </p>

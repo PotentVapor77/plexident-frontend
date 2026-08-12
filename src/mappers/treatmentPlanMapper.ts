@@ -164,7 +164,7 @@ export function getEstadoSesionLabel(estado: string): string {
  */
 export function getEstadoSesionColor(estado: string): string {
   const colors: Record<string, string> = {
-    planificada: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+    planificada: 'bg-brand-100 text-brand-800 dark:bg-brand-900 dark:text-brand-300',
     en_progreso: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
     completada: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
     cancelada: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',

@@ -319,8 +319,8 @@ export const ToothSurfacesStaticView: React.FC<ToothSurfacesStaticViewProps> = (
       )}
 
       {onlyGeneral && (
-        <div className="text-center py-2 px-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-xs text-blue-700">
+        <div className="text-center py-2 px-3 bg-brand-50 border border-brand-200 rounded-lg">
+          <p className="text-xs text-brand-700">
              Diagnóstico General (Afecta todo el diente)
           </p>
         </div>

@@ -54,7 +54,7 @@ const RotationControls: React.FC<RotationControlsProps> = ({ onRotate }) => {
             
             {/* Botón para enfocar la Raíz (Rotación vertical hacia arriba) */}
             <button
-                className="p-1 rounded-full text-white bg-blue-500/80 hover:bg-blue-600 shadow-md transition-all duration-150 active:scale-95"
+                className="p-1 rounded-full text-white bg-brand-500/80 hover:bg-brand-600 shadow-md transition-all duration-150 active:scale-95"
                 onClick={() => rotateX('up')}
                 title="Rotar para ver la Raíz"
             >

@@ -26,7 +26,7 @@ const HorarioFormFields = ({ formData, onChange, loading }: HorarioFormFieldsPro
             key={dia.dia_semana}
             className={`p-4 rounded-lg border-2 transition-all ${
               dia.activo
-                ? 'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/10'
+                ? 'border-brand-200 dark:border-brand-800 bg-brand-50 dark:bg-brand-900/10'
                 : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/20'
             }`}
           >
@@ -39,8 +39,8 @@ const HorarioFormFields = ({ formData, onChange, loading }: HorarioFormFieldsPro
                   checked={dia.activo}
                   onChange={(e) => onChange(dia.dia_semana, 'activo', e.target.checked)}
                   disabled={loading}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded 
-                           focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 
+                  className="w-4 h-4 text-brand-600 bg-gray-100 border-gray-300 rounded 
+                           focus:ring-brand-500 dark:focus:ring-brand-600 dark:ring-offset-gray-800 
                            focus:ring-2 dark:bg-gray-700 dark:border-gray-600 disabled:cursor-not-allowed"
                 />
                 <label
@@ -62,7 +62,7 @@ const HorarioFormFields = ({ formData, onChange, loading }: HorarioFormFieldsPro
                   onChange={(e) => onChange(dia.dia_semana, 'apertura', e.target.value)}
                   disabled={!dia.activo || loading}
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 
-                           rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 
+                           rounded-lg focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 
                            focus:border-transparent dark:bg-gray-700 dark:text-white 
                            disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed
                            text-sm"
@@ -80,7 +80,7 @@ const HorarioFormFields = ({ formData, onChange, loading }: HorarioFormFieldsPro
                   onChange={(e) => onChange(dia.dia_semana, 'cierre', e.target.value)}
                   disabled={!dia.activo || loading}
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 
-                           rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 
+                           rounded-lg focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 
                            focus:border-transparent dark:bg-gray-700 dark:text-white 
                            disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed
                            text-sm"

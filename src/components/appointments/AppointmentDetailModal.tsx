@@ -50,7 +50,7 @@ const AppointmentDetailModal = ({
   const [loadingHistorial] = useState(false); 
   const getEstadoBadgeColor = (estado: string) => {
     const colors: Record<string, string> = {
-      PROGRAMADA: 'bg-blue-100 text-blue-800',
+      PROGRAMADA: 'bg-brand-100 text-brand-800',
       
       CONFIRMADA: 'bg-green-100 text-green-800',
       ASISTIDA: 'bg-gray-100 text-gray-800',
@@ -236,7 +236,7 @@ const AppointmentDetailModal = ({
         {/* 📧 Recordatorio */}
         <button
           onClick={() => setShowRecordatorioModal(true)}
-          className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-indigo-700 rounded-lg hover:from-indigo-600 hover:to-indigo-800 transition-all shadow-md"
+          className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-brand-500 to-brand-700 rounded-lg hover:from-brand-600 hover:to-brand-800 transition-all shadow-md"
         >
           <EnvelopeIcon className="h-5 w-5 mr-2" />
           Recordatorio
@@ -303,7 +303,7 @@ const AppointmentDetailModal = ({
         {/* 📧 Recordatorio */}
         <button
           onClick={() => setShowRecordatorioModal(true)}
-          className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-indigo-700 rounded-lg hover:from-indigo-600 hover:to-indigo-800 transition-all shadow-md"
+          className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-brand-500 to-brand-700 rounded-lg hover:from-brand-600 hover:to-brand-800 transition-all shadow-md"
         >
           <EnvelopeIcon className="h-5 w-5 mr-2" />
           Recordatorio
@@ -460,7 +460,7 @@ const AppointmentDetailModal = ({
       {/* 📧 Recordatorio */}
       <button
         onClick={() => setShowRecordatorioModal(true)}
-        className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-indigo-700 rounded-lg hover:from-indigo-600 hover:to-indigo-800 transition-all shadow-md"
+        className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-brand-500 to-brand-700 rounded-lg hover:from-brand-600 hover:to-brand-800 transition-all shadow-md"
       >
         <EnvelopeIcon className="h-5 w-5 mr-2" />
         Recordatorio
@@ -511,7 +511,7 @@ const AppointmentDetailModal = ({
       {/* 📧 Recordatorio */}
       <button
         onClick={() => setShowRecordatorioModal(true)}
-        className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-indigo-700 rounded-lg hover:from-indigo-600 hover:to-indigo-800 transition-all shadow-md"
+        className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-brand-500 to-brand-700 rounded-lg hover:from-brand-600 hover:to-brand-800 transition-all shadow-md"
       >
         <EnvelopeIcon className="h-5 w-5 mr-2" />
         Recordatorio
@@ -582,7 +582,7 @@ const AppointmentDetailModal = ({
   <div className="flex items-start justify-between">
     <div>
       <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-        <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-sm">
+        <div className="h-10 w-10 bg-brand-600 rounded-xl flex items-center justify-center shadow-sm">
           <CalendarIcon className="h-6 w-6 text-white" />
         </div>
         Detalles de la Cita
@@ -595,7 +595,7 @@ const AppointmentDetailModal = ({
     <div className="flex items-center gap-3">
       <button
         onClick={handleVerHistorial}
-        className="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all shadow hover:shadow-md"
+        className="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-brand-500 to-brand-600 rounded-lg hover:from-brand-600 hover:to-brand-700 transition-all shadow hover:shadow-md"
       >
         <DocumentMagnifyingGlassIcon className="h-5 w-5 mr-2" />
         Ver Historial
@@ -636,17 +636,17 @@ const AppointmentDetailModal = ({
             {/* ✅ Sección: Fecha y Hora - AZUL */}
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full" />
+                <div className="w-2 h-8 bg-gradient-to-b from-brand-500 to-brand-600 rounded-full" />
                 <h3 className="text-lg font-semibold text-gray-900">
                   Fecha y Horario
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
-                  <CalendarIcon className="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 p-4 bg-brand-50 rounded-lg">
+                  <CalendarIcon className="h-6 w-6 text-brand-600 flex-shrink-0 mt-0.5" />
                   <div>
-  <p className="text-xs font-medium text-blue-600 uppercase mb-1">
+  <p className="text-xs font-medium text-brand-600 uppercase mb-1">
     Fecha
   </p>
   <p className="text-base font-semibold text-gray-900">
@@ -655,10 +655,10 @@ const AppointmentDetailModal = ({
 </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
-                  <ClockIcon className="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 p-4 bg-brand-50 rounded-lg">
+                  <ClockIcon className="h-6 w-6 text-brand-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-medium text-blue-600 uppercase mb-1">
+                    <p className="text-xs font-medium text-brand-600 uppercase mb-1">
                       Horario
                     </p>
                     <p className="text-base font-semibold text-gray-900">

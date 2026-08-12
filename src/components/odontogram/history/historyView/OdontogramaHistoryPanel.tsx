@@ -106,9 +106,9 @@ export const OdontogramaHistoryPanel: React.FC<OdontogramaHistoryPanelProps> = (
                 {/* Header */}
                 <div className="flex-none px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-brand-100 dark:bg-brand-900/30">
                             <svg
-                                className="w-5 h-5 text-blue-600 dark:text-blue-400"
+                                className="w-5 h-5 text-brand-600 dark:text-brand-400"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -175,7 +175,7 @@ export const OdontogramaHistoryPanel: React.FC<OdontogramaHistoryPanelProps> = (
             <div className="flex-none px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-3">
                     {/* Badge del número */}
-                    <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-lg shadow-md">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 text-white font-bold text-lg shadow-md">
                         {toothInfo.numero}
                     </div>
 
@@ -304,7 +304,7 @@ const DiagnosticoReadOnlyCard: React.FC<DiagnosticoReadOnlyCardProps> = ({ diagn
                             {diagnostico.superficiesUnificadas.map((surface, idx) => (
                                 <span
                                     key={idx}
-                                    className="px-2.5 py-1 text-xs font-medium rounded-md bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                                    className="px-2.5 py-1 text-xs font-medium rounded-md bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300 border border-brand-200 dark:border-brand-800"
                                 >
                                     {surface.replace('cara_', '').replace('raiz_', '').replace('_', ' ')}
                                 </span>

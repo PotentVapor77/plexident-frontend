@@ -435,7 +435,7 @@ export function BackgroundsTable({
                         {agrupado.personal ? (
                           <>
                             {agrupado.personal.diabetes !== 'NO' && agrupado.personal.diabetes && (
-                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-brand-50 text-brand-700 border border-brand-200 dark:bg-brand-900/30 dark:text-brand-400 dark:border-brand-800">
                                 <Activity className="h-3 w-3" />
                                 Diabetes
                               </span>
@@ -476,7 +476,7 @@ export function BackgroundsTable({
                               </span>
                             )}
                             {agrupado.familiar.cardiopatia_familiar !== 'NO' && agrupado.familiar.cardiopatia_familiar && (
-                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-brand-50 text-brand-700 border border-brand-200 dark:bg-brand-900/30 dark:text-brand-400 dark:border-brand-800">
                                 <Heart className="h-3 w-3" />
                                 Cardiopatía
                               </span>

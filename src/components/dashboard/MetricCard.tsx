@@ -26,11 +26,11 @@ export const MetricCard: React.FC<MetricCardProps> = ({
 }) => {
   const colorClasses = {
     blue: {
-      bg: 'bg-blue-50 dark:bg-blue-900/20',
-      text: 'text-blue-700 dark:text-blue-400',
-      iconBg: 'bg-blue-100 dark:bg-blue-900/40',
-      iconText: 'text-blue-600 dark:text-blue-400',
-      changeBg: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+      bg: 'bg-brand-50 dark:bg-brand-900/20',
+      text: 'text-brand-700 dark:text-brand-400',
+      iconBg: 'bg-brand-100 dark:bg-brand-900/40',
+      iconText: 'text-brand-600 dark:text-brand-400',
+      changeBg: 'bg-brand-100 text-brand-800 dark:bg-brand-900/30 dark:text-brand-400',
     },
     green: {
       bg: 'bg-green-50 dark:bg-green-900/20',

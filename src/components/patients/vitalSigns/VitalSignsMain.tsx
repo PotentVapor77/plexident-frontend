@@ -458,8 +458,8 @@ export default function VitalSignsMain() {
       id: "signos-vitales",
       label: "Registros Médicos",
       icon: <Clipboard className="h-5 w-5" />,
-      color: "text-blue-600 dark:text-blue-400",
-      bgColor: "bg-blue-50 dark:bg-blue-900/30",
+      color: "text-brand-600 dark:text-brand-400",
+      bgColor: "bg-brand-50 dark:bg-brand-900/30",
       description: "Consultas y constantes vitales integradas",
     },
     {
@@ -589,11 +589,11 @@ export default function VitalSignsMain() {
 
   const colorClasses = {
     "signos-vitales": {
-      container: "bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-800/30",
-      iconBg: "bg-blue-100 dark:bg-blue-800/30",
-      iconColor: "text-blue-600 dark:text-blue-400",
-      text: "text-blue-700 dark:text-blue-300",
-      badge: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300"
+      container: "bg-brand-50 dark:bg-brand-900/10 border-brand-100 dark:border-brand-800/30",
+      iconBg: "bg-brand-100 dark:bg-brand-800/30",
+      iconColor: "text-brand-600 dark:text-brand-400",
+      text: "text-brand-700 dark:text-brand-300",
+      badge: "bg-brand-100 text-brand-800 dark:bg-brand-900/40 dark:text-brand-300"
     },
     "antecedentes": {
       container: "bg-purple-50 dark:bg-purple-900/10 border-purple-100 dark:border-purple-800/30",
@@ -777,7 +777,7 @@ export default function VitalSignsMain() {
       },
       "signos-vitales": {
         label: "Nuevo Registro Médico",
-        color: "bg-blue-600 hover:bg-blue-700",
+        color: "bg-brand-600 hover:bg-brand-700",
         icon: <Plus className="h-4 w-4 mr-2" />,
       },
     };

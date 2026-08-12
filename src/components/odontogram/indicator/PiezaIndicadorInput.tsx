@@ -116,7 +116,7 @@ export const PiezaIndicadorInput: React.FC<PiezaIndicadorInputProps> = ({
               disabled={disabled}
               className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
                 valor === option
-                  ? "bg-blue-600 text-white shadow-sm"
+                  ? "bg-brand-600 text-white shadow-sm"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
             >

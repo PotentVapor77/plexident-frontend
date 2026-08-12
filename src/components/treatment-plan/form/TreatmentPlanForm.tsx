@@ -236,9 +236,9 @@ export default function TreatmentPlanForm({
             </label>
 
             {selectedPaciente ? (
-              <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-lg">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">
+                  <div className="w-10 h-10 rounded-full bg-brand-500 text-white flex items-center justify-center font-semibold">
                     {getInitial(selectedPaciente?.nombres)}
                     {getInitial(selectedPaciente?.apellidos)}
                   </div>
@@ -291,7 +291,7 @@ export default function TreatmentPlanForm({
                           onClick={() => handleSelectPaciente(paciente)}
                           className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
                         >
-                          <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-semibold">
+                          <div className="w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center text-sm font-semibold">
                             {getInitial(paciente.nombres)}
                             {getInitial(paciente.apellidos)}
                           </div>
@@ -380,7 +380,7 @@ export default function TreatmentPlanForm({
           </div>
 
           {mode === "create" && (
-            <div className="mt-2 flex items-start gap-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 px-3 py-3 border border-blue-200 dark:border-blue-800">
+            <div className="mt-2 flex items-start gap-3 rounded-lg bg-brand-50 dark:bg-brand-900/20 px-3 py-3 border border-brand-200 dark:border-brand-800">
               <input
                 id="usar_ultimo_odontograma"
                 type="checkbox"
@@ -392,11 +392,11 @@ export default function TreatmentPlanForm({
               <div className="space-y-1">
                 <label
                   htmlFor="usar_ultimo_odontograma"
-                  className="text-sm font-medium text-blue-900 dark:text-blue-100"
+                  className="text-sm font-medium text-brand-900 dark:text-brand-100"
                 >
                   Usar último odontograma registrado
                 </label>
-                <p className="text-xs text-blue-800 dark:text-blue-200">
+                <p className="text-xs text-brand-800 dark:text-brand-200">
                   Se vinculará automáticamente el odontograma más reciente del paciente al plan de
                   tratamiento.
                 </p>

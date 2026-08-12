@@ -397,13 +397,13 @@ const AppointmentRescheduleModal = ({
           <div className={`bg-gradient-to-br to-white border-2 rounded-xl p-4 ${
             citaYaPaso 
               ? 'from-gray-50 border-gray-300 opacity-60' 
-              : 'from-blue-50 border-blue-200'
+              : 'from-brand-50 border-brand-200'
           }`}>
             <div className="flex items-center gap-3">
               <div className={`h-12 w-12 bg-gradient-to-br rounded-xl flex items-center justify-center shadow-md ${
                 citaYaPaso 
                   ? 'from-gray-400 to-gray-600' 
-                  : 'from-blue-500 to-blue-700'
+                  : 'from-brand-500 to-brand-700'
               }`}>
                 <UserIcon className="h-6 w-6 text-white" />
               </div>
@@ -554,9 +554,9 @@ const AppointmentRescheduleModal = ({
             </div>
 
             {/* Información de duración */}
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+            <div className="bg-brand-50 border-2 border-brand-200 rounded-xl p-4">
               <div className="flex items-center gap-3">
-                <ClockIcon className="h-5 w-5 text-blue-600" />
+                <ClockIcon className="h-5 w-5 text-brand-600" />
                 <div>
                   <p className="text-xs text-gray-500">Duración de la cita</p>
                   <p className="font-semibold text-gray-900">{cita.duracion} minutos</p>

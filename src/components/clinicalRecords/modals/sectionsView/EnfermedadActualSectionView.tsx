@@ -80,7 +80,7 @@ export const EnfermedadActualSectionView: React.FC<
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                <div className="w-2 h-2 rounded-full bg-brand-500"></div>
                                 <span className="text-xs text-gray-600">
                                     {record.enfermedad_actual.length} caracteres
                                 </span>

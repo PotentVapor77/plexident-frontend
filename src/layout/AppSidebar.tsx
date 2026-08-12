@@ -44,9 +44,9 @@ const ROL_CONFIG: Record<
   },
   Odontologo: {
     label: "Odontólogo",
-    badgeBg: "bg-brand-50 dark:bg-blue-900/30",
-    badgeText: "text-brand-700 dark:text-blue-300",
-    badgeBorder: "border-brand-200 dark:border-blue-700",
+    badgeBg: "bg-brand-50 dark:bg-brand-500/10",
+    badgeText: "text-brand-700 dark:text-brand-300",
+    badgeBorder: "border-brand-200 dark:border-brand-700",
     accentBar: "bg-gradient-to-b from-brand-500 to-brand-400",
     dotColor: "bg-brand-500",
     description: "Acceso clínico",
@@ -172,8 +172,8 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
 
   return (
     <div
-      className={`flex items-center gap-3 px-3 py-3 rounded-xl border transition-all duration-200
-        ${rolConfig.badgeBg} ${rolConfig.badgeBorder} border`}
+      className={`flex items-center gap-3 px-3 py-3 rounded-xl border shadow-theme-xs transition-all duration-200
+        ${rolConfig.badgeBg} ${rolConfig.badgeBorder}`}
     >
       <div className="relative flex-shrink-0">
         <div
@@ -563,7 +563,7 @@ const AppSidebar: React.FC = () => {
       {showFull && (
         <div className="py-4 border-t border-gray-200 dark:border-gray-700">
           <div
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg border
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg border shadow-theme-xs
               ${rolConfig.badgeBg} ${rolConfig.badgeBorder}`}
           >
             <span className={`w-2 h-2 rounded-full flex-shrink-0 ${rolConfig.dotColor}`} />

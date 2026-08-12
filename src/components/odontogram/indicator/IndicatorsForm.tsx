@@ -504,11 +504,11 @@ const handlePiezaChange = (
           ======================================================================== */}
           {informacionPiezas && (
             <div className={`p-4 rounded-lg border ${informacionPiezas.denticion === 'temporal'
-                ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
+                ? 'bg-brand-50 border-brand-200 dark:bg-brand-900/20 dark:border-brand-800'
                 : 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
               }`}>
               <div className="flex items-start gap-3">
-                <Info className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+                <Info className="h-5 w-5 mt-0.5 flex-shrink-0 text-brand-600 dark:text-brand-400" />
                 <div className="flex-1">
                   <h4 className="font-semibold text-gray-900 dark:text-gray-100">
                     Dentición: {informacionPiezas.denticion === 'temporal' ? 'Temporal (Decidua)' : 'Permanente'}
@@ -536,9 +536,9 @@ const handlePiezaChange = (
               </label>
 
               {selectedPaciente ? (
-                <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">
+                    <div className="w-10 h-10 rounded-full bg-brand-500 text-white flex items-center justify-center font-semibold">
                       {selectedPaciente.nombres.charAt(0)}
                       {selectedPaciente.apellidos.charAt(0)}
                     </div>
@@ -586,7 +586,7 @@ const handlePiezaChange = (
                             onClick={() => handleSelectPaciente(paciente)}
                             className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
                           >
-                            <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-semibold">
+                            <div className="w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center text-sm font-semibold">
                               {paciente.nombres.charAt(0)}
                               {paciente.apellidos.charAt(0)}
                             </div>
@@ -678,11 +678,11 @@ const handlePiezaChange = (
           {/* ========================================================================
               NOTA INFORMATIVA
           ======================================================================== */}
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-            <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+          <div className="p-4 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-lg">
+            <p className="text-sm font-medium text-brand-900 dark:text-brand-100 mb-2">
               💡 Información importante
             </p>
-            <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
+            <ul className="text-sm text-brand-800 dark:text-brand-200 space-y-1 list-disc list-inside">
               <li>Los valores de placa y cálculo deben estar entre 0 y 3</li>
               <li>Los valores de gingivitis deben ser 0 (sano) o 1 (inflamado)</li>
               <li>Los promedios se calculan automáticamente en el backend</li>

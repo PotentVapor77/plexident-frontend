@@ -422,7 +422,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
       <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
         <div className="flex items-center justify-center p-8">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mx-auto mb-3" />
             <p className="text-sm text-slate-600">Cargando diagnósticos CIE-10...</p>
           </div>
         </div>
@@ -469,7 +469,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
         key={tipo}
         type="button"
         onClick={() => handleCambiarTipoCarga(tipo)}
-        className={`px-3 py-1.5 ${tipoCargaActual === tipo ? "bg-blue-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}
+        className={`px-3 py-1.5 ${tipoCargaActual === tipo ? "bg-brand-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}
       >
         {tipo === "nuevos" ? "Solo nuevos" : "Todos"}
       </button>
@@ -478,7 +478,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
           <button
     type="button"
     onClick={() => setMostrarFiltros((v) => !v)}
-    className={`p-1.5 rounded-lg border ${mostrarFiltros ? "border-blue-300 bg-blue-50 text-blue-600" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}
+    className={`p-1.5 rounded-lg border ${mostrarFiltros ? "border-brand-300 bg-brand-50 text-brand-600" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}
     title="Filtros"
   >
     <Filter className="h-4 w-4" />
@@ -496,7 +496,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
     disabled={modo === "editar" && syncMutation.isPending}
     className={`text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors ${
       modo === "editar" 
-        ? "bg-blue-600 hover:bg-blue-700 text-white" 
+        ? "bg-brand-600 hover:bg-brand-700 text-white" 
         : "bg-emerald-600 hover:bg-emerald-700 text-white"
     } disabled:opacity-50`}
   >
@@ -529,7 +529,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
           placeholder="Buscar por diagnóstico, código, diente..."
           value={filtros.texto}
           onChange={(e) => setFiltros((p) => ({ ...p, texto: e.target.value }))}
-          className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+          className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400"
         />
       </div>
 
@@ -588,7 +588,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
         <button
           type="button"
           onClick={seleccionarTodos}
-          className="text-xs px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg border border-blue-300"
+          className="text-xs px-3 py-1.5 bg-brand-100 hover:bg-brand-200 text-brand-700 rounded-lg border border-brand-300"
         >
           Seleccionar todos
         </button>
@@ -617,7 +617,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
           <button
             type="button"
             onClick={() => cambiarTipoTodos("DEF")}
-            className="text-xs px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg border border-indigo-300"
+            className="text-xs px-3 py-1.5 bg-brand-100 hover:bg-brand-200 text-brand-700 rounded-lg border border-brand-300"
           >
             Cambiar todos a DEF
           </button>
@@ -658,7 +658,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
               return (
                 <tr
                   key={key}
-                  className={`border-t border-slate-100 ${seleccionado ? "bg-blue-50 hover:bg-blue-100" : "hover:bg-slate-50"} ${!diag.activo ? "opacity-60" : ""}`}
+                  className={`border-t border-slate-100 ${seleccionado ? "bg-brand-50 hover:bg-brand-100" : "hover:bg-slate-50"} ${!diag.activo ? "opacity-60" : ""}`}
                 >
 
                   {/* Estado */}
@@ -670,7 +670,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
                   <td className="px-3 py-2">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
                       checked={seleccionado}
                       onChange={() => toggleSeleccion(diag)}
                       disabled={!diag.activo && modo === "crear"}
@@ -679,7 +679,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
 
                   {/* Diente FDI */}
                   <td className="px-3 py-2">
-                    <span className={`inline-flex items-center justify-center h-6 w-6 rounded-full ${seleccionado ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-700"}`}>
+                    <span className={`inline-flex items-center justify-center h-6 w-6 rounded-full ${seleccionado ? "bg-brand-100 text-brand-700" : "bg-slate-100 text-slate-700"}`}>
                       {diag.diente_fdi || "-"}
                     </span>
                   </td>
@@ -707,12 +707,12 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
                             placeholder={codigoOriginal}
                             maxLength={10}
                             autoFocus
-                            className={`w-24 px-2 py-0.5 border rounded font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 ${errorCodigo ? "border-rose-400 bg-rose-50" : "border-slate-300"}`}
+                            className={`w-24 px-2 py-0.5 border rounded font-mono text-xs focus:outline-none focus:ring-2 focus:ring-brand-400 ${errorCodigo ? "border-rose-400 bg-rose-50" : "border-slate-300"}`}
                           />
                           <button
                             type="button"
                             onClick={() => confirmarEdicion(diagExt, key)}
-                            className="px-2 py-0.5 bg-blue-600 text-white rounded text-[10px] hover:bg-blue-700"
+                            className="px-2 py-0.5 bg-brand-600 text-white rounded text-[10px] hover:bg-brand-700"
                             title="Confirmar (Enter)"
                           >
                             ✓
@@ -743,7 +743,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
                             <button
                               type="button"
                               onClick={() => iniciarEdicionCodigo(diagExt)}
-                              className="p-0.5 text-slate-400 hover:text-blue-600 rounded transition-colors"
+                              className="p-0.5 text-slate-400 hover:text-brand-600 rounded transition-colors"
                               title="Editar código CIE-10"
                             >
                               <Pencil className="h-3 w-3" />
@@ -772,7 +772,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
                   <td className="px-3 py-2">
                     {seleccionado ? (
                       <div className="flex items-center gap-1">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${tipoActual === "PRE" ? "bg-amber-100 text-amber-800" : "bg-indigo-100 text-indigo-800"}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${tipoActual === "PRE" ? "bg-amber-100 text-amber-800" : "bg-brand-100 text-brand-800"}`}>
                           {tipoActual === "PRE" ? "Presuntivo" : "Definitivo"}
                         </span>
                         <select
@@ -785,7 +785,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
                         </select>
                       </div>
                     ) : (
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${diag.tipo_cie === "DEF" ? "bg-indigo-100 text-indigo-800" : "bg-amber-100 text-amber-800"}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${diag.tipo_cie === "DEF" ? "bg-brand-100 text-brand-800" : "bg-amber-100 text-amber-800"}`}>
                         {diag.tipo_cie === "DEF" ? "Definitivo" : "Presuntivo"}
                       </span>
                     )}
@@ -816,7 +816,7 @@ const DiagnosticosCieSection: React.FC<DiagnosticosCieSectionProps> = ({
           <div><p className="text-[10px] text-slate-500">Total encontrados</p><p className="text-sm font-semibold text-slate-800">{estadisticas.totalDiagnosticos}</p></div>
           <div><p className="text-[10px] text-slate-500">Seleccionados</p><p className="text-sm font-semibold text-slate-800">{estadisticas.seleccionadosCount}</p></div>
           <div><p className="text-[10px] text-slate-500">Presuntivos selec.</p><p className="text-sm font-semibold text-amber-700">{estadisticas.seleccionadosPresuntivos}</p></div>
-          <div><p className="text-[10px] text-slate-500">Definitivos selec.</p><p className="text-sm font-semibold text-indigo-700">{estadisticas.seleccionadosDefinitivos}</p></div>
+          <div><p className="text-[10px] text-slate-500">Definitivos selec.</p><p className="text-sm font-semibold text-brand-700">{estadisticas.seleccionadosDefinitivos}</p></div>
         </div>
         <p className="text-[11px] text-slate-500 mt-3">
           {modo === "crear"

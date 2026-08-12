@@ -41,11 +41,11 @@ export const ConstantesVitalesSectionView: React.FC<
         const colors: Record<string, string> = {
             normal: "bg-emerald-100 text-emerald-800 border-emerald-200",
             fiebre: "bg-amber-100 text-amber-800 border-amber-200",
-            hipotermia: "bg-blue-100 text-blue-800 border-blue-200",
+            hipotermia: "bg-brand-100 text-brand-800 border-brand-200",
             taquicardia: "bg-rose-100 text-rose-800 border-rose-200",
-            bradicardia: "bg-blue-100 text-blue-800 border-blue-200",
+            bradicardia: "bg-brand-100 text-brand-800 border-brand-200",
             hipertension: "bg-rose-100 text-rose-800 border-rose-200",
-            hipotension: "bg-blue-100 text-blue-800 border-blue-200",
+            hipotension: "bg-brand-100 text-brand-800 border-brand-200",
             default: "bg-slate-100 text-slate-800 border-slate-200",
         };
         return colors[estado] || colors.default;
@@ -285,7 +285,7 @@ export const ConstantesVitalesSectionView: React.FC<
                             <span className="text-gray-600">Riesgo</span>
                         </div>
                         <div className="flex items-center gap-1 text-xs">
-                            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                            <div className="h-2 w-2 rounded-full bg-brand-500"></div>
                             <span className="text-gray-600">Bajo</span>
                         </div>
                     </div>

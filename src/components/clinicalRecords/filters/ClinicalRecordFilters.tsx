@@ -245,30 +245,30 @@ const ClinicalRecordFilters: React.FC<ClinicalRecordFiltersProps> = ({
           INDICADOR DE FILTROS ACTIVOS
       ==================================================================== */}
       {hasActiveFilters && !showFilters && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 dark:bg-blue-900/20 dark:border-blue-800">
+        <div className="bg-brand-50 border border-brand-200 rounded-lg p-3 dark:bg-brand-900/20 dark:border-brand-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+              <Filter className="w-4 h-4 text-brand-600 dark:text-brand-400" />
+              <span className="text-sm font-medium text-brand-700 dark:text-brand-300">
                 {activeFiltersCount} filtro{activeFiltersCount !== 1 ? 's' : ''} activo{activeFiltersCount !== 1 ? 's' : ''}
               </span>
               <button
                 onClick={onToggleFilters}
-                className="text-xs text-blue-600 hover:text-blue-800 underline dark:text-blue-400 dark:hover:text-blue-300"
+                className="text-xs text-brand-600 hover:text-brand-800 underline dark:text-brand-400 dark:hover:text-brand-300"
               >
                 Ver detalles
               </button>
             </div>
             <div className="flex items-center gap-3">
               {isLoading && (
-                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                <div className="flex items-center gap-2 text-brand-600 dark:text-brand-400">
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
                   <span className="text-xs">Filtrando...</span>
                 </div>
               )}
               <button
                 onClick={onClearFilters}
-                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                className="text-brand-600 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300"
                 aria-label="Limpiar filtros"
               >
                 <X className="w-4 h-4" />

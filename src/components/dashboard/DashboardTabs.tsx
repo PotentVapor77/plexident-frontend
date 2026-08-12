@@ -34,7 +34,7 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
               className={cn(
                 'group relative flex items-center whitespace-nowrap py-3 px-1 text-sm font-medium transition-colors',
                 activeTab === tab.id
-                  ? 'text-blue-600 dark:text-blue-400'
+                  ? 'text-brand-600 dark:text-brand-400'
                   : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
               )}
             >
@@ -45,7 +45,7 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
                   <span className={cn(
                     'rounded-full px-2 py-0.5 text-xs font-medium',
                     activeTab === tab.id
-                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                      ? 'bg-brand-100 text-brand-800 dark:bg-brand-900/30 dark:text-brand-400'
                       : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
                   )}>
                     {tab.count}
@@ -56,7 +56,7 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
               <span className={cn(
                 'absolute bottom-0 left-0 right-0 h-0.5 rounded-full transition-all',
                 activeTab === tab.id
-                  ? 'bg-blue-500 dark:bg-blue-400'
+                  ? 'bg-brand-500 dark:bg-brand-400'
                   : 'bg-transparent group-hover:bg-gray-300 dark:group-hover:bg-gray-600'
               )} />
             </button>

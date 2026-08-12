@@ -145,8 +145,8 @@ const RecordatorioSendModal = ({
           </label>
           <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <EnvelopeIcon className="h-5 w-5 text-blue-600" />
+              <div className="p-2 bg-brand-100 rounded-lg">
+                <EnvelopeIcon className="h-5 w-5 text-brand-600" />
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-900">Email</p>
@@ -193,11 +193,11 @@ const RecordatorioSendModal = ({
         </div>
 
         {/* Información adicional */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-800">
+        <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
+          <p className="text-sm text-brand-800">
             <span className="font-semibold">Nota:</span> El recordatorio incluirá automáticamente:
           </p>
-          <ul className="text-xs text-blue-700 mt-2 list-disc list-inside space-y-1">
+          <ul className="text-xs text-brand-700 mt-2 list-disc list-inside space-y-1">
             <li>Fecha y hora de la cita</li>
             <li>Nombre del paciente y odontólogo</li>
             <li>Tipo de consulta</li>

@@ -19,7 +19,7 @@ interface PieChartProps {
 const PieChart: React.FC<PieChartProps> = ({
   title,
   data,
-  colors = ['#465FFF', '#4BC0C0', '#FF6384', '#FFCE56', '#9966FF', '#FF9F40', '#36A2EB', '#C9CBCF'],
+  colors = ['#0D9488', '#4BC0C0', '#FF6384', '#FFCE56', '#9966FF', '#FF9F40', '#14B8A6', '#C9CBCF'],
   loading = false
 }) => {
   const chartOptions: ApexOptions = {

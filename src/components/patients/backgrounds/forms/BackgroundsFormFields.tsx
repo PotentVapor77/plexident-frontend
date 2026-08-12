@@ -27,17 +27,17 @@ export default function BackgroundsFormFields({
     <div className="space-y-6">
       {/* ✅ Información del paciente */}
       {pacienteNombre && (
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-blue-200 dark:border-blue-700">
+        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-brand-200 dark:border-brand-700">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full" />
+            <div className="w-2 h-8 bg-gradient-to-b from-brand-500 to-brand-600 rounded-full" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Identificación del paciente
             </h3>
           </div>
 
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+          <div className="rounded-lg border border-brand-200 bg-brand-50 p-4 dark:border-brand-800 dark:bg-brand-900/20">
             <div className="flex items-center gap-3">
-              <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-xl shadow-md">
+              <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-brand-600 text-white font-bold text-xl shadow-md">
                 {pacienteNombre.charAt(0).toUpperCase()}
                 {pacienteNombre.split(' ')[1]?.charAt(0).toUpperCase() || ''}
               </div>
@@ -48,17 +48,17 @@ export default function BackgroundsFormFields({
               </div>
             </div>
             <div className="mt-3 flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-800 dark:bg-brand-900 dark:text-brand-200">
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 Paciente fijado activamente
               </span>
             </div>
-            <div className="mt-4 flex gap-2 rounded-md bg-blue-100 p-3 dark:bg-blue-900/30">
+            <div className="mt-4 flex gap-2 rounded-md bg-brand-100 p-3 dark:bg-brand-900/30">
               <span className="text-base flex-shrink-0">📌</span>
               <div className="flex-1">
-                <p className="text-xs font-medium text-blue-900 dark:text-blue-200">
+                <p className="text-xs font-medium text-brand-900 dark:text-brand-200">
                   <span className="font-semibold">Nota:</span> Este registro se asociará automáticamente al paciente fijado. Para cambiar de paciente, regrese a la pestaña "Gestión de Pacientes" y fije otro paciente.
                 </p>
               </div>
@@ -70,9 +70,9 @@ export default function BackgroundsFormFields({
       {/* ============================================ */}
       {/* SECCIÓN D: ANTECEDENTES PERSONALES - AZUL */}
       {/* ============================================ */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-blue-200 dark:border-blue-800">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-brand-200 dark:border-brand-800">
         <div className="flex items-center gap-2 mb-6">
-          <div className="w-2 h-8 bg-gradient-to-b from-blue-600 to-blue-700 rounded-full" />
+          <div className="w-2 h-8 bg-gradient-to-b from-brand-600 to-brand-700 rounded-full" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             D. Antecedentes Personales
           </h3>
@@ -934,7 +934,7 @@ export default function BackgroundsFormFields({
                 name="activo"
                 checked={activo}
                 onChange={onCheckboxChange || onInputChange}
-                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
               />
               <label className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Activo

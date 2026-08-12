@@ -58,7 +58,7 @@ export const HistoryCompareView = ({
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1">
-                                <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+                                <div className="h-3 w-3 rounded-full bg-brand-500"></div>
                                 <span className="text-xs text-gray-600 dark:text-gray-400">
                                     Antes
                                 </span>
@@ -104,7 +104,7 @@ export const HistoryCompareView = ({
                     </h3>
                     <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                            <div className="h-2 w-2 rounded-full bg-brand-500"></div>
                             <span>
                                 {beforeSnapshot.fecha.toLocaleDateString("es-EC", {
                                     year: "numeric",
@@ -145,9 +145,9 @@ export const HistoryCompareView = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 p-6 min-h-[600px]">
                 {/* ANTES */}
                 <div className="flex flex-col gap-3 h-full">
-                    <div className="flex items-center justify-between px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="flex items-center justify-between px-3 py-2 bg-brand-50 dark:bg-brand-900/20 rounded-lg">
                         <div className="flex items-center gap-2">
-                            <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+                            <div className="h-3 w-3 rounded-full bg-brand-500"></div>
                             <span className="text-sm font-medium text-gray-900 dark:text-white">
                                 ANTES
                             </span>
@@ -165,7 +165,7 @@ export const HistoryCompareView = ({
                         
                         {/* Badge de fecha */}
                         <div className="absolute top-3 left-3 z-10">
-                            <div className="px-3 py-1 bg-blue-500 text-white text-xs rounded-full shadow-sm">
+                            <div className="px-3 py-1 bg-brand-500 text-white text-xs rounded-full shadow-sm">
                                 {beforeSnapshot.fecha.toLocaleTimeString("es-EC", {
                                     hour: "2-digit",
                                     minute: "2-digit",

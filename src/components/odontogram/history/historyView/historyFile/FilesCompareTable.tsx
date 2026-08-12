@@ -33,7 +33,7 @@ const formatFileSize = (bytes: number): string => {
 const getFileIcon = (file: ClinicalFile) => {
     // Primero verificar si es imagen usando nuestra función mejorada
     if (isImageFile(file.file_url || '', file.mime_type)) {
-        return <ImageIcon className="h-5 w-5 text-blue-500" />;
+        return <ImageIcon className="h-5 w-5 text-brand-500" />;
     }
     
     // Luego verificar el MIME type
@@ -104,7 +104,7 @@ export const FilesCompareTable = ({
                 key={`${side}-${file.id}`}
                 className={`border rounded-lg mb-2 overflow-hidden transition-all
                     ${side === 'before'
-                        ? 'border-l-4 border-l-blue-500 bg-blue-50/30 dark:bg-blue-900/10'
+                        ? 'border-l-4 border-l-brand-500 bg-brand-50/30 dark:bg-brand-900/10'
                         : 'border-l-4 border-l-green-500 bg-green-50/30 dark:bg-green-900/10'
                     }
                 `}
@@ -123,7 +123,7 @@ export const FilesCompareTable = ({
                             <span className={`
                                 px-2 py-0.5 text-xs rounded-full
                                 ${side === 'before'
-                                    ? 'bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300'
+                                    ? 'bg-brand-100 dark:bg-brand-800 text-brand-700 dark:text-brand-300'
                                     : 'bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300'
                                 }
                             `}>
@@ -268,7 +268,7 @@ export const FilesCompareTable = ({
                                         <button
                                             type="button"
                                             onClick={() => openFilePreview(file.file_url!, file.original_filename)}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-md transition-colors"
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-white text-xs rounded-md transition-colors"
                                         >
                                             <Eye className="h-3.5 w-3.5" />
                                             {isImage ? 'Ver imagen completa' : 'Ver archivo'}
@@ -318,7 +318,7 @@ export const FilesCompareTable = ({
                     <div>
                         <div className="sticky top-0 z-10 mb-3 pb-2 bg-gradient-to-b from-white dark:from-gray-900">
                             <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+                                <div className="h-3 w-3 rounded-full bg-brand-500"></div>
                                 <h4 className="font-medium text-gray-900 dark:text-white">Antes</h4>
                                 <span className="ml-auto text-xs text-gray-500">
                                     {beforeFiles.length} archivos
@@ -387,7 +387,7 @@ export const FilesCompareTable = ({
                     <div className="flex items-center gap-3 mb-2">
                         <div className={`
                             h-4 w-4 rounded-full
-                            ${side === 'before' ? 'bg-blue-500' : 'bg-green-500'}
+                            ${side === 'before' ? 'bg-brand-500' : 'bg-green-500'}
                         `}></div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                             Archivos del snapshot: {side === 'before' ? 'Antes' : 'Después'}
@@ -516,7 +516,7 @@ export const FilesCompareTable = ({
                                     <button
                                         type="button"
                                         onClick={() => openInNewTab(imagePreview.url)}
-                                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                                        className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors"
                                     >
                                         Abrir en nueva pestaña
                                     </button>

@@ -12,11 +12,11 @@ const AppointmentEventCard = ({ cita, onClick }: AppointmentEventCardProps) => {
   const getStateColors = () => {
     const colors = {
       PROGRAMADA: {
-        bg: 'bg-blue-50',
-        border: 'border-l-blue-500',
-        text: 'text-blue-900',
-        badge: 'bg-blue-100 text-blue-800',
-        hover: 'hover:bg-blue-100',
+        bg: 'bg-brand-50',
+        border: 'border-l-brand-500',
+        text: 'text-brand-900',
+        badge: 'bg-brand-100 text-brand-800',
+        hover: 'hover:bg-brand-100',
       },
       CONFIRMADA: {
         bg: 'bg-green-50',

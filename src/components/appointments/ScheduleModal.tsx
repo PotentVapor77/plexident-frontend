@@ -534,7 +534,7 @@ const ScheduleModal = ({
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-sm">
+                <div className="h-10 w-10 bg-brand-600 rounded-xl flex items-center justify-center shadow-sm">
                   <ClockIcon className="h-6 w-6 text-white" />
                 </div>
                 Horarios de Atención
@@ -556,11 +556,11 @@ const ScheduleModal = ({
         </div>
 
         {/* ✅ Barra de búsqueda */}
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 shadow-sm">
+        <div className="bg-brand-50 border border-brand-200 rounded-2xl p-5 shadow-sm">
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <UserIcon className="h-4 w-4 text-blue-600" />
+                <UserIcon className="h-4 w-4 text-brand-600" />
                 <span className="text-sm font-semibold text-gray-700">
                   Buscar odontólogo
                 </span>
@@ -577,7 +577,7 @@ const ScheduleModal = ({
                   onFocus={() => setShowDropdown(true)}
                   placeholder="Escribe el nombre del odontólogo..."
                   disabled={loadingOdontologos}
-                  className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white shadow-sm"
+                  className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-white shadow-sm"
                 />
                 {selectedOdontologo && (
                   <button
@@ -598,10 +598,10 @@ const ScheduleModal = ({
                       <button
                         key={doc.id}
                         onClick={() => handleSelectOdontologo(doc)}
-                        className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center gap-3 border-b border-gray-100 last:border-0"
+                        className="w-full px-4 py-3 text-left hover:bg-brand-50 transition-colors flex items-center gap-3 border-b border-gray-100 last:border-0"
                       >
-                        <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <UserIcon className="h-5 w-5 text-blue-700" />
+                        <div className="flex-shrink-0 h-10 w-10 bg-brand-100 rounded-full flex items-center justify-center">
+                          <UserIcon className="h-5 w-5 text-brand-700" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <span className="text-sm font-semibold text-gray-900 block truncate">
@@ -612,7 +612,7 @@ const ScheduleModal = ({
                           )}
                         </div>
                         {selectedOdontologo === doc.id && (
-                          <CheckIcon className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                          <CheckIcon className="h-5 w-5 text-brand-600 flex-shrink-0" />
                         )}
                       </button>
                     ))
@@ -633,7 +633,7 @@ const ScheduleModal = ({
               className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all font-semibold shadow-md hover:shadow-lg ${
                 shouldShowForm
                   ? 'bg-white text-gray-700 border-2 border-gray-300 hover:bg-gray-50'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-brand-600 text-white hover:bg-brand-700'
               }`}
             >
               <PlusIcon className="h-5 w-5" />
@@ -645,9 +645,9 @@ const ScheduleModal = ({
 
           {/* Indicador de odontólogo seleccionado */}
           {selectedOdontologo && (
-            <div className="mt-4 p-4 bg-white border-2 border-blue-200 rounded-xl flex items-center justify-between shadow-sm">
+            <div className="mt-4 p-4 bg-white border-2 border-brand-200 rounded-xl flex items-center justify-between shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-md">
+                <div className="h-12 w-12 bg-brand-600 rounded-xl flex items-center justify-center shadow-md">
                   <UserIcon className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -655,7 +655,7 @@ const ScheduleModal = ({
                     {getOdontologoName(selectedOdontologo)}
                   </p>
                   <p className="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
-                    <span className="h-2 w-2 bg-blue-500 rounded-full"></span>
+                    <span className="h-2 w-2 bg-brand-500 rounded-full"></span>
                     {filteredHorarios.length} horario{filteredHorarios.length !== 1 ? 's' : ''} configurado{filteredHorarios.length !== 1 ? 's' : ''}
                   </p>
                 </div>
@@ -673,12 +673,12 @@ const ScheduleModal = ({
 
         {/* ✅ Mostrar formulario cuando corresponda */}
         {shouldShowForm && (
-          <form onSubmit={handleSubmit} className="bg-white border-2 border-blue-200 rounded-2xl p-6 shadow-lg">
+          <form onSubmit={handleSubmit} className="bg-white border-2 border-brand-200 rounded-2xl p-6 shadow-lg">
             <div className="flex items-center gap-3 mb-6">
               <div className={`h-12 w-12 rounded-xl flex items-center justify-center shadow-md ${
                 editingHorario 
-                  ? 'bg-blue-500'
-                  : 'bg-blue-600'
+                  ? 'bg-brand-500'
+                  : 'bg-brand-600'
               }`}>
                 {editingHorario ? (
                   <PencilIcon className="h-6 w-6 text-white" />
@@ -705,7 +705,7 @@ const ScheduleModal = ({
               {!selectedOdontologo && (
                 <div className="md:col-span-2">
                   <div className="flex items-center gap-1 mb-2">
-                    <UserIcon className="h-4 w-4 text-blue-600" />
+                    <UserIcon className="h-4 w-4 text-brand-600" />
                     <span className="text-sm font-semibold text-gray-700">
                       Odontólogo <span className="text-red-500">*</span>
                     </span>
@@ -715,7 +715,7 @@ const ScheduleModal = ({
                     value={formData.odontologo}
                     onChange={handleChange}
                     disabled={loadingOdontologos || !!editingHorario}
-                    className={`w-full p-3.5 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white shadow-sm ${
+                    className={`w-full p-3.5 border rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-white shadow-sm ${
                       errors.odontologo ? 'border-red-300' : 'border-gray-300'
                     }`}
                   >
@@ -739,15 +739,15 @@ const ScheduleModal = ({
               {selectedOdontologo && (
                 <div className="md:col-span-2">
                   <div className="flex items-center gap-1 mb-2">
-                    <UserIcon className="h-4 w-4 text-blue-600" />
+                    <UserIcon className="h-4 w-4 text-brand-600" />
                     <span className="text-sm font-semibold text-gray-700">
                       Odontólogo
                     </span>
                   </div>
-                  <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-xl">
+                  <div className="p-3.5 bg-brand-50 border border-brand-200 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <UserIcon className="h-5 w-5 text-blue-700" />
+                      <div className="h-10 w-10 bg-brand-100 rounded-lg flex items-center justify-center">
+                        <UserIcon className="h-5 w-5 text-brand-700" />
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900">{getOdontologoName(selectedOdontologo)}</p>
@@ -761,7 +761,7 @@ const ScheduleModal = ({
               {/* Día de la semana */}
               <div className="space-y-2">
                 <div className="flex items-center gap-1">
-                  <CalendarDaysIcon className="h-4 w-4 text-blue-600" />
+                  <CalendarDaysIcon className="h-4 w-4 text-brand-600" />
                   <span className="text-sm font-semibold text-gray-700">
                     Día de la semana <span className="text-red-500">*</span>
                   </span>
@@ -771,7 +771,7 @@ const ScheduleModal = ({
                     name="dia_semana"
                     value={formData.dia_semana}
                     onChange={handleChange}
-                    className="w-full p-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none bg-white shadow-sm"
+                    className="w-full p-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all appearance-none bg-white shadow-sm"
                   >
                     {DIAS_SEMANA.map(dia => (
                       <option key={dia.value} value={dia.value}>
@@ -790,7 +790,7 @@ const ScheduleModal = ({
               {/* Duración de cita */}
               <div className="space-y-2">
                 <div className="flex items-center gap-1">
-                  <ClockIcon className="h-4 w-4 text-blue-600" />
+                  <ClockIcon className="h-4 w-4 text-brand-600" />
                   <span className="text-sm font-semibold text-gray-700">
                     Duración de cita <span className="text-red-500">*</span>
                   </span>
@@ -808,7 +808,7 @@ const ScheduleModal = ({
                         min="1"
                         max="480"
                         step="1"
-                        className="w-full p-3.5 border border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white shadow-sm"
+                        className="w-full p-3.5 border border-brand-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-white shadow-sm"
                         placeholder="Escribe los minutos"
                       />
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
@@ -843,8 +843,8 @@ const ScheduleModal = ({
                           onClick={() => handleDurationChange(dur.value)}
                           className={`p-3 rounded-xl border-2 transition-all font-medium ${
                             formData.duracion_cita === dur.value
-                              ? 'bg-blue-600 text-white border-blue-500 shadow-md'
-                              : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300 hover:bg-blue-50'
+                              ? 'bg-brand-600 text-white border-brand-500 shadow-md'
+                              : 'bg-white text-gray-700 border-gray-300 hover:border-brand-300 hover:bg-brand-50'
                           }`}
                         >
                           <span className="text-sm">{dur.label}</span>
@@ -856,7 +856,7 @@ const ScheduleModal = ({
                     <div className="flex items-center gap-2">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 p-3.5 bg-white border-2 border-gray-300 rounded-xl shadow-sm">
-                          <ClockIcon className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                          <ClockIcon className="h-5 w-5 text-brand-600 flex-shrink-0" />
                           <span className="text-gray-900 font-semibold">
                             {formData.duracion_cita} minutos
                           </span>
@@ -871,7 +871,7 @@ const ScheduleModal = ({
                       <button
                         type="button"
                         onClick={handleCustomDurationClick}
-                        className="p-3.5 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-blue-300 transition-colors flex items-center gap-2 shadow-sm"
+                        className="p-3.5 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-brand-300 transition-colors flex items-center gap-2 shadow-sm"
                         title="Editar duración manualmente"
                       >
                         <PencilIcon className="h-5 w-5" />
@@ -895,7 +895,7 @@ const ScheduleModal = ({
               {/* Hora de inicio */}
               <div className="space-y-2">
                 <div className="flex items-center gap-1">
-                  <ClockIcon className="h-4 w-4 text-blue-600" />
+                  <ClockIcon className="h-4 w-4 text-brand-600" />
                   <span className="text-sm font-semibold text-gray-700">
                     Hora de inicio <span className="text-red-500">*</span>
                   </span>
@@ -905,7 +905,7 @@ const ScheduleModal = ({
                   name="hora_inicio"
                   value={formData.hora_inicio}
                   onChange={handleChange}
-                  className={`w-full p-3.5 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white shadow-sm ${
+                  className={`w-full p-3.5 border rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-white shadow-sm ${
                     errors.hora_inicio ? 'border-red-300' : 'border-gray-300'
                   }`}
                 />
@@ -920,7 +920,7 @@ const ScheduleModal = ({
               {/* Hora de fin */}
               <div className="space-y-2">
                 <div className="flex items-center gap-1">
-                  <ClockIcon className="h-4 w-4 text-blue-600" />
+                  <ClockIcon className="h-4 w-4 text-brand-600" />
                   <span className="text-sm font-semibold text-gray-700">
                     Hora de fin <span className="text-red-500">*</span>
                   </span>
@@ -930,7 +930,7 @@ const ScheduleModal = ({
                   name="hora_fin"
                   value={formData.hora_fin}
                   onChange={handleChange}
-                  className={`w-full p-3.5 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white shadow-sm ${
+                  className={`w-full p-3.5 border rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-white shadow-sm ${
                     errors.hora_fin ? 'border-red-300' : 'border-gray-300'
                   }`}
                 />
@@ -952,7 +952,7 @@ const ScheduleModal = ({
                       name="activo"
                       checked={formData.activo}
                       onChange={(e) => setFormData(prev => ({ ...prev, activo: e.target.checked }))}
-                      className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded-lg"
+                      className="h-5 w-5 text-brand-600 focus:ring-brand-500 border-gray-300 rounded-lg"
                     />
                   </div>
                   <label htmlFor="activo" className="ml-3 flex-1">
@@ -986,8 +986,8 @@ const ScheduleModal = ({
                 disabled={loading}
                 className={`px-6 py-3 text-sm font-semibold text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md ${
                   editingHorario
-                    ? 'bg-blue-500 hover:bg-blue-600'
-                    : 'bg-blue-600 hover:bg-blue-700'
+                    ? 'bg-brand-500 hover:bg-brand-600'
+                    : 'bg-brand-600 hover:bg-brand-700'
                 }`}
               >
                 {loading ? (
@@ -1005,8 +1005,8 @@ const ScheduleModal = ({
 
         {/* ✅ Mensaje cuando no hay odontólogo seleccionado */}
         {shouldShowNoSelectionMessage && (
-          <div className="text-center py-16 bg-blue-50 rounded-2xl border-2 border-blue-200 shadow-sm">
-            <div className="inline-flex items-center justify-center h-20 w-20 bg-blue-600 rounded-2xl mb-5 shadow-lg">
+          <div className="text-center py-16 bg-brand-50 rounded-2xl border-2 border-brand-200 shadow-sm">
+            <div className="inline-flex items-center justify-center h-20 w-20 bg-brand-600 rounded-2xl mb-5 shadow-lg">
               <UserIcon className="h-10 w-10 text-white" />
             </div>
             <h3 className="text-xl font-bold text-gray-800 mb-2">
@@ -1021,7 +1021,7 @@ const ScheduleModal = ({
               <div className="h-px w-12 bg-gray-300"></div>
             </div>
             <p className="text-sm text-gray-500 mt-8 px-4">
-              Haz clic en <strong className="text-blue-600">"Crear Nuevo Horario"</strong> para comenzar desde cero
+              Haz clic en <strong className="text-brand-600">"Crear Nuevo Horario"</strong> para comenzar desde cero
             </p>
           </div>
         )}
@@ -1032,8 +1032,8 @@ const ScheduleModal = ({
             {loading ? (
               <div className="flex flex-col items-center justify-center py-16">
                 <div className="relative">
-                  <div className="h-16 w-16 border-4 border-blue-200 rounded-full"></div>
-                  <div className="h-16 w-16 border-4 border-blue-600 border-t-transparent rounded-full absolute top-0 left-0 animate-spin"></div>
+                  <div className="h-16 w-16 border-4 border-brand-200 rounded-full"></div>
+                  <div className="h-16 w-16 border-4 border-brand-600 border-t-transparent rounded-full absolute top-0 left-0 animate-spin"></div>
                 </div>
                 <p className="text-gray-600 mt-4 font-medium">Cargando horarios...</p>
                 <p className="text-sm text-gray-400 mt-1">Por favor espera</p>
@@ -1051,7 +1051,7 @@ const ScheduleModal = ({
                 </p>
                 <button
                   onClick={() => setShowForm(true)}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-md font-semibold"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition-all shadow-md font-semibold"
                 >
                   <PlusIcon className="h-5 w-5" />
                   Crear primer horario
@@ -1069,7 +1069,7 @@ const ScheduleModal = ({
                 </div>
 
                 {/* ✅ CONTENEDOR CON SCROLL */}
-                <div className="max-h-[500px] overflow-y-auto pr-2 space-y-6 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-gray-100">
+                <div className="max-h-[500px] overflow-y-auto pr-2 space-y-6 scrollbar-thin scrollbar-thumb-brand-300 scrollbar-track-gray-100">
                   {Object.entries(horariosGrouped).map(([odontologoId, horariosOdontologo]) => {
                     const odontologoName = getOdontologoName(odontologoId);
                     const horariosActivos = horariosOdontologo.filter(h => h.activo);
@@ -1078,17 +1078,17 @@ const ScheduleModal = ({
                     return (
                       <div key={odontologoId} className="bg-white rounded-2xl shadow-md overflow-hidden border-2 border-gray-200">
                         {/* Header de odontólogo */}
-                        <div className="bg-blue-50 p-6 border-b-2 border-blue-100">
+                        <div className="bg-brand-50 p-6 border-b-2 border-brand-100">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                              <div className="h-14 w-14 bg-blue-600 rounded-xl flex items-center justify-center shadow-md">
+                              <div className="h-14 w-14 bg-brand-600 rounded-xl flex items-center justify-center shadow-md">
                                 <UserIcon className="h-7 w-7 text-white" />
                               </div>
                               <div>
                                 <h3 className="text-lg font-bold text-gray-900">{odontologoName}</h3>
                                 <div className="flex items-center gap-3 mt-1">
                                   <span className="text-sm text-gray-600 flex items-center gap-1.5 font-medium">
-                                    <CalendarDaysIcon className="h-4 w-4 text-blue-600" />
+                                    <CalendarDaysIcon className="h-4 w-4 text-brand-600" />
                                     {horariosOdontologo.length} día{horariosOdontologo.length !== 1 ? 's' : ''}
                                   </span>
                                   <span className="text-sm text-green-600 flex items-center gap-1.5 font-medium">
@@ -1106,7 +1106,7 @@ const ScheduleModal = ({
                             </div>
                             <button
                               onClick={() => setShowForm(true)}
-                              className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-md font-semibold"
+                              className="flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition-all shadow-md font-semibold"
                             >
                               <PlusIcon className="h-4 w-4" />
                               Agregar
@@ -1150,13 +1150,13 @@ const ScheduleModal = ({
                                   key={horario.id} 
                                   className={`bg-white rounded-xl border-2 p-4 transition-all hover:shadow-md ${
                                     horario.activo 
-                                      ? 'border-blue-200 hover:border-blue-300' 
+                                      ? 'border-brand-200 hover:border-brand-300' 
                                       : 'border-red-200 bg-red-50'
                                   }`}
                                 >
                                   <div className="flex items-start justify-between mb-3">
                                     <div className="flex items-center gap-2">
-                                      <CalendarDaysIcon className={`h-5 w-5 ${horario.activo ? 'text-blue-600' : 'text-red-500'}`} />
+                                      <CalendarDaysIcon className={`h-5 w-5 ${horario.activo ? 'text-brand-600' : 'text-red-500'}`} />
                                       <h4 className="font-bold text-gray-900">{diaLabel}</h4>
                                     </div>
                                     <span className={`px-2 py-1 rounded-md text-xs font-bold ${
@@ -1177,10 +1177,10 @@ const ScheduleModal = ({
                                     </div>
                                     <div className="flex items-center gap-2 text-sm">
                                       <div className="h-4 w-4 flex items-center justify-center">
-                                        <div className={`h-2 w-2 rounded-full ${horario.activo ? 'bg-blue-500' : 'bg-red-500'}`}></div>
+                                        <div className={`h-2 w-2 rounded-full ${horario.activo ? 'bg-brand-500' : 'bg-red-500'}`}></div>
                                       </div>
                                       <span className="text-gray-600">
-                                        Citas de <strong className={horario.activo ? 'text-blue-600' : 'text-red-600'}>{horario.duracion_cita} min</strong>
+                                        Citas de <strong className={horario.activo ? 'text-brand-600' : 'text-red-600'}>{horario.duracion_cita} min</strong>
                                       </span>
                                     </div>
                                   </div>
@@ -1188,7 +1188,7 @@ const ScheduleModal = ({
                                   <div className="flex gap-2 pt-3 border-t border-gray-200">
                                     <button
                                       onClick={() => handleEdit(horario)}
-                                      className="flex-1 px-3 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1"
+                                      className="flex-1 px-3 py-2 bg-brand-500 text-white hover:bg-brand-600 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1"
                                       title="Editar horario"
                                     >
                                       <PencilIcon className="h-4 w-4" />

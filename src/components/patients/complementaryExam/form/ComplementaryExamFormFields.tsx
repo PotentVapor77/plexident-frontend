@@ -75,7 +75,7 @@ export function ComplementaryExamFormFields({
       {/* SECCIÓN: IDENTIFICACIÓN DEL PACIENTE - MOSTRAR EN AMBOS MODOS */}
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
         <div className="mb-6 flex items-center gap-2">
-          <div className="h-8 w-2 rounded-full bg-gradient-to-b from-blue-500 to-blue-600" />
+          <div className="h-8 w-2 rounded-full bg-gradient-to-b from-brand-500 to-brand-600" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             Identificación del paciente
           </h3>
@@ -87,11 +87,11 @@ export function ComplementaryExamFormFields({
             <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
               {mode === 'edit' ? 'Paciente' : 'Información del paciente'}
             </label>
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+            <div className="rounded-lg border border-brand-200 bg-brand-50 p-4 dark:border-brand-800 dark:bg-brand-900/20">
               {selectedPatient ? (
                 <>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-xl shadow-lg shadow-blue-500/30">
+                    <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-700 text-white font-bold text-xl shadow-lg shadow-brand-500/30">
                       {(selectedPatient.nombres?.charAt(0) || 'P').toUpperCase()}
                       {(selectedPatient.apellidos?.charAt(0) || '').toUpperCase()}
                     </div>
@@ -111,7 +111,7 @@ export function ComplementaryExamFormFields({
 
                   {/* Badge de paciente */}
                   <div className="mt-4 flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-800 dark:from-blue-900 dark:to-blue-800 dark:text-blue-200 shadow-sm">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-brand-100 to-brand-200 px-3 py-1.5 text-xs font-semibold text-brand-800 dark:from-brand-900 dark:to-brand-800 dark:text-brand-200 shadow-sm">
                       <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                         <path
                           fillRule="evenodd"
@@ -126,10 +126,10 @@ export function ComplementaryExamFormFields({
                   </div>
 
                   {/* Nota informativa */}
-                  <div className="mt-4 flex gap-3 rounded-lg bg-gradient-to-r from-blue-100/80 to-blue-50 p-3 dark:from-blue-900/30 dark:to-blue-900/20">
+                  <div className="mt-4 flex gap-3 rounded-lg bg-gradient-to-r from-brand-100/80 to-brand-50 p-3 dark:from-brand-900/30 dark:to-brand-900/20">
                     <span className="text-base flex-shrink-0 mt-0.5">ℹ️</span>
                     <div className="flex-1">
-                      <p className="text-xs font-medium text-blue-900 dark:text-blue-200">
+                      <p className="text-xs font-medium text-brand-900 dark:text-brand-200">
                         <span className="font-semibold">Nota:</span>{' '}
                         {mode === 'edit' 
                           ? 'El paciente asociado a este examen no puede ser modificado. Este registro está vinculado permanentemente a este paciente.'
@@ -187,7 +187,7 @@ export function ComplementaryExamFormFields({
             </label>
             <select
               {...register('pedido_examenes')}
-              className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+              className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-brand-500 dark:focus:ring-brand-900"
             >
               {PEDIDO_EXAMENES_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -211,7 +211,7 @@ export function ComplementaryExamFormFields({
               <textarea
                 {...register('pedido_examenes_detalle')}
                 rows={4}
-                className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+                className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-brand-500 dark:focus:ring-brand-900"
                 placeholder="Especificar qué exámenes se solicitan y por qué (ej: radiografía panorámica, hemograma completo, glucosa en ayunas, etc.)"
               />
               {errors.pedido_examenes_detalle && (
@@ -244,7 +244,7 @@ export function ComplementaryExamFormFields({
             </label>
             <select
               {...register('informe_examenes')}
-              className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+              className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-brand-500 dark:focus:ring-brand-900"
             >
               {INFORME_EXAMENES_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -268,7 +268,7 @@ export function ComplementaryExamFormFields({
               <textarea
                 {...register('informe_examenes_detalle')}
                 rows={5}
-                className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+                className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-brand-500 dark:focus:ring-brand-900"
                 placeholder="Detallar resultados de los exámenes realizados (valores, hallazgos, interpretación médica, etc.)"
               />
               {errors.informe_examenes_detalle && (
@@ -298,7 +298,7 @@ export function ComplementaryExamFormFields({
                 type="checkbox"
                 checked={activo}
                 onChange={(e) => onActivoChange?.(e.target.checked)}
-                className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-900"
+                className="h-5 w-5 rounded border-gray-300 text-brand-600 focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-brand-900"
               />
               <label
                 htmlFor="activo"
@@ -326,10 +326,10 @@ export function ComplementaryExamFormFields({
       )}
 
       {/* Nota informativa final */}
-      <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+      <div className="rounded-lg bg-brand-50 p-4 dark:bg-brand-900/20">
         <div className="flex">
           <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="h-5 w-5 text-brand-400" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
                 d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
@@ -338,7 +338,7 @@ export function ComplementaryExamFormFields({
             </svg>
           </div>
           <div className="ml-3 flex-1">
-            <p className="text-sm text-blue-700 dark:text-blue-400">
+            <p className="text-sm text-brand-700 dark:text-brand-400">
               <strong>Información importante:</strong> Si solicita exámenes complementarios,
               debe especificar cuáles y por qué. Si ya cuenta con resultados, seleccione el
               tipo de examen y detalle los hallazgos encontrados.

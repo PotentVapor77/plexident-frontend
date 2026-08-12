@@ -67,8 +67,8 @@ export const TableCell: React.FC<TableCellProps> = ({
       className={cn(
         'py-3 px-4 text-left',
         isHeader 
-          ? 'font-medium text-gray-500 dark:text-gray-400 text-xs' 
-          : 'text-gray-500 dark:text-gray-400 text-sm',
+          ? 'font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider' 
+          : 'text-gray-700 dark:text-gray-300 text-sm',
         className
       )}
       {...props}

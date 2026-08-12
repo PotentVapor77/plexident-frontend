@@ -149,8 +149,8 @@ export default function ClinicalRecordCloseModal({
           </div>
 
           {/* Info adicional */}
-          <div className="mt-4 rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
-            <p className="text-xs text-blue-800 dark:text-blue-200">
+          <div className="mt-4 rounded-lg bg-brand-50 p-3 dark:bg-brand-900/20">
+            <p className="text-xs text-brand-800 dark:text-brand-200">
               <span className="font-semibold">Nota:</span> Las observaciones de cierre se
               agregarán al campo de observaciones generales del historial clínico.
             </p>

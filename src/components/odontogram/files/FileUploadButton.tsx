@@ -42,7 +42,7 @@ export const FileUploadButton: React.FC<FileUploadButtonProps> = ({
   const getFileIcon = (filename: string) => {
     const ext = filename.split(".").pop()?.toLowerCase();
     if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext || "")) {
-      return <Image className="w-4 h-4 text-blue-500" />;
+      return <Image className="w-4 h-4 text-brand-500" />;
     }
     if (["pdf", "doc", "docx"].includes(ext || "")) {
       return <FileText className="w-4 h-4 text-red-500" />;
@@ -56,7 +56,7 @@ export const FileUploadButton: React.FC<FileUploadButtonProps> = ({
         type="button"
         onClick={() => fileInputRef.current?.click()}
         disabled={disabled}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         <Upload className="w-4 h-4" />
         <span className="text-sm">{label}</span>

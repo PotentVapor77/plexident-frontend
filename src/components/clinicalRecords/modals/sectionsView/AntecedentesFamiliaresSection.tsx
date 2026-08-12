@@ -168,7 +168,7 @@ export const AntecedentesFamiliaresSectionView: React.FC<AntecedentesFamiliaresS
                             mentales,
                             mentalesChunks,
                             "Enfermedades Mentales",
-                            "bg-indigo-500",
+                            "bg-brand-500",
                             "mentales"
                         )}
 
@@ -264,7 +264,7 @@ export const AntecedentesFamiliaresSectionView: React.FC<AntecedentesFamiliaresS
             <div className="pt-3 border-t border-gray-200">
                 <div className="flex justify-between items-center text-xs">
                     <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400"></div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-400"></div>
                         <span className="text-gray-600">
                             {antecedentesData 
                                 ? (tieneContenido 

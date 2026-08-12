@@ -44,7 +44,7 @@ export function Pagination({
               onClick={() => onPageChange(pageNum)}
               className={`w-8 h-8 rounded-md text-sm ${
                 currentPage === pageNum 
-                  ? "bg-blue-500 text-white" 
+                  ? "bg-brand-500 text-white" 
                   : "border border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300"
               }`}
             >

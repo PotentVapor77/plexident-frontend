@@ -158,7 +158,7 @@ const ClinicalRecordCreateEditModal: React.FC<ClinicalRecordCreateEditModalProps
       <div className="sticky top-0 z-10 flex items-start justify-between p-6 pb-4 bg-white border-b border-gray-200">
         <div className="flex items-start gap-3">
           {/* Icono */}
-          <div className="flex-shrink-0 p-2 bg-blue-50 rounded-lg text-blue-600">
+          <div className="flex-shrink-0 p-2 bg-brand-50 rounded-lg text-brand-600">
             <FileText className="h-6 w-6" />
           </div>
 

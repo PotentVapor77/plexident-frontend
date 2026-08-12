@@ -49,7 +49,7 @@ export const FilesCompareView = ({
         return (
             <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-3" />
+                    <Loader2 className="h-8 w-8 animate-spin text-brand-500 mx-auto mb-3" />
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                         Cargando archivos de ambos snapshots...
                     </p>
@@ -113,7 +113,7 @@ export const FilesCompareView = ({
                                 </span>
                             </div>
                             <div className="flex items-center gap-1">
-                                <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded text-xs">
+                                <span className="px-2 py-1 bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 rounded text-xs">
                                     {beforeFiles.length} archivos en Antes
                                 </span>
                                 <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded text-xs">
@@ -133,7 +133,7 @@ export const FilesCompareView = ({
                             <button
                                 type="button"
                                 onClick={() => setFullscreenMode(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors"
                             >
                                 <Maximize2 className="h-4 w-4" />
                                 Pantalla completa
@@ -150,7 +150,7 @@ export const FilesCompareView = ({
                     onClick={() => setActiveTab('comparison')}
                     className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors
                         ${activeTab === 'comparison'
-                            ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                            ? 'border-brand-500 text-brand-600 dark:text-brand-400'
                             : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                         }`}
                 >
@@ -161,12 +161,12 @@ export const FilesCompareView = ({
                     onClick={() => setActiveTab('before')}
                     className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors
                         ${activeTab === 'before'
-                            ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                            ? 'border-brand-500 text-brand-600 dark:text-brand-400'
                             : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                         }`}
                 >
                     Solo Antes
-                    <span className="ml-2 px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded text-xs">
+                    <span className="ml-2 px-2 py-0.5 bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 rounded text-xs">
                         {beforeFiles.length}
                     </span>
                 </button>

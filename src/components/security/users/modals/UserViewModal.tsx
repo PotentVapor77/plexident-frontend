@@ -309,7 +309,7 @@ export function UserViewModal({ isOpen, onClose, user, onEdit }: UserViewModalPr
         </button>
         <button
           onClick={onEdit}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+          className="px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600"
         >
           Editar Usuario
         </button>
@@ -322,7 +322,7 @@ export function UserViewModal({ isOpen, onClose, user, onEdit }: UserViewModalPr
 function PermissionItem({ text, color = "green" }: { text: string; color?: "green" | "blue" | "yellow" }) {
   const colorClasses = {
     green: "text-green-600 dark:text-green-400",
-    blue: "text-blue-600 dark:text-blue-400",
+    blue: "text-brand-600 dark:text-brand-400",
     yellow: "text-yellow-600 dark:text-yellow-400"
   };
 

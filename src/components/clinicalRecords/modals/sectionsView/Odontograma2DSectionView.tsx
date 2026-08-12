@@ -330,8 +330,8 @@ export const Odontograma2DSectionView: React.FC<Odontograma2DSectionViewProps> =
             <div className="border-b border-gray-300 pb-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        {/* <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 border border-blue-100">
-                            <FileText className="h-5 w-5 text-blue-600" />
+                        {/* <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 border border-brand-100">
+                            <FileText className="h-5 w-5 text-brand-600" />
                         </div> */}
                         <div>
                             <h3 className="text-base font-semibold text-gray-900">
@@ -351,9 +351,9 @@ export const Odontograma2DSectionView: React.FC<Odontograma2DSectionViewProps> =
                     {/* Indicador de estado */}
                     <div className="flex items-center gap-2">
                         {isLoading ? (
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200">
-                                <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
-                                <span className="text-sm font-medium text-blue-700">
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-50 border border-brand-200">
+                                <Loader2 className="h-4 w-4 text-brand-600 animate-spin" />
+                                <span className="text-sm font-medium text-brand-700">
                                     Cargando...
                                 </span>
                             </div>
@@ -380,7 +380,7 @@ export const Odontograma2DSectionView: React.FC<Odontograma2DSectionViewProps> =
             <div className="space-y-6">
                 {isLoading ? (
                     <div className="flex items-center justify-center p-8 border border-gray-200 rounded-lg">
-                        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                        <Loader2 className="h-6 w-6 animate-spin text-brand-600" />
                         <span className="ml-3 text-gray-600">Cargando datos del odontograma...</span>
                     </div>
                 ) : error ? (
@@ -400,7 +400,7 @@ export const Odontograma2DSectionView: React.FC<Odontograma2DSectionViewProps> =
                                     type="button"
                                     onClick={() => setActiveTab("permanente")}
                                     className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "permanente"
-                                            ? "border-blue-500 text-blue-600"
+                                            ? "border-brand-500 text-brand-600"
                                             : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                                         }`}
                                 >
@@ -410,7 +410,7 @@ export const Odontograma2DSectionView: React.FC<Odontograma2DSectionViewProps> =
                                     type="button"
                                     onClick={() => setActiveTab("temporal")}
                                     className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "temporal"
-                                            ? "border-blue-500 text-blue-600"
+                                            ? "border-brand-500 text-brand-600"
                                             : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                                         }`}
                                 >
@@ -596,7 +596,7 @@ export const Odontograma2DSectionView: React.FC<Odontograma2DSectionViewProps> =
             <div className="pt-4 border-t border-gray-200">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <div className="w-2 h-2 rounded-full bg-brand-500"></div>
                         <p className="text-xs text-gray-500">
                             Sección H {odontogramaData ? 'completada' : 'pendiente'}
                         </p>

@@ -33,7 +33,7 @@ export function SuccessModal({ isOpen, onClose, message }: SuccessModalProps) {
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">{message}</p>
         <button
           onClick={onClose}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="w-full px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors"
         >
           Aceptar
         </button>

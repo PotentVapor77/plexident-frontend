@@ -154,8 +154,8 @@ const { planes, pagination, isLoading, isError, error } = usePlanesTratamiento(
         </div>
 
         {pacienteActivo && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <p className="text-sm text-blue-800 dark:text-blue-200">
+          <div className="bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-lg p-4">
+            <p className="text-sm text-brand-800 dark:text-brand-200">
               Solo se muestran planes del paciente activo seleccionado en la gestión de pacientes.
             </p>
           </div>

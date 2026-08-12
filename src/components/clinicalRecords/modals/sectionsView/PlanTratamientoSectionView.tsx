@@ -47,7 +47,7 @@ export const PlanTratamientoSectionView: React.FC<PlanTratamientoSectionViewProp
             case 'CANCELADA':
                 return <XCircle className="h-4 w-4 text-red-600" />;
             case 'PLANIFICADA':
-                return <div className="h-4 w-4 rounded-full bg-blue-400"></div>;
+                return <div className="h-4 w-4 rounded-full bg-brand-400"></div>;
             default:
                 return <div className="h-4 w-4 rounded-full bg-gray-400"></div>;
         }
@@ -121,7 +121,7 @@ export const PlanTratamientoSectionView: React.FC<PlanTratamientoSectionViewProp
                         <div className="font-medium text-gray-800">
                             {grupo.diagnostico}
                             {grupo.diente && (
-                                <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                                <span className="ml-2 text-xs bg-brand-100 text-brand-700 px-2 py-0.5 rounded">
                                     Diente: {grupo.diente}
                                 </span>
                             )}
@@ -159,7 +159,7 @@ export const PlanTratamientoSectionView: React.FC<PlanTratamientoSectionViewProp
                                 </span>
                             )}
                             {proc.diente && (
-                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                                <span className="text-xs bg-brand-100 text-brand-700 px-2 py-0.5 rounded">
                                     Diente: {proc.diente}
                                 </span>
                             )}
@@ -234,9 +234,9 @@ export const PlanTratamientoSectionView: React.FC<PlanTratamientoSectionViewProp
                 {/* Información general del plan */}
                 {tienePlan && (
                     <div className="mt-3 flex flex-wrap gap-4 text-sm">
-                        <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded">
-                            <Calendar className="h-3 w-3 text-blue-600" />
-                            <span className="text-blue-700">
+                        <div className="flex items-center gap-2 bg-brand-50 px-3 py-1 rounded">
+                            <Calendar className="h-3 w-3 text-brand-600" />
+                            <span className="text-brand-700">
                                 {planData.fecha_creacion ? 
                                     `Creado: ${formatDateOnly(planData.fecha_creacion)}` : 
                                     'Fecha no especificada'}
@@ -418,19 +418,19 @@ export const PlanTratamientoSectionView: React.FC<PlanTratamientoSectionViewProp
                                 {sesiones
                                     .filter(s => s.notas || s.observaciones)
                                     .map((sesion, idx) => (
-                                        <div key={idx} className="p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                                        <div key={idx} className="p-3 bg-brand-50 border border-brand-100 rounded-lg">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="text-sm font-medium text-blue-800">
+                                                <span className="text-sm font-medium text-brand-800">
                                                     Sesión {sesion.numero_sesion}
                                                 </span>
                                             </div>
                                             {sesion.notas && (
-                                                <p className="text-sm text-blue-700 mb-1">
+                                                <p className="text-sm text-brand-700 mb-1">
                                                     <span className="font-medium">Notas:</span> {sesion.notas}
                                                 </p>
                                             )}
                                             {sesion.observaciones && (
-                                                <p className="text-sm text-blue-700">
+                                                <p className="text-sm text-brand-700">
                                                     <span className="font-medium">Observaciones:</span> {sesion.observaciones}
                                                 </p>
                                             )}

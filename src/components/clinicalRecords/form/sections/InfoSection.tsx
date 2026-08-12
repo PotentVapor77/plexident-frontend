@@ -65,7 +65,7 @@ const InfoSection: React.FC<InfoSectionProps> = ({
     if (!datosAutomaticos.numero_historia_clinica_unica || datosAutomaticos.numero_historia_clinica_unica === "Se generará al guardar") {
       return "text-amber-700 bg-amber-50 border-amber-200";
     }
-    return "text-blue-800 bg-blue-50 border-blue-200";
+    return "text-brand-800 bg-brand-50 border-brand-200";
   };
 
   return (
@@ -73,8 +73,8 @@ const InfoSection: React.FC<InfoSectionProps> = ({
       {/* Header de la sección */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 border border-blue-100">
-            <BookOpen className="h-5 w-5 text-blue-600" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 border border-brand-100">
+            <BookOpen className="h-5 w-5 text-brand-600" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
@@ -87,7 +87,7 @@ const InfoSection: React.FC<InfoSectionProps> = ({
         </div>
         
         {mode === "create" && (
-          <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
+          <span className="inline-flex items-center rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-brand-700 ring-1 ring-inset ring-brand-600/20">
             Nuevo Historial
           </span>
         )}
@@ -108,7 +108,7 @@ const InfoSection: React.FC<InfoSectionProps> = ({
                 type="text"
                 value={datosAutomaticos.institucion_sistema}
                 readOnly
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <ShieldCheck className="h-5 w-5 text-slate-400" />
@@ -212,7 +212,7 @@ const InfoSection: React.FC<InfoSectionProps> = ({
       {/* Información adicional */}
       <div className="mt-6 pt-6 border-t border-slate-200">
         <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+          <div className="h-2 w-2 rounded-full bg-brand-500"></div>
           <p className="text-xs text-slate-600">
             <span className="font-medium">Nota:</span> Todos los campos en esta sección son generados automáticamente por el sistema y no requieren edición manual.
           </p>

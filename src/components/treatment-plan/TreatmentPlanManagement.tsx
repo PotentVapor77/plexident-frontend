@@ -328,18 +328,18 @@ export default function TreatmentPlanManagement() {
         if (!pacienteActivo) return null;
 
         return (
-            <div className="rounded-lg border p-3 mb-4 bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800">
+            <div className="rounded-lg border p-3 mb-4 bg-brand-50 dark:bg-brand-900/20 border-brand-100 dark:border-brand-800">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-800/30 text-blue-600 dark:text-blue-400">
+                        <div className="p-2 rounded-lg bg-brand-100 dark:bg-brand-800/30 text-brand-600 dark:text-brand-400">
                             <Activity className="h-4 w-4" />
                         </div>
                         <div className="flex flex-col">
                             <div className="flex items-center gap-2">
-                                <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                                <p className="text-xs font-medium text-brand-700 dark:text-brand-300">
                                     Mostrando planes del paciente:
                                 </p>
-                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
+                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium bg-brand-100 text-brand-800 dark:bg-brand-900/40 dark:text-brand-300">
                                     <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
                                         <path
                                             fillRule="evenodd"
@@ -421,7 +421,7 @@ export default function TreatmentPlanManagement() {
 
                         <button
                             onClick={handleCreatePlanClick}
-                            className="inline-flex items-center px-4 py-2 rounded-lg text-white font-medium transition-colors bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="inline-flex items-center px-4 py-2 rounded-lg text-white font-medium transition-colors bg-brand-600 hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={!pacienteActivo}
                         >
                             <Plus className="h-4 w-4 mr-2" />
@@ -546,7 +546,7 @@ export default function TreatmentPlanManagement() {
 
                             <button
                                 onClick={handleCreateSesionClick}
-                                className="inline-flex items-center px-4 py-2 rounded-lg text-white font-medium transition-colors bg-blue-600 hover:bg-blue-700"
+                                className="inline-flex items-center px-4 py-2 rounded-lg text-white font-medium transition-colors bg-brand-600 hover:bg-brand-700"
                             >
                                 <Plus className="h-4 w-4 mr-2" />
                                 Crear Sesión

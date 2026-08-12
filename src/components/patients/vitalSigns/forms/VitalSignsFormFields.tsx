@@ -41,7 +41,7 @@ const getEstadoRango = (
   }
 
   if (valor < minNormal) {
-    return { texto: "Por debajo (baja)", color: "text-blue-600", icono: "⬇️" };
+    return { texto: "Por debajo (baja)", color: "text-brand-600", icono: "⬇️" };
   } else if (valor > maxNormal) {
     return { texto: "Por encima (alta)", color: "text-red-600", icono: "⬆️" };
   } else {
@@ -65,7 +65,7 @@ const getEstadoPresion = (
   } else if (sistolica > 120 || diastolica > 80) {
     return { texto: "Elevada", color: "text-orange-600", icono: "⬆️" };
   } else if (sistolica < 90 || diastolica < 60) {
-    return { texto: "Baja", color: "text-blue-600", icono: "⬇️" };
+    return { texto: "Baja", color: "text-brand-600", icono: "⬇️" };
   } else {
     return { texto: "Normal", color: "text-green-600", icono: "✅" };
   }
@@ -229,7 +229,7 @@ export function VitalSignsFormFields({
       {/* Identificación del paciente */}
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
         <div className="mb-6 flex items-center gap-2">
-          <div className="h-8 w-2 rounded-full bg-gradient-to-b from-blue-500 to-blue-600" />
+          <div className="h-8 w-2 rounded-full bg-gradient-to-b from-brand-500 to-brand-600" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             Identificación del paciente
           </h3>
@@ -242,9 +242,9 @@ export function VitalSignsFormFields({
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Paciente
               </label>
-              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+              <div className="rounded-lg border border-brand-200 bg-brand-50 p-4 dark:border-brand-800 dark:bg-brand-900/20">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-xl shadow-lg shadow-blue-500/30">
+                  <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-700 text-white font-bold text-xl shadow-lg shadow-brand-500/30">
                     {(pacienteActivo.nombres?.charAt(0) || "P").toUpperCase()}
                     {(pacienteActivo.apellidos?.charAt(0) || "").toUpperCase()}
                   </div>
@@ -259,7 +259,7 @@ export function VitalSignsFormFields({
                 </div>
 
                 <div className="mt-4 flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-800 dark:from-blue-900 dark:to-blue-800 dark:text-blue-200 shadow-sm">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-brand-100 to-brand-200 px-3 py-1.5 text-xs font-semibold text-brand-800 dark:from-brand-900 dark:to-brand-800 dark:text-brand-200 shadow-sm">
                     <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
@@ -267,10 +267,10 @@ export function VitalSignsFormFields({
                   </span>
                 </div>
 
-                <div className="mt-4 flex gap-3 rounded-lg bg-gradient-to-r from-blue-100/80 to-blue-50 p-3 dark:from-blue-900/30 dark:to-blue-900/20">
+                <div className="mt-4 flex gap-3 rounded-lg bg-gradient-to-r from-brand-100/80 to-brand-50 p-3 dark:from-brand-900/30 dark:to-brand-900/20">
                   <span className="text-base flex-shrink-0 mt-0.5">📌</span>
                   <div className="flex-1">
-                    <p className="text-xs font-medium text-blue-900 dark:text-blue-200">
+                    <p className="text-xs font-medium text-brand-900 dark:text-brand-200">
                       <span className="font-semibold">Nota:</span> Este registro se asociará automáticamente al paciente fijado.
                     </p>
                   </div>
@@ -304,11 +304,11 @@ export function VitalSignsFormFields({
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Paciente
               </label>
-              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+              <div className="rounded-lg border border-brand-200 bg-brand-50 p-4 dark:border-brand-800 dark:bg-brand-900/20">
                 {selectedPatient ? (
                   <>
                     <div className="flex items-center gap-3">
-                      <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-xl shadow-lg shadow-blue-500/30">
+                      <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-700 text-white font-bold text-xl shadow-lg shadow-brand-500/30">
                         {(selectedPatient.nombres?.charAt(0) || "P").toUpperCase()}
                         {(selectedPatient.apellidos?.charAt(0) || "").toUpperCase()}
                       </div>
@@ -323,7 +323,7 @@ export function VitalSignsFormFields({
                     </div>
 
                     <div className="mt-4 flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-800 dark:from-blue-900 dark:to-blue-800 dark:text-blue-200 shadow-sm">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-brand-100 to-brand-200 px-3 py-1.5 text-xs font-semibold text-brand-800 dark:from-brand-900 dark:to-brand-800 dark:text-brand-200 shadow-sm">
                         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
@@ -372,7 +372,7 @@ export function VitalSignsFormFields({
                 onChange={handleDateChange}
                 required
                 max={maxDate}
-                className={`w-full p-3 pr-20 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors appearance-none ${
+                className={`w-full p-3 pr-20 border rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors appearance-none ${
                   !isDateValid 
                     ? 'border-red-300 dark:border-red-500' 
                     : 'border-gray-300 dark:border-gray-600'
@@ -448,7 +448,7 @@ export function VitalSignsFormFields({
               onChange={(e) => onChange('motivo_consulta', e.target.value)}
               placeholder="Describa el motivo principal de la visita..."
               rows={3}
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-500 dark:focus:ring-brand-900"
             />
             {errors.motivo_consulta && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -467,7 +467,7 @@ export function VitalSignsFormFields({
               onChange={(e) => onChange('enfermedad_actual', e.target.value)}
               placeholder="Describa síntomas, cronología, localización, intensidad..."
               rows={4}
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-500 dark:focus:ring-brand-900"
             />
             {errors.enfermedad_actual && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -486,7 +486,7 @@ export function VitalSignsFormFields({
               onChange={(e) => onChange('observaciones', e.target.value)}
               placeholder="Observaciones adicionales del profesional..."
               rows={3}
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-500 dark:focus:ring-brand-900"
             />
           </div>
         </div>
@@ -515,7 +515,7 @@ export function VitalSignsFormFields({
               placeholder="Ej: 36.8"
               min="35.0"
               max="42.0"
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-500 dark:focus:ring-brand-900"
             />
             <div className="mt-2 space-y-1">
               <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
@@ -548,7 +548,7 @@ export function VitalSignsFormFields({
               placeholder="Ej: 78"
               min="40"
               max="200"
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-500 dark:focus:ring-brand-900"
             />
             <div className="mt-2 space-y-1">
               <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
@@ -583,7 +583,7 @@ export function VitalSignsFormFields({
               placeholder="Ej: 16"
               min="10"
               max="50"
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-500 dark:focus:ring-brand-900"
             />
             <div className="mt-2 space-y-1">
               <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
@@ -616,7 +616,7 @@ export function VitalSignsFormFields({
               value={formData.presion_arterial ?? ""}
               onChange={(e) => onChange("presion_arterial", e.target.value)}
               placeholder="Ej: 118/76"
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-brand-500 dark:focus:ring-brand-900"
             />
             <div className="mt-2 space-y-1">
               <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
@@ -667,7 +667,7 @@ export function VitalSignsFormFields({
                 type="checkbox"
                 checked={activo}
                 onChange={(e) => onActivoChange?.(e.target.checked)}
-                className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-900"
+                className="h-5 w-5 rounded border-gray-300 text-brand-600 focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-brand-900"
               />
               <label htmlFor="activo" className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Activo

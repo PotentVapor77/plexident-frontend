@@ -35,7 +35,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
   return (
     <div className="flex items-start gap-3 pb-3 border-b border-gray-200">
       {/* Icono */}
-      <div className="flex-shrink-0 p-2 bg-blue-50 rounded-lg text-blue-600">
+      <div className="flex-shrink-0 p-2 bg-brand-50 rounded-lg text-brand-600">
         {icon}
       </div>
 

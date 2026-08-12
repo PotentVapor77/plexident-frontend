@@ -316,7 +316,7 @@ const CalendarHeader = ({
             {/* Botón de Estadísticas de Recordatorios */}
             <button
               onClick={() => setShowStatsModal(true)}
-              className="flex items-center px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 hover:border-indigo-300 transition-colors"
+              className="flex items-center px-4 py-2 text-sm font-medium text-brand-700 bg-brand-50 border border-brand-200 rounded-lg hover:bg-brand-100 hover:border-brand-300 transition-colors"
               title="Estadísticas de recordatorios"
             >
               <ChartBarIcon className="w-4 h-4 mr-2" />
@@ -337,7 +337,7 @@ const CalendarHeader = ({
             {/* Botón Nueva Cita */}
             <button
               onClick={onCreateNew}
-              className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors"
             >
               <PlusIcon className="w-4 h-4 mr-2" />
               Nueva Cita
@@ -349,7 +349,7 @@ const CalendarHeader = ({
                 onClick={() => onViewChange('day')}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   selectedView === 'day'
-                    ? 'bg-white text-blue-600 shadow-sm'
+                    ? 'bg-white text-brand-600 shadow-sm'
                     : 'text-gray-700 hover:text-gray-900'
                 }`}
               >
@@ -359,7 +359,7 @@ const CalendarHeader = ({
                 onClick={() => onViewChange('week')}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   selectedView === 'week'
-                    ? 'bg-white text-blue-600 shadow-sm'
+                    ? 'bg-white text-brand-600 shadow-sm'
                     : 'text-gray-700 hover:text-gray-900'
                 }`}
               >
@@ -369,7 +369,7 @@ const CalendarHeader = ({
                 onClick={() => onViewChange('month')}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   selectedView === 'month'
-                    ? 'bg-white text-blue-600 shadow-sm'
+                    ? 'bg-white text-brand-600 shadow-sm'
                     : 'text-gray-700 hover:text-gray-900'
                 }`}
               >
@@ -400,17 +400,17 @@ const CalendarHeader = ({
                 {/* Horarios */}
                 {rangoHorario.tipo === 'uniforme' ? (
                   // Horario único para todos los días
-                  <div className="flex items-center px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg border border-sky-200">
+                  <div className="flex items-center px-3 py-1.5 bg-brand-50 text-brand-700 rounded-lg border border-brand-200">
                     <ClockIcon className="w-4 h-4 mr-2" />
                     <span className="font-medium">{rangoHorario.texto}</span>
                   </div>
                 ) : rangoHorario.tipo === 'variado' ? (
                   // Horarios variables con tooltip
                   <div className="group relative">
-                    <div className="flex items-center px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg border border-sky-200 cursor-help">
+                    <div className="flex items-center px-3 py-1.5 bg-brand-50 text-brand-700 rounded-lg border border-brand-200 cursor-help">
                       <ClockIcon className="w-4 h-4 mr-2" />
                       <span className="font-medium">{rangoHorario.texto}</span>
-                      <span className="ml-1.5 text-sky-500 text-xs">ⓘ</span>
+                      <span className="ml-1.5 text-brand-500 text-xs">ⓘ</span>
                     </div>
                     
                     {/* Tooltip con horarios detallados */}
@@ -453,7 +453,7 @@ const CalendarHeader = ({
           {/* Estadísticas de citas */}
           <div className="flex flex-col space-y-2">
             <div className="flex items-center space-x-2">
-              <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium border border-blue-200">
+              <div className="px-3 py-1 bg-brand-50 text-brand-700 rounded-full text-sm font-medium border border-brand-200">
                 {citasProgramadas} {citasProgramadas === 1 ? 'cita programada' : 'citas programadas'}
               </div>
 
@@ -471,7 +471,7 @@ const CalendarHeader = ({
                       {/* Programadas */}
                       <div className="flex justify-between items-center">
                         <span className="flex items-center">
-                          <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                          <div className="w-3 h-3 rounded-full bg-brand-500 mr-2"></div>
                           Programadas
                         </span>
                         <span className="font-medium">{citasProgramadas}</span>

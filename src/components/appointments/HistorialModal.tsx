@@ -26,7 +26,7 @@ const HistorialModal: React.FC<HistorialModalProps> = ({
     >
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-t-3xl">
+        <div className="px-6 py-4 bg-gradient-to-r from-brand-500 to-brand-600 rounded-t-3xl">
           <h2 className="text-xl font-semibold text-white flex items-center gap-2">
             📋 Historial de Cambios
           </h2>
@@ -36,7 +36,7 @@ const HistorialModal: React.FC<HistorialModalProps> = ({
         <div className="px-6 py-4 overflow-y-auto flex-1">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mb-4"></div>
               <p className="text-gray-500">Cargando historial...</p>
             </div>
           ) : !historialCita ? (
@@ -46,14 +46,14 @@ const HistorialModal: React.FC<HistorialModalProps> = ({
           ) : (
             <>
               {/* Info de la cita */}
-              <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+              <div className="mb-6 p-4 bg-gradient-to-r from-brand-50 to-brand-50 rounded-lg border border-brand-200">
                 <p className="text-sm text-gray-700">
                   <span className="font-semibold">👤 Paciente:</span>{' '}
-                  <span className="text-blue-700">{historialCita.paciente}</span>
+                  <span className="text-brand-700">{historialCita.paciente}</span>
                 </p>
                 <p className="text-sm text-gray-700 mt-2">
                   <span className="font-semibold">📊 Total de cambios:</span>{' '}
-                  <span className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 bg-blue-600 text-white rounded-full font-bold ml-2">
+                  <span className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 bg-brand-600 text-white rounded-full font-bold ml-2">
                     {historialCita.total_cambios}
                   </span>
                 </p>
@@ -76,7 +76,7 @@ const HistorialModal: React.FC<HistorialModalProps> = ({
                     // Determinar color según la acción
                     const colorMap: Record<string, { border: string; bg: string; icon: string }> = {
                       CREACION: { border: 'border-green-500', bg: 'bg-green-50', icon: '✨' },
-                      MODIFICACION: { border: 'border-blue-500', bg: 'bg-blue-50', icon: '✏️' },
+                      MODIFICACION: { border: 'border-brand-500', bg: 'bg-brand-50', icon: '✏️' },
                       REPROGRAMACION: { border: 'border-yellow-500', bg: 'bg-yellow-50', icon: '🔄' },
                       CANCELACION: { border: 'border-red-500', bg: 'bg-red-50', icon: '❌' },
                       CAMBIO_ESTADO: { border: 'border-purple-500', bg: 'bg-purple-50', icon: '🔔' }
@@ -126,7 +126,7 @@ const HistorialModal: React.FC<HistorialModalProps> = ({
                        {/* Detalles de cambios (si existen) */}
                         {(cambio.datos_anteriores || cambio.datos_nuevos) && (
                           <details className="mt-3 pl-7">
-                            <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800 font-medium">
+                            <summary className="text-xs text-brand-600 cursor-pointer hover:text-brand-800 font-medium">
                               🔍 Ver detalles técnicos
                             </summary>
                             <div className="mt-2 p-3 bg-white rounded border border-gray-200 text-xs">

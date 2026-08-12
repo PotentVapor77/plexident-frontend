@@ -11,7 +11,7 @@ const CATEGORY_COLORS: Record<string, string> = {
     Preventivo: "bg-emerald-50 border-emerald-200 text-emerald-800",
     Ausencia: "bg-slate-50 border-slate-200 text-slate-800",
     "Patologia Activa": "bg-red-50 border-red-200 text-red-800",
-    "Tratamiento Realizado": "bg-blue-50 border-blue-200 text-blue-800",
+    "Tratamiento Realizado": "bg-brand-50 border-brand-200 text-brand-800",
     default: "bg-gray-50 border-gray-200 text-gray-800",
 };
 

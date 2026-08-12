@@ -118,7 +118,7 @@ const NotificationDropdown = () => {
       return 'bg-orange-100 dark:bg-orange-900/30 border-orange-300 dark:border-orange-700';
     if (minutos <= 30)
       return 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700';
-    return 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700';
+    return 'bg-brand-50 dark:bg-brand-500/10 border-brand-200 dark:border-brand-700';
   };
 
   const getBadgeColor = (minutos: number): string => {
@@ -126,7 +126,7 @@ const NotificationDropdown = () => {
       return 'bg-red-200 dark:bg-red-900/50 text-red-800 dark:text-red-200';
     if (minutos <= 30)
       return 'bg-orange-200 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200';
-    return 'bg-blue-200 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200';
+    return 'bg-brand-50 dark:bg-brand-500/10 text-brand-700 dark:text-brand-200';
   };
 
   return (
@@ -158,13 +158,13 @@ const NotificationDropdown = () => {
           <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                <Clock size={20} className="text-blue-600 dark:text-blue-400" />
+                <Clock size={20} className="text-brand-600 dark:text-brand-400" />
                 Citas Próximas
               </h3>
               <button
                 onClick={cargarCitasProximas}
                 disabled={loading}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline 
+                className="text-sm text-brand-600 dark:text-brand-400 hover:underline 
                            disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Cargando...' : 'Actualizar'}
@@ -180,7 +180,7 @@ const NotificationDropdown = () => {
             {loading && citasProximas.length === 0 ? (
               <div className="p-8 text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 
-                                border-blue-600 dark:border-blue-400 mx-auto" />
+                                border-brand-600 dark:border-brand-400 mx-auto" />
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                   Buscando citas próximas...
                 </p>
@@ -191,7 +191,7 @@ const NotificationDropdown = () => {
                 <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                 <button
                   onClick={cargarCitasProximas}
-                  className="mt-3 px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                  className="mt-3 px-4 py-2 text-sm bg-brand-600 text-white rounded hover:bg-brand-700"
                 >
                   Reintentar
                 </button>
@@ -264,7 +264,7 @@ const NotificationDropdown = () => {
                       </div>
 
                       {/* Time range */}
-                      <div className="flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400">
+                      <div className="flex items-center gap-1 text-xs font-bold text-brand-600 dark:text-brand-400">
                         <Clock size={14} />
                         <span>⏰ {cita.hora_inicio || '--:--'} - {cita.hora_fin || '--:--'}</span>
                       </div>

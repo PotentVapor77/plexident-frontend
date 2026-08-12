@@ -90,7 +90,7 @@ const ExamenesComplementariosSection: React.FC<ExamenesComplementariosSectionPro
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <FileText className="h-5 w-5 text-brand-600 dark:text-brand-400" />
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 L. Exámenes Complementarios
@@ -169,7 +169,7 @@ const ExamenesComplementariosSection: React.FC<ExamenesComplementariosSectionPro
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       examenesData.pedido_examenes && examenesData.pedido_examenes.trim() !== ""
-                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                        ? "bg-brand-100 text-brand-800 dark:bg-brand-900/30 dark:text-brand-300"
                         : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
                     }`}
                   >
@@ -182,15 +182,15 @@ const ExamenesComplementariosSection: React.FC<ExamenesComplementariosSectionPro
                 {examenesData.pedido_examenes && examenesData.pedido_examenes.trim() !== "" ? (
                   <div className="space-y-2">
                     {/* Tipos de exámenes solicitados */}
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
-                      <p className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">
+                    <div className="bg-brand-50 dark:bg-brand-900/20 rounded-lg p-3 border border-brand-200 dark:border-brand-800">
+                      <p className="text-xs font-medium text-brand-700 dark:text-brand-300 mb-1">
                         Exámenes Solicitados:
                       </p>
                       <div className="flex flex-wrap gap-1">
                         {examenesData.pedido_examenes.split(',').map((examen, idx) => (
                           <span
                             key={idx}
-                            className="inline-block px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs rounded"
+                            className="inline-block px-2 py-0.5 bg-brand-100 dark:bg-brand-900/40 text-brand-800 dark:text-brand-200 text-xs rounded"
                           >
                             {examen.trim()}
                           </span>

@@ -159,9 +159,9 @@ export function VitalSignsViewModal({
 
         <div className="space-y-6">
           {/* Información del Paciente */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
+          <div className="bg-brand-50 dark:bg-brand-900/20 rounded-lg p-6 border border-brand-200 dark:border-brand-800">
             <div className="flex items-start gap-4">
-              <div className="w-20 h-20 rounded-2xl bg-blue-600 dark:bg-blue-700 text-white flex items-center justify-center text-2xl font-semibold shadow-lg flex-shrink-0">
+              <div className="w-20 h-20 rounded-2xl bg-brand-600 dark:bg-brand-700 text-white flex items-center justify-center text-2xl font-semibold shadow-lg flex-shrink-0">
                 {pacienteInfo.iniciales || "P"}
               </div>
               <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -196,7 +196,7 @@ export function VitalSignsViewModal({
             
             {/* Badge de paciente fijado */}
             <div className="mt-4 flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-800 dark:from-blue-900 dark:to-blue-800 dark:text-blue-200 shadow-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-brand-100 to-brand-200 px-3 py-1.5 text-xs font-semibold text-brand-800 dark:from-brand-900 dark:to-brand-800 dark:text-brand-200 shadow-sm">
                 <svg
                   className="w-3.5 h-3.5"
                   fill="currentColor"
@@ -222,12 +222,12 @@ export function VitalSignsViewModal({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+                <div className="bg-gradient-to-br from-brand-50 to-brand-100 dark:from-brand-900/20 dark:to-brand-800/20 p-4 rounded-lg border border-brand-200 dark:border-brand-800">
+                  <p className="text-sm font-medium text-brand-800 dark:text-brand-300 mb-2">
                     Temperatura
                   </p>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-blue-600 dark:bg-blue-700 rounded-lg flex items-center justify-center text-white text-xl font-bold">
+                    <div className="w-12 h-12 bg-brand-600 dark:bg-brand-700 rounded-lg flex items-center justify-center text-white text-xl font-bold">
                       T
                     </div>
                     <div>
@@ -371,7 +371,7 @@ export function VitalSignsViewModal({
           {onEdit && (
             <button
               onClick={onEdit}
-              className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-2.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors"
             >
               Editar Signos Vitales
             </button>

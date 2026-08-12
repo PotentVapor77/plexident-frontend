@@ -23,7 +23,7 @@ const RefreshButton: React.FC<RefreshButtonProps> = ({
 }) => {
   // Clases de color
   const colorClasses: Record<string, string> = {
-    blue: "text-blue-600 bg-blue-50 hover:bg-blue-100 border-blue-200",
+    blue: "text-brand-600 bg-brand-50 hover:bg-brand-100 border-brand-200",
     green: "text-green-600 bg-green-50 hover:bg-green-100 border-green-200",
     rose: "text-rose-600 bg-rose-50 hover:bg-rose-100 border-rose-200",
     amber: "text-amber-600 bg-amber-50 hover:bg-amber-100 border-amber-200",

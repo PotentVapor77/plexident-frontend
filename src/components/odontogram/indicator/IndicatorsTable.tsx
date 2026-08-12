@@ -225,7 +225,7 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
       },
       CLASE_I: {
         text: "Clase I",
-        color: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800",
+        color: "bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-900/30 dark:text-brand-400 dark:border-brand-800",
         icon: <ActivityIcon className="h-3.5 w-3.5" />,
         severity: 'low'
       },
@@ -298,7 +298,7 @@ export const IndicatorsTable: React.FC<IndicatorsTableProps> = ({
       },
       CUESTIONABLE: {
         text: "Cuestionable",
-        color: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800",
+        color: "bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-900/30 dark:text-brand-400 dark:border-brand-800",
         icon: <Shield className="h-3.5 w-3.5" />,
         severity: 'very-low',
         level: 1

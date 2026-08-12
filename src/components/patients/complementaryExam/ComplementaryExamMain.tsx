@@ -68,7 +68,7 @@ export function ComplementaryExamMain({ pacienteId }: ComplementaryExamMainProps
         </div>
         <button
           onClick={handleCreate}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-300 dark:bg-brand-600 dark:hover:bg-brand-700 dark:focus:ring-brand-800"
         >
           <svg
             className="h-5 w-5"
@@ -88,11 +88,11 @@ export function ComplementaryExamMain({ pacienteId }: ComplementaryExamMainProps
       </div>
 
       {/* Información */}
-      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+      <div className="rounded-lg border border-brand-200 bg-brand-50 p-4 dark:border-brand-800 dark:bg-brand-900/20">
         <div className="flex">
           <div className="flex-shrink-0">
             <svg
-              className="h-5 w-5 text-blue-400"
+              className="h-5 w-5 text-brand-400"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -104,7 +104,7 @@ export function ComplementaryExamMain({ pacienteId }: ComplementaryExamMainProps
             </svg>
           </div>
           <div className="ml-3 flex-1">
-            <p className="text-sm text-blue-700 dark:text-blue-400">
+            <p className="text-sm text-brand-700 dark:text-brand-400">
               Registre las solicitudes de exámenes complementarios y sus resultados.
               Puede solicitar exámenes como radiografías, hemogramas, glucosa, etc.,
               y posteriormente registrar los informes con los hallazgos encontrados.

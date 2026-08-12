@@ -138,7 +138,7 @@ export const getEstadoColor = (estado: string): string => {
     return '#10B981'; // Verde
   }
   if (estadoLower.includes('programada')) {
-    return '#3B82F6'; // Azul
+    return '#0D9488'; // Teal
   }
   if (estadoLower.includes('atención')) {
     return '#F59E0B'; // Amarillo

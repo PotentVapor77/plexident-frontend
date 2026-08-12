@@ -127,7 +127,7 @@ const ClinicalRecordViewModal: React.FC<ClinicalRecordViewModalProps> = ({
                   {isComplete ? 'COMPLETO' : 'EN PROGRESO'}
                 </span>
                 {hasPlanTratamiento && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-brand-100 text-brand-800">
                     CON PLAN
                   </span>
                 )}

@@ -691,7 +691,7 @@ const AppointmentCreateModal = ({
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                  <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-sm">
+                  <div className="h-10 w-10 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl flex items-center justify-center shadow-sm">
                     <CalendarIcon className="h-6 w-6 text-white" />
                   </div>
                   Crear Nueva Cita
@@ -712,7 +712,7 @@ const AppointmentCreateModal = ({
             {/* Indicador de permiso */}
             <div className="mt-4 ml-13">
               {isUserOdontologo && !userCanViewAll && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-brand-100 text-brand-800">
                   👤 Modo odontólogo: Solo puede crear citas para usted mismo
                 </span>
               )}
@@ -729,7 +729,7 @@ const AppointmentCreateModal = ({
             {/* ✅ Sección: Información del Paciente - AZUL */}
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full" />
+                <div className="w-2 h-8 bg-gradient-to-b from-brand-500 to-brand-600 rounded-full" />
                 <h3 className="text-lg font-semibold text-gray-900">
                   Información del Paciente
                 </h3>
@@ -748,7 +748,7 @@ const AppointmentCreateModal = ({
                       value={patientSearchTerm}
                       onChange={handlePatientSearch}
                       placeholder="Buscar por nombre, cédula o documento..."
-                      className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 transition-colors"
+                      className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white text-gray-900 transition-colors"
                       onFocus={() => setIsPatientDropdownOpen(true)}
                     />
                     {patientSearchTerm && (
@@ -771,7 +771,7 @@ const AppointmentCreateModal = ({
                   <button
                     type="button"
                     onClick={togglePatientDropdown}
-                    className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-left flex items-center justify-between ${
+                    className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors text-left flex items-center justify-between ${
                       errors.paciente
                         ? "border-red-300"
                         : "border-gray-300"
@@ -815,21 +815,21 @@ const AppointmentCreateModal = ({
                             key={patient.id}
                             type="button"
                             onClick={() => handlePatientSelect(patient.id)}
-                            className={`w-full px-4 py-3 text-left text-sm hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0 ${
+                            className={`w-full px-4 py-3 text-left text-sm hover:bg-brand-50 transition-colors border-b border-gray-100 last:border-b-0 ${
                               formData.paciente === patient.id
-                                ? "bg-blue-100 text-blue-700"
+                                ? "bg-brand-100 text-brand-700"
                                 : "text-gray-900"
                             }`}
                           >
                             <div className="flex items-center space-x-3">
-                              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center flex-shrink-0 shadow-md">
+                              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center flex-shrink-0 shadow-md">
                                 <span className="text-xs font-bold text-white">
                                   {getPatientAvatarInitials(patient)}
                                 </span>
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className={`font-medium truncate ${
-                                  formData.paciente === patient.id ? 'text-blue-700' : ''
+                                  formData.paciente === patient.id ? 'text-brand-700' : ''
                                 }`}>
                                   {getPatientFullName(patient)}
                                 </p>
@@ -839,7 +839,7 @@ const AppointmentCreateModal = ({
                               </div>
                               {formData.paciente === patient.id && (
                                 <svg
-                                  className="h-5 w-5 text-blue-600 flex-shrink-0"
+                                  className="h-5 w-5 text-brand-600 flex-shrink-0"
                                   fill="currentColor"
                                   viewBox="0 0 20 20"
                                 >
@@ -864,9 +864,9 @@ const AppointmentCreateModal = ({
 
                 {/* Mostrar información del paciente seleccionado */}
                 {selectedPaciente && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="mt-4 p-4 bg-brand-50 rounded-lg border border-brand-200">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-medium shadow-md">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center text-white font-medium shadow-md">
                         {getPatientAvatarInitials(selectedPaciente)}
                       </div>
                       <div>
@@ -1074,7 +1074,7 @@ const AppointmentCreateModal = ({
                           </p>
                         )}
                         {isUserOdontologo && !userCanViewAll && (
-                          <p className="text-xs text-blue-700 mt-1 flex items-center gap-1">
+                          <p className="text-xs text-brand-700 mt-1 flex items-center gap-1">
                             👤 Usted está asignado como odontólogo para esta cita
                           </p>
                         )}
@@ -1088,7 +1088,7 @@ const AppointmentCreateModal = ({
 
                     {/* Estado de horarios de atención */}
                     {checkingHorariosAtencion && (
-                      <div className="mt-3 flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                      <div className="mt-3 flex items-center gap-2 text-sm text-brand-600 bg-brand-50 p-3 rounded-lg border border-brand-200">
                         <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -1380,20 +1380,20 @@ const AppointmentCreateModal = ({
             </div>
 
             {/* ✅ Nota informativa */}
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
-              <h4 className="text-lg font-semibold text-blue-900 mb-3 flex items-center gap-2">
+            <div className="bg-brand-50 border-2 border-brand-200 rounded-xl p-6">
+              <h4 className="text-lg font-semibold text-brand-900 mb-3 flex items-center gap-2">
                 📋 Información importante
               </h4>
               <div className="space-y-2">
-                <ul className="text-sm text-blue-800 space-y-2 list-disc list-inside">
+                <ul className="text-sm text-brand-800 space-y-2 list-disc list-inside">
                   <li>Los campos marcados con <span className="text-red-500">*</span> son obligatorios</li>
                   <li>La duración se establece automáticamente según la configuración del odontólogo</li>
                   <li>Verifique la disponibilidad antes de confirmar la cita</li>
                   <li>Las citas pueden ser canceladas hasta 24 horas antes</li>
                   <li>Haga clic en el ícono 📅 para abrir el selector de fecha</li>
                 </ul>
-                <div className="mt-3 p-3 bg-white rounded-lg border border-blue-300">
-                  <p className="text-sm font-medium text-blue-900 mb-1">⚡ Permisos actuales:</p>
+                <div className="mt-3 p-3 bg-white rounded-lg border border-brand-300">
+                  <p className="text-sm font-medium text-brand-900 mb-1">⚡ Permisos actuales:</p>
                   {isUserOdontologo && !userCanViewAll && (
                     <p className="text-sm text-green-700">
                       Como <span className="font-semibold">odontólogo</span>, solo puede crear citas para usted mismo
@@ -1424,7 +1424,7 @@ const AppointmentCreateModal = ({
               <button
                 type="submit"
                 disabled={isSubmitDisabled}
-                className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-700 rounded-lg hover:from-blue-600 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
+                className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-brand-500 to-brand-700 rounded-lg hover:from-brand-600 hover:to-brand-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
               >
                 {isSubmitting || loading ? (
                   <>

@@ -93,7 +93,7 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({
             borderRadius: 5,
           },
         },
-        colors: ['#4F46E5'],
+        colors: ['#0D9488'],
         dataLabels: { enabled: false },
         stroke: {
           show: true,
@@ -174,7 +174,7 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({
           toolbar: { show: false },
           height: 300,
         },
-        colors: ['#10B981'],
+        colors: ['#0D9488'],
         stroke: {
           width: 3,
           curve: 'smooth',
@@ -276,7 +276,7 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({
             autoScaleYaxis: true
           }
         },
-        colors: ['#3B82F6'],
+        colors: ['#0D9488'],
         stroke: {
           width: 2,
           curve: 'smooth',
@@ -409,7 +409,7 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({
                     label,
                     value: distribucionEstadosData.values[index],
                   }))}
-                  colors={['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#6B7280', '#8B5CF6']}
+                  colors={['#10B981', '#0D9488', '#F59E0B', '#EF4444', '#6B7280', '#8B5CF6']}
                 />
               </div>
               <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">

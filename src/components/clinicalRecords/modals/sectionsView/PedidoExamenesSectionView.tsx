@@ -66,7 +66,7 @@ export const PedidoExamenesSectionView: React.FC<PedidoExamenesSectionViewProps>
                 <div className="flex items-start justify-between">
                     <div>
                         <div className="flex items-center gap-2">
-                            {/* <FileText className="h-5 w-5 text-blue-600" /> */}
+                            {/* <FileText className="h-5 w-5 text-brand-600" /> */}
                             <h3 className="text-base font-semibold text-gray-900">
                                 L. Pedido de Exámenes Complementarios
                             </h3>
@@ -199,7 +199,7 @@ export const PedidoExamenesSectionView: React.FC<PedidoExamenesSectionViewProps>
                         {/* Lista de exámenes solicitados */}
                         <div className="space-y-3">
                             <div className="flex items-center gap-2">
-                                <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
+                                <div className="w-1 h-4 bg-brand-500 rounded-full"></div>
                                 <h4 className="text-sm font-semibold text-gray-800">
                                     Exámenes Solicitados
                                 </h4>
@@ -210,10 +210,10 @@ export const PedidoExamenesSectionView: React.FC<PedidoExamenesSectionViewProps>
                                     {examenesData.pedido_examenes.split(',').map((examen, index) => (
                                         <div 
                                             key={index}
-                                            className="border border-gray-200 rounded-lg p-3 bg-blue-50"
+                                            className="border border-gray-200 rounded-lg p-3 bg-brand-50"
                                         >
                                             <div className="flex items-start">
-                                                <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-xs font-bold mr-2">
+                                                <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-brand-100 text-brand-700 text-xs font-bold mr-2">
                                                     {index + 1}
                                                 </div>
                                                 <div className="flex-1">
@@ -221,7 +221,7 @@ export const PedidoExamenesSectionView: React.FC<PedidoExamenesSectionViewProps>
                                                         {examen.trim()}
                                                     </p>
                                                     {index === 0 && examenesData?.pedido_examenes_detalle && (
-                                                        <div className="mt-2 pt-2 border-t border-blue-200">
+                                                        <div className="mt-2 pt-2 border-t border-brand-200">
                                                             <p className="text-xs text-gray-700">
                                                                 Detalle: {examenesData.pedido_examenes_detalle}
                                                             </p>
@@ -271,7 +271,7 @@ export const PedidoExamenesSectionView: React.FC<PedidoExamenesSectionViewProps>
             <div className="pt-4 border-t border-gray-200">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <div className="w-2 h-2 rounded-full bg-brand-500"></div>
                         <p className="text-xs text-gray-500">
                             Sección L {tienePedido ? 'con pedido' : 'sin pedido'}
                         </p>

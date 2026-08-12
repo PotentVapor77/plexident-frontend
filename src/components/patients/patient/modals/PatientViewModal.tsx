@@ -106,9 +106,9 @@ export function PacienteViewModal({
 
         <div className="space-y-6">
           {/* Información Principal del Paciente */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
+          <div className="bg-brand-50 dark:bg-brand-900/20 rounded-lg p-6 border border-brand-200 dark:border-brand-800">
             <div className="flex items-start gap-4">
-              <div className="w-20 h-20 rounded-2xl bg-blue-600 dark:bg-blue-700 text-white flex items-center justify-center text-2xl font-semibold shadow-lg flex-shrink-0">
+              <div className="w-20 h-20 rounded-2xl bg-brand-600 dark:bg-brand-700 text-white flex items-center justify-center text-2xl font-semibold shadow-lg flex-shrink-0">
                 {initials || "P"}
               </div>
               <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -261,7 +261,7 @@ export function PacienteViewModal({
           {onEdit && (
             <button
               onClick={onEdit}
-              className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-2.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors"
             >
               Editar Paciente
             </button>

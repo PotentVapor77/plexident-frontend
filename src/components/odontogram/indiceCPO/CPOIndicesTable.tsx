@@ -97,7 +97,7 @@ if (!isVisible && !showCalculatedOnly) {
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-semibold text-red-600">C:{displayIndices.C}</span>
           <span className="text-xs font-semibold text-gray-600">P:{displayIndices.P}</span>
-          <span className="text-xs font-semibold text-blue-600">O:{displayIndices.O}</span>
+          <span className="text-xs font-semibold text-brand-600">O:{displayIndices.O}</span>
           <span className="text-xs font-bold text-gray-900">Σ:{displayIndices.total}</span>
         </div>
       </div>
@@ -146,7 +146,7 @@ if (!isVisible && !showCalculatedOnly) {
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-red-600">C: {displayIndices.C}</span>
           <span className="text-sm font-semibold text-gray-600">P: {displayIndices.P}</span>
-          <span className="text-sm font-semibold text-blue-600">O: {displayIndices.O}</span>
+          <span className="text-sm font-semibold text-brand-600">O: {displayIndices.O}</span>
           <span className="text-sm font-bold text-gray-900">Total: {displayIndices.total}</span>
           {isCalculated && (
             <span className="text-xs text-amber-600 animate-pulse">*</span>
@@ -245,12 +245,12 @@ if (!isVisible && !showCalculatedOnly) {
             </div>
 
             {/* Obturados (O) */}
-            <div className="flex flex-col items-center justify-between p-2 rounded-lg bg-gradient-to-b from-blue-50 to-white border border-blue-100 transition-all hover:border-blue-200 min-h-[100px]">
-              <div className={`flex items-center justify-center w-8 h-8 rounded-full mb-1 ${isSaved ? 'bg-blue-100' : 'bg-blue-50'}`}>
-                <span className="text-sm font-bold text-blue-600">O</span>
+            <div className="flex flex-col items-center justify-between p-2 rounded-lg bg-gradient-to-b from-brand-50 to-white border border-brand-100 transition-all hover:border-brand-200 min-h-[100px]">
+              <div className={`flex items-center justify-center w-8 h-8 rounded-full mb-1 ${isSaved ? 'bg-brand-100' : 'bg-brand-50'}`}>
+                <span className="text-sm font-bold text-brand-600">O</span>
               </div>
               <div className="relative flex-1 flex items-center justify-center">
-                <span className={`text-2xl font-bold transition-colors ${isSaved ? 'text-blue-700' : 'text-blue-600/70'}`}>
+                <span className={`text-2xl font-bold transition-colors ${isSaved ? 'text-brand-700' : 'text-brand-600/70'}`}>
                   {displayIndices.O}
                 </span>
                 {!isSaved && !isLoading && (
@@ -284,9 +284,9 @@ if (!isVisible && !showCalculatedOnly) {
           {/* Estado y leyenda */}
           <div className="mt-4 pt-3 border-t border-gray-100">
             {isSaving ? (
-              <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg animate-pulse w-full">
-                <Save className="w-4 h-4 text-blue-600" />
-                <span className="text-sm text-blue-700 font-medium">Guardando...</span>
+              <div className="flex items-center gap-2 px-3 py-2 bg-brand-50 rounded-lg animate-pulse w-full">
+                <Save className="w-4 h-4 text-brand-600" />
+                <span className="text-sm text-brand-700 font-medium">Guardando...</span>
               </div>
             ) : errors.saved ? (
               <div className="flex items-center gap-2 px-3 py-2 bg-error-50 rounded-lg w-full">

@@ -19,7 +19,7 @@ export default function Spinner({
     <div className="flex flex-col items-center justify-center gap-3">
       <div className="relative">
         <div
-          className={`${sizeClasses[size]} animate-spin rounded-full border-solid border-blue-500 border-t-transparent`}
+          className={`${sizeClasses[size]} animate-spin rounded-full border-solid border-brand-500 border-t-transparent`}
           role="status"
           aria-label={ariaLabel}
         />

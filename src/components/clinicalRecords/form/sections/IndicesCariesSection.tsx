@@ -212,8 +212,8 @@ useEffect(() => {
     <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
       {/* Barra de progreso sutil superior cuando está cargando */}
       {(loading || isRefreshing) && (
-        <div className="absolute top-0 left-0 w-full h-1 bg-blue-100 overflow-hidden">
-          <div className="w-full h-full bg-blue-500 animate-progress-buffer origin-left"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-brand-100 overflow-hidden">
+          <div className="w-full h-full bg-brand-500 animate-progress-buffer origin-left"></div>
         </div>
       )}
 
@@ -393,28 +393,28 @@ useEffect(() => {
                   </div>
 
                   {/* Obturados (O) */}
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="p-4 bg-brand-50 border border-brand-200 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <h5 className="text-sm font-medium text-blue-700">Obturados (O)</h5>
-                      <div className="text-2xl font-bold text-blue-700">
+                      <h5 className="text-sm font-medium text-brand-700">Obturados (O)</h5>
+                      <div className="text-2xl font-bold text-brand-700">
                         {indicesData.cpo_o ?? 0}
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <span className="text-xs text-blue-500">Porcentaje</span>
-                        <span className="text-sm font-medium text-blue-700">
+                        <span className="text-xs text-brand-500">Porcentaje</span>
+                        <span className="text-sm font-medium text-brand-700">
                           {(estadisticas?.porcentajeObturadosCPO ?? 0).toFixed(1)}%
                         </span>
                       </div>
-                      <div className="h-2 bg-blue-200 rounded-full overflow-hidden">
+                      <div className="h-2 bg-brand-200 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-blue-500 rounded-full"
+                          className="h-full bg-brand-500 rounded-full"
                           style={{ width: `${Math.min(100, estadisticas?.porcentajeObturadosCPO || 0)}%` }}
                         />
                       </div>
                     </div>
-                    <p className="text-xs text-blue-600 mt-2">
+                    <p className="text-xs text-brand-600 mt-2">
                       Dientes con restauraciones
                     </p>
                   </div>
@@ -519,28 +519,28 @@ useEffect(() => {
                   </div>
 
                   {/* Obturados (o) */}
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="p-4 bg-brand-50 border border-brand-200 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <h5 className="text-sm font-medium text-blue-700">Obturados (o)</h5>
-                      <div className="text-2xl font-bold text-blue-700">
+                      <h5 className="text-sm font-medium text-brand-700">Obturados (o)</h5>
+                      <div className="text-2xl font-bold text-brand-700">
                         {indicesData.ceo_o ?? 0}
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <span className="text-xs text-blue-500">Porcentaje</span>
-                        <span className="text-sm font-medium text-blue-700">
+                        <span className="text-xs text-brand-500">Porcentaje</span>
+                        <span className="text-sm font-medium text-brand-700">
                           {(estadisticas?.porcentajeObturadosCEO ?? 0).toFixed(1)}%
                         </span>
                       </div>
-                      <div className="h-2 bg-blue-200 rounded-full overflow-hidden">
+                      <div className="h-2 bg-brand-200 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-blue-500 rounded-full"
+                          className="h-full bg-brand-500 rounded-full"
                           style={{ width: `${Math.min(100, estadisticas?.porcentajeObturadosCEO || 0)}%` }}
                         />
                       </div>
                     </div>
-                    <p className="text-xs text-blue-600 mt-2">
+                    <p className="text-xs text-brand-600 mt-2">
                       Dientes temporales obturados
                     </p>
                   </div>
@@ -633,7 +633,7 @@ useEffect(() => {
         </div>
         {mode === "edit" && indicesData && (
           <div className="flex items-center gap-2 mt-1">
-            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+            <div className="h-2 w-2 rounded-full bg-brand-500"></div>
             <p className="text-xs text-slate-600">
               <span className="font-medium">Origen:</span> Índices específicos de este historial clínico
             </p>

@@ -139,9 +139,9 @@ export function BackgroundsViewModal({
 
         <div className="space-y-6">
           {/* Tarjeta de Información del Paciente */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
+          <div className="bg-brand-50 dark:bg-brand-900/20 rounded-xl p-6 border border-brand-200 dark:border-brand-800">
             <div className="flex items-start gap-4">
-              <div className="w-16 h-16 rounded-xl bg-blue-600 dark:bg-blue-700 text-white flex items-center justify-center text-xl font-semibold shadow-lg flex-shrink-0">
+              <div className="w-16 h-16 rounded-xl bg-brand-600 dark:bg-brand-700 text-white flex items-center justify-center text-xl font-semibold shadow-lg flex-shrink-0">
                 {getInitials()}
               </div>
               <div className="flex-1">
@@ -179,7 +179,7 @@ export function BackgroundsViewModal({
           {backgroundPersonal && (
             <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full" />
+                <div className="w-2 h-8 bg-gradient-to-b from-brand-500 to-brand-600 rounded-full" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Antecedentes Personales
                 </h3>
@@ -285,7 +285,7 @@ export function BackgroundsViewModal({
                 {backgroundPersonal.habitos && (
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Hábitos</p>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-800">
+                    <div className="bg-brand-50 dark:bg-brand-900/20 rounded-lg p-4 border border-brand-100 dark:border-brand-800">
                       <p className="text-sm text-gray-700 dark:text-gray-300">{backgroundPersonal.habitos}</p>
                     </div>
                   </div>
@@ -296,7 +296,7 @@ export function BackgroundsViewModal({
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
                       Otros Antecedentes Personales
                     </p>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-800">
+                    <div className="bg-brand-50 dark:bg-brand-900/20 rounded-lg p-4 border border-brand-100 dark:border-brand-800">
                       <p className="text-sm text-gray-700 dark:text-gray-300">
                         {backgroundPersonal.otros_antecedentes_personales}
                       </p>
@@ -307,7 +307,7 @@ export function BackgroundsViewModal({
                 {backgroundPersonal.observaciones && (
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Observaciones</p>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-800">
+                    <div className="bg-brand-50 dark:bg-brand-900/20 rounded-lg p-4 border border-brand-100 dark:border-brand-800">
                       <p className="text-sm text-gray-700 dark:text-gray-300">{backgroundPersonal.observaciones}</p>
                     </div>
                   </div>
@@ -469,7 +469,7 @@ export function BackgroundsViewModal({
           {onEdit && (
             <button
               onClick={onEdit}
-              className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-2.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors"
             >
               Editar Antecedentes
             </button>

@@ -31,7 +31,7 @@ interface MethodBadgeProps {
 function MethodBadge({ metodo, active, isDefault, label, onToggle }: MethodBadgeProps) {
   const colorMap: Record<Metodo, { on: string; off: string; ring: string }> = {
     GET:    { on: "bg-emerald-500 border-emerald-600", off: "bg-gray-50 border-gray-200 text-gray-400", ring: "focus:ring-emerald-500/30" },
-    POST:   { on: "bg-blue-500 border-blue-600",       off: "bg-gray-50 border-gray-200 text-gray-400", ring: "focus:ring-blue-500/30" },
+    POST:   { on: "bg-brand-500 border-brand-600",       off: "bg-gray-50 border-gray-200 text-gray-400", ring: "focus:ring-brand-500/30" },
     PUT:    { on: "bg-amber-500 border-amber-600",     off: "bg-gray-50 border-gray-200 text-gray-400", ring: "focus:ring-amber-500/30" },
     PATCH:  { on: "bg-orange-500 border-orange-600",   off: "bg-gray-50 border-gray-200 text-gray-400", ring: "focus:ring-orange-500/30" },
     DELETE: { on: "bg-red-500 border-red-600",         off: "bg-gray-50 border-gray-200 text-gray-400", ring: "focus:ring-red-500/30" },
@@ -134,7 +134,7 @@ function ModuleRow({
               ? "bg-gray-50 text-gray-600 border-gray-200"
               : allActive
                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                : "bg-blue-50 text-blue-700 border-blue-200"
+                : "bg-brand-50 text-brand-700 border-brand-200"
             }
           `}>
             {noneActive ? "Sin acceso" : allActive ? "Acceso total" : `${methods.length}/${metodos.length}`}
@@ -332,7 +332,7 @@ export function UserPermissionsModal({ isOpen, onClose, user }: UserPermissionsM
                   <span className={`
                     inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border
                     ${user.rol === "Administrador" ? "bg-purple-50 text-purple-700 border-purple-200" : ""}
-                    ${user.rol === "Odontologo" ? "bg-blue-50 text-blue-700 border-blue-200" : ""}
+                    ${user.rol === "Odontologo" ? "bg-brand-50 text-brand-700 border-brand-200" : ""}
                     ${user.rol === "Asistente" ? "bg-green-50 text-green-700 border-green-200" : ""}
                   `}>
                     {user.rol}
@@ -393,7 +393,7 @@ export function UserPermissionsModal({ isOpen, onClose, user }: UserPermissionsM
             {(["GET", "POST", "PUT", "DELETE"] as Metodo[]).map(m => {
               const colorMap: Record<string, string> = {
                 GET:    "bg-emerald-500",
-                POST:   "bg-blue-500",
+                POST:   "bg-brand-500",
                 PUT:    "bg-amber-500",
                 DELETE: "bg-red-500",
               };

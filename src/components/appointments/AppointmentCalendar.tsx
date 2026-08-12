@@ -258,7 +258,7 @@ const AppointmentCalendar = () => {
       <div className="flex-1 min-h-0 w-full overflow-hidden">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-full w-full bg-white bg-opacity-90 dark:bg-gray-800">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mb-4" />
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-brand-200 border-t-brand-600 mb-4" />
             <p className="text-gray-700 dark:text-gray-300 font-medium">Cargando citas...</p>
           </div>
         ) : citas.length === 0 ? (
@@ -283,7 +283,7 @@ const AppointmentCalendar = () => {
             </p>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors"
             >
               Crear nueva cita
             </button>

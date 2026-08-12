@@ -170,17 +170,17 @@ const HorarioForm = ({ currentHorarios, onSubmit, onCancel, loading }: HorarioFo
       </div>
 
       {/* Info */}
-      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+      <div className="p-4 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-lg">
         <div className="flex items-start gap-2">
           <div className="mt-0.5">
-            <span className="text-blue-600 dark:text-blue-400">💡</span>
+            <span className="text-brand-600 dark:text-brand-400">💡</span>
           </div>
           <div>
-            <p className="text-sm text-blue-800 dark:text-blue-300">
+            <p className="text-sm text-brand-800 dark:text-brand-300">
               <strong>Nota:</strong> Los días marcados como inactivos no permitirán agendar citas. 
               Asegúrate de configurar horarios coherentes para cada día de atención.
             </p>
-            <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
+            <p className="text-xs text-brand-700 dark:text-brand-400 mt-1">
               Horario sugerido: 08:00 - 18:00 (10 horas de atención)
             </p>
           </div>
@@ -202,7 +202,7 @@ const HorarioForm = ({ currentHorarios, onSubmit, onCancel, loading }: HorarioFo
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
+          className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 
                    transition-colors disabled:opacity-50 disabled:cursor-not-allowed 
                    flex items-center gap-2"
         >

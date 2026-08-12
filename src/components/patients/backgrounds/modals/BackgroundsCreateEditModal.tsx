@@ -72,7 +72,7 @@ export function BackgroundsCreateEditModal({
         <div className="space-y-6">
           {/* Cabecera pequeña */}
           <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-blue-600 text-white font-semibold text-xl">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-brand-600 text-white font-semibold text-xl">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"

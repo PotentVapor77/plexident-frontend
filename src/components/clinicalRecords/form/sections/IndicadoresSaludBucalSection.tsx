@@ -37,7 +37,7 @@ const IndicadoresSaludBucalSection: React.FC<IndicadoresSaludBucalSectionProps> 
     if (resumen.higieneNivel === "Excelente" || resumen.higieneNivel === "Bueno") {
       return "bg-emerald-100 text-emerald-700";
     }
-    return "bg-blue-100 text-blue-700";
+    return "bg-brand-100 text-brand-700";
   };
 
   // Contar piezas alternativas
@@ -52,14 +52,14 @@ const IndicadoresSaludBucalSection: React.FC<IndicadoresSaludBucalSectionProps> 
     <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
       {/* Barra de progreso sutil superior cuando está cargando */}
       {isRefreshing && (
-        <div className="absolute top-0 left-0 w-full h-1 bg-blue-100 overflow-hidden">
-          <div className="w-full h-full bg-blue-500 animate-progress-buffer origin-left"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-brand-100 overflow-hidden">
+          <div className="w-full h-full bg-brand-500 animate-progress-buffer origin-left"></div>
         </div>
       )}
 
       <div className="flex justify-between items-start">
         <SectionHeader
-          icon={<Activity className="text-blue-500" />}
+          icon={<Activity className="text-brand-500" />}
           title="H. Indicadores de Salud Bucal"
           subtitle={
             lastUpdated 
@@ -76,7 +76,7 @@ const IndicadoresSaludBucalSection: React.FC<IndicadoresSaludBucalSectionProps> 
           className={`p-2 rounded-lg transition-all ${
             isRefreshing 
               ? "bg-slate-100 cursor-not-allowed" 
-              : "hover:bg-blue-50 text-slate-400 hover:text-blue-600 active:scale-95 border border-transparent hover:border-blue-100"
+              : "hover:bg-brand-50 text-slate-400 hover:text-brand-600 active:scale-95 border border-transparent hover:border-brand-100"
           }`}
           title="Actualizar indicadores"
         >
@@ -129,14 +129,14 @@ const IndicadoresSaludBucalSection: React.FC<IndicadoresSaludBucalSectionProps> 
 
             {/* Información de piezas alternativas */}
             {piezasAlternativas > 0 && tieneMetadata && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <Info className="w-5 h-5 text-brand-600 mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
-                    <h4 className="text-sm font-medium text-blue-900 mb-2">
+                    <h4 className="text-sm font-medium text-brand-900 mb-2">
                       Piezas Alternativas Utilizadas
                     </h4>
-                    <p className="text-sm text-blue-700 mb-3">
+                    <p className="text-sm text-brand-700 mb-3">
                       Se usaron {piezasAlternativas} pieza(s) alternativa(s) porque las piezas principales 
                       no estaban disponibles en el momento de la evaluación.
                     </p>
@@ -148,11 +148,11 @@ const IndicadoresSaludBucalSection: React.FC<IndicadoresSaludBucalSectionProps> 
                         .map(pieza => (
                           <div 
                             key={pieza.pieza_original}
-                            className="flex items-center gap-2 px-3 py-2 bg-white border border-blue-200 rounded text-sm"
+                            className="flex items-center gap-2 px-3 py-2 bg-white border border-brand-200 rounded text-sm"
                           >
-                            <span className="font-medium text-blue-900">{pieza.pieza_original}</span>
-                            <ArrowRight className="w-3 h-3 text-blue-600" />
-                            <span className="text-blue-700">{pieza.pieza_usada}</span>
+                            <span className="font-medium text-brand-900">{pieza.pieza_original}</span>
+                            <ArrowRight className="w-3 h-3 text-brand-600" />
+                            <span className="text-brand-700">{pieza.pieza_usada}</span>
                           </div>
                         ))
                       }
@@ -163,7 +163,7 @@ const IndicadoresSaludBucalSection: React.FC<IndicadoresSaludBucalSectionProps> 
             )}
 
             {/* Estado general */}
-            <div className="flex items-center gap-3 p-4 bg-blue-50/50 border border-blue-100 rounded-lg">
+            <div className="flex items-center gap-3 p-4 bg-brand-50/50 border border-brand-100 rounded-lg">
               <div className={`p-2 rounded-lg ${getEstadoColor().split(' ')[0]}`}>
                 <Activity className="h-5 w-5" />
               </div>
@@ -195,7 +195,7 @@ const IndicadoresSaludBucalSection: React.FC<IndicadoresSaludBucalSectionProps> 
                   <h5 className="text-sm font-medium text-slate-700">Higiene Oral</h5>
                   <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                     resumen?.higieneNivel === "Excelente" ? "bg-emerald-100 text-emerald-700" :
-                    resumen?.higieneNivel === "Bueno" ? "bg-blue-100 text-blue-700" :
+                    resumen?.higieneNivel === "Bueno" ? "bg-brand-100 text-brand-700" :
                     resumen?.higieneNivel === "Regular" ? "bg-amber-100 text-amber-700" :
                     "bg-rose-100 text-rose-700"
                   }`}>
@@ -211,7 +211,7 @@ const IndicadoresSaludBucalSection: React.FC<IndicadoresSaludBucalSectionProps> 
                   </div>
                   <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-blue-500 rounded-full"
+                      className="h-full bg-brand-500 rounded-full"
                       style={{ 
                         width: `${Math.min(100, (indicadores.ohi_promedio_placa / 3) * 50 + (indicadores.ohi_promedio_calculo / 3) * 50)}%` 
                       }}
@@ -351,7 +351,7 @@ const IndicadoresSaludBucalSection: React.FC<IndicadoresSaludBucalSectionProps> 
       {/* Información adicional */}
       <div className="mt-4 pt-4 border-t border-slate-200">
         <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+          <div className="h-2 w-2 rounded-full bg-brand-500"></div>
           <p className="text-xs text-slate-600">
             <span className="font-medium">Nota:</span> Los indicadores de salud bucal evalúan placa, cálculo y salud gingival para determinar el estado general de higiene oral.
             {piezasAlternativas > 0 && " Las piezas alternativas fueron usadas para compensar piezas principales no disponibles."}

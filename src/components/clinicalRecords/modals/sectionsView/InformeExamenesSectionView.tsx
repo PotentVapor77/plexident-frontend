@@ -263,11 +263,11 @@ export const InformeExamenesSectionView: React.FC<InformeExamenesSectionViewProp
 
                         {/* Resumen de hallazgos */}
                         {examenesData?.resumen_examenes_complementarios && (
-                            <div className="border border-gray-200 rounded-lg p-4 bg-blue-50">
+                            <div className="border border-gray-200 rounded-lg p-4 bg-brand-50">
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2">
-                                        <FileText className="h-4 w-4 text-blue-600" />
-                                        <h5 className="text-sm font-medium text-blue-800">
+                                        <FileText className="h-4 w-4 text-brand-600" />
+                                        <h5 className="text-sm font-medium text-brand-800">
                                             Resumen de Hallazgos
                                         </h5>
                                     </div>

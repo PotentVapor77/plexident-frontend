@@ -378,7 +378,7 @@ export default function BackgroundsForm({
             className={`px-6 py-3 text-sm font-medium text-white rounded-lg focus:ring-4 disabled:opacity-50 transition-colors ${
               mode === 'edit'
                 ? 'bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-300 dark:bg-yellow-600 dark:hover:bg-yellow-700'
-                : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600'
+                : 'bg-brand-600 hover:bg-brand-700 focus:ring-brand-300 dark:bg-brand-500 dark:hover:bg-brand-600'
             }`}
           >
             {submitLoading ? (
@@ -412,10 +412,10 @@ export default function BackgroundsForm({
           </button>
         </div>
 
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-6">
+        <div className="bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-lg p-4 mt-6">
           <div className="flex items-start gap-3">
             <svg
-              className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"
+              className="w-5 h-5 text-brand-600 dark:text-brand-400 flex-shrink-0 mt-0.5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -427,7 +427,7 @@ export default function BackgroundsForm({
                 d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <div className="text-sm text-blue-800 dark:text-blue-200">
+            <div className="text-sm text-brand-800 dark:text-brand-200">
               <p className="font-semibold mb-1">📋 Información importante:</p>
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>Los campos marcados con * son obligatorios</li>

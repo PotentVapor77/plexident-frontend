@@ -139,7 +139,7 @@ const RecordatorioStatsModal = ({
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mb-4" />
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand-200 border-t-brand-600 mb-4" />
             <p className="text-gray-700 font-medium">Cargando estadísticas...</p>
           </div>
         ) : estadisticasData ? (
@@ -157,8 +157,8 @@ const RecordatorioStatsModal = ({
                       {totalEnviados}
                     </p>
                   </div>
-                  <div className="p-3 bg-blue-100 rounded-lg">
-                    <EnvelopeIcon className="h-6 w-6 text-blue-600" />
+                  <div className="p-3 bg-brand-100 rounded-lg">
+                    <EnvelopeIcon className="h-6 w-6 text-brand-600" />
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
@@ -175,10 +175,10 @@ const RecordatorioStatsModal = ({
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Paciente */}
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="p-4 bg-brand-50 rounded-lg border border-brand-200">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <UserIcon className="h-5 w-5 text-blue-600" />
+                    <div className="p-2 bg-brand-100 rounded-lg">
+                      <UserIcon className="h-5 w-5 text-brand-600" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">
@@ -261,12 +261,12 @@ const RecordatorioStatsModal = ({
             </div>
 
             {/* Resumen */}
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
-              <h4 className="text-lg font-semibold text-blue-900 mb-3 flex items-center gap-2">
+            <div className="bg-brand-50 border-2 border-brand-200 rounded-xl p-6">
+              <h4 className="text-lg font-semibold text-brand-900 mb-3 flex items-center gap-2">
                 📊 Resumen del Sistema de Recordatorios
               </h4>
               <div className="space-y-3">
-                <ul className="text-sm text-blue-800 space-y-2 list-disc list-inside">
+                <ul className="text-sm text-brand-800 space-y-2 list-disc list-inside">
                   <li>
                     <span className="font-semibold">
                       Total de recordatorios enviados:

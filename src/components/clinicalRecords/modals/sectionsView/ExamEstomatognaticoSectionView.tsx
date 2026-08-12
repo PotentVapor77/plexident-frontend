@@ -423,39 +423,39 @@ export const ExamenEstomatognaticoSectionView: React.FC<
 
                         {/* Información específica de ATM si existe
                         {examenData.atm_patologias && (
-                            <div className="border border-blue-200 bg-blue-50/50 rounded-lg p-4">
-                                <p className="text-sm font-medium text-blue-800 mb-2">
+                            <div className="border border-brand-200 bg-brand-50/50 rounded-lg p-4">
+                                <p className="text-sm font-medium text-brand-800 mb-2">
                                     Detalles ATM (Articulación Temporomandibular)
                                 </p>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                     {examenData.atm_patologias.absceso && (
-                                        <div className="px-3 py-1.5 rounded bg-blue-100">
-                                            <span className="text-xs font-medium text-blue-700">Absceso</span>
+                                        <div className="px-3 py-1.5 rounded bg-brand-100">
+                                            <span className="text-xs font-medium text-brand-700">Absceso</span>
                                         </div>
                                     )}
                                     {examenData.atm_patologias.fibroma && (
-                                        <div className="px-3 py-1.5 rounded bg-blue-100">
-                                            <span className="text-xs font-medium text-blue-700">Fibroma</span>
+                                        <div className="px-3 py-1.5 rounded bg-brand-100">
+                                            <span className="text-xs font-medium text-brand-700">Fibroma</span>
                                         </div>
                                     )}
                                     {examenData.atm_patologias.herpes && (
-                                        <div className="px-3 py-1.5 rounded bg-blue-100">
-                                            <span className="text-xs font-medium text-blue-700">Herpes</span>
+                                        <div className="px-3 py-1.5 rounded bg-brand-100">
+                                            <span className="text-xs font-medium text-brand-700">Herpes</span>
                                         </div>
                                     )}
                                     {examenData.atm_patologias.ulcera && (
-                                        <div className="px-3 py-1.5 rounded bg-blue-100">
-                                            <span className="text-xs font-medium text-blue-700">Úlcera</span>
+                                        <div className="px-3 py-1.5 rounded bg-brand-100">
+                                            <span className="text-xs font-medium text-brand-700">Úlcera</span>
                                         </div>
                                     )}
                                     {examenData.atm_patologias.otra && (
-                                        <div className="px-3 py-1.5 rounded bg-blue-100">
-                                            <span className="text-xs font-medium text-blue-700">Otra</span>
+                                        <div className="px-3 py-1.5 rounded bg-brand-100">
+                                            <span className="text-xs font-medium text-brand-700">Otra</span>
                                         </div>
                                     )}
                                 </div>
                                 {examenData.atm_patologias.observacion && (
-                                    <p className="text-xs text-blue-700 mt-2 italic">
+                                    <p className="text-xs text-brand-700 mt-2 italic">
                                         {examenData.atm_patologias.observacion}
                                     </p>
                                 )}

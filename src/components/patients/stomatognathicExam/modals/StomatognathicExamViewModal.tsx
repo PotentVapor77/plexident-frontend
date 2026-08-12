@@ -257,7 +257,7 @@ export function StomatognathicExamViewModal({
       {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-200 bg-gradient-to-r from-white to-gray-50 px-6 py-5 dark:border-gray-700 dark:from-gray-900 dark:to-gray-800">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 text-white shadow-lg shadow-brand-500/30">
             <svg
               className="h-6 w-6"
               fill="none"
@@ -314,13 +314,13 @@ export function StomatognathicExamViewModal({
       </div>
 
       {/* Paciente info */}
-      <div className="border-b border-gray-200 bg-gradient-to-br from-blue-50 via-white to-blue-50 px-6 py-6 dark:border-gray-700 dark:from-gray-800 dark:via-gray-800 dark:to-gray-700">
+      <div className="border-b border-gray-200 bg-gradient-to-br from-brand-50 via-white to-brand-50 px-6 py-6 dark:border-gray-700 dark:from-gray-800 dark:via-gray-800 dark:to-gray-700">
         <div className="flex items-center gap-5">
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-2xl font-bold text-white shadow-lg shadow-blue-500/30 ring-4 ring-blue-100 dark:ring-blue-900/50">
+          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 to-brand-700 text-2xl font-bold text-white shadow-lg shadow-brand-500/30 ring-4 ring-brand-100 dark:ring-brand-900/50">
             {pacienteInfo.iniciales}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+            <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">
               Paciente
             </p>
             <h3 className="truncate text-xl font-bold text-gray-900 dark:text-white">
@@ -374,7 +374,7 @@ export function StomatognathicExamViewModal({
       {/* Body */}
       <div className="max-h-[60vh] space-y-6 overflow-y-auto bg-gradient-to-b from-gray-50 to-white p-6 dark:from-gray-900 dark:to-gray-900">
         {/* Regiones Estomatognáticas */}
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:border-blue-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600">
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:border-brand-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600">
           <h3 className="mb-6 text-lg font-semibold text-gray-900 dark:text-white">
             Regiones Estomatognáticas
           </h3>
@@ -583,7 +583,7 @@ export function StomatognathicExamViewModal({
         {onEdit && (
           <button
             onClick={onEdit}
-            className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:from-blue-700 hover:to-blue-800 hover:shadow-lg hover:scale-[1.02] active:scale-95"
+            className="rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:from-brand-700 hover:to-brand-800 hover:shadow-lg hover:scale-[1.02] active:scale-95"
           >
             Editar Examen
           </button>

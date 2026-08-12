@@ -292,8 +292,8 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 border border-blue-100"> 
-            <FileText className="h-5 w-5 text-blue-600" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 border border-brand-100"> 
+            <FileText className="h-5 w-5 text-brand-600" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
@@ -317,7 +317,7 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
                     </span>
                   ) : (
                     <span className="flex items-center gap-1">
-                      <RefreshCw className="h-3 w-3 text-blue-600" />
+                      <RefreshCw className="h-3 w-3 text-brand-600" />
                       Datos actuales del paciente
                     </span>
                   )}
@@ -372,7 +372,7 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
         {/* LOADING STATE - Combinado con isRefreshing */}
         {(isLoading || isRefreshing) && (
           <div className="flex items-center justify-center p-8 border border-slate-200 rounded-lg">
-            <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+            <Loader2 className="h-6 w-6 animate-spin text-brand-600" />
             <span className="ml-3 text-slate-600">Cargando datos del odontograma...</span>
           </div>
         )}
@@ -410,7 +410,7 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
                   onClick={() => setActiveTab("permanente")}
                   className={`py-2 px-1 border-b-2 font-medium text-sm ${
                     activeTab === "permanente"
-                      ? "border-blue-500 text-blue-600"
+                      ? "border-brand-500 text-brand-600"
                       : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
                   }`}
                 >
@@ -421,7 +421,7 @@ const Odontograma2DSection: React.FC<Odontograma2DSectionProps> = ({
                   onClick={() => setActiveTab("temporal")}
                   className={`py-2 px-1 border-b-2 font-medium text-sm ${
                     activeTab === "temporal"
-                      ? "border-blue-500 text-blue-600"
+                      ? "border-brand-500 text-brand-600"
                       : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
                   }`}
                 >

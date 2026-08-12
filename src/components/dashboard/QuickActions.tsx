@@ -48,10 +48,10 @@ const iconMap: Record<string, React.ReactElement> = {
 // ✅ Colores temáticos para cada acción
 const actionColors: Record<string, { bg: string; text: string; border: string; hover: string }> = {
   'registrar_cita': {
-    bg: 'bg-blue-50 dark:bg-blue-950/30',
-    text: 'text-blue-600 dark:text-blue-400',
-    border: 'border-blue-200 dark:border-blue-800',
-    hover: 'hover:bg-blue-100 dark:hover:bg-blue-900/40 hover:border-blue-400 dark:hover:border-blue-600'
+    bg: 'bg-brand-50 dark:bg-brand-950/30',
+    text: 'text-brand-600 dark:text-brand-400',
+    border: 'border-brand-200 dark:border-brand-800',
+    hover: 'hover:bg-brand-100 dark:hover:bg-brand-900/40 hover:border-brand-400 dark:hover:border-brand-600'
   },
   'registrar_signos': {
     bg: 'bg-red-50 dark:bg-red-950/30',
@@ -84,10 +84,10 @@ const actionColors: Record<string, { bg: string; text: string; border: string; h
     hover: 'hover:bg-emerald-100 dark:hover:bg-emerald-900/40 hover:border-emerald-400 dark:hover:border-emerald-600'
   },
   'registrar_paciente': {
-    bg: 'bg-indigo-50 dark:bg-indigo-950/30',
-    text: 'text-indigo-600 dark:text-indigo-400',
-    border: 'border-indigo-200 dark:border-indigo-800',
-    hover: 'hover:bg-indigo-100 dark:hover:bg-indigo-900/40 hover:border-indigo-400 dark:hover:border-indigo-600'
+    bg: 'bg-brand-50 dark:bg-brand-950/30',
+    text: 'text-brand-600 dark:text-brand-400',
+    border: 'border-brand-200 dark:border-brand-800',
+    hover: 'hover:bg-brand-100 dark:hover:bg-brand-900/40 hover:border-brand-400 dark:hover:border-brand-600'
   },
   'agendar_cita': {
     bg: 'bg-cyan-50 dark:bg-cyan-950/30',
@@ -158,7 +158,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         </div>
         <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+            <div className="w-2 h-2 rounded-full bg-brand-500"></div>
             <span>{actions.length} disponibles</span>
           </div>
         </div>
@@ -175,7 +175,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
               type="button"
               className={cn(
                 "group relative flex flex-col items-center justify-center rounded-xl border-2 p-4 transition-all duration-200",
-                "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900",
+                "focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900",
                 "transform hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]",
                 colors.bg,
                 colors.border,
@@ -218,7 +218,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       {/* Info adicional en móvil */}
       <div className="sm:hidden flex items-center justify-center gap-2 mt-4 text-xs text-gray-500 dark:text-gray-400">
         <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+          <div className="w-2 h-2 rounded-full bg-brand-500"></div>
           <span>{actions.length} acciones disponibles</span>
         </div>
       </div>

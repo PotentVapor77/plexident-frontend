@@ -126,7 +126,7 @@ export default function ResetPassword() {
         <button
           type="button"
           onClick={() => navigate("/sign-in")}
-          className="mt-4 w-full text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          className="mt-4 w-full text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
           disabled={loading}
         >
           ← Volver al inicio de sesión

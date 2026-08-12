@@ -41,10 +41,10 @@ export const NotificationContainer: React.FC = () => {
       case "info":
       default:
         return {
-          border: "border-blue-500", // Usando blue del sistema
-          badgeBg: "bg-blue-50",
-          badgeIcon: "text-blue-600",
-          title: "text-blue-800",
+          border: "border-brand-500", // Usando blue del sistema
+          badgeBg: "bg-brand-50",
+          badgeIcon: "text-brand-600",
+          title: "text-brand-800",
           icon: <InformationCircleIcon className="w-5 h-5" />
         };
     }

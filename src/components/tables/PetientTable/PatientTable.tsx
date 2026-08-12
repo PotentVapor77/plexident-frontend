@@ -89,7 +89,7 @@ export function PatientTable({
                     </TableCell>
                     <TableCell className="px-4 py-3 text-start">
                       <div className="text-gray-600 text-sm dark:text-gray-300">{patient.telefono}</div>
-                      <div className="text-blue-600 text-xs dark:text-blue-400">{patient.correo}</div>
+                      <div className="text-brand-600 text-xs dark:text-brand-400">{patient.correo}</div>
                     </TableCell>
                     <TableCell className="px-4 py-3 text-start">
                       <Badge size="sm" color={badgeColor}>
@@ -107,7 +107,7 @@ export function PatientTable({
                         {/* Botón Ver */}
                         <button
                           onClick={() => onViewPatient(patient)}
-                          className="p-2 text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-colors"
+                          className="p-2 text-brand-600 bg-brand-100 rounded-md hover:bg-brand-200 dark:bg-brand-900/30 dark:text-brand-400 dark:hover:bg-brand-900/50 transition-colors"
                           title="Ver paciente"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

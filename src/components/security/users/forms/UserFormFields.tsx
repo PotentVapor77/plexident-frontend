@@ -57,7 +57,7 @@ function InputField({
         max={max}
         minLength={minLength}
         disabled={disabled}
-        className="w-full rounded-lg border border-gray-300 p-3 transition-colors focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+        className="w-full rounded-lg border border-gray-300 p-3 transition-colors focus:ring-2 focus:ring-brand-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
       />
     </div>
   );
@@ -92,7 +92,7 @@ function SelectField({
         value={value}
         onChange={onChange}
         required={required}
-        className="w-full rounded-lg border border-gray-300 p-3 transition-colors focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+        className="w-full rounded-lg border border-gray-300 p-3 transition-colors focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:border-gray-600 dark:bg-gray-700 dark:text-white"
       >
         <option value="">Seleccionar...</option>
         {options.map((option) => (
@@ -128,7 +128,7 @@ function CheckboxField({
           name={name}
           checked={checked}
           onChange={onChange}
-          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+          className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
         />
         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
           {label}
@@ -150,7 +150,7 @@ export default function UserFormFields({
       {/* ✅ Sección: Datos Personales - AZUL */}
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-theme-sm p-6 border border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2 mb-6">
-          <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full" />
+          <div className="w-2 h-8 bg-gradient-to-b from-brand-500 to-brand-600 rounded-full" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             Datos Personales
           </h3>
@@ -307,7 +307,7 @@ export default function UserFormFields({
           className={`px-6 py-3 text-sm font-medium text-white rounded-lg focus:ring-4 disabled:opacity-50 transition-colors ${
             mode === "edit"
               ? "bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-300 dark:bg-yellow-600 dark:hover:bg-yellow-700"
-              : "bg-blue-600 hover:bg-blue-700 focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600"
+              : "bg-brand-600 hover:bg-brand-700 focus:ring-brand-300 dark:bg-brand-500 dark:hover:bg-brand-600"
           }`}
         >
           {submitLoading ? (
@@ -325,12 +325,12 @@ export default function UserFormFields({
       </div>
 
       {/* Nota informativa */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+      <div className="bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-5 h-5 text-brand-600 dark:text-brand-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <div className="text-sm text-blue-800 dark:text-blue-200">
+          <div className="text-sm text-brand-800 dark:text-brand-200">
             <p className="font-semibold mb-1">📋 Notas importantes:</p>
             <ul className="list-disc list-inside space-y-1 ml-2">
               <li>Los campos marcados con <span className="text-red-500">*</span> son obligatorios</li>

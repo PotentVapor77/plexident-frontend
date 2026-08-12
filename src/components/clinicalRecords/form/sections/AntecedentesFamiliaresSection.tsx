@@ -166,15 +166,15 @@ const AntecedentesFamiliaresSection: React.FC<AntecedentesFamiliaresSectionProps
             {/* Enfermedades Mentales */}
             {antecedentes.mentales.length > 0 && (
               <div className="mb-4">
-                <h4 className="text-sm font-bold text-indigo-700 uppercase tracking-wider mb-2 flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                <h4 className="text-sm font-bold text-brand-700 uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-brand-500" />
                   Enfermedades Mentales
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {antecedentes.mentales.map((item, idx) => (
                     <div
                       key={idx}
-                      className="p-3 bg-indigo-50/50 border border-indigo-100 rounded-lg"
+                      className="p-3 bg-brand-50/50 border border-brand-100 rounded-lg"
                     >
                       <p className="text-sm text-slate-700">{item}</p>
                     </div>

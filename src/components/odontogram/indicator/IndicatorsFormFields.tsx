@@ -126,11 +126,11 @@ export default function IndicatorsFormFields({
       ==================================================================== */}
       {informacionPiezas && (
         <div className={`p-4 rounded-lg border ${denticion === 'temporal'
-            ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
+            ? 'bg-brand-50 border-brand-200 dark:bg-brand-900/20 dark:border-brand-800'
             : 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
           }`}>
           <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+            <Info className="h-5 w-5 mt-0.5 flex-shrink-0 text-brand-600 dark:text-brand-400" />
             <div className="flex-1">
               <h4 className="font-semibold text-gray-900 dark:text-gray-100">
                 Dentición: {denticion === 'temporal' ? 'Temporal (Decidua)' : 'Permanente'}
@@ -169,7 +169,7 @@ export default function IndicatorsFormFields({
           SECCIÓN: HIGIENE ORAL SIMPLIFICADA (OHI-S) - CORREGIDO
       ==================================================================== */}
       <div className="space-y-4">
-        <div className="border-l-4 border-blue-500 pl-4">
+        <div className="border-l-4 border-brand-500 pl-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Índice de Higiene Oral Simplificado (OHI-S)
           </h3>
@@ -249,7 +249,7 @@ export default function IndicatorsFormFields({
             }
             text-gray-900 dark:text-gray-100 
             placeholder-gray-400 
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+            focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent 
             transition-colors`}
         />
       </td>
@@ -273,7 +273,7 @@ export default function IndicatorsFormFields({
             }
             text-gray-900 dark:text-gray-100 
             placeholder-gray-400 
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+            focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent 
             transition-colors`}
         />
       </td>
@@ -309,8 +309,8 @@ export default function IndicatorsFormFields({
         </div>
 
         {/* Nota explicativa de la escala */}
-        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <p className="text-xs text-blue-800 dark:text-blue-200">
+        <div className="p-3 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-lg">
+          <p className="text-xs text-brand-800 dark:text-brand-200">
             <strong>Escala de valores:</strong> 0 = Ausente | 1 = Menos de 1/3 de superficie |
             2 = Entre 1/3 y 2/3 de superficie | 3 = Más de 2/3 de superficie
           </p>
@@ -352,7 +352,7 @@ export default function IndicatorsFormFields({
           SECCIÓN: PROMEDIOS OHI (Calculados automáticamente por backend)
       ==================================================================== */}
       <div className="space-y-4">
-        <div className="border-l-4 border-indigo-500 pl-4">
+        <div className="border-l-4 border-brand-500 pl-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Promedios OHI-S
           </h3>
@@ -553,7 +553,7 @@ export default function IndicatorsFormFields({
               } as React.ChangeEvent<HTMLInputElement>;
               onInputChange(event);
             }}
-            className="w-5 h-5 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500"
+            className="w-5 h-5 text-brand-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-brand-500"
           />
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Registro activo

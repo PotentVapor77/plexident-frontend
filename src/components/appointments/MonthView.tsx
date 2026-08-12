@@ -43,7 +43,7 @@ const MonthView = ({ currentDate, citas = [], onEventClick, onDateClick }: Month
   // Color por ESTADO de cita
   const getStateColor = (estado: string) => {
     const colors = {
-      PROGRAMADA: 'border-l-blue-500 bg-blue-50',
+      PROGRAMADA: 'border-l-brand-500 bg-brand-50',
       CONFIRMADA: 'border-l-green-500 bg-green-50',
       ASISTIDA: 'border-l-gray-500 bg-gray-50',
       NO_ASISTIDA: 'border-l-red-500 bg-red-50',
@@ -127,7 +127,7 @@ const MonthView = ({ currentDate, citas = [], onEventClick, onDateClick }: Month
                     h-[170px] border rounded-lg p-2
                     transition-all duration-200
                     ${isCurrentMonth ? 'bg-white' : 'bg-gray-50'}
-                    ${isCurrentDay ? 'border-blue-500 border-2 bg-blue-50' : 'border-gray-200'}
+                    ${isCurrentDay ? 'border-brand-500 border-2 bg-brand-50' : 'border-gray-200'}
                     hover:shadow-md
                     flex flex-col
                     overflow-hidden
@@ -141,8 +141,8 @@ const MonthView = ({ currentDate, citas = [], onEventClick, onDateClick }: Month
                     <span
                       className={`
                         text-sm font-bold transition-colors
-                        ${isCurrentDay ? 'text-blue-600' : ''}
-                        ${isCurrentMonth ? 'text-gray-900 group-hover:text-blue-600' : 'text-gray-400'}
+                        ${isCurrentDay ? 'text-brand-600' : ''}
+                        ${isCurrentMonth ? 'text-gray-900 group-hover:text-brand-600' : 'text-gray-400'}
                       `}
                     >
                       {format(day, 'd')}
@@ -152,7 +152,7 @@ const MonthView = ({ currentDate, citas = [], onEventClick, onDateClick }: Month
                     {dayCitas.length > 0 && (
                       <span className={`
                         px-2 py-0.5 text-xs font-medium rounded-full flex-shrink-0
-                        ${isCurrentDay ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800'}
+                        ${isCurrentDay ? 'bg-brand-600 text-white' : 'bg-brand-100 text-brand-800'}
                       `}>
                         {dayCitas.length}
                       </span>
@@ -198,7 +198,7 @@ const MonthView = ({ currentDate, citas = [], onEventClick, onDateClick }: Month
                   {dayCitas.length === 0 && isCurrentMonth && (
                     <div 
                       onClick={() => onDateClick(day)}
-                      className="flex-1 flex items-center justify-center text-gray-300 hover:text-blue-400 cursor-pointer transition-colors"
+                      className="flex-1 flex items-center justify-center text-gray-300 hover:text-brand-400 cursor-pointer transition-colors"
                     >
                       <span className="text-2xl">+</span>
                     </div>

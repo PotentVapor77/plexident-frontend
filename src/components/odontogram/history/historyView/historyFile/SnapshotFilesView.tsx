@@ -57,7 +57,7 @@ export const SnapshotFilesView: React.FC<SnapshotFilesViewProps> = ({
     return (
         <div className="mt-3 border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-900/40">
             <div className="flex items-center gap-2 mb-2">
-                <Paperclip className="h-4 w-4 text-blue-600" />
+                <Paperclip className="h-4 w-4 text-brand-600" />
                 <span className="text-sm font-semibold">Archivos clínicos del snapshot</span>
                 <span className="ml-auto text-xs text-gray-500">
                     {files.length} archivo{files.length !== 1 ? 's' : ''}

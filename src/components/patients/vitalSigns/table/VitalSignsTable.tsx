@@ -338,7 +338,7 @@ export function VitalSignsTable({
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Wind className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            <Wind className="h-4 w-4 text-brand-600 dark:text-brand-400" />
                             <div>
                               <div className="text-xs text-gray-500 dark:text-gray-400">Frec. Resp.</div>
                               <div className="text-sm font-semibold text-gray-900 dark:text-white">

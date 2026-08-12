@@ -97,7 +97,7 @@ export function PatientCreateEditModal({ isOpen, onClose, patient }: PatientCrea
           <div className="space-y-6">
             {/* Cabecera pequeña con avatar opcional */}
             <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-blue-600 text-white font-semibold text-xl">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-brand-600 text-white font-semibold text-xl">
                 {initials || "P"}
               </div>
               <div>

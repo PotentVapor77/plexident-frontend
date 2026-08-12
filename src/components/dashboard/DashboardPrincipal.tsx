@@ -182,7 +182,7 @@ export const DashboardPrincipal: React.FC = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleRefreshData} // ✅ Usamos la función combinada
-                className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 transition-colors w-full sm:w-auto"
+                className="flex items-center justify-center gap-2 rounded-lg bg-brand-600 hover:bg-brand-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 transition-colors w-full sm:w-auto"
                 disabled={loading}
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -194,16 +194,16 @@ export const DashboardPrincipal: React.FC = () => {
             
             {/* Información del periodo activo */}
             {metricas?.periodo_activo && (
-              <div className="flex items-center gap-2 text-sm rounded-lg px-3 py-2 border bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/50">
-                <Calendar className="h-4 w-4 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+              <div className="flex items-center gap-2 text-sm rounded-lg px-3 py-2 border bg-brand-50 dark:bg-brand-900/20 border-brand-100 dark:border-brand-800/50">
+                <Calendar className="h-4 w-4 flex-shrink-0 text-brand-600 dark:text-brand-400" />
                 <div className="flex flex-col sm:flex-row sm:items-center gap-1">
-                  <span className="font-medium whitespace-nowrap text-blue-800 dark:text-blue-300">
+                  <span className="font-medium whitespace-nowrap text-brand-800 dark:text-brand-300">
                     {metricas.periodo_activo === 'personalizado' 
                       ? 'Período personalizado' 
                       : `Período: ${metricas.periodo_activo.charAt(0).toUpperCase() + metricas.periodo_activo.slice(1)}`}
                   </span>
                   {metricas?.fecha_inicio && metricas?.fecha_fin && (
-                    <span className="whitespace-nowrap text-blue-600 dark:text-blue-400">
+                    <span className="whitespace-nowrap text-brand-600 dark:text-brand-400">
                       ({formatDate(metricas.fecha_inicio)} - {formatDate(metricas.fecha_fin)})
                     </span>
                   )}

@@ -137,7 +137,7 @@ export function UserTable({
                         {/* Botón Ver */}
                         <button
                           onClick={() => onViewUser(user)}
-                          className="p-2 text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                          className="p-2 text-brand-600 bg-brand-100 rounded-md hover:bg-brand-200 dark:bg-brand-900/20 dark:text-brand-400 dark:hover:bg-brand-900/30"
                           title="Ver usuario"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -146,7 +146,7 @@ export const ViewModeToggle = ({
           <div className="flex items-center gap-1.5">
             <div className={`w-1.5 h-1.5 rounded-full ${
               currentMode === 'files' ? 'bg-brand-500' :
-              currentMode === 'compact' ? 'bg-blue-500' :
+              currentMode === 'compact' ? 'bg-brand-500' :
               currentMode === 'detailed' ? 'bg-purple-500' :
               currentMode === 'hidden' ? 'bg-gray-500' :
               'bg-emerald-500'

@@ -96,7 +96,7 @@ export const IndicatorsViewModal: React.FC<IndicatorsViewModalProps> = ({
     >
       <div className="flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-sky-50 to-indigo-50 dark:from-sky-900/40 dark:to-indigo-900/40 dark:border-gray-700">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-brand-50 to-brand-50 dark:from-brand-900/40 dark:to-brand-900/40 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             Historia clínica · Resumen de indicadores
           </h2>
@@ -118,7 +118,7 @@ export const IndicatorsViewModal: React.FC<IndicatorsViewModalProps> = ({
                   Datos básicos del titular de los indicadores.
                 </p>
               </div>
-              <span className="inline-flex items-center rounded-full bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200 px-3 py-1 text-xs font-medium">
+              <span className="inline-flex items-center rounded-full bg-brand-100 text-brand-800 dark:bg-brand-900/40 dark:text-brand-200 px-3 py-1 text-xs font-medium">
                 Registro #{registro.id?.slice(0, 8) ?? "N/D"}
               </span>
             </div>
@@ -198,27 +198,27 @@ export const IndicatorsViewModal: React.FC<IndicatorsViewModalProps> = ({
           </section>
 
           {/* Evaluación clínica */}
-          <section className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-indigo-200/70 dark:border-indigo-900/60 p-4">
+          <section className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-brand-200/70 dark:border-brand-900/60 p-4">
             {/* ... (Resto del código igual) ... */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-              <div className="rounded-lg bg-indigo-50/70 dark:bg-indigo-900/30 px-3 py-2">
-                <p className="text-xs uppercase tracking-wide text-indigo-700 dark:text-indigo-200">
+              <div className="rounded-lg bg-brand-50/70 dark:bg-brand-900/30 px-3 py-2">
+                <p className="text-xs uppercase tracking-wide text-brand-700 dark:text-brand-200">
                   Enfermedad periodontal
                 </p>
                 <p className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">
                   {registro.enfermedad_periodontal || "No registrada"}
                 </p>
               </div>
-              <div className="rounded-lg bg-indigo-50/70 dark:bg-indigo-900/30 px-3 py-2">
-                <p className="text-xs uppercase tracking-wide text-indigo-700 dark:text-indigo-200">
+              <div className="rounded-lg bg-brand-50/70 dark:bg-brand-900/30 px-3 py-2">
+                <p className="text-xs uppercase tracking-wide text-brand-700 dark:text-brand-200">
                   Tipo de oclusión
                 </p>
                 <p className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">
                   {registro.tipo_oclusion || "No registrada"}
                 </p>
               </div>
-              <div className="rounded-lg bg-indigo-50/70 dark:bg-indigo-900/30 px-3 py-2">
-                <p className="text-xs uppercase tracking-wide text-indigo-700 dark:text-indigo-200">
+              <div className="rounded-lg bg-brand-50/70 dark:bg-brand-900/30 px-3 py-2">
+                <p className="text-xs uppercase tracking-wide text-brand-700 dark:text-brand-200">
                   Nivel de fluorosis
                 </p>
                 <p className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">

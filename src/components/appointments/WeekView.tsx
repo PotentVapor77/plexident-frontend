@@ -30,7 +30,7 @@ const WeekView = ({ currentDate, citas = [], onEventClick, onTimeSlotClick }: We
   // Color por ESTADO de cita
   const getStateColor = (estado: string) => {
     const colors = {
-      PROGRAMADA: 'border-l-blue-500 bg-blue-50',
+      PROGRAMADA: 'border-l-brand-500 bg-brand-50',
       CONFIRMADA: 'border-l-green-500 bg-green-50',
       ASISTIDA: 'border-l-gray-500 bg-gray-50',
       NO_ASISTIDA: 'border-l-red-500 bg-red-50',
@@ -107,7 +107,7 @@ const WeekView = ({ currentDate, citas = [], onEventClick, onTimeSlotClick }: We
                 <div
                   className={`
                     text-2xl font-bold mt-1
-                    ${isToday(day) ? 'text-blue-600' : 'text-gray-900'}
+                    ${isToday(day) ? 'text-brand-600' : 'text-gray-900'}
                   `}
                 >
                   {format(day, 'd')}
@@ -138,7 +138,7 @@ const WeekView = ({ currentDate, citas = [], onEventClick, onTimeSlotClick }: We
                       className={`
                         h-[100px] border rounded-lg p-2
                         transition-all duration-200
-                        ${isToday(day) ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'}
+                        ${isToday(day) ? 'border-brand-500 bg-brand-50' : 'border-gray-200 bg-white'}
                         hover:shadow-md
                         flex flex-col
                         overflow-hidden
@@ -150,7 +150,7 @@ const WeekView = ({ currentDate, citas = [], onEventClick, onTimeSlotClick }: We
                           <span
                             className={`
                               px-1.5 py-0.5 text-[10px] font-medium rounded-full
-                              ${isToday(day) ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800'}
+                              ${isToday(day) ? 'bg-brand-600 text-white' : 'bg-brand-100 text-brand-800'}
                             `}
                           >
                             {dayCitas.length}
@@ -199,7 +199,7 @@ const WeekView = ({ currentDate, citas = [], onEventClick, onTimeSlotClick }: We
                           onClick={() => onTimeSlotClick(day, time)}
                           className="
                             flex-1 flex items-center justify-center
-                            text-gray-300 hover:text-blue-400
+                            text-gray-300 hover:text-brand-400
                             cursor-pointer transition-colors
                           "
                         >

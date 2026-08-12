@@ -52,7 +52,7 @@ const Select: React.FC<SelectProps> = ({
             dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600
             ${error 
               ? "border-red-500 focus:border-red-500 focus:ring-red-200" 
-              : "border-gray-300 focus:border-blue-500 focus:ring-blue-200 dark:focus:border-blue-400"
+              : "border-gray-300 focus:border-brand-500 focus:ring-brand-200 dark:focus:border-brand-400"
             }
           `}
         >

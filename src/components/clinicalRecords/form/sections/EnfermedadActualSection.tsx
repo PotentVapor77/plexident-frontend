@@ -110,7 +110,7 @@ const EnfermedadActualSection: React.FC<EnfermedadActualSectionProps> = ({
                         </div>
                         
                         <div className="flex items-start gap-2">
-                            <div className="h-2 w-2 rounded-full bg-blue-500 mt-1.5"></div>
+                            <div className="h-2 w-2 rounded-full bg-brand-500 mt-1.5"></div>
                             <div>
                                 <p className="text-xs font-medium text-slate-700">Duración y evolución</p>
                                 <p className="text-xs text-slate-600">

@@ -94,18 +94,18 @@ export const IndicesCariesSectionView: React.FC<IndicesCariesSectionViewProps> =
 
                     {/* Información adicional CPO */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="border border-gray-200 rounded-lg p-3 bg-blue-50">
+                        <div className="border border-gray-200 rounded-lg p-3 bg-brand-50">
                             <div className="mb-2">
-                                <p className="text-xs font-semibold text-blue-800 uppercase">
+                                <p className="text-xs font-semibold text-brand-800 uppercase">
                                     PROMEDIO CPO
                                 </p>
                             </div>
-                            <div className="min-h-10 flex items-center justify-center px-2 py-2 bg-white rounded border border-blue-100">
+                            <div className="min-h-10 flex items-center justify-center px-2 py-2 bg-white rounded border border-brand-100">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-lg font-bold text-blue-900">
+                                    <span className="text-lg font-bold text-brand-900">
                                         {indicesData?.cpo_total ? (indicesData.cpo_total / 32).toFixed(1) : "0.0"}
                                     </span>
-                                    <span className="text-xs text-blue-500">por diente</span>
+                                    <span className="text-xs text-brand-500">por diente</span>
                                 </div>
                             </div>
                         </div>
@@ -330,7 +330,7 @@ export const IndicesCariesSectionView: React.FC<IndicesCariesSectionViewProps> =
             <div className="pt-4 border-t border-gray-200">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <div className="w-2 h-2 rounded-full bg-brand-500"></div>
                         <p className="text-xs text-gray-500">
                             Sección J completada
                         </p>

@@ -65,7 +65,7 @@ const DayView = ({ date, citas, onEventClick, onTimeSlotClick }: DayViewProps) =
 
   const getStateColor = (estado: string) => {
     const colors = {
-      PROGRAMADA: 'border-l-4 border-blue-500 bg-blue-50',
+      PROGRAMADA: 'border-l-4 border-brand-500 bg-brand-50',
       CONFIRMADA: 'border-l-4 border-green-500 bg-green-50',
       ASISTIDA: 'border-l-4 border-gray-500 bg-gray-50',
       NO_ASISTIDA: 'border-l-4 border-red-500 bg-red-50',
@@ -185,7 +185,7 @@ const DayView = ({ date, citas, onEventClick, onTimeSlotClick }: DayViewProps) =
                             <div className="flex flex-col items-end gap-1">
                               <span className={`
                                 px-2 py-1 rounded-full text-xs font-medium
-                                ${cita.estado === 'PROGRAMADA' ? 'bg-blue-100 text-blue-800' : ''}
+                                ${cita.estado === 'PROGRAMADA' ? 'bg-brand-100 text-brand-800' : ''}
                                 ${cita.estado === 'CONFIRMADA' ? 'bg-green-100 text-green-800' : ''}
                                 ${cita.estado === 'ASISTIDA' ? 'bg-gray-100 text-gray-800' : ''}
                                 ${cita.estado === 'NO_ASISTIDA' ? 'bg-red-100 text-red-800' : ''}
@@ -262,8 +262,8 @@ const DayView = ({ date, citas, onEventClick, onTimeSlotClick }: DayViewProps) =
                     <button
                       onClick={() => onTimeSlotClick(date, `${hour.toString().padStart(2, '0')}:00`)}
                       className="w-full h-16 border-2 border-dashed border-gray-200 rounded-lg
-                               hover:border-blue-400 hover:bg-blue-50 transition-all duration-200
-                               flex items-center justify-center text-gray-400 hover:text-blue-600"
+                               hover:border-brand-400 hover:bg-brand-50 transition-all duration-200
+                               flex items-center justify-center text-gray-400 hover:text-brand-600"
                     >
                       <span className="text-sm">+ Crear cita a las {hour}:00</span>
                     </button>

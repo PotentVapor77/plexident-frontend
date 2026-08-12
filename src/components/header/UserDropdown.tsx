@@ -31,7 +31,7 @@ const UserDropdown = () => {
         onClick={toggleDropdown}
         className="flex items-center gap-3 px-3 py-2 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
       >
-        <div className="flex items-center justify-center w-8 h-8 bg-brand-500 rounded-full">
+        <div className="flex items-center justify-center w-8 h-8 bg-brand-500 rounded-full shadow-theme-xs ring-2 ring-white dark:ring-gray-900">
           <span className="text-sm font-medium text-white">
             {user?.nombres?.charAt(0)}
             {user?.apellidos?.charAt(0)}

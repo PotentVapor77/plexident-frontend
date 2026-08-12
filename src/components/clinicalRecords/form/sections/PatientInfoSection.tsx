@@ -70,8 +70,8 @@ const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
       {/* Header de la sección */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 border border-blue-100">
-            <User className="h-5 w-5 text-blue-600" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 border border-brand-100">
+            <User className="h-5 w-5 text-brand-600" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
@@ -88,14 +88,14 @@ const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
         {/* Sección del Paciente */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+            <div className="h-2 w-2 rounded-full bg-brand-500"></div>
             <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">
               Datos del Paciente
             </h4>
           </div>
 
           {selectedPaciente ? (
-            <div className="bg-blue-50/30 border border-blue-100 rounded-lg p-4">
+            <div className="bg-brand-50/30 border border-brand-100 rounded-lg p-4">
               {/* Header del paciente */}
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-3">
                 <div>
@@ -180,7 +180,7 @@ const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
 
               {/* Información de emergencia (solo en modo edición) */}
               {mode === "edit" && (selectedPaciente.contacto_emergencia_nombre || selectedPaciente.contacto_emergencia_telefono) && (
-                <div className="mt-4 pt-4 border-t border-blue-100">
+                <div className="mt-4 pt-4 border-t border-brand-100">
                   <div className="flex items-center gap-2 mb-2">
                     <AlertCircle className="h-4 w-4 text-amber-500" />
                     <p className="text-xs font-medium text-slate-700">Contacto de Emergencia</p>

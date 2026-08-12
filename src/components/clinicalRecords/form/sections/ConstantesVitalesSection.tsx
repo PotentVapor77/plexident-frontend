@@ -88,11 +88,11 @@ const ConstantesVitalesSection: React.FC<ConstantesVitalesSectionProps> = ({
     const colors: Record<string, string> = {
       normal: "bg-emerald-100 text-emerald-800 border-emerald-200",
       fiebre: "bg-amber-100 text-amber-800 border-amber-200",
-      hipotermia: "bg-blue-100 text-blue-800 border-blue-200",
+      hipotermia: "bg-brand-100 text-brand-800 border-brand-200",
       taquicardia: "bg-rose-100 text-rose-800 border-rose-200",
-      bradicardia: "bg-blue-100 text-blue-800 border-blue-200",
+      bradicardia: "bg-brand-100 text-brand-800 border-brand-200",
       hipertension: "bg-rose-100 text-rose-800 border-rose-200",
-      hipotension: "bg-blue-100 text-blue-800 border-blue-200",
+      hipotension: "bg-brand-100 text-brand-800 border-brand-200",
       default: "bg-slate-100 text-slate-800 border-slate-200",
     };
     return colors[estado] || colors.default;
@@ -316,23 +316,23 @@ const ConstantesVitalesSection: React.FC<ConstantesVitalesSectionProps> = ({
                 <span className="text-slate-600">Alto/Riesgo</span>
               </div>
               <div className="flex items-center gap-1 text-xs">
-                <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                <div className="h-2 w-2 rounded-full bg-brand-500"></div>
                 <span className="text-slate-600">Bajo</span>
               </div>
             </div>
 
             {/* Mensaje si hay datos pre-cargados */}
             {formData.constantes_vitales_data && lastUpdated && (
-              <div className="mt-6 p-4 bg-blue-50/50 border border-blue-100 rounded-lg">
+              <div className="mt-6 p-4 bg-brand-50/50 border border-brand-100 rounded-lg">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100">
-                    <Activity className="h-3 w-3 text-blue-600" />
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-100">
+                    <Activity className="h-3 w-3 text-brand-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-blue-800">
+                    <p className="text-sm font-medium text-brand-800">
                       Datos pre-cargados disponibles
                     </p>
-                    <p className="text-sm text-blue-700 mt-1">
+                    <p className="text-sm text-brand-700 mt-1">
                       Estos valores fueron cargados del último registro ({lastUpdated}). 
                       Puede modificarlos según la evaluación actual del paciente.
                     </p>

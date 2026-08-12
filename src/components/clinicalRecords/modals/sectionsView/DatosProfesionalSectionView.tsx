@@ -42,8 +42,8 @@ export const DatosProfesionalSectionView: React.FC<DatosProfesionalSectionViewPr
                 {/* Fecha de Apertura */}
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                     <div className="flex items-center gap-2 mb-3">
-                        {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 border border-blue-100">
-                            <Calendar className="h-4 w-4 text-blue-600" />
+                        {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 border border-brand-100">
+                            <Calendar className="h-4 w-4 text-brand-600" />
                         </div> */}
                         <div>
                             <p className="text-xs font-semibold text-gray-800 uppercase tracking-wide">
@@ -195,8 +195,8 @@ export const DatosProfesionalSectionView: React.FC<DatosProfesionalSectionViewPr
                     {/* <div className="mt-6 border-t border-gray-200 pt-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="flex items-start gap-2">
-                                <div className="h-5 w-5 flex items-center justify-center rounded-full bg-blue-100">
-                                    <span className="text-xs font-bold text-blue-600">i</span>
+                                <div className="h-5 w-5 flex items-center justify-center rounded-full bg-brand-100">
+                                    <span className="text-xs font-bold text-brand-600">i</span>
                                 </div>
                                 <div>
                                     <p className="text-xs font-medium text-gray-700">

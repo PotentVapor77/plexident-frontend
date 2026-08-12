@@ -31,7 +31,7 @@ const getFileIcon = (mimetype: string) => {
 
 const getCategoryColor = (category: string): string => {
   const colors: Record<string, string> = {
-    'XRAY': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+    'XRAY': 'bg-brand-100 text-brand-800 dark:bg-brand-900 dark:text-brand-300',
     'PHOTO': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
     'LAB': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
     'MODEL_3D': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
@@ -163,7 +163,7 @@ export const FilesComparisonFullscreenView: React.FC<FilesComparisonFullscreenVi
               cursor-pointer transition-all duration-200 rounded-lg border-2 overflow-hidden
               ${selectedFile === file.id 
                 ? side === 'before' 
-                  ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800' 
+                  ? 'border-brand-500 ring-2 ring-brand-200 dark:ring-brand-800' 
                   : 'border-green-500 ring-2 ring-green-200 dark:ring-green-800'
                 : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
               }
@@ -230,12 +230,12 @@ export const FilesComparisonFullscreenView: React.FC<FilesComparisonFullscreenVi
             
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-blue-500" />
+                <div className="h-3 w-3 rounded-full bg-brand-500" />
                 <span className="font-medium">Antes</span>
                 <span className="text-sm text-gray-500">
                   {beforeSnapshotDate.toLocaleDateString('es-EC', { day: 'numeric', month: 'short' })}
                 </span>
-                <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded text-xs">
+                <span className="px-2 py-1 bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 rounded text-xs">
                   {beforeFiles.length} archivos
                 </span>
               </div>
@@ -303,13 +303,13 @@ export const FilesComparisonFullscreenView: React.FC<FilesComparisonFullscreenVi
                 <div className="flex gap-1">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-brand-100 dark:bg-brand-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
                   >
                     <Grid className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-brand-100 dark:bg-brand-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
                   >
                     <List className="h-4 w-4" />
                   </button>
@@ -320,13 +320,13 @@ export const FilesComparisonFullscreenView: React.FC<FilesComparisonFullscreenVi
               <div className="flex border-b border-gray-200 dark:border-gray-800">
                 <button
                   onClick={() => setLayout('split')}
-                  className={`flex-1 py-2 text-sm ${layout === 'split' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : ''}`}
+                  className={`flex-1 py-2 text-sm ${layout === 'split' ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400' : ''}`}
                 >
                   Ambos
                 </button>
                 <button
                   onClick={() => setLayout('before')}
-                  className={`flex-1 py-2 text-sm ${layout === 'before' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : ''}`}
+                  className={`flex-1 py-2 text-sm ${layout === 'before' ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400' : ''}`}
                 >
                   Solo Antes
                 </button>
@@ -342,9 +342,9 @@ export const FilesComparisonFullscreenView: React.FC<FilesComparisonFullscreenVi
               <div className="flex-1 overflow-hidden">
                 {(layout === 'split' || layout === 'before') && (
                   <div className="h-1/2 border-b border-gray-200 dark:border-gray-800">
-                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20">
+                    <div className="p-3 bg-brand-50 dark:bg-brand-900/20">
                       <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-blue-500" />
+                        <div className="h-2 w-2 rounded-full bg-brand-500" />
                         <span className="text-sm font-medium">Antes</span>
                         <span className="text-xs text-gray-500 ml-auto">
                           {filteredBeforeFiles.length} archivos
@@ -380,7 +380,7 @@ export const FilesComparisonFullscreenView: React.FC<FilesComparisonFullscreenVi
               <div className="flex-1 flex flex-col bg-white/90 dark:bg-gray-900/90 backdrop-blur-md rounded-xl shadow-2xl overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
                   <div className="flex items-center gap-3">
-                    <div className="h-3 w-3 rounded-full bg-blue-500" />
+                    <div className="h-3 w-3 rounded-full bg-brand-500" />
                     <div>
                       <h3 className="font-medium">Antes</h3>
                       <p className="text-xs text-gray-500">
@@ -495,7 +495,7 @@ export const FilesComparisonFullscreenView: React.FC<FilesComparisonFullscreenVi
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <span className="font-medium">Archivos mostrados:</span>
-                <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">
+                <span className="px-2 py-1 bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 rounded">
                   {filteredBeforeFiles.length} antes
                 </span>
                 <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded">
@@ -507,14 +507,14 @@ export const FilesComparisonFullscreenView: React.FC<FilesComparisonFullscreenVi
                 <span className="font-medium">Vista:</span>
                 <button
                   onClick={() => setLayout('split')}
-                  className={`px-3 py-1 rounded ${layout === 'split' ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-gray-800'}`}
+                  className={`px-3 py-1 rounded ${layout === 'split' ? 'bg-brand-500 text-white' : 'bg-gray-100 dark:bg-gray-800'}`}
                 >
                   <Split className="h-4 w-4 inline mr-1" />
                   Dividida
                 </button>
                 <button
                   onClick={() => setLayout('before')}
-                  className={`px-3 py-1 rounded ${layout === 'before' ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-gray-800'}`}
+                  className={`px-3 py-1 rounded ${layout === 'before' ? 'bg-brand-500 text-white' : 'bg-gray-100 dark:bg-gray-800'}`}
                 >
                   Solo Antes
                 </button>

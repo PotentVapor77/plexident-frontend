@@ -4,7 +4,7 @@ import axiosRetry from 'axios-retry';
 
 import { API_BASE_URL, ENDPOINTS, TIMEOUTS } from '../../config/api';
 import { logger } from '../../utils/logger';
-import { createApiError } from '../../types/api';
+import { createApiError, isCustomApiError } from '../../types/api';
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -73,6 +73,10 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+    if (isCustomApiError(error)) {
+      return Promise.reject(error);
+    }
+
     const isSilentEndpoint =
       originalRequest?.url?.includes('/auth/me') ||
       originalRequest?.url?.includes('/auth/refresh');
@@ -123,11 +127,21 @@ api.interceptors.response.use(
 
     if (!error.response) {
       const apiError = createApiError(error);
-      logger.error('Error de red', apiError);
+      logger.error('Error de red (sin respuesta del servidor)', apiError, {
+        method: originalRequest?.method?.toUpperCase(),
+        url: originalRequest?.url,
+      });
       return Promise.reject(apiError);
     }
 
-    return Promise.reject(createApiError(error));
+    const apiError = createApiError(error);
+    if (apiError.statusCode && apiError.statusCode >= 500) {
+      logger.error(`Error del servidor (${apiError.statusCode})`, apiError, {
+        method: originalRequest?.method?.toUpperCase(),
+        url: originalRequest?.url,
+      });
+    }
+    return Promise.reject(apiError);
   }
 );
 

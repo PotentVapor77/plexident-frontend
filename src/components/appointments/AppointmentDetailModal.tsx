@@ -587,9 +587,9 @@ const AppointmentDetailModal = ({
         </div>
         Detalles de la Cita
       </h2>
-      <p className="text-sm text-gray-500 mt-2 ml-13">
+      {/* <p className="text-sm text-gray-500 mt-2 ml-13">
         ID: #{cita.id}
-      </p>
+      </p> */}
     </div>
     
     <div className="flex items-center gap-3">

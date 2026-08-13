@@ -31,6 +31,10 @@ const ROL_CONFIG: Record<
     accentBar: string;
     dotColor: string;
     description: string;
+    menuActive: string;
+    menuChipActive: string;
+    menuIndicator: string;
+    menuChevron: string;
   }
 > = {
   Administrador: {
@@ -41,6 +45,12 @@ const ROL_CONFIG: Record<
     accentBar: "bg-gradient-to-b from-violet-500 to-violet-400",
     dotColor: "bg-violet-500",
     description: "Acceso completo",
+    menuActive:
+      "bg-violet-50 text-violet-700 shadow-theme-xs dark:bg-violet-500/[0.12] dark:text-violet-300",
+    menuChipActive:
+      "bg-violet-100 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400",
+    menuIndicator: "before:bg-violet-500",
+    menuChevron: "text-violet-500 dark:text-violet-400",
   },
   Odontologo: {
     label: "Odontólogo",
@@ -50,6 +60,12 @@ const ROL_CONFIG: Record<
     accentBar: "bg-gradient-to-b from-brand-500 to-brand-400",
     dotColor: "bg-brand-500",
     description: "Acceso clínico",
+    menuActive:
+      "bg-brand-50 text-brand-700 shadow-theme-xs dark:bg-brand-500/[0.12] dark:text-brand-300",
+    menuChipActive:
+      "bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-400",
+    menuIndicator: "before:bg-brand-500",
+    menuChevron: "text-brand-500 dark:text-brand-400",
   },
   Asistente: {
     label: "Asistente",
@@ -59,6 +75,12 @@ const ROL_CONFIG: Record<
     accentBar: "bg-gradient-to-b from-emerald-500 to-emerald-400",
     dotColor: "bg-emerald-500",
     description: "Acceso básico",
+    menuActive:
+      "bg-emerald-50 text-emerald-700 shadow-theme-xs dark:bg-emerald-500/[0.12] dark:text-emerald-300",
+    menuChipActive:
+      "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400",
+    menuIndicator: "before:bg-emerald-500",
+    menuChevron: "text-emerald-500 dark:text-emerald-400",
   },
 };
 
@@ -70,6 +92,11 @@ const DEFAULT_ROL_CONFIG = {
   accentBar: "bg-gradient-to-b from-gray-400 to-gray-300",
   dotColor: "bg-gray-400",
   description: "Acceso limitado",
+  menuActive:
+    "bg-gray-100 text-gray-700 shadow-theme-xs dark:bg-white/5 dark:text-gray-300",
+  menuChipActive: "bg-gray-200 text-gray-600 dark:bg-white/10 dark:text-gray-300",
+  menuIndicator: "before:bg-gray-500",
+  menuChevron: "text-gray-500 dark:text-gray-400",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -172,7 +199,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
 
   return (
     <div
-      className={`flex items-center gap-3 px-3 py-3 rounded-xl border shadow-theme-xs transition-all duration-200
+      className={`flex items-center gap-3 px-3 py-3 rounded-2xl border shadow-theme-xs transition-all duration-200
         ${rolConfig.badgeBg} ${rolConfig.badgeBorder}`}
     >
       <div className="relative flex-shrink-0">
@@ -331,25 +358,25 @@ const AppSidebar: React.FC = () => {
               <button
                 onClick={() => handleSubmenuToggle(index, menuType)}
                 className={`menu-item group ${
-                  isItemActive || isSubmenuOpen ? "menu-item-active" : "menu-item-inactive"
+                  isItemActive || isSubmenuOpen ? rolConfig.menuActive : "menu-item-inactive"
                 } cursor-pointer ${
                   !isExpanded && !isHovered ? "lg:justify-center" : "lg:justify-start"
                 }`}
               >
                 <span
-                  className={`menu-item-icon-size ${
+                  className={`menu-item-icon-chip ${
                     isItemActive || isSubmenuOpen
-                      ? "menu-item-icon-active"
-                      : "menu-item-icon-inactive"
+                      ? rolConfig.menuChipActive
+                      : "menu-item-icon-chip-inactive"
                   }`}
                 >
-                  {nav.icon}
+                  <span className="menu-item-icon-size">{nav.icon}</span>
                 </span>
                 {showFull && <span className="menu-item-text">{nav.name}</span>}
                 {showFull && (
                   <ChevronDownIcon
                     className={`ml-auto w-5 h-5 transition-transform duration-200 ${
-                      isSubmenuOpen ? "rotate-180 text-brand-500" : ""
+                      isSubmenuOpen ? `rotate-180 ${rolConfig.menuChevron}` : ""
                     }`}
                   />
                 )}
@@ -359,15 +386,17 @@ const AppSidebar: React.FC = () => {
                 <Link
                   to={nav.path}
                   className={`menu-item group ${
-                    isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
+                    isActive(nav.path) ? rolConfig.menuActive : "menu-item-inactive"
                   }`}
                 >
                   <span
-                    className={`menu-item-icon-size ${
-                      isActive(nav.path) ? "menu-item-icon-active" : "menu-item-icon-inactive"
+                    className={`menu-item-icon-chip ${
+                      isActive(nav.path)
+                        ? rolConfig.menuChipActive
+                        : "menu-item-icon-chip-inactive"
                     }`}
                   >
-                    {nav.icon}
+                    <span className="menu-item-icon-size">{nav.icon}</span>
                   </span>
                   {showFull && <span className="menu-item-text">{nav.name}</span>}
                 </Link>
@@ -391,7 +420,7 @@ const AppSidebar: React.FC = () => {
                         to={subItem.path}
                         className={`menu-dropdown-item ${
                           isActive(subItem.path)
-                            ? "menu-dropdown-item-active"
+                            ? `${rolConfig.menuActive} ${rolConfig.menuIndicator} menu-dropdown-indicator`
                             : "menu-dropdown-item-inactive"
                         }`}
                       >
@@ -528,7 +557,7 @@ const AppSidebar: React.FC = () => {
             {/* Sección principal */}
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                className={`mb-4 text-xs uppercase tracking-[0.08em] flex leading-[20px] text-gray-400 ${
                   !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                 }`}
               >
@@ -546,7 +575,7 @@ const AppSidebar: React.FC = () => {
             {!isLoadingPerms && filteredOthersItems.length > 0 && (
               <div>
                 <h2
-                  className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                  className={`mb-4 text-xs uppercase tracking-[0.08em] flex leading-[20px] text-gray-400 ${
                     !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
                 >
@@ -559,22 +588,17 @@ const AppSidebar: React.FC = () => {
         </nav>
       </div>
 
-      {/* Footer: resumen de rol y módulos accesibles */}
+      {/* Footer: resumen de rol */}
       {showFull && (
         <div className="py-4 border-t border-gray-200 dark:border-gray-700">
           <div
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg border shadow-theme-xs
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl border shadow-theme-xs
               ${rolConfig.badgeBg} ${rolConfig.badgeBorder}`}
           >
             <span className={`w-2 h-2 rounded-full flex-shrink-0 ${rolConfig.dotColor}`} />
             <span className={`text-xs font-semibold ${rolConfig.badgeText}`}>
               {rolConfig.label}
             </span>
-            {!isLoadingPerms && (
-              <span className="text-gray-400 dark:text-gray-500 text-xs ml-auto">
-                {visibleModules.size} módulos
-              </span>
-            )}
           </div>
         </div>
       )}

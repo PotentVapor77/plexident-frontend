@@ -3,4 +3,9 @@ dist
 .git
 .dockerignore
 Dockerfile
+Dockerfile.prod
 docker-compose.yml
+esbuild-errors.txt
+README.md
+.gitignore
+*.log

@@ -87,7 +87,7 @@ const AppHeader: React.FC = () => {
         <div className="flex items-center justify-center"> {/* Contenedor de 40px */}
           <img
             className="dark:hidden max-h-15" // Logo de 24px de alto máximo
-            src="/images/logo1/plexidentLig.png"
+            src="/images/logo/auth-logo.svg"
             alt="Logo"
           />
           <img

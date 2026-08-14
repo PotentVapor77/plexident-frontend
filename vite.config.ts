@@ -3,6 +3,8 @@ import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
 
 // https://vite.dev/config/
+const usePolling = process.env.VITE_USE_POLLING === 'true'
+
 export default defineConfig({
   plugins: [
     react(),
@@ -19,7 +21,17 @@ export default defineConfig({
 
   server: {
     watch: {
-      usePolling: true,
+      usePolling,
+      ...(usePolling
+        ? {
+            interval: 500,
+            awaitWriteFinish: {
+              stabilityThreshold: 500,
+              pollInterval: 100,
+            },
+          }
+        : {}),
+      ignored: ['**/dist/**'],
     },
     host: true,
     port: 5173,

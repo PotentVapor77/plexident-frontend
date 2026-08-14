@@ -489,7 +489,7 @@ const AppSidebar: React.FC = () => {
             <>
               <img
                 className="dark:hidden"
-                src="/images/logo1/plexidentLig.png"
+                src="/images/logo/auth-logo.svg"
                 alt="Logo"
                 width={150}
                 height={40}

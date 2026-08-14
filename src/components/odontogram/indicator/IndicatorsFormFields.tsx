@@ -284,7 +284,7 @@ export default function IndicatorsFormFields({
           type="number"
           name={gingivitisKey}
           min={0}
-          max={3}
+          max={1}
           step={1}
           value={formData[gingivitisKey] as number ?? ""}
           onChange={onInputChange}

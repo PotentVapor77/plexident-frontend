@@ -117,6 +117,13 @@ export default function IndicatorsForm({
   const [showPacienteDropdown, setShowPacienteDropdown] = useState(false);
   const [selectedPaciente, setSelectedPaciente] = useState<IPaciente | null>(null);
 
+  // Nombre del paciente a mostrar: prioriza los datos del propio registro (edición)
+  // y luego el paciente fijado
+  const pacienteNombreMostrado =
+    initialData?.paciente_nombre || initialData?.paciente_apellido
+      ? `${initialData?.paciente_nombre || ""} ${initialData?.paciente_apellido || ""}`.trim()
+      : pacienteNombreCompleto;
+
   // ============================================================================
   // EFFECTS
   // ============================================================================
@@ -619,17 +626,17 @@ const handlePiezaChange = (
           )}
 
           {/* ========================================================================
-              INFORMACIÓN DEL PACIENTE FIJADO
+              INFORMACIÓN DEL PACIENTE
           ======================================================================== */}
-          {pacienteId && pacienteNombreCompleto && (
+          {pacienteNombreMostrado && (
             <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <User className="w-5 h-5 text-green-600 dark:text-green-400" />
               <div>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Paciente activo
+                  {pacienteId ? "Paciente activo" : "Paciente"}
                 </p>
                 <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                  {pacienteNombreCompleto}
+                  {pacienteNombreMostrado}
                 </p>
               </div>
             </div>

@@ -366,7 +366,7 @@ export const IndicatorsMain: React.FC = () => {
           <IndicatorsTable
             registros={indicadores}
             showInactivos={false}
-            showPatientColumn={!pacienteActivo}
+            showPatientColumn={true}
             onView={handleView}
             onEdit={handleEdit}
             onDelete={handleDelete}

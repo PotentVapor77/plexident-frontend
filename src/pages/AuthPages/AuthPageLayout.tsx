@@ -25,7 +25,7 @@ export default function AuthLayout({
         <img
           src="/images/logo1/LogoLogin1.png"
           alt="Plexident Logo"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-contain"
         />
       </div>
     </div>
